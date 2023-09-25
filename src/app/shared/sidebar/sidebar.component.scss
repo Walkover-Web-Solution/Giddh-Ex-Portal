@@ -1,0 +1,83 @@
+img {
+    width: 20px;
+}
+.sidebar {
+    .sidebar-head {
+        padding: 16px;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        background-color: var(--color-sidebar-font);
+        button {
+            border: 0;
+            background: transparent;
+            img {
+                width: 14px;
+            }
+        }
+        span {
+            color: var(--color-black);
+        }
+    }
+    .sidebar-menu-wrapper {
+        background-color: var(--color-sidebar-font);
+        padding: 25px 10px;
+        margin: 18px;
+        border-radius: 10px;
+        .profile-name {
+            .short {
+                background-color: var(--color-giddh-blue);
+                color: var(--color-white);
+                width: 36px;
+                height: 36px;
+                border-radius: 6px;
+                font-size: var(--font-size-15);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0 auto;
+            }
+            p {
+                font-size: var(--font-size-15);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 120px;
+            }
+            span {
+                letter-spacing: 0;
+                small {
+                    letter-spacing: 0.5px;
+                }
+            }
+        }
+    }
+
+    /*---- responsive ----*/
+    .sidenav-content {
+            margin: 0 30px;
+        .sidebar-mobile-head {
+            display: none;
+            padding: 22px 30px;
+            background-color: var(--color-giddh-blue);
+            button {
+                border: 0;
+                background: unset;
+            }
+            span {
+                color: var(--color-white);
+                font-size: var(--font-size-24);
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .sidebar {
+        .sidenav-content {
+            margin: 0 0px;
+            .sidebar-mobile-head {
+                display: block;
+            }
+        }
+    }
+}

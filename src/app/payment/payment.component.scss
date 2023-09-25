@@ -1,0 +1,46 @@
+.common-wrapper {
+    .inner-content {
+        margin: 30px 0 20px 0;
+        .payment-table {
+            table {
+                .mdc-data-table__content {
+                    .mat-mdc-row {
+                        cursor: pointer;
+                    }
+                }
+                .mat-mdc-header-cell {
+                    &.unused-width {
+                        min-width: 150px;
+                    }
+                }
+                .mat-mdc-cell {
+                    &.date-width,
+                    &.mode-width {
+                        min-width: 150px;
+                    }
+                }
+            }
+        }
+    }
+    .payment-open {
+        max-width: 820px;
+        .back-header {
+            img {
+                width: 12px;
+            }
+        }
+    }
+}
+
+/*---- responsive ----*/
+@media screen and (max-width: 768px) {
+    .common-wrapper {
+        .payment-open {
+            margin: 0 15px;
+            .back-header {
+                flex-wrap: wrap;
+                row-gap: 15px;
+            }
+        }
+    }
+}

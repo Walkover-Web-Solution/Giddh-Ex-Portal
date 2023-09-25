@@ -1,0 +1,104 @@
+/*---- responsive-css ----*/
+
+/*---- max-width-1440-start ----*/
+@media screen and (max-width: 1440px) {
+}
+/*---- max-width-1440-end ----*/
+
+/*---- max-width-1366-start ----*/
+@media screen and (max-width: 1366px) {
+}
+/*---- max-width-1366-end ----*/
+
+/*---- max-width-1280-start ----*/
+@media screen and (max-width: 1280px) {
+}
+
+/*---- max-width-1080-start ----*/
+@media screen and (max-width: 1080px) {
+}
+/*---- max-width-1080-end ----*/
+
+/*---- max-width-991-start ----*/
+@media screen and (max-width: 991px) {
+}
+/*---- max-width-991-end ----*/
+
+/*---- max-width-768-start ----*/
+@media screen and (max-width: 768px) {
+    .small-container {
+        margin: 0 15px;
+    }
+    .sidebar {
+        &.sidebar-open {
+            .mat-drawer-content {
+                margin-left: 0 !important;
+            }
+        }
+        &.sidebar-close {
+            .sidebar-head {
+                .toggle-heading {
+                    display: none;
+                }
+            }
+            .mat-drawer {
+                visibility: visible !important;
+                display: block !important;
+                width: 0px !important;
+            }
+            .mat-drawer-content {
+                margin-left: 0px !important;
+            }
+        }
+        .sidenav-content {
+            .sidebar-mobile-head {
+                display: block;
+            }
+        }
+    }
+    /*---- estimate ----*/
+    .common-wrapper {
+        .inner-header {
+            margin: 0 15px;
+        }
+    }
+    .common-wrapper {
+        .inner-content {
+            margin-left: 15px !important;
+            margin-right: 15px !important;
+        }
+    }
+}
+/*---- max-width-768-end ----*/
+
+/*---- max-width-680-start ----*/
+@media screen and (max-width: 680px) {
+    .invoice-content {
+        .mat-mdc-tab-header {
+            width: 30%;
+        }
+        .mat-mdc-tab-body-wrapper {
+            width: 70%;
+        }
+    }
+}
+/*---- max-width-680-start ----*/
+
+/*---- max-width-576-start ----*/
+@media screen and (max-width: 576px) {
+    .invoice-content {
+        .mat-mdc-tab-header {
+            width: 100%;
+            min-height: auto;
+        }
+        .mat-mdc-tab-body-wrapper {
+            width: 85%;
+            padding: 30px 0px;
+            margin: 0 15px;
+        }
+        .mat-mdc-tab-labels {
+            flex-direction: row;
+        }
+    }
+}
+/*---- max-width-576-start ----*/

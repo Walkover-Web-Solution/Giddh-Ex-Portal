@@ -1,0 +1,41 @@
+.page-wrapper {
+    max-width: 400px;
+    width: 100%;
+    margin: 30px auto;
+    background-color: var(--color-bg-login);
+    .login-wrapper {
+        background-color: var(--color-white);
+        padding: 30px;
+        box-shadow: 0 5px 16px 0 #00000010;
+        .signin-content {
+            border-top: 1px solid var(--color-gray);
+            padding-top: 30px;
+            margin-bottom: 25px;
+            h4 {
+                margin-bottom: 10px !important;
+            }
+            p {
+                color: var(--color-content);
+            }
+        }
+        .signin-form {
+            padding: 15px;
+        }
+        .forgot-content {
+            margin-top: 50px;
+            p {
+                font-size: var(--font-size-12);
+            }
+        }
+        .signin-staff {
+            margin-top: 60px;
+            p {
+                a {
+                    img {
+                        width: 10px;
+                    }
+                }
+            }
+        }
+    }
+}

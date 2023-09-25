@@ -1,0 +1,38 @@
+.common-wrapper {
+    .inner-content {
+        margin: 85px 0 20px 0;
+    }
+}
+
+/*---- pay-invoice ----*/
+.pay-invoice-wrapper {
+    .inner-header {
+        span {
+            font-size: var(--font-size-24);
+        }
+    }
+}
+
+/*---- responsive ----*/
+@media screen and (max-width: 680px) {
+    .common-wrapper {
+        .inner-content {
+            flex-wrap: wrap;
+            row-gap: 18px;
+        }
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .common-wrapper {
+        .inner-content {
+            .statement-year {
+                flex-wrap: wrap;
+                row-gap: 18px;
+                .mat-mdc-form-field {
+                    width: 100%;
+                }
+            }
+        }
+    }
+}

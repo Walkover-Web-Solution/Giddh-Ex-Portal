@@ -1,0 +1,75 @@
+<div class="common-wrapper">
+    <div class="inner-header">
+        <h2>Payments Made</h2>
+    </div>
+    <div class="inner-content">
+        <div class="d-flex column-gap10">
+            <mat-form-field appearance="outline">
+                <mat-label>Show</mat-label>
+                <mat-select>
+                    <mat-option value="option1">All Payments</mat-option>
+                    <mat-option value="option1">Invoice Payments</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>Sort By</mat-label>
+                <mat-select>
+                    <mat-option value="option1">Date</mat-option>
+                    <mat-option value="option1">Amount</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <!-- invoice table -->
+        <div class="payment-table mr-t15">
+            <div class="table-responsive">
+                <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
+                    <ng-container matColumnDef="payment">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header class="payment-width"> Payment# </th>
+                        <td mat-cell *matCellDef="let element">
+                            <a href="javascript:;">{{element.payment}}</a>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="reference">
+                        <th mat-header-cell *matHeaderCellDef> Reference# </th>
+                        <td mat-cell *matCellDef="let element"> {{element.reference}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="date">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by date"> Date </th>
+                        <td mat-cell *matCellDef="let element" class="date-width"> {{element.date}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="amount">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-right sort-header-right"> Amount </th>
+                        <td mat-cell *matCellDef="let element" class="text-right"> {{element.amount}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="mode">
+                        <th mat-header-cell *matHeaderCellDef class="text-right"> Mode </th>
+                        <td mat-cell *matCellDef="let element" class="text-right mode-width"> {{element.mode}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="unusedamount">
+                        <th mat-header-cell *matHeaderCellDef class="text-right unused-width"> Unused Amount </th>
+                        <td mat-cell *matCellDef="let element" class="text-right">{{element.unusedamount}}</td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+                <!-- <div class="text-center pd-t1 pd-b1">
+                    <p class="no-data">There are no open estimates which await your approval.</p>
+                </div> -->
+            </div>
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" aria-label="Select page of periodic elements"></mat-paginator>
+        </div>
+    </div>
+
+    <!-- payment-click -->
+    <div class="payment-open">
+        <div class="back-header d-flex justify-content-between align-items-center">
+            <a href="javascript:;">
+                <img src="../../assets/images/chevron.svg" alt="arrow"> Back to Payments Made
+            </a>
+            <div class="d-flex column-gap10">
+                <button mat-stroked-button color="primary">Download PDF</button>
+                <button mat-stroked-button color="primary"> Print </button>
+            </div>
+        </div>
+    </div>
+</div>
