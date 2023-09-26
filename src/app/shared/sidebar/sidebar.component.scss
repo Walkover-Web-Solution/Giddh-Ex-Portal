@@ -54,10 +54,12 @@ img {
 
     /*---- responsive ----*/
     .sidenav-content {
-            margin: 0 30px;
+        height: 100%;
+        min-height: 100vh;
+        margin: 0 15px;
         .sidebar-mobile-head {
             display: none;
-            padding: 22px 30px;
+            padding: 22px 15px;
             background-color: var(--color-giddh-blue);
             button {
                 border: 0;

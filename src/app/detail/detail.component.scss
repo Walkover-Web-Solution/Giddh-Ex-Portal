@@ -1,3 +1,17 @@
+.header-wrapper {
+    background-color: var(--color-bg-header);
+    padding: 20px 30px;
+    h2 {
+        font-weight: 300;
+        display: flex;
+        column-gap: 20px;
+        a {
+            img{
+                width: 12px;
+            }
+        }
+    }
+}
 .index-wrapper {
     .balance-wrap {
         max-width: 1140px;

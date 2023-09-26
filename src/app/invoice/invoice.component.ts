@@ -39,13 +39,12 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     /** Instance of mat dialog */
     @ViewChild('paymodal', { static: true }) public paymodal: any;
     /** Instance of mat dialog */
-    @ViewChild('forwardmodal', { static: true }) public forwardmodal: any;
+    @ViewChild('paytablemodal', { static: true }) public paytablemodal: any;
     displayedColumns: string[] = ['invoice', 'reference', 'date', 'total', 'status'];
     dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
     displayedColumnsPay: string[] = ['invoice', 'amount', 'status'];
     dataSourcePay = ELEMENT_DATA_PAY;
-    public isExpanded = true;
-    public panelOpenState: boolean = false;
+    public panelOpenState: boolean = true;
     /*---- autocomplete form-control ----*/
     public myControl = new FormControl('');
     constructor(
@@ -74,20 +73,15 @@ export class InvoiceComponent implements OnInit, OnDestroy {
             width: '600px'
         });
     }
-    /*---- open dialog forward ----*/
-    public openForwardDialog(): void {
-        this.dialog.open(this.forwardmodal, {
-            width: '600px',
-            panelClass: 'forward-modal'
+    /*---- open dialog Table pay now ----*/
+    public openPayTableDialog(): void {
+        this.dialog.open(this.paytablemodal, {
+            width: '600px'
         });
     }
 
     public togglePanel() {
         this.panelOpenState = !this.panelOpenState
-    }
-
-    public toggleMenu() {
-        this.isExpanded = !this.isExpanded;
     }
 
     public ngOnDestroy(): void {

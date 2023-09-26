@@ -1,7 +1,7 @@
 :host {
     background-color: var(--color-ligh);
     padding: 30px;
-    margin-top: 122px;
+    margin-top: auto;
 }
 .footer-wrapper {
     display: flex;
@@ -11,6 +11,9 @@
         display: flex;
         column-gap: 20px;
         width: 33.33%;
+        img{
+            width: 100px;
+        }
         h4 {
             font-size: var(--font-size-20);
             margin-bottom: 10px !important;

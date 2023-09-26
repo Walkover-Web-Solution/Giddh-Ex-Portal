@@ -5,8 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from "@angular/common";
-import { InvoiceComponent } from "./invoice.component";
-import { InvoiceRoutingModule } from "./invoice.routing.module";
+import { InvoicePayComponent } from "./invoice-pay.component";
+import { InvoicePayRoutingModule } from "./invoice-pay.routing.module";
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -18,16 +18,13 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatPaginatorModule } from "@angular/material/paginator";
-import { MatSortModule } from "@angular/material/sort";
-import { ReactiveFormsModule } from "@angular/forms";
 
 @NgModule({
     declarations: [
-        InvoiceComponent
+        InvoicePayComponent
     ],
     imports: [
-        InvoiceRoutingModule,
+        InvoicePayRoutingModule,
         SharedModule,
         MatButtonModule,
         MatIconModule,
@@ -45,11 +42,8 @@ import { ReactiveFormsModule } from "@angular/forms";
         MatDatepickerModule,
         MatNativeDateModule,
         MatAutocompleteModule,
-        MatPaginatorModule,
-        MatSortModule,
-        ReactiveFormsModule
     ]
 })
-export class InvoiceModule {
+export class InvoicePayModule {
 
 }

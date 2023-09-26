@@ -1,70 +1,3 @@
-.common-wrapper {
-    .inner-content {
-        margin: 30px 0 20px 0;
-        .invoice-table {
-            margin-bottom: 50px;
-            table {
-                .mdc-data-table__content {
-                    .mat-mdc-row {
-                        cursor: pointer;
-                    }
-                }
-            }
-        }
-    }
-}
-
-/*---- dialog ----*/
-
-.common-dialog {
-    .mat-mdc-dialog-content {
-        .alert-wrapper {
-            background-color: var(--color-bg-warning);
-            padding: 15px 10px;
-            img {
-                width: 12px;
-            }
-            p,
-            ul li {
-                color: var(--color-black);
-                font-size: var(--font-size-12);
-            }
-            ul {
-                li {
-                    list-style-type: disc;
-                }
-            }
-        }
-        .mat-expansion-panel-header {
-            height: 40px !important;
-            .mat-expansion-panel-body {
-                .mat-mdc-table {
-                    .mat-mdc-header-row {
-                        .mat-mdc-header-cell {
-                            height: 40px !important;
-                        }
-                    }
-                }
-            }
-        }
-        /*---- pay-table ----*/
-        .danger-wrap {
-            align-items: flex-start;
-            img {
-                width: 30px;
-            }
-            p {
-                color: var(--color-black);
-            }
-        }
-    }
-    .forward-wrapper {
-        p {
-            color: var(--color-black);
-        }
-    }
-}
-
 /*---- pay-invoice ----*/
 .pay-invoice-wrapper {
     .inner-header {
@@ -175,20 +108,15 @@
 
 /*---- responsive ----*/
 @media screen and (max-width: 768px) {
-    .common-wrapper {
-        .inner-header {
-            padding: 15px 15px;
-        }
-        .inner-content {
-            margin: 30px 15px 20px 15px;
-        }
-    }
     .pay-invoice-wrapper {
-        margin: 0 15px 50px 15px;
         .inner-header {
             h2 {
                 font-size: 18px;
             }
+        }
+        .pay-invoice-content {
+            margin-left: 15px;
+            margin-right: 15px;
         }
     }
 }

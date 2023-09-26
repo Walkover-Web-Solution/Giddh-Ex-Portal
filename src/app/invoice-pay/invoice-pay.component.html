@@ -1,0 +1,142 @@
+<!-- pay-invoices -->
+<div class="pay-invoice-wrapper">
+    <div class="inner-header d-flex justify-content-between align-items-center">
+        <h2>Pay All Invoices</h2>
+        <span class="cp">×</span>
+    </div>
+    <div class="pay-invoice-content mr-b2 mr-t15">
+        <div class="invoice-content-header d-flex justify-content-between align-items-center">
+            <div class="amount-total">
+                <img src="../../assets/images/note.svg" alt="notebook">
+                <div>
+                    <p class="text-mute">Total Amount</p>
+                    <span class="mr-t5 d-block">€4.405,87</span>
+                </div>
+            </div>
+            <div>
+                <button mat-stroked-button color="primary" (click)="togglePanel()">For 2 invoices</button>
+            </div>
+        </div>
+        <div class="invoice-content">
+            <mat-accordion multi>
+                <mat-expansion-panel hideToggle [expanded]="panelOpenState">
+                    <div class="inv-header mr-t2">
+                        <p class="text-uppercase">Invoice #</p>
+                        <p class="text-uppercase">Due on</p>
+                        <p class="text-right text-uppercase">Balance Due</p>
+                    </div>
+                    <div class="inv-body">
+                        <p>INV2023-090562</p>
+                        <p>08-09-2023</p>
+                        <p class="text-right">€349,00</p>
+                    </div>
+                    <div class="inv-body">
+                        <p>INV2023-090562</p>
+                        <p>08-09-2023</p>
+                        <p class="text-right">€349,00</p>
+                    </div>
+                    <p class="mr-t1">If you want to pay only for an individual invoice, you can do so from the <a
+                            href="javascript:;">list view of invoices.</a></p>
+                </mat-expansion-panel>
+            </mat-accordion>
+        </div>
+    </div>
+
+    <div class="pay-invoice-content invoice-tab mr-b2">
+        <div class="invoice-content">
+            <mat-tab-group mat-stretch-tabs="false" animationDuration="0ms">
+                <mat-tab label="PayPal">
+                    <button mat-stroked-button color="primary" class="text-uppercase">Proceed to payment</button>
+                </mat-tab>
+                <mat-tab label="Credit Card">
+                    <div class="mendatory d-flex justify-content-between">
+                        <div class="d-flex column-gap10">
+                            <img src="../../assets/images/info.svg" alt="info">
+                            <p>All the fields on this page are mandatory.</p>
+                        </div>
+                        <span class="cp text-mute">×</span>
+                    </div>
+                    <div class="credit-tab mr-t1">
+                        <p class="text-mute mr-b15">Pay swiftly through your credit card.</p>
+                        <h4>Card Details</h4>
+                        <p class="text-mute mr-t15 mr-b15 detail-card">Your card details are sent to Stripe via secure
+                            SSL connection for payment processing. We do
+                            not store your card information in our servers.</p>
+                        <div>
+                            <mat-form-field appearance="outline" class="mr-b15 w-100">
+                                <mat-label class="text-uppercase">Card Number</mat-label>
+                                <input matInput required type="number" placeholder="1234 1234 1234 1234">
+                            </mat-form-field>
+                            <div class="d-flex column-gap10 res-field-100">
+                                <mat-form-field appearance="outline" class="mr-b15 w-100">
+                                    <mat-label class="text-uppercase">cvv</mat-label>
+                                    <input matInput class="text-uppercase" required type="number" placeholder="cvc">
+                                </mat-form-field>
+                                <mat-form-field appearance="outline" class="mr-b15 w-100">
+                                    <mat-label>Expires on</mat-label>
+                                    <input matInput [matDatepickerFilter]="myFilter" [matDatepicker]="picker">
+                                    <mat-hint>MM/DD/YYYY</mat-hint>
+                                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                    <mat-datepicker #picker></mat-datepicker>
+                                </mat-form-field>
+                            </div>
+                            <div class="d-flex column-gap10 res-field-100">
+                                <mat-form-field appearance="outline" class="mr-b15 w-100">
+                                    <mat-label class="text-uppercase">First Name</mat-label>
+                                    <input matInput class="text-uppercase" value="Shubhendra">
+                                </mat-form-field>
+                                <mat-form-field appearance="outline" class="mr-b15 w-100">
+                                    <mat-label class="text-uppercase">Last Name</mat-label>
+                                    <input matInput class="text-uppercase" value="Agrawal">
+                                </mat-form-field>
+                            </div>
+                            <div>
+                                <h4 class="text-uppercase">Billing Address</h4>
+                                <p class="text-mute mr-t1 mr-b15">The billing address entered here must match the
+                                    billing address of the card holder.
+                                </p>
+                                <div>
+                                    <mat-form-field appearance="outline" class="w-100 mr-b15">
+                                        <mat-label>Country</mat-label>
+                                        <input type="text" matInput [matAutocomplete]="auto" required>
+                                        <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+                                            <mat-option>India</mat-option>
+                                            <mat-option>Iran</mat-option>
+                                            <mat-option>Iraq</mat-option>
+                                        </mat-autocomplete>
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="w-100 mr-b15">
+                                        <mat-label>Adderss</mat-label>
+                                        <textarea matInput rows="2"
+                                            value="405 capt cs Naidyu Arcade old palasia Indore MP"></textarea>
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="w-100 mr-b15">
+                                        <mat-label>City</mat-label>
+                                        <input matInput required required>
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="w-100 mr-b15">
+                                        <mat-label>Postal/Zip Code</mat-label>
+                                        <input matInput required type="number" valur="452018" required>
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="w-100 mr-b15">
+                                        <mat-label>State</mat-label>
+                                        <input type="text" matInput [matAutocomplete]="autostate" required>
+                                        <mat-autocomplete autoActiveFirstOption #autostate="matAutocomplete">
+                                            <mat-option>Madhya Pradesh</mat-option>
+                                            <mat-option>Madhya Pradesh</mat-option>
+                                            <mat-option>Madhya Pradesh</mat-option>
+                                        </mat-autocomplete>
+                                    </mat-form-field>
+                                    <div>
+                                        <button mat-stroked-button color="primary" class="text-uppercase">Make
+                                            Payment</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </mat-tab>
+            </mat-tab-group>
+        </div>
+    </div>
+</div>

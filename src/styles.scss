@@ -178,6 +178,12 @@ ul {
 .mr-r2 {
     margin-right: 20px;
 }
+.mr-t50 {
+    margin-top: 50px;
+}
+.mr-b50 {
+    margin-bottom: 50px;
+}
 
 /*---- padding-css ----*/
 .pd-t5 {
@@ -250,6 +256,11 @@ ul {
 }
 
 /*---- button-common-css ----*/
+button {
+    &:focus-visible {
+        outline: none;
+    }
+}
 .mat-mdc-outlined-button {
     &.mat-primary {
         color: var(--color-giddh-blue) !important;
@@ -509,6 +520,8 @@ table {
     width: 100%;
     height: 100%;
     position: relative;
+    display: flex;
+    flex-direction: column;
     .inner-header {
         padding: 15px 0px;
         border-bottom: 1px solid var(--color-border);
@@ -563,7 +576,7 @@ mat-sidenav[style] {
                     a {
                         color: var(--color-white);
                     }
-                    img{
+                    img {
                         filter: brightness(0) invert(1);
                     }
                 }
@@ -572,7 +585,7 @@ mat-sidenav[style] {
                     a {
                         color: var(--color-white);
                     }
-                    img{
+                    img {
                         filter: brightness(0) invert(1);
                     }
                 }
@@ -649,8 +662,9 @@ mat-sidenav[style] {
                 color: var(--color-giddh-blue) !important;
                 .mat-mdc-menu-item-text {
                     .profile-btn {
-                        svg {
-                            fill: var(--color-giddh-blue);
+                        img {
+                            filter: invert(15%) sepia(23%) saturate(7490%) hue-rotate(220deg) brightness(93%)
+                                contrast(96%);
                         }
                     }
                 }
@@ -661,7 +675,7 @@ mat-sidenav[style] {
                 display: flex;
                 align-items: center;
                 column-gap: 2px;
-                svg {
+                img {
                     height: 15px;
                     width: 15px;
                     margin-right: 3px;
@@ -678,8 +692,8 @@ mat-sidenav[style] {
             color: var(--color-red);
             .mat-mdc-menu-item-text {
                 .profile-btn {
-                    svg {
-                        fill: var(--color-red);
+                    img {
+                        filter: invert(53%) sepia(90%) saturate(5590%) hue-rotate(333deg) brightness(87%) contrast(99%);
                     }
                     span {
                         font-size: var(--font-size-15);
@@ -757,6 +771,20 @@ mat-sidenav[style] {
     .mat-mdc-tab-header-pagination-controls-enabled {
         .mat-mdc-tab-header-pagination {
             display: none;
+        }
+    }
+}
+
+/*--- footer ---*/
+.footer-wrapper {
+    .email-btn {
+        .mat-mdc-outlined-button {
+            .mdc-button__label {
+                align-items: baseline;
+                display: flex;
+                column-gap: 8px;
+                justify-content: center;
+            }
         }
     }
 }
