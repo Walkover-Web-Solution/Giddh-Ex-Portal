@@ -1,6 +1,7 @@
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { FlatTreeControl } from "@angular/cdk/tree";
-import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Component, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { MatTreeFlatDataSource, MatTreeFlattener } from "@angular/material/tree";
 import { NavigationEnd, Router } from "@angular/router";
 import { Observable, ReplaySubject } from "rxjs";
@@ -27,6 +28,12 @@ interface SidebarFlatNode {
     styleUrls: ["sidebar.component.scss"]
 })
 export class SidebarComponent implements OnInit, OnDestroy {
+    /*--- hide-show-password ----*/
+    public hide = true;
+    /** Instance of mat dialog */
+    @ViewChild('changepassword', { static: true }) public changepassword: any;
+        /** Instance of modal */
+        public modalDialogRef: any;
     /** Holds current page url */
     private currentUrl: string = "";
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
@@ -60,7 +67,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public isMobile$: Observable<boolean>;
     constructor(
         private router: Router,
-        public breakpointObserver: BreakpointObserver
+        public breakpointObserver: BreakpointObserver,
+        public dialog: MatDialog
     ) {
         this.isMobile$ = this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small])
         .pipe(
@@ -106,6 +114,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 this.currentUrl = event.url;
                 this.openActiveMenu(this.currentUrl);
             }
+        });
+    }
+    /*---- open dialog change password ----*/
+    public openChangePassword(): void {
+        this.modalDialogRef = this.dialog.open(this.changepassword, {
+            width: '600px'
         });
     }
 
