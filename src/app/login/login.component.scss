@@ -3,36 +3,92 @@
     width: 100%;
     margin: 30px auto;
     background-color: var(--color-bg-login);
+
     .login-wrapper {
         background-color: var(--color-white);
         padding: 30px;
         box-shadow: 0 5px 16px 0 #00000010;
+
         .signin-content {
             border-top: 1px solid var(--color-gray);
             padding-top: 30px;
             margin-bottom: 25px;
+
             h4 {
                 margin-bottom: 10px !important;
             }
+
             p {
                 color: var(--color-content);
             }
         }
+
         .signin-form {
             padding: 15px;
-        }
-        .forgot-content {
-            margin-top: 50px;
-            p {
-                font-size: var(--font-size-12);
+
+            .login-btn-wrap {
+                button {
+                    background: transparent;
+                    border: 1px solid var(--color-giddh-blue);
+                    color: var(--color-giddh-blue);
+                    display: flex;
+                    height: 40px;
+                    min-width: 120px;
+                    column-gap: 8px;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    letter-spacing: 0.5px;
+                    padding: 5px 10px;
+
+                    &.otp-btn {
+                        background-color: var(--color-giddh-blue);
+                        color: var(--color-white);
+                    }
+                }
+
+                .or-divide {
+                    position: relative;
+                    display: inline-block;
+
+                    &::after {
+                        content: "";
+                        position: absolute;
+                        left: 28px;
+                        display: block;
+                        width: 300px;
+                        border-top: 1px solid var(--color-border);
+                        top: 10px;
+                    }
+                }
             }
         }
+
         .signin-staff {
             margin-top: 60px;
+
             p {
                 a {
                     img {
                         width: 10px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/*---- responsive ----*/
+@media screen and (max-width: 360px) {
+    .page-wrapper {
+        .login-wrapper {
+            .signin-form {
+                .login-btn-wrap {
+                    .or-divide {
+                        &::after {
+                            width: 225px;
+                        }
                     }
                 }
             }

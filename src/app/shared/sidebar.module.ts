@@ -18,6 +18,7 @@ import { SidebarRoutingModule } from "./sidebar.routing.module";
 import { MatMenuModule } from '@angular/material/menu';
 import { LayoutModule } from '@angular/cdk/layout';
 import { MatInputModule } from "@angular/material/input";
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 @NgModule({
     declarations: [
@@ -41,7 +42,8 @@ import { MatInputModule } from "@angular/material/input";
         MatDialogModule,
         MatMenuModule,
         LayoutModule,
-        MatInputModule
+        MatInputModule,
+        MatTooltipModule
     ],
     exports: [
         HeaderComponent,

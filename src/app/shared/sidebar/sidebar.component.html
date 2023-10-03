@@ -8,31 +8,6 @@
                 </button>
                 <span class="pd-l1 d-inline-block toggle-heading">Giddh GmbH</span>
             </div>
-            <div class="sidebar-menu-wrapper">
-                <button mat-button [matMenuTriggerFor]="menu">
-                    <div class="profile-name">
-                        <span class="short">SA</span>
-                        <p class="d-inline-block pd-t1 close-content">Shubhendra Agrawal</p>
-                        <span title="shubhendra@msg91.com" class="close-content">
-                            <small>shubhendra@msg91.com</small>
-                        </span>
-                    </div>
-                </button>
-                <mat-menu #menu="matMenu">
-                    <button mat-menu-item class="menu-height" (click)="openChangePassword()">
-                        <div class="profile-btn">
-                            <img src="../../../assets/images/lock.svg" alt="img">
-                            <span>Change Password</span>
-                        </div>
-                    </button>
-                    <button mat-menu-item class="menu-height log-out">
-                        <div class="profile-btn">
-                            <img src="../../../assets/images/logout.svg" alt="img">
-                            <span>Log Out</span>
-                        </div>
-                    </button>
-                </mat-menu>
-            </div>
             <mat-list role="list">
                 <mat-list-item role="listitem" class="active">
                     <a href="javascript:;">
@@ -65,6 +40,11 @@
                     </a>
                 </mat-list-item>
             </mat-list>
+            <div class="sidebar-footer">
+                <a href="javascript:;" matTooltip="shubhendra@msg91.com"
+                    matTooltipClass="example-tooltip-uppercase">Shubhendra Agrawal</a>
+                <button mat-stroked-button color="primary" class="logout-btn">Logout</button>
+            </div>
         </mat-drawer>
 
         <div class="sidenav-content">
@@ -78,45 +58,3 @@
         </div>
     </mat-drawer-container>
 </div>
-
-<!-- change password -->
-<ng-template #changepassword>
-    <div class="common-dialog">
-        <div class="d-flex dialog-header">
-            <h4>Change Password</h4>
-            <span mat-dialog-close class="cp">×</span>
-        </div>
-        <mat-dialog-content>
-            <div class="forward-wrapper">
-                <mat-form-field appearance="outline" class="w-100 mr-b15">
-                    <mat-label>Password</mat-label>
-                    <input matInput [type]="hide ? 'password' : 'text'">
-                    <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
-                        [attr.aria-pressed]="hide">
-                        <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </button>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="w-100 mr-b15">
-                    <mat-label>New Password</mat-label>
-                    <input matInput [type]="hide ? 'password' : 'text'">
-                    <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
-                        [attr.aria-pressed]="hide">
-                        <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </button>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="w-100 mr-b15">
-                    <mat-label>Confirm Password</mat-label>
-                    <input matInput [type]="hide ? 'password' : 'text'">
-                    <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
-                        [attr.aria-pressed]="hide">
-                        <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-                    </button>
-                </mat-form-field>
-            </div>
-            <div class="d-flex column-gap5 footer-btn">
-                <button mat-stroked-button color="primary">Confirm</button>
-                <button mat-stroked-button mat-dialog-close>Cancel</button>
-            </div>
-        </mat-dialog-content>
-    </div>
-</ng-template>

@@ -28,12 +28,10 @@ interface SidebarFlatNode {
     styleUrls: ["sidebar.component.scss"]
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-    /*--- hide-show-password ----*/
-    public hide = true;
     /** Instance of mat dialog */
     @ViewChild('changepassword', { static: true }) public changepassword: any;
-        /** Instance of modal */
-        public modalDialogRef: any;
+    /** Instance of modal */
+    public modalDialogRef: any;
     /** Holds current page url */
     private currentUrl: string = "";
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
@@ -71,10 +69,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
         public dialog: MatDialog
     ) {
         this.isMobile$ = this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small])
-        .pipe(
-          map(result => result.matches),
-          shareReplay()
-        );
+            .pipe(
+                map(result => result.matches),
+                shareReplay()
+            );
         this.dataSource.data = [
             {
                 name: 'Sync',
