@@ -3,7 +3,6 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Action } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
-import { CompanyService } from '../../services/company.service';
 import { CustomActions } from '../custom-actions';
 import { COMMON_ACTIONS } from './common.const';
 import { BaseResponse } from '../../models/BaseResponse';
@@ -11,6 +10,10 @@ import { BaseResponse } from '../../models/BaseResponse';
 @Injectable()
 
 export class CompanyActions {
+  constructor(
+    private action$: Actions,
+  ) {
+  }
     public static SET_ACTIVE_COMPANY = 'CompanyActiveCompany';
     public static SET_ACTIVE_COMPANY_DATA = 'SET_ACTIVE_COMPANY_DATA';
     public static RESET_ACTIVE_COMPANY_DATA = 'ResetActiveCompanyData';
@@ -36,11 +39,6 @@ export class CompanyActions {
                 return { type: 'EmptyAction' };
             })));
 
-    constructor(
-        private action$: Actions,
-        private _companyService: CompanyService
-    ) {
-    }
 
     public ResetApplicationData(): CustomActions {
         return {

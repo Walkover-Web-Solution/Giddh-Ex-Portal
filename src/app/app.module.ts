@@ -6,8 +6,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
-import { userReducer } from './store/session/session.reducer';
 import { UserEffects } from './store/effects/session.effects';
+import { ServiceModule } from './services/service.module';
+import { metaReducers, reducers } from './store';
 
 
 @NgModule({
@@ -19,7 +20,14 @@ import { UserEffects } from './store/effects/session.effects';
     AppRoutingModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    StoreModule.forRoot({ user: userReducer }),
+    ServiceModule.forRoot(),
+    StoreModule.forRoot(reducers, {
+      metaReducers,
+      runtimeChecks: {
+        strictStateImmutability: true,
+        strictActionImmutability: true,
+      },
+    }),
     EffectsModule.forRoot([UserEffects]),
 
   ],

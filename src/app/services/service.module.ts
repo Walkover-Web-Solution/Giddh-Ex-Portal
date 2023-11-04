@@ -4,9 +4,9 @@ import { RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { ModuleWithProviders, NgModule } from "@angular/core";
 import { HttpWrapperService } from "./http-wrapper.service";
-import { GeneralService } from "./general.service";
 import { GiddhErrorHandler } from "./catch-manager/catchmanger";
-import { CompanyService } from "./company.service";
+import { GeneralService } from "./general.service";
+import { AuthService } from "./auth.service";
 
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
@@ -24,7 +24,7 @@ export class ServiceModule {
         GiddhErrorHandler,
         HttpWrapperService,
         GeneralService,
-        CompanyService
+        AuthService
       ]
     };
   }

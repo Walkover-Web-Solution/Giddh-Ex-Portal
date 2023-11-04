@@ -82,6 +82,22 @@ export class HttpWrapperService {
         );
     };
 
+  public portalLogin = (url: string, proxy_auth_token: any): Observable<any> => {
+    let options: any = { headers: {}, body: {} };
+    options.headers["Content-Type"] = "application/json";
+    options.headers["Accept"] = "application/json";
+    options.headers["proxy_auth_token"] = proxy_auth_token;
+    options.headers = new HttpHeaders(options.headers);
+    return this.http.get(url, options).pipe(
+      tap(res => {
+        //
+      }),
+      finalize(() => {
+
+      })
+    );
+  };
+
     public patch = (url: string, body: any, options?: any): Observable<any> => {
         options = this.prepareOptions(options);
         return this.http.patch(url, body, options).pipe(

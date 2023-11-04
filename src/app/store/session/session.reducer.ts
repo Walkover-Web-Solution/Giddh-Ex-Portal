@@ -20,14 +20,7 @@ const sessionInitialState: SessionState = {
   user: null,
   activeCompany: null,
 };
-const initialState: UserState = {
-  user: JSON.parse(sessionStorage.getItem('user')) || null,
-};
-const _userReducer = createReducer(
-  initialState,
-  on(UserActions.login, (state, { user }) => ({ user })),
-  on(UserActions.logout, () => ({ user: null }))
-);
+
 export function SessionReducer(state: SessionState = sessionInitialState, action: CustomActions): SessionState {
 
   switch (action.type) {
@@ -54,7 +47,4 @@ export function SessionReducer(state: SessionState = sessionInitialState, action
     default:
       return state;
   }
-}
-export function userReducer(state: UserState | undefined, action: any) {
-  return _userReducer(state, action);
 }
