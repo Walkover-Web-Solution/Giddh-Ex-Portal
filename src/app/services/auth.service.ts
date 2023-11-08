@@ -8,10 +8,16 @@ import { Observable } from "rxjs";
 
 @Injectable()
 export class AuthService {
-
+  public options = {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'proxy-auth-token': '',
+    }
+  };
   private companyUniqueName: string;
 
-  constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService  ) {
+  constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService) {
   }
 
 
@@ -27,18 +33,21 @@ export class AuthService {
   public authenticateProxy(proxyAuthToken: string): Observable<BaseResponse<any, any>> {
     return this.http.portalLogin(API.GET_PROXY, proxyAuthToken).pipe(
       map((res) => {
-        console.log('response', res);
         let data: BaseResponse<string, any> = res;
         return data;
       }),
       catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));
   }
 
-  public verifyPortalLogin(emailId: string): Observable<BaseResponse<any, any>> {
-    return this.http.post(API.VERIFY_PORTAL?.replace(':companyUniqueName', encodeURIComponent(this.companyUniqueName)), emailId).pipe(
+  public verifyPortalLogin(emailId: string, token: string, companyUniqueName: string): Observable<BaseResponse<any, any>> {
+    this.options.headers["proxy-auth-token"] = token;
+    let dataObj = {
+      emailId: emailId
+    }
+    return this.http.post(API.VERIFY_PORTAL?.replace(':companyUniqueName', encodeURIComponent(companyUniqueName)), dataObj, this.options).pipe(
       map((res) => {
         let data: BaseResponse<string, any> = res;
-        data.request = emailId;
+        data.request = dataObj;
         return data;
       }),
       catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));

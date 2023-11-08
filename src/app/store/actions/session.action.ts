@@ -1,6 +1,12 @@
-// user.actions.ts
+// session.actions.ts
 import { createAction, props } from '@ngrx/store';
-import { User } from '../../models/Company';
 
-export const login = createAction('[User] Login', props<{ user: User }>());
-export const logout = createAction('[User] Logout');
+export const setPortalDomain = createAction(
+  '[Domain] Set Portal Domain',
+  props<{ domain: any }>()
+);
+
+export const setSessionToken = createAction(
+  '[Session] Set Session Token',
+  props<{ session: any }>()
+);

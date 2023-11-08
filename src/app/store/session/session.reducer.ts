@@ -1,50 +1,29 @@
-import { BaseResponse } from "src/app/models/BaseResponse";
-import { UserDetails, VerifyEmailResponseModel } from "src/app/models/loginModels";
 import { CustomActions } from "../custom-actions";
-import { LoginActions } from "src/app/store/actions/login.action";
-import { CompanyActions } from '../actions/company.actions';
-import { User } from "src/app/models/Company";
+
+/**
+ * Keeping Track of the AuthenticationState
+ */
+// session.reducer.ts
 import { createReducer, on } from '@ngrx/store';
-import * as UserActions from '../actions/session.action';
+import { setPortalDomain, setSessionToken } from '../actions/session.action';
 
-
+// session-state.model.ts
 export interface SessionState {
-  user?: VerifyEmailResponseModel;
-  activeCompany: any;
+  session: any;
+  domain: any;
 }
-
-export interface UserState {
-  user: User | null;
-}
-const sessionInitialState: SessionState = {
-  user: null,
-  activeCompany: null,
+export const initialState: SessionState = {
+  session: null,
+  domain: null
 };
-
-export function SessionReducer(state: SessionState = sessionInitialState, action: CustomActions): SessionState {
-
-  switch (action.type) {
-    case LoginActions.FetchUserDetailsResponse:
-      let userResp: BaseResponse<UserDetails, string> = action.payload;
-      if (userResp?.status === 'success') {
-        return {
-          ...state,
-          user: {
-            ...state?.user,
-            user: userResp.body
-          }
-        };
-      } else {
-        return state;
-      }
-
-    case CompanyActions.SET_ACTIVE_COMPANY_DATA: {
-      delete action.payload.activeFinancialYear;
-      return Object.assign({}, state, {
-        activeCompany: action.payload
-      });
-    }
-    default:
-      return state;
-  }
-}
+export const sessionReducer = createReducer(
+  initialState,
+  on(setSessionToken, (state, { session }) => ({
+    ...state,
+    session
+  })),
+  on(setPortalDomain, (state, { domain }) => ({
+    ...state,
+    domain
+  }))
+);
