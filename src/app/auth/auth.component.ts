@@ -36,6 +36,8 @@ export class AuthComponent implements OnInit, OnDestroy {
     // get url query params
     this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
       if (params) {
+        console.log(params);
+
         this.portalParamsRequest.token = params.proxy_auth_token;
         this.store.dispatch(setSessionToken({ session: this.portalParamsRequest.token }));
         this.getPortalUrlParams();
@@ -46,9 +48,9 @@ export class AuthComponent implements OnInit, OnDestroy {
         this.portalParamsRequest.domain = params.companyDomainUniqueName;
       }
     });
-    // this.store.pipe(select(state => state.domain), takeUntil(this.destroyed$)).subscribe(res => {
-    //   console.log('domain', res);
-    // });
+    this.store.pipe(select(state => state.domain), takeUntil(this.destroyed$)).subscribe(res => {
+      console.log('domain', res);
+    });
   }
 
   /**

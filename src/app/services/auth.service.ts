@@ -5,6 +5,7 @@ import { catchError, map } from "rxjs/operators";
 import { API } from "./apiurls/auth.api";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
+import { HttpHeaders } from "@angular/common/http";
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
       Accept: 'application/json',
       'Content-Type': 'application/json',
       'proxy-auth-token': '',
+      'sub-domain': ''
     }
   };
   private companyUniqueName: string;
@@ -39,18 +41,29 @@ export class AuthService {
       catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));
   }
 
-  public verifyPortalLogin(emailId: string, token: string, companyUniqueName: string): Observable<BaseResponse<any, any>> {
-    this.options.headers["proxy-auth-token"] = token;
-    let dataObj = {
-      emailId: emailId
-    }
-    return this.http.post(API.VERIFY_PORTAL?.replace(':companyUniqueName', encodeURIComponent(companyUniqueName)), dataObj, this.options).pipe(
-      map((res) => {
-        let data: BaseResponse<string, any> = res;
-        data.request = dataObj;
-        return data;
-      }),
-      catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));
-  }
+
+
+  public verifyPortalLogin(emailId: string, token: string, domain: string): Observable<BaseResponse<any, any>> {
+  console.log(emailId, token, domain);
+
+  const existingHeaders = new HttpHeaders();
+  const dataObj = {
+    emailId: emailId
+  };
+
+  const headers = existingHeaders.append('proxy_auth_token', token).append('sub-domain', domain);
+  const options = { headers: headers };
+  return this.http.verifyPortal(API.VERIFY_PORTAL, dataObj.emailId,token,domain ).pipe(
+    map((res) => {
+
+      let data: BaseResponse<any, any> = res;
+      data.request = dataObj;
+      return data;
+    }),
+    catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
+  );
+}
+
+
 
 }
