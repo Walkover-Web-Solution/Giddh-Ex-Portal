@@ -1,178 +1,226 @@
 <div class="common-wrapper">
-    <div class="inner-header">
-        <h2>Invoices</h2>
+  <div class="inner-header">
+    <h2>Invoices</h2>
+  </div>
+  <div class="inner-content">
+    <div class="d-flex column-gap10 res-field">
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select>
+          <mat-option value="option1">All Estimates</mat-option>
+          <mat-option value="option1">Open Estimates</mat-option>
+          <mat-option value="option1">Accepted Estimates</mat-option>
+          <mat-option value="option1">Declined Estimates</mat-option>
+          <mat-option value="option1">Invoiced Estimates</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Sort By</mat-label>
+        <mat-select>
+          <mat-option value="option1">Invoice #</mat-option>
+          <mat-option value="option1">Date</mat-option>
+          <mat-option value="option1">Total</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
-    <div class="inner-content">
-        <div class="d-flex column-gap10 res-field">
-            <mat-form-field appearance="outline">
-                <mat-label>Status</mat-label>
-                <mat-select>
-                    <mat-option value="option1">All Estimates</mat-option>
-                    <mat-option value="option1">Open Estimates</mat-option>
-                    <mat-option value="option1">Accepted Estimates</mat-option>
-                    <mat-option value="option1">Declined Estimates</mat-option>
-                    <mat-option value="option1">Invoiced Estimates</mat-option>
-                </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-                <mat-label>Sort By</mat-label>
-                <mat-select>
-                    <mat-option value="option1">Invoice #</mat-option>
-                    <mat-option value="option1">Date</mat-option>
-                    <mat-option value="option1">Total</mat-option>
-                </mat-select>
-            </mat-form-field>
-        </div>
-        <!-- invoice-selected -->
-        <div class="d-flex column-gap10 align-items-center invoice-res-reslected">
-            <div class="d-flex align-items-center column-gap10">
-                <button mat-stroked-button color="primary">Download PDF</button>
-                <button mat-stroked-button color="primary" (click)="openPayDialog()">Pay Now</button>
-            </div>
-            <p class="text-mute mr-l2">1 Invoices Selected</p>
-        </div>
-        <!-- invoice table -->
-        <div class="invoice-table mr-t15">
-            <div class="table-responsive">
-                <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
-                    <ng-container matColumnDef="invoice">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                            <mat-checkbox class="mr-r1"></mat-checkbox>
-                            Invoice#
-                        </th>
-                        <td mat-cell *matCellDef="let element">
-                            <mat-checkbox class="mr-r1"></mat-checkbox>
-                            <a href="javascript:;">
-                                {{element.invoice}}
-                            </a>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="reference">
-                        <th mat-header-cell *matHeaderCellDef> Reference# </th>
-                        <td mat-cell *matCellDef="let element"> {{element.reference}} </td>
-                    </ng-container>
-                    <ng-container matColumnDef="date">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
-                        <td mat-cell *matCellDef="let element"> {{element.date}} </td>
-                    </ng-container>
-                    <ng-container matColumnDef="total">
-                        <th mat-header-cell *matHeaderCellDef class="text-right sort-header-right" mat-sort-header>
-                            Total </th>
-                        <td mat-cell *matCellDef="let element" class="text-right"> {{element.total}} </td>
-                    </ng-container>
-                    <ng-container matColumnDef="status">
-                        <th mat-header-cell *matHeaderCellDef> Status </th>
-                        <td mat-cell *matCellDef="let element">
-                            <div class="d-flex justify-content-between column-gap10">
-                                <span class="color-overdue">{{element.status}}</span>
-                                <button mat-stroked-button color="primary" (click)="openPayTableDialog()">Pay
-                                    Now</button>
-                            </div>
-                        </td>
-                    </ng-container>
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                </table>
-                <!-- <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator> -->
-                <!-- <div class="text-center pd-t1 pd-b1">
+    <!-- invoice-selected -->
+    <div class="d-flex column-gap10 align-items-center invoice-res-reslected">
+      <div class="d-flex align-items-center column-gap10">
+        <button mat-stroked-button color="primary">Download PDF</button>
+        <button mat-stroked-button color="primary" (click)="openPayDialog()">
+          Pay Now
+        </button>
+      </div>
+      <p class="text-mute mr-l2">1 Invoices Selected</p>
+    </div>
+    <!-- invoice table -->
+    <div class="invoice-table mr-t15">
+      <div class="table-responsive">
+        <table
+          mat-table
+          [dataSource]="dataSource"
+          class="mat-elevation-z8"
+          matSort
+        >
+          <ng-container matColumnDef="invoice">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              <mat-checkbox class="mr-r1"></mat-checkbox>
+              Invoice#
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <mat-checkbox class="mr-r1"></mat-checkbox>
+              <a href="javascript:;">
+                {{ element.voucherNumber }}
+              </a>
+            </td>
+          </ng-container>
+          <!-- <ng-container matColumnDef="reference">
+            <th mat-header-cell *matHeaderCellDef>Reference#</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element?.voucherNumber }}
+            </td>
+          </ng-container> -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element?.voucherDate }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="total">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              class="text-right sort-header-right"
+              mat-sort-header
+            >
+              Total
+            </th>
+            <td mat-cell *matCellDef="let element" class="text-right">
+              {{ element?.grandTotal?.amountForAccount }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let element">
+              <div class="d-flex justify-content-between column-gap10">
+                <span class="color-overdue">{{ element?.status }}</span>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  (click)="openPayTableDialog()"
+                >
+                  Pay Now
+                </button>
+              </div>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+        <!-- <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator> -->
+        <!-- <div class="text-center pd-t1 pd-b1">
                     <p class="no-data">There are no open estimates which await your approval.</p>
                 </div> -->
-            </div>
-            <mat-paginator [pageSizeOptions]="[5, 10, 20]" aria-label="Select page of periodic elements">
-            </mat-paginator>
-        </div>
+      </div>
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 20]"
+        aria-label="Select page of periodic elements"
+      >
+      </mat-paginator>
     </div>
+  </div>
 </div>
 
 <!-- onclick paynow -->
-<ng-template #paymodal>
-    <div class="common-dialog">
-        <div class="d-flex dialog-header">
-            <h4>Pay for Multiple Invoices</h4>
-            <span mat-dialog-close class="cp">×</span>
-        </div>
-        <mat-dialog-content>
-            <div class="alert-wrapper">
-                <div class="d-flex column-gap10">
-                    <img src="../../assets/images/warning.svg" alt="warning">
-                    <p> Some of the selected invoices cannot be paid because:</p>
-                </div>
-                <ul class="mr-l2">
-                    <li class="mr-l15">They've already been paid</li>
-                </ul>
-            </div>
-            <div class="accordion-wrap mr-t2">
-                <mat-accordion>
-                    <mat-expansion-panel>
-                        <mat-expansion-panel-header>
-                            <mat-panel-title>
-                                Invoices that cannot be paid (1)
-                            </mat-panel-title>
-                        </mat-expansion-panel-header>
-                        <div class="table-responsive payment-table">
-                            <table mat-table [dataSource]="dataSourcePay" class="mat-elevation-z8">
-                                <ng-container matColumnDef="invoice">
-                                    <th mat-header-cell *matHeaderCellDef>Invoice#</th>
-                                    <td mat-cell *matCellDef="let element">{{element.invoice}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="amount">
-                                    <th mat-header-cell *matHeaderCellDef> Amount </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.amount}} </td>
-                                </ng-container>
-                                <ng-container matColumnDef="status">
-                                    <th mat-header-cell *matHeaderCellDef> Status </th>
-                                    <td mat-cell *matCellDef="let element">{{element.status}}
-                                    </td>
-                                </ng-container>
-                                <tr mat-header-row *matHeaderRowDef="displayedColumnsPay"></tr>
-                                <tr mat-row *matRowDef="let row; columns: displayedColumnsPay;"></tr>
-                            </table>
-                        </div>
-                    </mat-expansion-panel>
-                    <mat-expansion-panel>
-                        <mat-expansion-panel-header>
-                            <mat-panel-title>
-                                Invoices that can be paid (0)
-                            </mat-panel-title>
-                        </mat-expansion-panel-header>
-                        <div class="table-responsive payment-table">
-                            <table mat-table [dataSource]="dataSourcePay" class="mat-elevation-z8">
-                                <ng-container matColumnDef="invoice">
-                                    <th mat-header-cell *matHeaderCellDef>Invoice#</th>
-                                </ng-container>
-                                <ng-container matColumnDef="amount">
-                                    <th mat-header-cell *matHeaderCellDef> Amount </th>
-                                </ng-container>
-                                <ng-container matColumnDef="status">
-                                    <th mat-header-cell *matHeaderCellDef> Status </th>
-                                </ng-container>
-                                <tr mat-header-row *matHeaderRowDef="displayedColumnsPay"></tr>
-                            </table>
-                        </div>
-                    </mat-expansion-panel>
-                </mat-accordion>
-            </div>
-            <div class="d-flex column-gap5 footer-btn">
-                <button mat-stroked-button color="primary">Proceed to Payment</button>
-                <button mat-stroked-button mat-dialog-close>Cancel</button>
-            </div>
-        </mat-dialog-content>
+<!-- <ng-template #paymodal>
+  <div class="common-dialog">
+    <div class="d-flex dialog-header">
+      <h4>Pay for Multiple Invoices</h4>
+      <span mat-dialog-close class="cp">×</span>
     </div>
-</ng-template>
+    <mat-dialog-content>
+      <div class="alert-wrapper">
+        <div class="d-flex column-gap10">
+          <img src="../../assets/images/warning.svg" alt="warning" />
+          <p>Some of the selected invoices cannot be paid because:</p>
+        </div>
+        <ul class="mr-l2">
+          <li class="mr-l15">They've already been paid</li>
+        </ul>
+      </div>
+      <div class="accordion-wrap mr-t2">
+        <mat-accordion>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Invoices that cannot be paid (1)
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="table-responsive payment-table">
+              <table
+                mat-table
+                [dataSource]="dataSourcePay"
+                class="mat-elevation-z8"
+              >
+                <ng-container matColumnDef="invoice">
+                  <th mat-header-cell *matHeaderCellDef>Invoice#</th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.invoice }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="amount">
+                  <th mat-header-cell *matHeaderCellDef>Amount</th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.amount }}
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>Status</th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.status }}
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumnsPay"></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: displayedColumnsPay"
+                ></tr>
+              </table>
+            </div>
+          </mat-expansion-panel>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title> Invoices that can be paid (0) </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="table-responsive payment-table">
+              <table
+                mat-table
+                [dataSource]="dataSourcePay"
+                class="mat-elevation-z8"
+              >
+                <ng-container matColumnDef="invoice">
+                  <th mat-header-cell *matHeaderCellDef>Invoice#</th>
+                </ng-container>
+                <ng-container matColumnDef="amount">
+                  <th mat-header-cell *matHeaderCellDef>Amount</th>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>Status</th>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumnsPay"></tr>
+              </table>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+      <div class="d-flex column-gap5 footer-btn">
+        <button mat-stroked-button color="primary">Proceed to Payment</button>
+        <button mat-stroked-button mat-dialog-close>Cancel</button>
+      </div>
+    </mat-dialog-content>
+  </div>
+</ng-template> -->
 
 <!-- onclick table-paynow -->
 <ng-template #paytablemodal>
-    <div class="common-dialog">
-        <mat-dialog-content>
-            <div class="d-flex column-gap15 danger-wrap">
-                <img src="../../assets/images/warning.svg" alt="warning" class="mr-t5">
-                <p>Looks like you've already initiated payment(s) for this invoice. Initiating a new payment will
-                    <strong>not</strong> override the payment(s) in progress. Are you sure you want to proceed?</p>
-            </div>
-            <div class="d-flex column-gap5 footer-btn">
-                <button mat-stroked-button color="primary">Yes, Proceed</button>
-                <button mat-stroked-button mat-dialog-close>Cancel</button>
-            </div>
-        </mat-dialog-content>
-    </div>
+  <div class="common-dialog">
+    <mat-dialog-content>
+      <div class="d-flex column-gap15 danger-wrap">
+        <img
+          src="../../assets/images/warning.svg"
+          alt="warning"
+          class="mr-t5"
+        />
+        <p>
+          Looks like you've already initiated payment(s) for this invoice.
+          Initiating a new payment will <strong>not</strong> override the
+          payment(s) in progress. Are you sure you want to proceed?
+        </p>
+      </div>
+      <div class="d-flex column-gap5 footer-btn">
+        <button mat-stroked-button color="primary">Yes, Proceed</button>
+        <button mat-stroked-button mat-dialog-close>Cancel</button>
+      </div>
+    </mat-dialog-content>
+  </div>
 </ng-template>

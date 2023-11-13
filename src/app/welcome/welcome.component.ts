@@ -5,6 +5,8 @@ import { AppState } from "../store";
 import { Store } from '@ngrx/store';
 import { takeUntil } from "rxjs/operators";
 import { GeneralService } from "../services/general.service";
+import { ReciptResponse } from "../models/Company";
+import { DashboardService } from "../services/dashboard.service.";
 @Component({
   selector: "welcome",
   templateUrl: "welcome.component.html",
@@ -24,7 +26,19 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   public balanceSummary: any = {};
   public accountDetails: any = {};
   public accounts: any[] = [];
+  public voucherData: ReciptResponse;
+  public lastPaymentRequest: any = {
+    companyUniqueName: undefined,
+    accountUniqueName: undefined,
+    sessionId: undefined,
+    type: 'sales',
+    page: 1,
+    count: 1,
+    sortBy: 'DESC',
+    sort: ''
+  }
   constructor(
+    private dashboardService: DashboardService,
     private generalService: GeneralService,
     private snackBar: MatSnackBar,
     private store: Store<AppState>
@@ -46,7 +60,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     this.userBalanceSummary.accountUniqueName = data.userDetails.account.uniqueName;
     this.userBalanceSummary.companyUniqueName = data.userDetails.companyUniqueName;
     this.userBalanceSummary.sessionId = data.session.id;
-    this.generalService.getBalanceSummary(this.userBalanceSummary).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+    this.dashboardService.getBalanceSummary(this.userBalanceSummary).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
       if (response && response.status === 'success') {
         this.balanceSummary = response.body
       } else {
@@ -61,7 +75,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     this.userBalanceSummary.accountUniqueName = data.userDetails.account.uniqueName;
     this.userBalanceSummary.companyUniqueName = data.userDetails.companyUniqueName;
     this.userBalanceSummary.sessionId = data.session.id;
-    this.generalService.getAccountDetails(this.userBalanceSummary).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+    this.dashboardService.getAccountDetails(this.userBalanceSummary).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
       if (response && response.status === 'success') {
         console.log(response);
         this.accountDetails = response.body
@@ -73,14 +87,12 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
   public getVoucherLastPaymentMade(): void {
     let data = JSON.parse(localStorage.getItem('session'));
-    console.log(data);
-    this.userBalanceSummary.accountUniqueName = data.userDetails.account.uniqueName;
-    this.userBalanceSummary.companyUniqueName = data.userDetails.companyUniqueName;
-    this.userBalanceSummary.sessionId = data.session.id;
-    this.generalService.getLastPaymentMade(this.userBalanceSummary).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+    this.lastPaymentRequest.accountUniqueName = data.userDetails.account.uniqueName;
+    this.lastPaymentRequest.companyUniqueName = data.userDetails.companyUniqueName;
+    this.lastPaymentRequest.sessionId = data.session.id;
+    this.generalService.getLastPaymentMade(this.lastPaymentRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
       if (response && response.status === 'success') {
-        console.log(response);
-        this.accountDetails = response.body
+        this.voucherData = response.body;
       } else {
         this.showSnackbar(response?.message);
       }
@@ -93,7 +105,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     this.userBalanceSummary.accountUniqueName = data.userDetails.account.uniqueName;
     this.userBalanceSummary.companyUniqueName = data.userDetails.companyUniqueName;
     this.userBalanceSummary.sessionId = data.session.id;
-    this.generalService.getAccounts(this.userBalanceSummary).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+    this.dashboardService.getAccounts(this.userBalanceSummary).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
       if (response && response.status === 'success') {
         console.log(response);
         this.accounts = response.body;

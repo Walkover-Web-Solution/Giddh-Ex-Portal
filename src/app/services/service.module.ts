@@ -7,6 +7,7 @@ import { HttpWrapperService } from "./http-wrapper.service";
 import { GiddhErrorHandler } from "./catch-manager/catchmanger";
 import { GeneralService } from "./general.service";
 import { AuthService } from "./auth.service";
+import { DashboardService } from "./dashboard.service.";
 
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
@@ -24,7 +25,8 @@ export class ServiceModule {
         GiddhErrorHandler,
         HttpWrapperService,
         GeneralService,
-        AuthService
+        AuthService,
+        DashboardService
       ]
     };
   }
