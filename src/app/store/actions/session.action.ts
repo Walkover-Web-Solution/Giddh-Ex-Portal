@@ -10,3 +10,8 @@ export const setSessionToken = createAction(
   '[Session] Set Session Token',
   props<{ session: any }>()
 );
+
+export const setUserDetails = createAction(
+  '[Session] Set User Details',
+  props<{ userDetails: any }>()
+);

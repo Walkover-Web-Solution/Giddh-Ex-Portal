@@ -4,7 +4,8 @@ import { ActivatedRoute } from "@angular/router";
 import { Store } from '@ngrx/store';
 import { ReplaySubject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import * as UserActions from '../store/actions/session.action';
+import { setPortalDomain } from "../store/actions/session.action";
+import { SessionState } from "../store/session/session.reducer";
 declare var initVerification: any;
 @Component({
   selector: "login",
@@ -25,15 +26,14 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private store: Store,
+    private store: Store<SessionState>,
     private snackBar: MatSnackBar
   ) {
-    // get url query params
     this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
       if (params) {
         this.portalParamsRequest.domain = params.companyDomainUniqueName;
-        this.store.dispatch(UserActions.setPortalDomain({ domain: this.portalParamsRequest.domain }));
-        this.url = `/auth/${this.portalParamsRequest.domain}`;
+        this.store.dispatch(setPortalDomain({ domain: this.portalParamsRequest.domain }));
+        this.url = `/${this.portalParamsRequest.domain}/auth`;
       }
     });
   }

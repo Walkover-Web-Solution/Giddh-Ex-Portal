@@ -3,3 +3,68 @@
   top: 50%;
   transform: translateY(-50%);
 }
+
+.page-wrapper {
+  max-width: 400px;
+  width: 100%;
+  margin: 30px auto;
+  background-color: var(--color-bg-login);
+
+  .login-wrapper {
+    background-color: var(--color-white);
+    padding: 30px;
+    box-shadow: 0 5px 16px 0 #00000010;
+
+    .signin-content {
+      border-top: 1px solid var(--color-gray);
+      padding-top: 30px;
+      margin-bottom: 25px;
+
+      h4 {
+        margin-bottom: 10px !important;
+      }
+
+      p {
+        color: var(--color-content);
+      }
+    }
+
+    .user-form {
+      float: left;
+      align-items: baseline;
+      display: flex;
+      width: 100%;
+
+      .user-label {
+        font-size: 24px;
+
+        input {
+          height: 20px;
+          width: 20px;
+        }
+      }
+    }
+
+    .signin-form {
+      padding: 15px;
+    }
+
+  }
+}
+
+/*---- responsive ----*/
+@media screen and (max-width: 360px) {
+  .page-wrapper {
+    .login-wrapper {
+      .signin-form {
+        .login-btn-wrap {
+          .or-divide {
+            &::after {
+              width: 225px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

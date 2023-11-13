@@ -42,28 +42,35 @@ export class AuthService {
   }
 
 
-
-  public verifyPortalLogin(emailId: string, token: string, domain: string): Observable<BaseResponse<any, any>> {
-  console.log(emailId, token, domain);
-
-  const existingHeaders = new HttpHeaders();
-  const dataObj = {
-    emailId: emailId
-  };
-
-  const headers = existingHeaders.append('proxy_auth_token', token).append('sub-domain', domain);
-  const options = { headers: headers };
-  return this.http.verifyPortal(API.VERIFY_PORTAL, dataObj.emailId,token,domain ).pipe(
+/**
+ * This will be use for verify protal login
+ *
+ * @param {string} emailId
+ * @param {string} token
+ * @param {string} domain
+ * @return {*}  {Observable<BaseResponse<any, any>>}
+ * @memberof AuthService
+ */
+public verifyPortalLogin(model:any): Observable<BaseResponse<any, any>> {
+  return this.http.post(API.VERIFY_PORTAL, model ).pipe(
     map((res) => {
-
       let data: BaseResponse<any, any> = res;
-      data.request = dataObj;
+      data.request = model;
       return data;
     }),
     catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
   );
 }
 
-
+  public savePortalUserSession(model: any): Observable<BaseResponse<any, any>> {
+    return this.http.post(API.SAVE_PORTAL_SESSION, model).pipe(
+      map((res) => {
+        let data: BaseResponse<any, any> = res;
+        data.request = model;
+        return data;
+      }),
+      catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
+    );
+  }
 
 }

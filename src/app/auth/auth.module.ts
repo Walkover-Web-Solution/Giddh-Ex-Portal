@@ -5,6 +5,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from "@angular/material/snack-bar";
 import { AuthRoutingModule } from './auth.routing.module';
 import { SharedModule } from '../shared/sidebar.module';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -12,7 +15,10 @@ import { SharedModule } from '../shared/sidebar.module';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     AuthRoutingModule,
-    SharedModule
+    SharedModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule
   ],
   declarations: [AuthComponent]
 })

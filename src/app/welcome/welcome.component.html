@@ -18,12 +18,12 @@
                             </p>
                         </div>
                         <div class="summary-content">
-                            <span>EUR- Euro</span>
-                            <span class="available text-right">€0,00</span>
+                            <span>{{balanceSummary?.currency?.code }} - {{balanceSummary?.currency?.symbol }}</span>
+                            <span class="available text-right">    {{balanceSummary?.currency?.symbol }} 0,00</span>
                             <span class="number-pay">
                                 <div class="number text-right">
-                                    €4.405,87 <br>
-                                    Number of Invoices : 2
+                                     {{balanceSummary?.currency?.symbol }} {{balanceSummary?.balancePayable }} <br>
+                                    Number of Invoices : {{balanceSummary?.noOfInvoices }}
                                 </div>
                                 <div>
                                     <a href="javascript:;">Pay
@@ -37,12 +37,12 @@
                     <div class="mobile-screen">
                         <div class="currency-head">
                             <span class="text-uppercase">Currency :</span>&nbsp;
-                            <span>EUR- Euro</span>
+                                      <span>{{balanceSummary?.currency?.code }} - {{balanceSummary?.currency?.symbol }}</span>
                         </div>
                         <div class="d-flex mobile-pay mr-t1 mr-b15">
                             <span>Balance Payable</span>
                             <span class="number-pay">
-                                €4.405,87
+                                     {{balanceSummary?.currency?.symbol }} {{balanceSummary?.balancePayable }}
                                 <a href="javascript:;" class="d-block text-right">Pay
                                     <img src="../../assets/images/right-arrow.svg" alt="arrow">
                                 </a>
@@ -50,11 +50,11 @@
                         </div>
                         <div class="d-flex mobile-pay mr-b15">
                             <span>Outstanding Invoices</span>
-                            <span class="number-pay">2</span>
+                            <span class="number-pay"> {{balanceSummary?.noOfInvoices }}</span>
                         </div>
                         <div class="d-flex mobile-pay">
                             <span>Available Credits</span>
-                            <span class="number-pay">€0,00</span>
+                            <span class="number-pay">      {{balanceSummary?.currency?.symbol }}0,00</span>
                         </div>
                     </div>
                 </div>
@@ -92,10 +92,10 @@
                     <div class="payment-made mr-t15">
                         <div>
                             <span class="d-block company-head mr-b1">Walkover web solutions Pvt ltd</span>
-                            <span class="d-block mr-b1"> Shubhendra Agrawal</span>
+                            <span class="d-block mr-b1"> {{accountDetails?.name}}</span>
                             <span class="d-block mr-t5 mr-b5">
                                 <img src="../../assets/images/profile.svg" alt="profile">
-                                2 Contact Persons</span>
+                                {{accounts?.length}} Contact Persons</span>
                         </div>
                     </div>
                 </div>
@@ -112,8 +112,8 @@
                         <div>
                             <span class="account-head d-block mr-b1">Walkover web solutions Pvt ltd</span>
                             <div>
-                                <span class="d-block account-name mr-b5">Shubhendra Agrawal</span>
-                                <span class="d-block mr-b5">shubhendra@msg91.com</span>
+                                <span class="d-block account-name mr-b5">{{accountDetails?.name}}</span>
+                                <span class="d-block mr-b5">{{accountDetails?.email}}</span>
                             </div>
                         </div>
                         <div class="billing-address">
@@ -132,23 +132,14 @@
                 </div>
                 <div class="account-right">
                     <h4>Contact Persons</h4>
-                    <div class="account-details mr-t15">
-                        <div class="d-flex account-profile">
+                    <div class="account-details ">
+                        <div class="d-flex account-profile mr-b5 mr-t15" *ngFor="let user of accounts">
                             <div>
                                 <img src="../../assets/images/profile-white.png" alt="profile">
                             </div>
                             <div>
-                                <span class="d-block mr-b5">Shubhendra Agrawal</span>
-                                <span class="d-block account-email">shubhendra@msg91.com</span>
-                            </div>
-                        </div>
-                        <div class="d-flex account-profile account-two">
-                            <div>
-                                <img src="../../assets/images/profile-white.png" alt="profile">
-                            </div>
-                            <div>
-                                <span class="d-block mr-b5">Shubhendra Agrawal</span>
-                                <span class="d-block account-email">shubhendra@msg91.com</span>
+                                <span class="d-block mr-b5">{{user?.name}}</span>
+                                <span class="d-block account-email">{{user?.email}}</span>
                             </div>
                         </div>
                     </div>

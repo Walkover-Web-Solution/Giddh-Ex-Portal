@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from "@angular/common";
+import { MatSnackBarModule } from "@angular/material/snack-bar";
 
 @NgModule({
     declarations: [
@@ -19,7 +20,8 @@ import { CommonModule } from "@angular/common";
         MatIconModule,
         MatFormFieldModule,
         MatInputModule,
-        CommonModule
+      CommonModule,
+        MatSnackBarModule
     ]
 })
 export class WelcomeModule {

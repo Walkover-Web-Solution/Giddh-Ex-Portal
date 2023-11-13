@@ -98,16 +98,16 @@ export class HttpWrapperService {
     );
   };
 
+
   public verifyPortal = (url: string, emailId: string, proxy_auth_token: any, domain: any): Observable<any> => {
+    const existingHeaders = new HttpHeaders();
     const dataObj = {
-      emailId: emailId
+      emailId: emailId,
+      subDomain: domain
     };
-    let options: any = { headers: {}, body: dataObj };
-    options.headers["Content-Type"] = "application/json";
-    options.headers["Accept"] = "application/json";
-    options.headers["proxy_auth_token"] = proxy_auth_token;
-    options.headers["token"] = domain;
-    options.headers = new HttpHeaders(options.headers);
+    const headers = existingHeaders.append('proxy_auth_token', proxy_auth_token)
+    const options = { headers: headers };
+
     return this.http.post(url, dataObj, options).pipe(
       tap(res => {
         console.log(res);
@@ -158,7 +158,7 @@ export class HttpWrapperService {
         if (options.headers["Content-Type"] == "application/x-www-form-urlencoded") {
             delete options.headers["cache-control"];
             delete options.headers["Session-Id"];
-        }console.log(options.headers);
+        }
 
         options.headers = new HttpHeaders(options.headers);
         return options;

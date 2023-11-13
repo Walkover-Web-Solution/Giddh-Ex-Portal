@@ -12,34 +12,35 @@
                 <mat-list-item role="listitem" class="active">
                     <a href="javascript:;">
                         <img src="../../../assets/images/home.svg" alt="home">
-                        <span class="side-menu">Home</span>
+                        <span class="side-menu"   (click)="redirectionToUrl('welcome')">Home</span>
                     </a>
                 </mat-list-item>
                 <mat-list-item role="listitem">
                     <a href="javascript:;">
                         <img src="../../../assets/images/estimates.svg" alt="estimates">
-                        <span class="side-menu">Estimates</span>
+                        <span class="side-menu" (click)="redirectionToUrl('estimate')">Estimates</span>
                     </a>
                 </mat-list-item>
                 <mat-list-item role="listitem">
                     <a href="javascript:;">
                         <img src="../../../assets/images/invoice.svg" alt="invoice">
-                        <span class="side-menu">Invoices</span>
+                        <span class="side-menu"(click)="redirectionToUrl('invoice')">Invoices</span>
                     </a>
                 </mat-list-item>
                 <mat-list-item role="listitem">
                     <a href="javascript:;">
                         <img src="../../../assets/images/payment.svg" alt="payment">
-                        <span class="side-menu">Payments Made</span>
+                        <span class="side-menu"(click)="redirectionToUrl('payment')">Payments Made</span>
                     </a>
                 </mat-list-item>
                 <mat-list-item role="listitem">
                     <a href="javascript:;">
                         <img src="../../../assets/images/statement.svg" alt="statement">
-                        <span class="side-menu">Statements</span>
+                        <span class="side-menu"(click)="redirectionToUrl('statement')">Statements</span>
                     </a>
                 </mat-list-item>
             </mat-list>
+
             <div class="sidebar-footer">
                 <a href="javascript:;" matTooltip="shubhendra@msg91.com"
                     matTooltipClass="example-tooltip-uppercase">Shubhendra Agrawal</a>
