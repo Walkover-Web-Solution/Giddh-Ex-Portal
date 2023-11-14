@@ -80,4 +80,5 @@ export class DashboardService {
       }),
       catchError((e) => this.errorHandler.HandleCatch<any, any>(e)));
   }
+
 }

@@ -1,58 +1,28 @@
 <div class="footer-wrapper">
-    <div class="logo-footer">
-        <div class="mr-t5">
-            <img src="../../../assets/images/giddh_logo.svg" alt="logo">
-        </div>
-        <div>
-            <h4>Giddh GmbH</h4>
-            <p>Torstraße 61 <br>
-                Berlin 10119 - Germany <br>
-                VAT DE815382679 <br>
-                Geschäftsführer Gerrit Rode <br>
-                Amtsgericht Berlin-Charlottenburg - HRB 144188 B</p>
-        </div>
+  <div class="logo-footer">
+    <div class="mr-t5">
+      <img src="../../../assets/images/giddh_logo.svg" alt="logo" />
     </div>
-    <div class="mail-profile d-flex">
-        <div>
-            <img src="../../../assets/images/profile-large.svg" alt="profile">
-        </div>
-        <div>
-            <p>360dialog // Finance and Contracting</p>
-            <span>finance@360dialog.com</span>
-        </div>
+    <div>
+      <h4>Giddh GmbH</h4>
+      <p>
+        <br />
+        {{ companyDetails?.country }} <br />
+        {{ companyDetails?.addresses[0]?.taxType }}
+        {{ companyDetails?.addresses[0]?.taxNumber }} <br />
+        {{ companyDetails?.addresses[0]?.address }} -
+        {{ companyDetails?.addresses[0]?.stateName }} <br />
+        {{ companyDetails?.addresses[0]?.pincode }}
+      </p>
     </div>
-    <div class="email-btn">
-        <button mat-stroked-button color="primary" (click)="openDialog()">
-            <img src="../../../assets/images/email.svg" alt="email">
-            Send Email</button>
+  </div>
+  <div class="mail-profile d-flex">
+    <div>
+      <img src="../../../assets/images/profile-large.svg" alt="profile" />
     </div>
+    <div>
+      <p>Giddh</p>
+      <span>books.giddh.com</span>
+    </div>
+  </div>
 </div>
-
-<ng-template #emailModal>
-    <div class="common-dialog">
-        <div class="d-flex dialog-header">
-            <h4>Mail To</h4>
-            <span mat-dialog-close class="cp">×</span>
-        </div>
-        <mat-dialog-content>
-            <div>
-                <mat-form-field appearance="outline" class="bg-disabled w-100 mr-b15">
-                    <mat-label>From</mat-label>
-                    <input matInput value="shubhendra@msg91.com">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="w-100 mr-b15">
-                    <mat-label>Subject</mat-label>
-                    <input matInput required>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="w-100 mr-b15">
-                    <mat-label>Message</mat-label>
-                    <textarea matInput required></textarea>
-                </mat-form-field>
-            </div>
-            <div class="d-flex column-gap5 footer-btn">
-                <button mat-stroked-button color="primary">Send</button>
-                <button mat-stroked-button>Cancel</button>
-            </div>
-        </mat-dialog-content>
-    </div>
-</ng-template>

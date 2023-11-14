@@ -152,7 +152,11 @@
         }
     }
 }
-
+.mat-mdc-progress-spinner {
+  margin: 0 auto;
+  top: 50%;
+  transform: translateY(-50%);
+}
 /*---- responsive ----*/
 
 @media screen and (max-width: 991px) {

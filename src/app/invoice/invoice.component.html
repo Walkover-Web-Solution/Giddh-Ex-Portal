@@ -6,25 +6,29 @@
     <div class="d-flex column-gap10 res-field">
       <mat-form-field appearance="outline">
         <mat-label>Status</mat-label>
-        <mat-select>
-          <mat-option value="option1">All Estimates</mat-option>
-          <mat-option value="option1">Open Estimates</mat-option>
-          <mat-option value="option1">Accepted Estimates</mat-option>
-          <mat-option value="option1">Declined Estimates</mat-option>
-          <mat-option value="option1">Invoiced Estimates</mat-option>
+        <mat-select
+          [(value)]="selectedStatusValue"
+          (selectionChange)="onStatusSelected()"
+        >
+          <mat-option value="paid">Paid</mat-option>
+          <mat-option value="partial-paid">Partial Paid</mat-option>
+          <mat-option value="unpaid">Unpaid</mat-option>
+          <mat-option value="hold">Hold</mat-option>
         </mat-select>
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Sort By</mat-label>
-        <mat-select>
-          <mat-option value="option1">Invoice #</mat-option>
-          <mat-option value="option1">Date</mat-option>
-          <mat-option value="option1">Total</mat-option>
+        <mat-select
+          [(value)]="selectedOption"
+          (selectionChange)="onSortSelected()"
+        >
+          <mat-option value="voucherData">Date</mat-option>
+          <mat-option value="grnadTotal">Total</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
     <!-- invoice-selected -->
-    <div class="d-flex column-gap10 align-items-center invoice-res-reslected">
+    <!-- <div class="d-flex column-gap10 align-items-center invoice-res-reslected">
       <div class="d-flex align-items-center column-gap10">
         <button mat-stroked-button color="primary">Download PDF</button>
         <button mat-stroked-button color="primary" (click)="openPayDialog()">
@@ -32,7 +36,7 @@
         </button>
       </div>
       <p class="text-mute mr-l2">1 Invoices Selected</p>
-    </div>
+    </div> -->
     <!-- invoice table -->
     <div class="invoice-table mr-t15">
       <div class="table-responsive">
@@ -54,12 +58,6 @@
               </a>
             </td>
           </ng-container>
-          <!-- <ng-container matColumnDef="reference">
-            <th mat-header-cell *matHeaderCellDef>Reference#</th>
-            <td mat-cell *matCellDef="let element">
-              {{ element?.voucherNumber }}
-            </td>
-          </ng-container> -->
           <ng-container matColumnDef="date">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
             <td mat-cell *matCellDef="let element">
@@ -83,13 +81,28 @@
             <th mat-header-cell *matHeaderCellDef>Status</th>
             <td mat-cell *matCellDef="let element">
               <div class="d-flex justify-content-between column-gap10">
-                <span class="color-overdue">{{ element?.status }}</span>
+                <span class="color-overdue">{{ element?.balanceStatus }}</span>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef>Action</th>
+            <td mat-cell *matCellDef="let element">
+              <div class="d-flex column-gap10">
+                <button
+                  *ngIf="element?.balanceStatus !== 'PAID'"
+                  mat-stroked-button
+                  color="primary"
+                  (click)="openPayDialog(element)"
+                >
+                  Pay Now
+                </button>
                 <button
                   mat-stroked-button
                   color="primary"
-                  (click)="openPayTableDialog()"
+                  (click)="downloadPdf(element)"
                 >
-                  Pay Now
+                  Download PDF
                 </button>
               </div>
             </td>
@@ -97,16 +110,23 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
-        <!-- <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator> -->
-        <!-- <div class="text-center pd-t1 pd-b1">
-                    <p class="no-data">There are no open estimates which await your approval.</p>
-                </div> -->
+
+        <mat-paginator
+          (page)="handlePageChange($event)"
+          [length]="invoiceListData?.length"
+          [pageSize]="invoiceListRequest.count"
+          [showFirstLastButtons]="true"
+          [pageSizeOptions]="[5, 10, 15, 20]"
+          [hidePageSize]="false"
+          [pageIndex]="pageIndex"
+        >
+        </mat-paginator>
+        <div class="text-center pd-t1 pd-b1">
+          <p class="no-data" *ngIf="!invoiceListData?.length">
+            There are no open invoices which await your approval.
+          </p>
+        </div>
       </div>
-      <mat-paginator
-        [pageSizeOptions]="[5, 10, 20]"
-        aria-label="Select page of periodic elements"
-      >
-      </mat-paginator>
     </div>
   </div>
 </div>
@@ -218,7 +238,7 @@
         </p>
       </div>
       <div class="d-flex column-gap5 footer-btn">
-        <button mat-stroked-button color="primary">Yes, Proceed</button>
+        <button mat-stroked-button color="primary" (click)="voucherPay()">Yes, Proceed</button>
         <button mat-stroked-button mat-dialog-close>Cancel</button>
       </div>
     </mat-dialog-content>

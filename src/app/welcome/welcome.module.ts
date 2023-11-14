@@ -8,21 +8,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from "@angular/common";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @NgModule({
-    declarations: [
-        WelcomeComponent
-    ],
-    imports: [
-        WelcomeRoutingModule,
-        SharedModule,
-        MatButtonModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
-      CommonModule,
-        MatSnackBarModule
-    ]
+  declarations: [
+    WelcomeComponent
+  ],
+  imports: [
+    WelcomeRoutingModule,
+    SharedModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    CommonModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule
+  ]
 })
 export class WelcomeModule {
 

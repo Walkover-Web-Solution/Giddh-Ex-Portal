@@ -18,31 +18,33 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatSnackBarModule } from "@angular/material/snack-bar";
 
 @NgModule({
-    declarations: [
-        InvoicePayComponent
-    ],
-    imports: [
-        InvoicePayRoutingModule,
-        SharedModule,
-        MatButtonModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
-        CommonModule,
-        MatCheckboxModule,
-        MatSidenavModule,
-        MatListModule,
-        MatSelectModule,
-        MatTableModule,
-        MatDialogModule,
-        MatExpansionModule,
-        MatTabsModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatAutocompleteModule,
-    ]
+  declarations: [
+    InvoicePayComponent
+  ],
+  imports: [
+    InvoicePayRoutingModule,
+    SharedModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    CommonModule,
+    MatCheckboxModule,
+    MatSidenavModule,
+    MatListModule,
+    MatSelectModule,
+    MatTableModule,
+    MatDialogModule,
+    MatExpansionModule,
+    MatTabsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatAutocompleteModule,
+    MatSnackBarModule
+  ]
 })
 export class InvoicePayModule {
 
