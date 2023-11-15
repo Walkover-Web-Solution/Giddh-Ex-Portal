@@ -10,16 +10,16 @@
           class="mr-t5 mr-b15"
         />
         <div class="signin-content">
-          <form [formGroup]="checkboxForm" >
+          <form [formGroup]="userForm">
             <div formArrayName="checkboxes" class="user-form">
               <div *ngFor="let option of users; let i = index">
                 <label class="user-label">
                   <input
                     type="checkbox"
                     [formControl]="
-                      checkboxForm?.get('checkboxes')['controls'][i]
+                      userForm?.get('checkboxes')['controls'][i]
                     "
-                     (change)="onCheckboxChange(i)"
+                    (change)="onUserSelected(i)"
                   />
                   {{ option?.account?.name }}
                 </label>

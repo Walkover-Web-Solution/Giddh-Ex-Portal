@@ -1,10 +1,10 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReplaySubject } from 'rxjs';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { setPortalDomain, setSessionToken, setUserDetails } from '../store/actions/session.action';
 import { AppState } from '../store';
 import { FormBuilder, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
@@ -27,8 +27,11 @@ export class AuthComponent implements OnInit, OnDestroy {
   }
   /** This will be use for snackbar duration */
   public durationInSeconds = 3;
-  public checkboxForm: UntypedFormGroup;
+  /** User form group */
+  public userForm: UntypedFormGroup;
+  /** Hold users*/
   public users: any[] = [];
+  /** This will be use for save portal session */
   public savePortalUserSession = {
     account: {
       name: undefined,
@@ -38,6 +41,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     proxyAuthToken: undefined,
     subDomain: undefined
   };
+  /** This will be use for  company uniqueName*/
   public companyUniqueName: string = '';
 
   constructor(
@@ -48,8 +52,6 @@ export class AuthComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private store: Store<AppState>
   ) {
-
-    // get url query params
     this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
       if (params) {
         this.portalParamsRequest.proxyAuthToken = params.proxy_auth_token;
@@ -62,7 +64,6 @@ export class AuthComponent implements OnInit, OnDestroy {
         this.store.dispatch(setPortalDomain({ domain: this.portalParamsRequest.subDomain }));
       }
     });
-
   }
 
   /**
@@ -74,16 +75,25 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.usersForm();
   }
 
+  /**
+   * This will be use for user form
+   *
+   * @memberof AuthComponent
+   */
   public usersForm() {
-    this.checkboxForm = this.fb.group({
+    this.userForm = this.fb.group({
       checkboxes: this.fb.array([])
     });
-
-
   }
 
-  public onCheckboxChange(index: number) {
-    const isChecked = this.checkboxForm.value.checkboxes[index];
+  /**
+   * This will be use for on user selection
+   *
+   * @param {number} index
+   * @memberof AuthComponent
+   */
+  public onUserSelected(index: number) {
+    const isChecked = this.userForm.value.checkboxes[index];
     const selectedOption = isChecked ? this.users[index] : null;
     this.savePortalUserSession = {
       account: {
@@ -98,7 +108,6 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.authService.savePortalUserSession(this.savePortalUserSession).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
       this.isLoading = false;
       if (response && response.status === 'success') {
-        // this.companyUniqueName = response.companyUniqueName;
         this.savePortalUserSession['companyUniqueName'] = response.body.companyUniqueName;
         this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
         this.store.dispatch(setSessionToken({ session: response.body.session }));
@@ -111,8 +120,6 @@ export class AuthComponent implements OnInit, OnDestroy {
     });
   }
 
-
-
   /**
  * This will be use for get shopify authorization
  *
@@ -124,17 +131,16 @@ export class AuthComponent implements OnInit, OnDestroy {
       this.isLoading = false;
       if (response && response.status === 'success') {
         this.isLoading = true;
-        this.portalParamsRequest.emailId = response.data[0].email;
-        // this.portalParamsRequest.emailId = 'portal@walkover.in';
+        this.portalParamsRequest.emailId = response.data[0]?.email;
         this.authService.verifyPortalLogin(this.portalParamsRequest).pipe(takeUntil(this.destroyed$)).subscribe((portal) => {
           if (portal && portal.status === 'success') {
             this.isLoading = false;
             this.users = portal.body;
             this.users.forEach(() => {
               const control = this.fb.control(false);
-              (this.checkboxForm.get('checkboxes') as UntypedFormArray).push(control);
+              (this.userForm.get('checkboxes') as UntypedFormArray).push(control);
             });
-            if (this.users?.length >1) {
+            if (this.users?.length > 1) {
               this.isLoading = false;
             } else {
               this.savePortalUserSession = {
@@ -154,7 +160,7 @@ export class AuthComponent implements OnInit, OnDestroy {
                   this.savePortalUserSession['companyUniqueName'] = this.companyUniqueName;
                   this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
                   this.store.dispatch(setSessionToken({ session: response.body.session }));
-                  let url = '/'+this.portalParamsRequest.subDomain + '/welcome'
+                  let url = '/' + this.portalParamsRequest.subDomain + '/welcome'
                   this.router.navigate([url]);
                 } else {
                   this.showSnackbar(response?.data?.message);
@@ -162,7 +168,6 @@ export class AuthComponent implements OnInit, OnDestroy {
                 }
               });
             }
-
           } else {
             this.showSnackbar(portal?.message);
             this.isLoading = false;

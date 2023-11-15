@@ -1,9 +1,4 @@
 import { NgModule } from "@angular/core";
-import { SharedModule } from "../shared/sidebar.module";
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from "@angular/common";
 import { PaymentComponent } from "./payment.component";
 import { PaymentRoutingModule } from "./payment.routing.module";
@@ -20,6 +15,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
+import { SharedModule } from "../shared/shared.module";
 
 @NgModule({
     declarations: [
@@ -28,10 +24,6 @@ import { MatSortModule } from "@angular/material/sort";
     imports: [
         PaymentRoutingModule,
         SharedModule,
-        MatButtonModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
         CommonModule,
         MatCheckboxModule,
         MatSidenavModule,

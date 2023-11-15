@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { AppState } from "../store";
@@ -18,14 +18,15 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   public isLoading: boolean = false;
   /** Observable to unsubscribe all the store listeners to avoid memory leaks */
   private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-  /** Request body for get shopify url params */
+  /** Request body for get user balance url params */
   public userBalanceSummary = {
     companyUniqueName: undefined,
     accountUniqueName: undefined,
     sessionId: undefined,
-  }
-
+  };
+  /** Hold balance summary */
   public balanceSummary: any = {};
+  /** Hold account details*/
   public accountDetails: any = {
     name: undefined,
     email: undefined,
@@ -49,8 +50,11 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       stateCodeString: undefined
     }
   };
+  /** Hold accounts*/
   public accounts: any[] = [];
+  /** Hold voucher data*/
   public voucherData: ReciptResponse;
+  /** Request body for last payment url params */
   public lastPaymentRequest: any = {
     companyUniqueName: undefined,
     accountUniqueName: undefined,
@@ -61,7 +65,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     sortBy: 'DESC',
     sort: ''
   };
+  /** True show account details*/
   public isShowAccountDetails: boolean = false;
+
   constructor(
     private dashboardService: DashboardService,
     private generalService: GeneralService,
@@ -71,6 +77,11 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
   }
 
+  /**
+   * This will be use for component initialization
+   *
+   * @memberof WelcomeComponent
+   */
   public ngOnInit(): void {
     document.querySelector('body')?.classList.add('welcome-main');
     let data = JSON.parse(localStorage.getItem('session'));
@@ -96,13 +107,18 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         (error) => {
-          // Handle error
-          console.error(error);
           this.isLoading = false;
         }
       );
   }
 
+  /**
+   * This will be use for handle balance summary response
+   *
+   * @private
+   * @param {*} response
+   * @memberof WelcomeComponent
+   */
   private handleBalanceSummaryResponse(response: any): void {
     if (response && response.status === 'success') {
       this.balanceSummary = response.body;
@@ -111,6 +127,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * This will be use for handle account details  response
+   *
+   * @private
+   * @param {*} response
+   * @memberof WelcomeComponent
+   */
   private handleAccountDetailsResponse(response: any): void {
     if (response && response.status === 'success') {
       this.accountDetails.name = response.body.name;
@@ -122,6 +145,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * This will be use for handle account  response
+   *
+   * @private
+   * @param {*} response
+   * @memberof WelcomeComponent
+   */
   private handleAccountsResponse(response: any): void {
     if (response && response.status === 'success') {
       this.accounts = response.body;
@@ -130,6 +160,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * This will be use for handle last payment made  response
+   *
+   * @private
+   * @param {*} response
+   * @memberof WelcomeComponent
+   */
   private handleLastPaymentResponse(response: any): void {
     if (response && response.status === 'success') {
       this.voucherData = response.body;
@@ -137,8 +174,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       this.showSnackbar(response?.message);
     }
   }
-
-
 
   /**
    * This will be use for company details
@@ -150,7 +185,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     this.receivedCompanyDetails = companyDetails;
   }
 
-
+  /**
+   * This will be use for show snackbar
+   *
+   * @param {string} message
+   * @return {*}
+   * @memberof WelcomeComponent
+   */
   public showSnackbar(message: string) {
     this.snackBar.open(message, '', {
       duration: 3000, // 3000 milliseconds (3 seconds)
@@ -158,6 +199,11 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     return message;
   }
 
+  /**
+   * This will be use for component destroyed
+   *
+   * @memberof WelcomeComponent
+   */
   public ngOnDestroy(): void {
     document.querySelector('body')?.classList.remove('welcome-main');
     this.destroyed$.next(true);

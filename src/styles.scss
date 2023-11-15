@@ -1,5 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-
 html,
 body {
     /*---- color-variable ----*/
@@ -957,4 +956,14 @@ mat-sidenav[style] {
             }
         }
     }
+}
+
+.mat-mdc-progress-spinner {
+  margin: 0 auto;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.pdf-preview {
+  height: 100%;
+  margin-top: 50px;
 }

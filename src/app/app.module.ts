@@ -9,8 +9,6 @@ import { EffectsModule } from '@ngrx/effects';
 import { ServiceModule } from './services/service.module';
 import { metaReducers, reducers } from './store';
 import { SessionEffects } from './store/effects/session.effects';
-
-
 @NgModule({
   declarations: [
     AppComponent
@@ -28,8 +26,7 @@ import { SessionEffects } from './store/effects/session.effects';
         strictActionImmutability: true,
       },
     }),
-    EffectsModule.forRoot([SessionEffects]),
-
+    EffectsModule.forRoot([SessionEffects])
   ],
   providers: [],
   bootstrap: [AppComponent]

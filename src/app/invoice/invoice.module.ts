@@ -1,5 +1,4 @@
 import { NgModule } from "@angular/core";
-import { SharedModule } from "../shared/sidebar.module";
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -22,35 +21,30 @@ import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
 import { ReactiveFormsModule } from "@angular/forms";
 import { MatSnackBarModule } from "@angular/material/snack-bar";
+import { SharedModule } from "../shared/shared.module";
 
 @NgModule({
-    declarations: [
-        InvoiceComponent
-    ],
-    imports: [
-        InvoiceRoutingModule,
-        SharedModule,
-        MatButtonModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
-        CommonModule,
-        MatCheckboxModule,
-        MatSidenavModule,
-        MatListModule,
-        MatSelectModule,
-        MatTableModule,
-        MatDialogModule,
-        MatExpansionModule,
-        MatTabsModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatAutocompleteModule,
-        MatPaginatorModule,
-        MatSortModule,
-        ReactiveFormsModule,
-        MatSnackBarModule
-    ]
+  declarations: [
+    InvoiceComponent
+  ],
+  imports: [
+    InvoiceRoutingModule,
+    SharedModule,
+    CommonModule,
+    MatCheckboxModule,
+    MatSidenavModule,
+    MatListModule,
+    MatSelectModule,
+    MatTableModule,
+    MatDialogModule,
+    MatExpansionModule,
+    MatTabsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatAutocompleteModule,
+    MatPaginatorModule,
+    MatSortModule
+  ]
 })
 export class InvoiceModule {
 

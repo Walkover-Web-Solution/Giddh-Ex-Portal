@@ -21,13 +21,13 @@ import { SidebarComponent } from "./sidebar/sidebar.component";
             path: ":companyDomainUniqueName/payment", loadChildren: () => import('../payment/payment.module').then(module => module.PaymentModule),
           },
           {
-            path: ":companyDomainUniqueName/payment-pdf", loadChildren: () => import('../payment-pdf/payment-pdf.module').then(module => module.PaymentPdfModule),
+            path: ":companyDomainUniqueName/payment-preview", loadChildren: () => import('../payment-pdf/payment-pdf.module').then(module => module.PaymentPdfModule),
           },
           {
             path: ":companyDomainUniqueName/statement", loadChildren: () => import('../statement/statement.module').then(module => module.StatementModule),
           },
           {
-            path: ":companyDomainUniqueName/invoice-pdf", loadChildren: () => import('../invoice-pdf/invoice-pdf.module').then(module => module.InvoicePdfModule),
+            path: ":companyDomainUniqueName/invoice/preview", loadChildren: () => import('../invoice-pdf/invoice-pdf.module').then(module => module.InvoicePdfModule),
           },
           {
             path: ":companyDomainUniqueName/invoice-pay", loadChildren: () => import('../invoice-pay/invoice-pay.module').then(module => module.InvoicePayModule),
