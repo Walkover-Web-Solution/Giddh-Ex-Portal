@@ -28,6 +28,8 @@
     }
 
     .login-btn-wrap {
+      margin: 0 auto;
+      width: 223px;
       button {
         background: transparent;
         border: 1px solid var(--color-giddh-blue);
@@ -39,15 +41,10 @@
         align-items: center;
         justify-content: center;
         border-radius: 5px;
-        cursor: pointer;
+        cursor: pointer !important;
         letter-spacing: 0.5px;
         padding: 0px 62px !important;
         width: 100% !important;
-
-        &.otp-btn {
-          background-color: var(--color-giddh-blue);
-          color: var(--color-white);
-        }
       }
 
       .or-divide {

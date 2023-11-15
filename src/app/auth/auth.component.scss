@@ -1,5 +1,3 @@
-
-
 .page-wrapper {
   max-width: 400px;
   width: 100%;
@@ -8,14 +6,12 @@
 
   .login-wrapper {
     background-color: var(--color-white);
-    padding: 30px;
+    padding: 20px;
     box-shadow: 0 5px 16px 0 #00000010;
-
     .signin-content {
       border-top: 1px solid var(--color-gray);
-      padding-top: 30px;
-      margin-bottom: 25px;
-
+      padding-top: 20px;
+      width: 100%;
       h4 {
         margin-bottom: 10px !important;
       }
@@ -26,17 +22,17 @@
     }
 
     .user-form {
-      float: left;
       align-items: baseline;
       display: flex;
       width: 100%;
-
+      flex-direction: column;
       .user-label {
         font-size: 24px;
 
         input {
           height: 20px;
           width: 20px;
+          cursor: pointer;
         }
       }
     }
@@ -44,7 +40,6 @@
     .signin-form {
       padding: 15px;
     }
-
   }
 }
 

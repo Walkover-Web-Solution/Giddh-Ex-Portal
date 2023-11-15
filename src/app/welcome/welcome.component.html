@@ -97,9 +97,11 @@
               <div>
                 <span class="d-block pay-head mr-b1">Payment #</span>
                 <span>
-                  <a href="javascript:;">{{
-                    voucherData?.items[0]?.voucherNumber
-                  }}</a>
+                  <a
+                    href="javascript:;"
+                    (click)="receiptPreview(voucherData?.items[0]?.uniqueName)"
+                    >{{ voucherData?.items[0]?.voucherNumber }}</a
+                  >
                 </span>
               </div>
             </div>
@@ -132,7 +134,7 @@
     <!-- my-detail -->
     <div class="container" *ngIf="isShowAccountDetails">
       <button
-      class="mr-t15"
+        class="mr-t15"
         mat-stroked-button
         color="primary"
         (click)="isShowAccountDetails = false"

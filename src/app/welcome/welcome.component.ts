@@ -7,6 +7,7 @@ import { takeUntil } from "rxjs/operators";
 import { GeneralService } from "../services/general.service";
 import { CompanyResponse, ReciptResponse } from "../models/Company";
 import { DashboardService } from "../services/dashboard.service.";
+import { Router } from "@angular/router";
 @Component({
   selector: "welcome",
   templateUrl: "welcome.component.html",
@@ -72,7 +73,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     private dashboardService: DashboardService,
     private generalService: GeneralService,
     private snackBar: MatSnackBar,
-    private store: Store<AppState>
+    private store: Store<AppState>,
+    private router: Router
   ) {
 
   }
@@ -197,6 +199,22 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       duration: 3000, // 3000 milliseconds (3 seconds)
     });
     return message;
+  }
+
+  /**
+   * This will be use for receipt preview
+   *
+   * @param {*} invoice
+   * @memberof WelcomeComponent
+   */
+  public receiptPreview(uniqueName: any): void {
+    let data = JSON.parse(localStorage.getItem('session'));
+    let url = data.domain + '/payment/preview';
+    this.router.navigate([url], {
+      queryParams: {
+        voucher: uniqueName,
+      }
+    });
   }
 
   /**

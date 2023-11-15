@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { saveAs } from 'file-saver';
+import * as FileSaver from 'file-saver';
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { FormBuilder, UntypedFormGroup } from "@angular/forms";
 
@@ -102,7 +103,6 @@ export class InvoicePdfComponent implements OnInit, OnDestroy {
             this.pdfFileURL = URL.createObjectURL(file);
             this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
             this.isLoading = false;
-            this.paymentDetails = voucherDetailsResponse.body[0];
           } else {
             this.isLoading = false;
             this.showSnackbar(voucherDetailsResponse?.message);

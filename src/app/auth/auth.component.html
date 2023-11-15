@@ -12,13 +12,11 @@
         <div class="signin-content">
           <form [formGroup]="userForm">
             <div formArrayName="checkboxes" class="user-form">
-              <div *ngFor="let option of users; let i = index">
+              <div class="mr-b15" *ngFor="let option of users; let i = index">
                 <label class="user-label">
                   <input
                     type="checkbox"
-                    [formControl]="
-                      userForm?.get('checkboxes')['controls'][i]
-                    "
+                    [formControl]="userForm?.get('checkboxes')['controls'][i]"
                     (change)="onUserSelected(i)"
                   />
                   {{ option?.account?.name }}

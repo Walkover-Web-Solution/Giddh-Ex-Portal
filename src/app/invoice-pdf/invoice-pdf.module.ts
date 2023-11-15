@@ -26,10 +26,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
         MatSelectModule,
         MatDialogModule,
         MatNativeDateModule,
-      MatAutocompleteModule,
-      MatProgressSpinnerModule,
-      ReactiveFormsModule,
-      MatFormFieldModule
+        MatAutocompleteModule,
+        MatProgressSpinnerModule,
+        ReactiveFormsModule,
+        MatFormFieldModule
     ]
 })
 export class InvoicePdfModule {

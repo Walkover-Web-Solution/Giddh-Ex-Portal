@@ -9,6 +9,7 @@ import { GeneralService } from "./general.service";
 import { AuthService } from "./auth.service";
 import { DashboardService } from "./dashboard.service.";
 import { InvoiceService } from "./invoice.service";
+import { PaymentService } from "./payment.service.";
 
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
@@ -28,7 +29,8 @@ export class ServiceModule {
         GeneralService,
         AuthService,
         DashboardService,
-        InvoiceService
+        InvoiceService,
+        PaymentService
       ]
     };
   }

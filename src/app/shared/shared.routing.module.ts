@@ -21,7 +21,7 @@ import { SidebarComponent } from "./sidebar/sidebar.component";
             path: ":companyDomainUniqueName/payment", loadChildren: () => import('../payment/payment.module').then(module => module.PaymentModule),
           },
           {
-            path: ":companyDomainUniqueName/payment-preview", loadChildren: () => import('../payment-pdf/payment-pdf.module').then(module => module.PaymentPdfModule),
+            path: ":companyDomainUniqueName/payment/preview", loadChildren: () => import('../payment-pdf/payment-pdf.module').then(module => module.PaymentPdfModule),
           },
           {
             path: ":companyDomainUniqueName/statement", loadChildren: () => import('../statement/statement.module').then(module => module.StatementModule),
