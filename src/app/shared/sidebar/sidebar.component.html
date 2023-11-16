@@ -6,62 +6,52 @@
   >
     <mat-drawer #drawer class="example-sidenav" mode="side" opened="true">
       <div class="sidebar-head">
-        <button
-          type="button"
-          (click)="drawer.toggle(); toggleMenu()"
-          class="cp"
-        >
+        <button type="button" (click)="toggleMenu()" class="cp">
           <img src="../../../assets/images/toggle.svg" alt="toggle" />
         </button>
         <span class="pd-l1 d-inline-block toggle-heading">Giddh GmbH</span>
       </div>
       <mat-list role="list">
-        <mat-list-item role="listitem" class="active">
+        <mat-list-item
+          role="listitem"
+          *ngFor="let item of menuItems"
+          [routerLink]="[item.url]"
+          routerLinkActive="active"
+        >
           <a href="javascript:;">
-            <img src="../../../assets/images/home.svg" alt="home" />
-            <span class="side-menu" (click)="redirectionToUrl('welcome')"
-              >Home</span
-            >
-          </a>
-        </mat-list-item>
-        <mat-list-item role="listitem">
-          <a href="javascript:;">
-            <img src="../../../assets/images/invoice.svg" alt="invoice" />
-            <span class="side-menu" (click)="redirectionToUrl('invoice')"
-              >Invoices</span
-            >
-          </a>
-        </mat-list-item>
-        <mat-list-item role="listitem">
-          <a href="javascript:;">
-            <img src="../../../assets/images/payment.svg" alt="payment" />
-            <span class="side-menu" (click)="redirectionToUrl('payment')"
-              >Payments Made</span
-            >
+            <img
+              [src]="'../../../assets/images/' + item.icon"
+              alt="{{ item.label }}"
+            />
+            <span class="side-menu">{{ item.label }}</span>
           </a>
         </mat-list-item>
       </mat-list>
-
       <div class="sidebar-footer">
-        <a
-          href="javascript:;"
-          [matTooltip]="userDetails?.email"
-          matTooltipClass="example-tooltip-uppercase"
-          >{{ userDetails?.name }}</a
-        >
-        <button mat-stroked-button color="primary" class="logout-btn">
-          Logout
-        </button>
+        <div class="loader-line" *ngIf="isLoading"></div>
+        <div *ngIf="!isLoading">
+          <a
+            href="javascript:;"
+            [matTooltip]="userDetails?.email"
+            matTooltipClass="example-tooltip-uppercase"
+          >
+            {{ userDetails?.name }}
+          </a>
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="logoutUser()"
+            class="logout-btn"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </mat-drawer>
 
     <div class="sidenav-content">
       <div class="sidebar-mobile-head">
-        <button
-          type="button"
-          (click)="drawer.toggle(); toggleMenu()"
-          class="cp"
-        >
+        <button type="button" (click)="toggleMenu()" class="cp">
           <img
             src="../../../assets/images/toggle-responsive.svg"
             alt="toggle"

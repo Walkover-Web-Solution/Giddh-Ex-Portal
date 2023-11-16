@@ -1,7 +1,7 @@
 <div class="common-wrapper">
-  <mat-spinner *ngIf="isLoading"></mat-spinner>
+  <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
   <div class="page-wrapper d-flex flex-column h-100" *ngIf="!isLoading">
-    <header [voucherData]="voucherData"></header>
+    <header [accountName]="accountDetails?.name "></header>
     <div class="container" *ngIf="!isShowAccountDetails">
       <div class="index-wrapper">
         <div class="balance-wrap">
@@ -85,9 +85,17 @@
                       : "UNPAID"
                   }}
                   for
-                  <a href="javascript:;">{{
-                    voucherData?.items[0]?.adjustments[0]?.voucherNumber
-                  }}</a>
+                  <a
+                    href="javascript:;"
+                    (click)="
+                      invoicePreview(
+                        voucherData?.items[0]?.adjustments[0]?.uniqueName
+                      )
+                    "
+                    >{{
+                      voucherData?.items[0]?.adjustments[0]?.voucherNumber
+                    }}</a
+                  >
                 </span>
               </div>
               <div>

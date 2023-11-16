@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { ReplaySubject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { setPortalDomain } from "../store/actions/session.action";
-import { SessionState } from "../store/session/session.reducer";
+import { SessionState } from "../store/reducer/session.reducer";
 declare var initVerification: any;
 @Component({
   selector: "login",
@@ -13,15 +13,13 @@ declare var initVerification: any;
   styleUrls: ["login.component.scss"]
 })
 export class LoginComponent implements OnInit, OnDestroy {
-
-  /** True if api call in progress */
-  public isLoading: boolean = true;
   /** Observable to unsubscribe all the store listeners to avoid memory leaks */
   private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
   /** Request body for get portal url params */
   public portalParamsRequest = {
     domain: undefined
   }
+  /** Hold current url*/
   public url: string = '';
 
   constructor(
@@ -37,6 +35,12 @@ export class LoginComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  /**
+   * This will be use for components initialization
+   *
+   * @memberof LoginComponent
+   */
   public ngOnInit(): void {
     let configuration = {
       referenceId: "117230p1697093599652797df30cea",
@@ -44,10 +48,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         redirect_path: this.url
       },
       success: (data: any) => {
-        console.log(data);
-        // this.ngZone.run(() => {
-        // this.initiateLogin(data);
-        // });
       },
       failure: (error: any) => {
         this.showSnackbar(error?.message);
@@ -61,27 +61,31 @@ export class LoginComponent implements OnInit, OnDestroy {
     scriptTag.defer = true;
     scriptTag.onload = () => {
       initVerification(configuration);
-      // this.loaderService.hide();
-
     };
     document.getElementById("117230p1697093599652797df30cea").appendChild(scriptTag);
 
   }
 
-  public showSnackbar(message: string) {
+/**
+ * This will be use for show snackbar
+ *
+ * @param {string} message
+ * @return {*}
+ * @memberof LoginComponent
+ */
+public showSnackbar(message: string) {
     this.snackBar.open(message, '', {
       duration: 3000, // 3000 milliseconds (3 seconds)
     });
     return message;
   }
 
-
-  public login(): void {
-
-
-  }
-
-  public ngOnDestroy(): void {
+/**
+ * This will be use for component destroyed
+ *
+ * @memberof LoginComponent
+ */
+public ngOnDestroy(): void {
     this.destroyed$.next(true);
     this.destroyed$.complete();
   }

@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ReplaySubject, combineLatest } from "rxjs";
-import { AppState } from "../store";
-import { Store } from '@ngrx/store';
+import { select,Store } from '@ngrx/store';
 import { takeUntil } from "rxjs/operators";
 import { GeneralService } from "../services/general.service";
 import { CompanyResponse, ReciptResponse } from "../models/Company";
 import { DashboardService } from "../services/dashboard.service.";
 import { Router } from "@angular/router";
+
 @Component({
   selector: "welcome",
   templateUrl: "welcome.component.html",
@@ -68,12 +68,14 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   };
   /** True show account details*/
   public isShowAccountDetails: boolean = false;
+  /** Hold  store data */
+  public storeData: any = {};
 
   constructor(
     private dashboardService: DashboardService,
     private generalService: GeneralService,
     private snackBar: MatSnackBar,
-    private store: Store<AppState>,
+    private store: Store,
     private router: Router
   ) {
 
@@ -85,14 +87,16 @@ export class WelcomeComponent implements OnInit, OnDestroy {
    * @memberof WelcomeComponent
    */
   public ngOnInit(): void {
+    this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState) => {
+      this.storeData = sessionState;
+      });
     document.querySelector('body')?.classList.add('welcome-main');
-    let data = JSON.parse(localStorage.getItem('session'));
-    this.userBalanceSummary.accountUniqueName = data.userDetails.account.uniqueName;
-    this.userBalanceSummary.companyUniqueName = data.userDetails.companyUniqueName;
-    this.userBalanceSummary.sessionId = data.session.id;
-    this.lastPaymentRequest.accountUniqueName = data.userDetails.account.uniqueName;
-    this.lastPaymentRequest.companyUniqueName = data.userDetails.companyUniqueName;
-    this.lastPaymentRequest.sessionId = data.session.id;
+    this.userBalanceSummary.accountUniqueName = this.storeData.session.userDetails.account.uniqueName;
+    this.userBalanceSummary.companyUniqueName = this.storeData.session.userDetails.companyUniqueName;
+    this.userBalanceSummary.sessionId = this.storeData.session.session.id;
+    this.lastPaymentRequest.accountUniqueName = this.storeData.session.userDetails.account.uniqueName;
+    this.lastPaymentRequest.companyUniqueName = this.storeData.session.userDetails.companyUniqueName;
+    this.lastPaymentRequest.sessionId = this.storeData.session.session.id;
     this.isLoading = true;
     const balanceSummary$ = this.dashboardService.getBalanceSummary(this.userBalanceSummary);
     const accountDetails$ = this.dashboardService.getAccountDetails(this.userBalanceSummary);
@@ -208,14 +212,30 @@ export class WelcomeComponent implements OnInit, OnDestroy {
    * @memberof WelcomeComponent
    */
   public receiptPreview(uniqueName: any): void {
-    let data = JSON.parse(localStorage.getItem('session'));
-    let url = data.domain + '/payment/preview';
+    let url = this.storeData.session.domain + '/payment/preview';
     this.router.navigate([url], {
       queryParams: {
         voucher: uniqueName,
       }
     });
   }
+
+  /**
+ * This will be use for invoice preview
+ *
+ * @param {*} invoice
+ * @memberof WelcomeComponent
+ */
+  public invoicePreview(uniqueName: any): void {
+    let url = this.storeData.session.domain + '/invoice/preview';
+    this.router.navigate([url], {
+      queryParams: {
+        voucher: uniqueName,
+      }
+    });
+  }
+
+
 
   /**
    * This will be use for component destroyed

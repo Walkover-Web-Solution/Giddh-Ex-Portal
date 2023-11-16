@@ -1,13 +1,17 @@
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Observable, ReplaySubject } from "rxjs";
 import { map, shareReplay, takeUntil } from 'rxjs/operators';
-import { AppState } from "src/app/store";
-import { Store } from '@ngrx/store';
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { DashboardService } from "src/app/services/dashboard.service.";
+import { AuthService } from "src/app/services/auth.service";
+import * as dayjs from 'dayjs';
+import { resetLocalStorage, setSessionToken } from "src/app/store/actions/session.action";
+import { AppState } from "src/app/store";
+import { select, Store } from '@ngrx/store';
+
 @Component({
   selector: "sidebar",
   templateUrl: "sidebar.component.html",
@@ -27,7 +31,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     companyUniqueName: undefined,
     accountUniqueName: undefined,
     sessionId: undefined,
-  }
+  };
+  /** True if api call in progress */
+  public isLoading: boolean = false;
+  /** Hold menu items*/
+  public menuItems: any = [];
+  /** Instance of dayjs*/
+  public dayjs = dayjs;
+  /** This will be use for date format*/
+  public dateFormat: string = 'DD-MM-YYYY h:m:s';
+  /** Hold  store data */
+  public storeData: any = {};
 
   constructor(
     private router: Router,
@@ -35,14 +49,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public breakpointObserver: BreakpointObserver,
     public dialog: MatDialog,
     private dashboardService: DashboardService,
-    private snackBar: MatSnackBar,
-    private store: Store<AppState>
-  ) {
+    private authService: AuthService,
+    private store: Store,
+    private snackBar: MatSnackBar) {
     this.isMobile$ = this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small])
       .pipe(
         map(result => result.matches),
         shareReplay()
-      );
+    );
+    this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+      this.storeData = sessionState.session;
+    });
   }
 
   /**
@@ -51,12 +68,27 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * @memberof SidebarComponent
    */
   public ngOnInit(): void {
-    let data = JSON.parse(localStorage.getItem('session'));
-    this.accountUrlRequest.accountUniqueName = data.userDetails.account.uniqueName;
-    this.accountUrlRequest.companyUniqueName = data.userDetails.companyUniqueName;
-    this.accountUrlRequest.sessionId = data.session.id;
-    this.portalDomain = data?.domain;
+    this.accountUrlRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+    this.accountUrlRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+    this.accountUrlRequest.sessionId = this.storeData.session.id;
+    this.portalDomain = this.storeData?.domain;
     this.getAccountDetails();
+    this.setActiveMenuItem();
+    this.menuItems = [
+      { icon: "home.svg", label: "Home", url: this.portalDomain + "/welcome" },
+      { icon: "invoice.svg", label: "Invoices", url: this.portalDomain + "/invoice" },
+      { icon: "payment.svg", label: "Payments Made", url: this.portalDomain + "/payment" }
+    ];
+  }
+
+  /**
+   * This will be use for set active menu item
+   *
+   * @memberof SidebarComponent
+   */
+  public setActiveMenuItem(): void {
+    const currentUrl = this.router.url.split('/')[2]; // Assuming the structure is /domain/welcome
+    this.menuItems.forEach(item => item.url === currentUrl);
   }
 
   /**
@@ -65,8 +97,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * @memberof SidebarComponent
    */
   public getAccountDetails(): void {
+    this.isLoading = true;
     this.dashboardService.getAccountDetails(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((accountsResponse: any) => {
       if (accountsResponse && accountsResponse.status === 'success') {
+        this.isLoading = false;
         this.userDetails = accountsResponse.body;
       } else {
         this.showSnackbar(accountsResponse?.message);
@@ -109,7 +143,63 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Cleans up resources when the component is destroyed
+   * This will be use for logout user
+   *
+   * @memberof SidebarComponent
+   */
+  public logoutUser(): void {
+    this.accountUrlRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+    this.accountUrlRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+    this.accountUrlRequest.sessionId = this.storeData.session.id;
+    this.isLoading = true;
+    this.authService.logoutUser(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+      if (response && response.status === 'success') {
+        this.isLoading = false;
+        this.showSnackbar('You have successfully logged out.');
+        let url = this.storeData.domain + '/login';
+        this.store.dispatch(resetLocalStorage());
+        this.router.navigate([url]);
+      } else {
+        this.showSnackbar(response?.message);
+      }
+    });
+  }
+
+
+  @HostListener('window:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    this.checkAndRenewUserSession();
+  }
+
+  @HostListener('document:keypress', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    this.checkAndRenewUserSession();
+  }
+
+  /**
+ * This will check and renew user session if close to expiry
+ *
+ * @memberof HeaderComponent
+ */
+  public checkAndRenewUserSession(): void {
+    let expiresAtList = this.storeData.session?.expiresAt?.split(" ");
+    let expiryDate = expiresAtList[0]?.split("-").reverse().join("-");
+    let sessionExpiresAt = dayjs(expiryDate + " " + expiresAtList[1]);
+    if (sessionExpiresAt.diff(dayjs(), 'hours') < 24) {
+      this.authService.renewSession(this.storeData?.userDetails?.vendorContactUniqueName, this.storeData?.session?.id).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+        if (response && response.status === 'success') {
+          this.store.dispatch(setSessionToken({ session: response.body.session }));
+        } else {
+          this.showSnackbar(response?.message);
+        }
+      });
+    }
+  }
+
+  /**
+   *Cleans up resources when the component is destroyed
+   *
+   * @memberof SidebarComponent
    */
   public ngOnDestroy(): void {
     this.destroyed$.next(true);

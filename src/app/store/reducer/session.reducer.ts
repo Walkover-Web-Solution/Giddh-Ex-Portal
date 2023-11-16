@@ -5,7 +5,7 @@ import { CustomActions } from "../custom-actions";
  */
 // session.reducer.ts
 import { createReducer, on } from '@ngrx/store';
-import {setPortalDomain, setSessionToken, setUserDetails } from '../actions/session.action';
+import {resetLocalStorage, setPortalDomain, setSessionToken, setUserDetails } from '../actions/session.action';
 
 // session-state.model.ts
 export interface SessionState {
@@ -22,14 +22,17 @@ export const sessionReducer = createReducer(
   initialState,
   on(setSessionToken, (state, { session }) => ({
     ...state,
-    session
+    session,
   })),
   on(setPortalDomain, (state, { domain }) => ({
     ...state,
-    domain
+    domain,
   })),
   on(setUserDetails, (state, { userDetails }) => ({
     ...state,
-    userDetails
+    userDetails,
+  })),
+  on(resetLocalStorage, (state) => ({
+    ...initialState, // Reset the entire state to initialState
   }))
 );

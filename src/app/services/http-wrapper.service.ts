@@ -110,8 +110,6 @@ export class HttpWrapperService {
 
     return this.http.post(url, dataObj, options).pipe(
       tap(res => {
-        console.log(res);
-
       }),
       finalize(() => {
         // Perform any finalization tasks

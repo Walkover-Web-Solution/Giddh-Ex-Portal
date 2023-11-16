@@ -5,8 +5,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { Store } from '@ngrx/store';
-import { setPortalDomain, setSessionToken, setUserDetails } from '../store/actions/session.action';
-import { AppState } from '../store';
+import {setSessionToken, setUserDetails } from '../store/actions/session.action';
 import { FormBuilder, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
 
 @Component({
@@ -43,6 +42,8 @@ export class AuthComponent implements OnInit, OnDestroy {
   };
   /** This will be use for  company uniqueName*/
   public companyUniqueName: string = '';
+  /** Hold  store data */
+  public storeData: any = {};
 
   constructor(
     private authService: AuthService,
@@ -50,7 +51,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private fb: FormBuilder,
-    private store: Store<AppState>
+    private store: Store
   ) {
     this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
       if (params) {
@@ -61,7 +62,6 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
       if (params) {
         this.portalParamsRequest.subDomain = params.companyDomainUniqueName;
-        this.store.dispatch(setPortalDomain({ domain: this.portalParamsRequest.subDomain }));
       }
     });
   }
@@ -104,9 +104,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       proxyAuthToken: this.portalParamsRequest.proxyAuthToken,
       subDomain: this.portalParamsRequest.subDomain
     }
-    this.isLoading = true;
     this.authService.savePortalUserSession(this.savePortalUserSession).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
-      this.isLoading = false;
       if (response && response.status === 'success') {
         this.savePortalUserSession['companyUniqueName'] = response.body.companyUniqueName;
         this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
@@ -115,7 +113,6 @@ export class AuthComponent implements OnInit, OnDestroy {
         this.router.navigate([url]);
       } else {
         this.showSnackbar(response?.data?.message);
-        this.isLoading = false;
       }
     });
   }

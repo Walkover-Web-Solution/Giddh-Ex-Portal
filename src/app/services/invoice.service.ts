@@ -152,15 +152,15 @@ export class InvoiceService {
     );
   }
 
-/**
- * This will be use for add comments
- *
- * @param {*} model
- * @param {string} comment
- * @return {*}  {Observable<BaseResponse<any, any>>}
- * @memberof InvoiceService
- */
-public addComments(model: any, comment: string): Observable<BaseResponse<any, any>> {
+  /**
+   * This will be use for add comments
+   *
+   * @param {*} model
+   * @param {string} comment
+   * @return {*}  {Observable<BaseResponse<any, any>>}
+   * @memberof InvoiceService
+   */
+  public addComments(model: any, comment: string): Observable<BaseResponse<any, any>> {
     let data = {
       companyUniqueName: model.companyUniqueName,
       accountUniqueName: model.accountUniqueName,
@@ -173,12 +173,40 @@ public addComments(model: any, comment: string): Observable<BaseResponse<any, an
       .replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName))
       .replace(':voucherUniqueName', encodeURIComponent(data.voucherUniqueName)),
       comment, args).pipe(
-      map((res) => {
-        let data: BaseResponse<any, any> = res;
-        data.request = comment;
-        return data;
-      }),
-      catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
-    );
+        map((res) => {
+          let data: BaseResponse<any, any> = res;
+          data.request = comment;
+          return data;
+        }),
+        catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
+      );
   }
+
+  /**
+   * This will be use for pay  voucher
+   *
+   * @param {*} model
+   * @param {*} request
+   * @return {*}  {Observable<BaseResponse<any, any>>}
+   * @memberof InvoiceService
+   */
+  public payInvoice(model: any, request: any): Observable<BaseResponse<any, any>> {
+    let data = {
+      companyUniqueName: model.companyUniqueName,
+      invoiceNumber: model.contentNumber
+    }
+    return this.http.post(API.PAY_VOUCHER
+      .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
+      .replace(':invoiceNumber', encodeURIComponent(data.invoiceNumber)),
+      request).pipe(
+        map((res) => {
+          let data: BaseResponse<any, any> = res;
+          data.request = request;
+          return data;
+        }),
+        catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
+      );
+  }
+
+
 }

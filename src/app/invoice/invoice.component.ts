@@ -11,6 +11,7 @@ import { saveAs } from 'file-saver';
 import * as FileSaver from 'file-saver';
 import { Router } from '@angular/router';
 import { InvoiceService } from "../services/invoice.service";
+import { select, Store } from '@ngrx/store';
 
 @Component({
   selector: "invoice",
@@ -27,9 +28,9 @@ export class InvoiceComponent implements OnInit, OnDestroy {
   /** Instance of mat pay table modal dialog */
   @ViewChild('paytablemodal', { static: true }) public paytablemodal: any;
   /** True if api call in progress */
-  public isLoading: boolean;
+  public isLoading: boolean = false;
   /** True if api call in progress */
-  public initialLoading: boolean;
+  public initialLoading: boolean = false;
   /** Observable to unsubscribe all the store listeners to avoid memory leaks */
   private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
   /** Hold table displayed columns*/
@@ -53,7 +54,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     sessionId: undefined,
     type: 'sales',
     page: 1,
-    count: '',
+    count: 20,
     sortBy: 'grandTotal',
     sort: 'asc',
     balanceStatus: []
@@ -77,13 +78,19 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     { value: 'grandTotal', label: 'Total' },
     { value: 'voucherDate', label: 'Date' }
   ];
+  /** Hold  store data */
+  public storeData: any = {};
 
   constructor(
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
     private invoiceService: InvoiceService,
-    private router: Router
+    private router: Router,
+    private store: Store
   ) {
+    this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+      this.storeData = sessionState.session;
+    });
   }
 
   /**
@@ -116,11 +123,10 @@ export class InvoiceComponent implements OnInit, OnDestroy {
    * @memberof InvoiceComponent
    */
   public downloadPdf(item: any): void {
-    let data = JSON.parse(localStorage.getItem('session'));
     let urlRequest = {
-      accountUniqueName: data.userDetails.account.uniqueName,
-      companyUniqueName: data.userDetails.companyUniqueName,
-      sessionId: data.session.id,
+      accountUniqueName: this.storeData.userDetails.account.uniqueName,
+      companyUniqueName: this.storeData.userDetails.companyUniqueName,
+      sessionId: this.storeData.session.id,
       voucherUniqueName: item?.uniqueName
     }
     this.invoiceService.downloadVoucher(urlRequest)
@@ -129,7 +135,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         (response: any) => {
           if (response) {
             let blob: Blob = this.invoiceService.base64ToBlob(response.body, 'application/pdf', 512);
-            saveAs(blob, 'Voucher.pdf', 'application/pdf');
+            saveAs(blob, item?.voucherNumber, 'application/pdf');
           } else {
             this.showSnackbar(response?.message);
           }
@@ -178,10 +184,9 @@ export class InvoiceComponent implements OnInit, OnDestroy {
    * @memberof InvoiceComponent
    */
   public getInvoiceList(initialLoading: boolean, filtersLoading: boolean): void {
-    let data = JSON.parse(localStorage.getItem('session'));
-    this.invoiceListRequest.accountUniqueName = data.userDetails.account.uniqueName;
-    this.invoiceListRequest.companyUniqueName = data.userDetails.companyUniqueName;
-    this.invoiceListRequest.sessionId = data.session.id;
+    this.invoiceListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+    this.invoiceListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+    this.invoiceListRequest.sessionId = this.storeData.session.id;
     this.isLoading = filtersLoading;
     this.initialLoading = initialLoading;
     this.invoiceService.getInvoiceList(this.invoiceListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
@@ -219,8 +224,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
    */
   public voucherPay(): void {
     this.dialog?.closeAll();
-    let data = JSON.parse(localStorage.getItem('session'));
-    let url = data.domain + '/invoice-pay';
+    let url = this.storeData.domain + '/invoice-pay';
     this.router.navigate([url], {
       queryParams: {
         account: this.selectedPaymentVoucher.account.uniqueName,
@@ -273,8 +277,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
    * @memberof InvoiceComponent
    */
   public invoicePreview(invoice: any): void {
-    let data = JSON.parse(localStorage.getItem('session'));
-    let url = data.domain + '/invoice/preview';
+    let url = this.storeData.domain + '/invoice/preview';
     this.router.navigate([url], {
       queryParams: {
         voucher: invoice?.uniqueName,

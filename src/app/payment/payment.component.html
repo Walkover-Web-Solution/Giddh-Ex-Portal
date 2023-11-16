@@ -1,23 +1,10 @@
-<mat-spinner *ngIf="initialLoading"></mat-spinner>
+<mat-spinner [diameter]="60" *ngIf="initialLoading"></mat-spinner>
 <div class="common-wrapper" *ngIf="!initialLoading">
   <div class="inner-header">
     <h2>Payments Made</h2>
   </div>
   <div class="inner-content">
     <div class="d-flex column-gap10 res-field">
-      <mat-form-field appearance="outline">
-        <mat-label>Status</mat-label>
-        <mat-select
-          [(value)]="selectedStatusValue"
-          (selectionChange)="onStatusSelected()"
-        >
-          <mat-option
-            *ngFor="let status of statusOptions"
-            [value]="status.value"
-            >{{ status.label }}</mat-option
-          >
-        </mat-select>
-      </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Sort By</mat-label>
         <mat-select
@@ -41,7 +28,7 @@
         Clear
       </button>
     </div>
-    <mat-spinner *ngIf="isLoading"></mat-spinner>
+    <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
     <div class="invoice-table mr-t15" *ngIf="!isLoading">
       <div class="table-responsive">
         <table
@@ -54,9 +41,9 @@
           [matSortActive]="paymentListRequest.sortBy"
         >
           <ng-container matColumnDef="payment">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Payment#</th>
+            <th mat-header-cell *matHeaderCellDef>Payment#</th>
             <td mat-cell *matCellDef="let element">
-              <a href="javascript:;" (click)="invoicePreview(element)">
+              <a href="javascript:;" (click)="paymentPreview(element)">
                 {{ element.voucherNumber }}
               </a>
             </td>
@@ -82,13 +69,15 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="mode">
-            <th mat-header-cell *matHeaderCellDef>Mode</th>
-            <td mat-cell *matCellDef="let element">
-              <div class="d-flex column-gap10">
-                <span class="color-overdue"
-                  >{{ element?.paymentMode?.name | uppercase }}
-                </span>
-              </div>
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              class="text-right sort-header-right"
+            >
+              Mode
+            </th>
+            <td mat-cell *matCellDef="let element" class="text-right">
+                <span>{{ element?.paymentMode?.name | uppercase }} </span>
             </td>
           </ng-container>
           <ng-container matColumnDef="unused">
@@ -96,22 +85,29 @@
               mat-header-cell
               *matHeaderCellDef
               class="text-right sort-header-right"
-              mat-sort-header
             >
               Unused Amount
             </th>
             <td mat-cell *matCellDef="let element" class="text-right">
               {{ element?.accountCurrencySymbol }}
-              {{ element?.grandTotal?.amountForAccount }}
+              {{
+                element?.adjustments[0]?.voucherTotal?.amountForAccount
+                  ? element?.adjustments[0]?.voucherTotal?.amountForAccount
+                  : 0
+              }}
             </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
-
+        <div class="text-center pd-t1 pd-b1">
+          <p class="no-data" *ngIf="!paymentListData?.length">
+            There are no open invoices which await your approval.
+          </p>
+        </div>
         <mat-paginator
           (page)="handlePageChange($event)"
-          [length]="invoiceListData?.length"
+          [length]="paymentListData?.length"
           [pageSize]="paymentListRequest.count"
           [showFirstLastButtons]="true"
           [pageSizeOptions]="[5, 10, 15, 20]"
@@ -119,37 +115,7 @@
           [pageIndex]="pageIndex"
         >
         </mat-paginator>
-        <div class="text-center pd-t1 pd-b1">
-          <p class="no-data" *ngIf="!invoiceListData?.length">
-            There are no open invoices which await your approval.
-          </p>
-        </div>
       </div>
     </div>
   </div>
 </div>
-<!-- onclick table-paynow -->
-<ng-template #paytablemodal>
-  <div class="common-dialog">
-    <mat-dialog-content>
-      <div class="d-flex column-gap15 danger-wrap">
-        <img
-          src="../../assets/images/warning.svg"
-          alt="warning"
-          class="mr-t5"
-        />
-        <p>
-          Looks like you've already initiated payment(s) for this invoice.
-          Initiating a new payment will <strong>not</strong> override the
-          payment(s) in progress. Are you sure you want to proceed?
-        </p>
-      </div>
-      <div class="d-flex column-gap5 footer-btn">
-        <button mat-stroked-button color="primary" (click)="voucherPay()">
-          Yes, Proceed
-        </button>
-        <button mat-stroked-button mat-dialog-close>Cancel</button>
-      </div>
-    </mat-dialog-content>
-  </div>
-</ng-template>

@@ -1,12 +1,12 @@
 import { RouterModule } from "@angular/router";
-import { InvoicePdfComponent } from "./invoice-pdf.component";
+import { InvoicePreviewComponent } from "./invoice-preview.component";
 import { NgModule } from "@angular/core";
 
 @NgModule({
     imports: [
         RouterModule.forChild([
             {
-                path: '', component: InvoicePdfComponent
+                path: '', component: InvoicePreviewComponent
             }
         ])
     ],

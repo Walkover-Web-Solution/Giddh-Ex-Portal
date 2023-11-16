@@ -4,6 +4,7 @@ import { ReplaySubject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { CompanyResponse } from "src/app/models/Company";
 import { GeneralService } from "src/app/services/general.service";
+import { select, Store } from '@ngrx/store';
 
 @Component({
   selector: "footer",
@@ -11,8 +12,8 @@ import { GeneralService } from "src/app/services/general.service";
   styleUrls: ["footer.component.scss"]
 })
 export class FooterComponent implements OnInit, OnDestroy {
+  /**Instance of company data emit */
   @Output() companyData: EventEmitter<CompanyResponse> = new EventEmitter<CompanyResponse>();
-
   /** Hold company response */
   public companyDetails: CompanyResponse;
   /** True if api call in progress */
@@ -24,14 +25,18 @@ export class FooterComponent implements OnInit, OnDestroy {
     companyUniqueName: undefined,
     accountUniqueName: undefined,
     sessionId: undefined,
-  }
-
+  };
+  /** Hold  store data */
+  public storeData: any = {};
 
   constructor(
     private generalService: GeneralService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private store: Store
   ) {
-
+    this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+      this.storeData = sessionState.session;
+    });
   }
 
   /**
@@ -49,13 +54,11 @@ export class FooterComponent implements OnInit, OnDestroy {
    * @memberof FooterComponent
    */
   public getCompanyDetails(): void {
-    let data = JSON.parse(localStorage.getItem('session'));
-    this.companyDetailsQueryParams.accountUniqueName = data.userDetails.account.uniqueName;
-    this.companyDetailsQueryParams.companyUniqueName = data.userDetails.companyUniqueName;
-    this.companyDetailsQueryParams.sessionId = data.session.id;
+    this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+    this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+    this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
     this.generalService.getCompanyDetails(this.companyDetailsQueryParams).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
       if (response && response.status === 'success') {
-        console.log(response);
         this.companyDetails = response.body;
         this.companyData.emit(this.companyDetails);
       } else {

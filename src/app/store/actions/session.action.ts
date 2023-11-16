@@ -15,3 +15,4 @@ export const setUserDetails = createAction(
   '[Session] Set User Details',
   props<{ userDetails: any }>()
 );
+export const resetLocalStorage = createAction('[Session] Reset Local Storage');

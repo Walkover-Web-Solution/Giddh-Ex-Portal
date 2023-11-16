@@ -7,6 +7,7 @@ import { ReciptResponse } from "../models/Company";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { InvoiceService } from "../services/invoice.service";
+import { select, Store } from '@ngrx/store';
 
 @Component({
   selector: "invoice-pay",
@@ -40,15 +41,20 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
   public razorpay: any;
   /** Hold payment details*/
   public paymentDetails: any;
+  /** Hold  store data */
+  public storeData: any = {};
 
   constructor(
     public dialog: MatDialog,
     private invoiceService: InvoiceService,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private store: Store
   ) {
-
+    this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+      this.storeData = sessionState.session;
+    });
   }
 
   /**
@@ -60,11 +66,10 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
       if (params?.account) {
-        let data = JSON.parse(localStorage.getItem('session'));
-        this.invoiceListRequest.accountUniqueName = data.userDetails.account.uniqueName;
-        this.invoiceListRequest.companyUniqueName = data.userDetails.companyUniqueName;
-        this.invoiceListRequest.sessionId = data.session.id;
-        let request = { accountUniqueName: data.userDetails.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: data.userDetails.companyUniqueName, sessionId: data.session.id };
+        this.invoiceListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+        this.invoiceListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+        this.invoiceListRequest.sessionId = this.storeData.session.id;
+        let request = { accountUniqueName: this.storeData.userDetails.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: this.storeData.userDetails.companyUniqueName, sessionId: this.storeData.session.id };
         combineLatest([
           this.invoiceService.getInvoiceList(this.invoiceListRequest),
           this.invoiceService.getVoucherDetails(request)
@@ -154,22 +159,25 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         if (mm < 10) {
           mm = "0" + mm;
         }
-        var date = dd + "-" + mm + "-" + yyyy;
+        let  date = dd + "-" + mm + "-" + yyyy;
 
         payload = {
           paymentId: razorPayResponse.razorpay_payment_id,
           amount: this.paymentDetails.amount,
           date: date
         };
-
-        // payInvoiceGiddh(
-        //     "/company/" +
-        //     this.paymentDetails.company.uniqueName +
-        //     "/invoices/" +
-        //     this.paymentDetails.contentNumber +
-        //     "/pay?voucherVersion=2",
-        //     payload
-        // );
+        let payRequest = {
+          contentNumber: this.paymentDetails.contentNumber,
+          companyUniqueName: this.paymentDetails.company.uniqueName
+        }
+        this.invoiceService.payInvoice(payRequest, payload).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+          if (response && response.status === 'success') {
+            this.showSnackbar(response?.body);
+            this.backToInvoice();
+          } else {
+            this.showSnackbar(response?.message);
+          }
+        });
       }
     }
   }
@@ -180,8 +188,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
    * @memberof InvoicePayComponent
    */
   public backToInvoice(): void {
-    let data = JSON.parse(localStorage.getItem('session'));
-    let url = data.domain + '/invoice';
+    let url = this.storeData.domain + '/invoice';
     this.router.navigate([url]);
   }
 

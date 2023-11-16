@@ -1,7 +1,7 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { InvoicePdfComponent } from "./invoice-pdf.component";
-import { InvoicePdfRoutingModule } from "./invoice-pdf.routing.module";
+import { InvoicePreviewComponent } from "./invoice-preview.component";
+import { InvoicePdfRoutingModule } from "./invoice-preview.routing.module";
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSelectModule } from '@angular/material/select';
@@ -15,7 +15,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 
 @NgModule({
     declarations: [
-        InvoicePdfComponent
+        InvoicePreviewComponent
     ],
     imports: [
         InvoicePdfRoutingModule,
