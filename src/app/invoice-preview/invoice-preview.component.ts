@@ -106,7 +106,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body[0];
-                        let blob = this.invoiceService.base64ToBlob(voucherDetailsResponse.body[0].content, 'application/pdf', 512);
+                        let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body[0].content, 'application/pdf', 512);
                         const file = new Blob([blob], { type: 'application/pdf' });
                         URL.revokeObjectURL(this.pdfFileURL);
                         this.pdfFileURL = URL.createObjectURL(file);
@@ -142,7 +142,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             .subscribe(
                 (response: any) => {
                     if (response) {
-                        let blob: Blob = this.invoiceService.base64ToBlob(response.body, 'application/pdf', 512);
+                        let blob: Blob = this.generalService.base64ToBlob(response.body, 'application/pdf', 512);
                         saveAs(blob, voucherNumber, 'application/pdf');
                     } else {
                         this.generalService.showSnackbar(response?.message);

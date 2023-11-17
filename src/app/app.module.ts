@@ -9,26 +9,28 @@ import { EffectsModule } from '@ngrx/effects';
 import { ServiceModule } from './services/service.module';
 import { metaReducers, reducers } from './store';
 import { SessionEffects } from './store/effects/session.effects';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 @NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
-    ServiceModule.forRoot(),
-    StoreModule.forRoot(reducers, {
-      metaReducers,
-      runtimeChecks: {
-        strictStateImmutability: true,
-        strictActionImmutability: true,
-      },
-    }),
-    EffectsModule.forRoot([SessionEffects])
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+    declarations: [
+        AppComponent
+    ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        BrowserAnimationsModule,
+        HttpClientModule,
+        MatSnackBarModule,
+        ServiceModule.forRoot(),
+        StoreModule.forRoot(reducers, {
+            metaReducers,
+            runtimeChecks: {
+                strictStateImmutability: true,
+                strictActionImmutability: true,
+            },
+        }),
+        EffectsModule.forRoot([SessionEffects])
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
 })
 export class AppModule { }

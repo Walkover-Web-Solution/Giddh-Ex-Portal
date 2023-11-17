@@ -90,7 +90,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         private router: Router,
         private store: Store
     ) {
-        
+
     }
 
     /**
@@ -125,7 +125,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
             .subscribe(
                 (response: any) => {
                     if (response) {
-                        let blob: Blob = this.invoiceService.base64ToBlob(response.body, 'application/pdf', 512);
+                        let blob: Blob = this.generalService.base64ToBlob(response.body, 'application/pdf', 512);
                         saveAs(blob, item?.voucherNumber, 'application/pdf');
                     } else {
                         this.generalService.showSnackbar(response?.message);

@@ -5,11 +5,13 @@ import { catchError, map } from "rxjs/operators";
 import { API } from "./apiurls/dashboard.api";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
+import { environment } from "src/environments/environment";
 
 @Injectable()
 export class DashboardService {
-
+    private apiUrl: string = '';
     constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService) {
+        this.apiUrl = environment.apiUrl;
     }
 
     /**
@@ -26,7 +28,7 @@ export class DashboardService {
         }
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.get(API.BALANCE_SUMMARY?.replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName)), '', args).pipe(
+        return this.http.get(this.apiUrl + API.BALANCE_SUMMARY?.replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName)), '', args).pipe(
             map((res) => {
                 let data: BaseResponse<any, string> = res;
                 data.queryString = { data };
@@ -49,7 +51,7 @@ export class DashboardService {
         }
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.get(API.ACCOUNT_DETAILS?.replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName)), '', args).pipe(
+        return this.http.get(this.apiUrl + API.ACCOUNT_DETAILS?.replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName)), '', args).pipe(
             map((res) => {
                 let data: BaseResponse<any, string> = res;
                 data.queryString = { data };
@@ -72,7 +74,7 @@ export class DashboardService {
         }
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.get(API.GET_ACCOUNTS?.replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName)), '', args).pipe(
+        return this.http.get(this.apiUrl + API.GET_ACCOUNTS?.replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName)), '', args).pipe(
             map((res) => {
                 let data: BaseResponse<any, string> = res;
                 data.queryString = { data };

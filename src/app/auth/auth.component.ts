@@ -80,7 +80,7 @@ export class AuthComponent implements OnInit, OnDestroy {
      */
     public initializeUserForm() {
         this.userForm = this.fb.group({
-            checkboxes: this.fb.array([])
+            user: this.fb.array([])
         });
     }
 
@@ -90,16 +90,14 @@ export class AuthComponent implements OnInit, OnDestroy {
      * @param {number} index
      * @memberof AuthComponent
      */
-    public onUserSelected(index: number): void {
+    public onUserSelected(user: any): void {
         this.isLoading = true;
-        const isChecked = this.userForm.value.checkboxes[index];
-        const selectedOption = isChecked ? this.users[index] : null;
         this.savePortalUserSession = {
             account: {
-                name: selectedOption.account.name,
-                uniqueName: selectedOption.account.uniqueName
+                name: user.account.name,
+                uniqueName: user.account.uniqueName
             },
-            vendorContactUniqueName: selectedOption.vendorContactUniqueName,
+            vendorContactUniqueName: user.vendorContactUniqueName,
             proxyAuthToken: this.portalParamsRequest.proxyAuthToken,
             subDomain: this.portalParamsRequest.subDomain
         };
@@ -132,10 +130,6 @@ export class AuthComponent implements OnInit, OnDestroy {
                 this.authService.verifyPortalLogin(this.portalParamsRequest).pipe(takeUntil(this.destroyed$)).subscribe((portal) => {
                     if (portal && portal.status === 'success') {
                         this.users = portal.body;
-                        this.users.forEach(() => {
-                            const control = this.fb.control(false);
-                            (this.userForm.get('checkboxes') as UntypedFormArray).push(control);
-                        });
                         if (this.users?.length > 1) {
                             this.isLoading = false;
                         } else {

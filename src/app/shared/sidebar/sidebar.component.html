@@ -1,18 +1,30 @@
 <div class="common-wrapper">
-    <mat-drawer-container class="sidebar h-100" autosize
-        [ngClass]="{ 'sidebar-open': isExpanded, 'sidebar-close': !isExpanded }">
+    <mat-drawer-container
+        class="sidebar h-100"
+        autosize
+        [ngClass]="{ 'sidebar-open': isExpanded, 'sidebar-close': !isExpanded }"
+    >
         <mat-drawer #drawer class="example-sidenav" mode="side" opened="true">
             <div class="sidebar-head">
                 <button type="button" (click)="toggleMenu()" class="cp">
                     <img src="../../../assets/images/toggle.svg" alt="toggle" />
                 </button>
-                <span class="pd-l1 d-inline-block toggle-heading">Giddh GmbH</span>
+                <span class="pd-l1 d-inline-block toggle-heading">
+                    {{ storeData?.companyDetails?.name }}</span
+                >
             </div>
             <mat-list role="list">
-                <mat-list-item role="listitem" *ngFor="let item of menuItems" [routerLink]="[item.url]"
-                    routerLinkActive="active">
+                <mat-list-item
+                    role="listitem"
+                    *ngFor="let item of menuItems"
+                    [routerLink]="[item.url]"
+                    routerLinkActive="active"
+                >
                     <a href="javascript:;">
-                        <img [src]="'../../../assets/images/' + item.icon" alt="{{ item.label }}" />
+                        <img
+                            [src]="'../../../assets/images/' + item.icon"
+                            alt="{{ item.label }}"
+                        />
                         <span class="side-menu">{{ item.label }}</span>
                     </a>
                 </mat-list-item>
@@ -20,13 +32,30 @@
             <div class="sidebar-footer">
                 <div class="loader-line" *ngIf="isLoading"></div>
                 <div *ngIf="!isLoading">
-                    <a href="javascript:;" [matTooltip]="userDetails?.email"
-                        matTooltipClass="example-tooltip-uppercase">
-                        {{ userDetails?.name }}
-                    </a>
-                    <button mat-stroked-button color="primary" (click)="logoutUser()" class="logout-btn">
-                        Logout
-                    </button>
+                    <div
+                        class="profile-user font-12 d-flex justify-content-between align-items-center pd-15"
+                    >
+                        <div
+                            class="profile-name cursor-pointer d-flex align-items-center"
+                            [matTooltip]="userDetails?.email"
+                            placement="top"
+                        >
+                            <span class="profile-alice">{{
+                                userDetails?.name
+                            }}</span>
+                        </div>
+                        <div class="profile-logout">
+                            <button
+                                mat-stroked-button
+                                color="primary"
+                                class="logout-btn"
+                                (click)="logoutUser()"
+                                *ngIf="userDetails?.name"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </mat-drawer>
@@ -34,7 +63,10 @@
         <div class="sidenav-content">
             <div class="sidebar-mobile-head">
                 <button type="button" (click)="toggleMenu()" class="cp">
-                    <img src="../../../assets/images/toggle-responsive.svg" alt="toggle" />
+                    <img
+                        src="../../../assets/images/toggle-responsive.svg"
+                        alt="toggle"
+                    />
                 </button>
                 <span class="pd-l1 d-inline-block toggle-heading">Giddh</span>
             </div>

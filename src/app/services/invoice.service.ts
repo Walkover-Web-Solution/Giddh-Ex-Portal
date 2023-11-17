@@ -6,10 +6,12 @@ import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
 import { API } from "./apiurls/invoice.api.";
 import { WELCOME_API } from "./apiurls/welcome.api";
+import { environment } from "src/environments/environment";
 @Injectable()
 export class InvoiceService {
-
+    private apiUrl: string = '';
     constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService) {
+        this.apiUrl = environment.apiUrl;
     }
 
     /**
@@ -23,12 +25,13 @@ export class InvoiceService {
         let data = {
             companyUniqueName: model.companyUniqueName,
             accountUniqueName: model.accountUniqueName,
-            balanceStatus: model.balanceStatus
+            balanceStatus: model.balanceStatus,
+            uniqueNames: model.uniqueNames ? [model.uniqueNames] : []
         };
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
         return this.http.post(
-            WELCOME_API.VOUCHERS_WITH_LAST_PAYMENT_MODE
+            this.apiUrl + WELCOME_API.VOUCHERS_WITH_LAST_PAYMENT_MODE
                 .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
                 .replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName))
                 .replace(':type', encodeURIComponent(model.type))
@@ -60,7 +63,7 @@ export class InvoiceService {
         let voucherUniqueName = [model.voucherUniqueName];
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.post(API.DOWNLOAD_VOUCHER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), voucherUniqueName, args).pipe(
+        return this.http.post(this.apiUrl + API.DOWNLOAD_VOUCHER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), voucherUniqueName, args).pipe(
             map((res) => {
                 let data: BaseResponse<any, any> = res;
                 data.request = voucherUniqueName;
@@ -68,38 +71,6 @@ export class InvoiceService {
             }),
             catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
         );
-    }
-
-    /**
-     * This will be use for converting base64 to blob format
-     *
-     * @param {*} b64Data
-     * @param {*} contentType
-     * @param {*} sliceSize
-     * @return {*}
-     * @memberof InvoiceService
-     */
-    public base64ToBlob(b64Data, contentType, sliceSize) {
-        contentType = contentType || '';
-        sliceSize = sliceSize || 512;
-        let byteCharacters = atob(b64Data);
-        let byteArrays = [];
-        let offset = 0;
-        if (byteCharacters && byteCharacters.length > 0) {
-            while (offset < byteCharacters?.length) {
-                let slice = byteCharacters.slice(offset, offset + sliceSize);
-                let byteNumbers = new Array(slice?.length);
-                let i = 0;
-                while (i < slice?.length) {
-                    byteNumbers[i] = slice.charCodeAt(i);
-                    i++;
-                }
-                let byteArray = new Uint8Array(byteNumbers);
-                byteArrays.push(byteArray);
-                offset += sliceSize;
-            }
-        }
-        return new Blob(byteArrays, { type: contentType });
     }
 
     /**
@@ -112,7 +83,7 @@ export class InvoiceService {
     public getVoucherDetails(model: any): Observable<BaseResponse<any, any>> {
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.post(API.GET_VOUCHER_DETAILS?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), [model.voucherUniqueName], args).pipe(
+        return this.http.post(this.apiUrl + API.GET_VOUCHER_DETAILS?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), [model.voucherUniqueName], args).pipe(
             map((res) => {
                 let data: BaseResponse<any, any> = res;
                 return data;
@@ -137,7 +108,7 @@ export class InvoiceService {
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
         return this.http.get(
-            API.GET_COMMENTS
+            this.apiUrl + API.GET_COMMENTS
                 .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
                 .replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName))
                 .replace(':voucherUniqueName', encodeURIComponent(data.voucherUniqueName)),
@@ -168,7 +139,7 @@ export class InvoiceService {
         }
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.post(API.ADD_COMMENTS
+        return this.http.post(this.apiUrl + API.ADD_COMMENTS
             .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
             .replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName))
             .replace(':voucherUniqueName', encodeURIComponent(data.voucherUniqueName)),
@@ -195,7 +166,7 @@ export class InvoiceService {
             companyUniqueName: model.companyUniqueName,
             invoiceNumber: model.contentNumber
         }
-        return this.http.post(API.PAY_VOUCHER
+        return this.http.post(this.apiUrl + API.PAY_VOUCHER
             .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
             .replace(':invoiceNumber', encodeURIComponent(data.invoiceNumber)),
             request).pipe(

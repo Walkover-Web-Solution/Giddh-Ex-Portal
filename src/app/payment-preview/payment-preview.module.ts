@@ -9,7 +9,6 @@ import { MatDialogModule } from "@angular/material/dialog";
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { SharedModule } from "../shared/shared.module";
-import { MatSnackBarModule } from "@angular/material/snack-bar";
 
 @NgModule({
     declarations: [
@@ -24,8 +23,7 @@ import { MatSnackBarModule } from "@angular/material/snack-bar";
         MatSelectModule,
         MatDialogModule,
         MatTabsModule,
-        MatAutocompleteModule,
-        MatSnackBarModule
+        MatAutocompleteModule
     ]
 })
 export class PaymentPdfModule {

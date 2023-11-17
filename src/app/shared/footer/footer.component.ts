@@ -5,6 +5,7 @@ import { CompanyResponse } from "src/app/models/Company";
 import { select, Store } from '@ngrx/store';
 import { WelcomeService } from "src/app/services/welcome.service";
 import { GeneralService } from "src/app/services/general.service";
+import { setCompanyDetails } from "src/app/store/actions/session.action";
 
 @Component({
     selector: "footer",
@@ -34,7 +35,7 @@ export class FooterComponent implements OnInit, OnDestroy {
         private generalService: GeneralService,
         private store: Store
     ) {
-        
+
     }
 
     /**
@@ -46,9 +47,9 @@ export class FooterComponent implements OnInit, OnDestroy {
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             if (sessionState.session) {
                 this.storeData = sessionState.session;
-                this.getCompanyDetails();
             }
         });
+        this.getCompanyDetails();
     }
 
     /**
@@ -64,6 +65,7 @@ export class FooterComponent implements OnInit, OnDestroy {
             if (response && response.status === 'success') {
                 this.companyDetails = response.body;
                 this.companyData.emit(this.companyDetails);
+                this.store.dispatch(setCompanyDetails({ companyDetails: this.companyDetails }));
             } else {
                 this.generalService.showSnackbar(response?.message);
             }

@@ -70,7 +70,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 this.invoiceListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
                 this.invoiceListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
                 this.invoiceListRequest.sessionId = this.storeData.session.id;
-                this.invoiceListRequest.voucherUniqueName = params.voucher;
+                this.invoiceListRequest['uniqueNames'] = params.voucher;
                 let request = { accountUniqueName: this.storeData.userDetails.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: this.storeData.userDetails.companyUniqueName, sessionId: this.storeData.session.id };
 
                 combineLatest([
@@ -133,6 +133,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     public createPaidPlanCompany(razorPayResponse: any): void {
         if (razorPayResponse) {
+            this.isLoading = true;
             if (this.paymentDetails.contentType === "invoice") {
                 let today = new Date();
                 let dd: any = today.getDate();
@@ -158,6 +159,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 }
                 this.invoiceService.payInvoice(payRequest, payload).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
                     if (response && response.status === 'success') {
+                        this.isLoading = false;;
                         this.generalService.showSnackbar(response?.body, "success");
                         this.backToInvoice();
                     } else {

@@ -5,11 +5,15 @@ import { catchError, map } from "rxjs/operators";
 import { API } from "./apiurls/auth.api";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
+import { environment } from "src/environments/environment";
 
 @Injectable()
 export class AuthService {
-
+    private apiUrl: string = '';
+    private proxyUrl: string = '';
     constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService) {
+        this.apiUrl = environment.apiUrl;
+        this.proxyUrl = environment.proxyUrl;
     }
 
     /**
@@ -20,7 +24,7 @@ export class AuthService {
      * @memberof AuthService
      */
     public authenticateProxy(proxyAuthToken: string): Observable<BaseResponse<any, any>> {
-        return this.http.portalLogin(API.GET_PROXY, proxyAuthToken).pipe(
+        return this.http.portalLogin(this.proxyUrl + API.GET_PROXY, proxyAuthToken).pipe(
             map((res) => {
                 let data: BaseResponse<string, any> = res;
                 return data;
@@ -39,7 +43,7 @@ export class AuthService {
      * @memberof AuthService
      */
     public verifyPortalLogin(model: any): Observable<BaseResponse<any, any>> {
-        return this.http.post(API.VERIFY_PORTAL, model).pipe(
+        return this.http.post(this.apiUrl + API.VERIFY_PORTAL, model).pipe(
             map((res) => {
                 let data: BaseResponse<any, any> = res;
                 data.request = model;
@@ -57,7 +61,7 @@ export class AuthService {
      * @memberof AuthService
      */
     public savePortalUserSession(model: any): Observable<BaseResponse<any, any>> {
-        return this.http.post(API.SAVE_PORTAL_SESSION, model).pipe(
+        return this.http.post(this.apiUrl + API.SAVE_PORTAL_SESSION, model).pipe(
             map((res) => {
                 let data: BaseResponse<any, any> = res;
                 data.request = model;
@@ -77,7 +81,7 @@ export class AuthService {
     public logoutUser(model: any): Observable<BaseResponse<any, any>> {
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.delete(API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), '', args).pipe(map((res) => {
+        return this.http.delete(this.apiUrl + API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), '', args).pipe(map((res) => {
             let data: BaseResponse<any, any> = res;
             data.request = model;
             return data;
@@ -87,7 +91,7 @@ export class AuthService {
     public renewSession(userUniqueName: string, sessionId: string): Observable<BaseResponse<any, any>> {
         let args: any = { headers: {} };
         args.headers['Session-id'] = sessionId;
-        return this.http.put(API.RENEW_SESSION?.replace(':userUniqueName', encodeURIComponent(userUniqueName)), null, args).pipe(map((res) => {
+        return this.http.put(this.apiUrl + API.RENEW_SESSION?.replace(':userUniqueName', encodeURIComponent(userUniqueName)), null, args).pipe(map((res) => {
             let data: BaseResponse<string, any> = res;
             return data;
         }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));

@@ -11,8 +11,13 @@ export const setSessionToken = createAction(
   props<{ session: any }>()
 );
 
+export const setCompanyDetails = createAction(
+    '[Session] Set Company Details',
+    props<{ companyDetails: any }>()
+);
+
 export const setUserDetails = createAction(
-  '[Session] Set User Details',
+  '[User] Set User Details',
   props<{ userDetails: any }>()
 );
-export const resetLocalStorage = createAction('[Session] Reset Local Storage');
+export const resetLocalStorage = createAction('[Reset] Reset Local Storage');

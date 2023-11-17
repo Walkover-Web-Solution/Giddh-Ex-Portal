@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from "@angular/core";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { select, Store } from '@ngrx/store';
 import { takeUntil } from "rxjs/operators";
@@ -14,6 +14,9 @@ import { WelcomeService } from "../services/welcome.service";
     styleUrls: ["welcome.component.scss"]
 })
 export class WelcomeComponent implements OnInit, OnDestroy {
+    /**Instance of company data emit */
+    @Output() companyData: EventEmitter<CompanyResponse> = new EventEmitter<CompanyResponse>();
+    /** This will be use for company details */
     public receivedCompanyDetails: CompanyResponse;
     /** True if api call in progress */
     public isLoading: boolean = false;
@@ -49,7 +52,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             stateName: undefined,
             stateGstCode: undefined,
             stateCodeString: undefined
-        }
+        },
+        attentionTo: undefined,
+        mobileNo: undefined
     };
     /** Hold accounts*/
     public accounts: any[] = [];
@@ -147,6 +152,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             this.accountDetails.email = response.body.email;
             this.accountDetails.countryName = response.body.countryName;
             this.accountDetails.data = response.body.addresses[0];
+            this.accountDetails.attentionTo = response.body.attentionTo;
+            this.accountDetails.mobileNo= response.body.mobileNo;
         } else {
             this.generalService.showSnackbar(response?.message);
         }
@@ -190,6 +197,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      */
     public onCompanyDataReceived(companyDetails: CompanyResponse): void {
         this.receivedCompanyDetails = companyDetails;
+            this.companyData.emit(companyDetails);
     }
 
     /**

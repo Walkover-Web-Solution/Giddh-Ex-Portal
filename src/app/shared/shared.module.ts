@@ -11,17 +11,16 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatListModule } from '@angular/material/list';
 import { MatDialogModule } from '@angular/material/dialog';
-import { SidebarRoutingModule } from "./shared.routing.module";
 import { MatMenuModule } from '@angular/material/menu';
 import { LayoutModule } from '@angular/cdk/layout';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SidebarRoutingModule } from "./sidebar.routing.module";
 
 @NgModule({
     declarations: [
@@ -30,8 +29,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         FooterComponent
     ],
     imports: [
-        SidebarRoutingModule,
         MatSidenavModule,
+        SidebarRoutingModule,
         MatToolbarModule,
         CommonModule,
         MatTreeModule,
@@ -47,13 +46,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         LayoutModule,
         MatInputModule,
         MatTooltipModule,
-        MatSnackBarModule,
         MatButtonModule,
         MatFormFieldModule,
         MatInputModule,
         ReactiveFormsModule,
         MatIconModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+
     ],
     exports: [
         HeaderComponent,
@@ -71,7 +70,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         LayoutModule,
         MatInputModule,
         MatTooltipModule,
-        MatSnackBarModule,
         MatButtonModule,
         MatFormFieldModule,
         MatInputModule,

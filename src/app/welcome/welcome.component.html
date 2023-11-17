@@ -1,7 +1,7 @@
 <div class="common-wrapper">
     <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
     <div class="page-wrapper d-flex flex-column h-100" *ngIf="!isLoading">
-        <header [accountName]="accountDetails?.name "></header>
+        <header (companyData)="receivedCompanyDetails"></header>
         <div class="container" *ngIf="!isShowAccountDetails">
             <div class="index-wrapper">
                 <div class="balance-wrap">
@@ -17,13 +17,23 @@
                                     </p>
                                 </div>
                                 <div class="summary-content">
-                                    <span>{{ balanceSummary?.currency?.code }} -
-                                        {{ balanceSummary?.currency?.symbol }}</span>
+                                    <span
+                                        >{{ balanceSummary?.currency?.code }} -
+                                        {{
+                                            balanceSummary?.currency?.symbol
+                                        }}</span
+                                    >
                                     <span class="number-pay">
                                         <div class="number text-right">
-                                            {{ balanceSummary?.currency?.symbol }}
-                                            {{ balanceSummary?.balancePayable }} <br />
-                                            Number of Invoices : {{ balanceSummary?.noOfInvoices }}
+                                            {{
+                                                balanceSummary?.currency?.symbol
+                                            }}
+                                            {{
+                                                balanceSummary?.balancePayable
+                                            }}
+                                            <br />
+                                            Number of Invoices :
+                                            {{ balanceSummary?.noOfInvoices }}
                                         </div>
                                         <div></div>
                                     </span>
@@ -32,63 +42,107 @@
                             <!-- mobile-design -->
                             <div class="mobile-screen">
                                 <div class="currency-head">
-                                    <span class="text-uppercase">Currency :</span>&nbsp;
-                                    <span>{{ balanceSummary?.currency?.code }} -
-                                        {{ balanceSummary?.currency?.symbol }}</span>
+                                    <span class="text-uppercase"
+                                        >Currency :</span
+                                    >&nbsp;
+                                    <span
+                                        >{{ balanceSummary?.currency?.code }} -
+                                        {{
+                                            balanceSummary?.currency?.symbol
+                                        }}</span
+                                    >
                                 </div>
                                 <div class="d-flex mobile-pay mr-t1 mr-b15">
                                     <span>Balance Payable</span>
                                     <span class="number-pay">
                                         {{ balanceSummary?.currency?.symbol }}
                                         {{ balanceSummary?.balancePayable }}
-                                        <a href="javascript:;" class="d-block text-right">Pay
-                                            <img src="../../assets/images/right-arrow.svg" alt="arrow" />
+                                        <a
+                                            href="javascript:;"
+                                            class="d-block text-right"
+                                            >Pay
+                                            <img
+                                                src="../../assets/images/right-arrow.svg"
+                                                alt="arrow"
+                                            />
                                         </a>
                                     </span>
                                 </div>
                                 <div class="d-flex mobile-pay mr-b15">
                                     <span>Outstanding Invoices</span>
                                     <span class="number-pay">
-                                        {{ balanceSummary?.noOfInvoices }}</span>
+                                        {{ balanceSummary?.noOfInvoices }}</span
+                                    >
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="balance-wrap" *ngIf="voucherData?.items[0]?.balanceStatus === 'ADJUSTED'">
+                <div
+                    class="balance-wrap"
+                    *ngIf="voucherData?.items[0]?.balanceStatus === 'ADJUSTED'"
+                >
                     <div class="payment-width">
                         <h4>Last Payment Made</h4>
                         <div class="payment-made mr-t15">
                             <div>
-                                <span class="d-block pay mr-b1">{{ voucherData?.items[0]?.accountCurrencySymbol
+                                <span class="d-block pay mr-b1"
+                                    >{{
+                                        voucherData?.items[0]
+                                            ?.accountCurrencySymbol
                                     }}{{
-                                    voucherData?.items[0]?.grandTotal?.amountForAccount
-                                    }}</span>
-                                <span>{{
-                                    voucherData?.items[0]?.balanceStatus === "ADJUSTED"
-                                    ? "PAID"
-                                    : "UNPAID"
+                                        voucherData?.items[0]?.grandTotal
+                                            ?.amountForAccount
+                                    }}</span
+                                >
+                                <span
+                                    >{{
+                                        voucherData?.items[0]?.balanceStatus ===
+                                        "ADJUSTED"
+                                            ? "PAID"
+                                            : "UNPAID"
                                     }}
                                     for
-                                    <a href="javascript:;" (click)="
-                      invoicePreview(
-                        voucherData?.items[0]?.adjustments[0]?.uniqueName
-                      )
-                    ">{{
-                                        voucherData?.items[0]?.adjustments[0]?.voucherNumber
-                                        }}</a>
+                                    <a
+                                        href="javascript:;"
+                                        (click)="
+                                            invoicePreview(
+                                                voucherData?.items[0]
+                                                    ?.adjustments[0]?.uniqueName
+                                            )
+                                        "
+                                        >{{
+                                            voucherData?.items[0]
+                                                ?.adjustments[0]?.voucherNumber
+                                        }}</a
+                                    >
                                 </span>
                             </div>
                             <div>
-                                <span class="d-block pay-head mr-b1">Paid On</span>
-                                <span>{{ voucherData?.items[0]?.voucherDate }}</span>
+                                <span class="d-block pay-head mr-b1"
+                                    >Paid On</span
+                                >
+                                <span>{{
+                                    voucherData?.items[0]?.voucherDate
+                                }}</span>
                             </div>
                             <div>
-                                <span class="d-block pay-head mr-b1">Payment #</span>
+                                <span class="d-block pay-head mr-b1"
+                                    >Payment #</span
+                                >
                                 <span>
-                                    <a href="javascript:;"
-                                        (click)="receiptPreview(voucherData?.items[0]?.uniqueName)">{{
-                                        voucherData?.items[0]?.voucherNumber }}</a>
+                                    <a
+                                        href="javascript:;"
+                                        (click)="
+                                            receiptPreview(
+                                                voucherData?.items[0]
+                                                    ?.uniqueName
+                                            )
+                                        "
+                                        >{{
+                                            voucherData?.items[0]?.voucherNumber
+                                        }}</a
+                                    >
                                 </span>
                             </div>
                         </div>
@@ -98,17 +152,27 @@
                     <div class="payment-width">
                         <div class="d-flex justify-content-between">
                             <h4>My Details</h4>
-                            <a href="javascript:;" (click)="isShowAccountDetails = true">View More</a>
+                            <a
+                                href="javascript:;"
+                                (click)="isShowAccountDetails = true"
+                                >View More</a
+                            >
                         </div>
                         <div class="payment-made mr-t15">
                             <div>
                                 <span class="d-block company-head mr-b1">{{
                                     receivedCompanyDetails?.name
-                                    }}</span>
-                                <span class="d-block mr-b1"> {{ accountDetails?.name }}</span>
+                                }}</span>
+                                <span class="d-block mr-b1">
+                                    {{ accountDetails?.name }}</span
+                                >
                                 <span class="d-block mr-t5 mr-b5">
-                                    <img src="../../assets/images/profile.svg" alt="profile" />
-                                    {{ accounts?.length }} Contact Persons</span>
+                                    <img
+                                        src="../../assets/images/profile.svg"
+                                        alt="profile"
+                                    />
+                                    {{ accounts?.length }} Contact Persons</span
+                                >
                             </div>
                         </div>
                     </div>
@@ -117,7 +181,12 @@
         </div>
         <!-- my-detail -->
         <div class="container" *ngIf="isShowAccountDetails">
-            <button class="mr-t15" mat-stroked-button color="primary" (click)="isShowAccountDetails = false">
+            <button
+                class="mr-t15"
+                mat-stroked-button
+                color="primary"
+                (click)="isShowAccountDetails = false"
+            >
                 Back
             </button>
             <div class="index-wrapper">
@@ -126,32 +195,48 @@
                         <h4>Account Details</h4>
                         <div class="account-details mr-t15">
                             <div>
-                                <span class="account-head d-block mr-b1">{{
-                                    receivedCompanyDetails?.name
-                                    }}</span>
+                                <span class="account-head d-block mr-b1"
+                                    >Portal User Name</span
+                                >
                                 <div>
                                     <span class="d-block account-name mr-b5">{{
                                         accountDetails?.name
-                                        }}</span>
-                                    <span class="d-block mr-b5">{{ accountDetails?.email }}</span>
+                                    }}</span>
+                                    <span class="d-block mr-b5">{{
+                                        accountDetails?.email
+                                    }}</span>
                                 </div>
                             </div>
                             <div class="billing-address">
                                 <div>
-                                    <span class="text-mute">BILLING ADDRESS</span>
+                                    <span class="text-mute"
+                                        >BILLING ADDRESS</span
+                                    >
                                     <p class="mr-t15">
-                                        {{ accountDetails?.data?.address }} <br />
+                                        {{ accountDetails?.attentionTo }}<br />
+                                        {{ accountDetails?.email }}<br />
+                                        {{ accountDetails?.mobileNo }}<br />
+                                        {{ accountDetails?.data?.address }}
+                                        <br />
                                         {{ accountDetails?.data?.stateName }}
-                                        {{ accountDetails?.data?.pincode }} <br />
+                                        {{ accountDetails?.data?.pincode }}
+                                        <br />
                                         {{ accountDetails?.countryName }} <br />
                                     </p>
                                 </div>
                                 <div>
-                                    <span class="text-mute">SHIPPING ADDRESS</span>
+                                    <span class="text-mute"
+                                        >SHIPPING ADDRESS</span
+                                    >
                                     <p class="mr-t2">
-                                        {{ accountDetails?.data?.address }} <br />
+                                        {{ accountDetails?.attentionTo }}<br />
+                                        {{ accountDetails?.email }}<br />
+                                        {{ accountDetails?.mobileNo }}<br />
+                                        {{ accountDetails?.data?.address }}
+                                        <br />
                                         {{ accountDetails?.data?.stateName }}
-                                        {{ accountDetails?.data?.pincode }} <br />
+                                        {{ accountDetails?.data?.pincode }}
+                                        <br />
                                         {{ accountDetails?.countryName }} <br />
                                     </p>
                                 </div>
@@ -161,13 +246,23 @@
                     <div class="account-right">
                         <h4>Contact Persons</h4>
                         <div class="account-details">
-                            <div class="d-flex account-profile mr-b5 mr-t15" *ngFor="let user of accounts">
+                            <div
+                                class="d-flex account-profile mr-b5 mr-t15"
+                                *ngFor="let user of accounts"
+                            >
                                 <div>
-                                    <img src="../../assets/images/profile-white.png" alt="profile" />
+                                    <img
+                                        src="../../assets/images/profile-white.png"
+                                        alt="profile"
+                                    />
                                 </div>
                                 <div>
-                                    <span class="d-block mr-b5">{{ user?.name }}</span>
-                                    <span class="d-block account-email">{{ user?.email }}</span>
+                                    <span class="d-block mr-b5">{{
+                                        user?.name
+                                    }}</span>
+                                    <span class="d-block account-email">{{
+                                        user?.email
+                                    }}</span>
                                 </div>
                             </div>
                         </div>

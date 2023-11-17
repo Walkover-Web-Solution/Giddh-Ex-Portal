@@ -23,24 +23,6 @@
             }
         }
 
-        .user-form {
-            align-items: baseline;
-            display: flex;
-            width: 100%;
-            flex-direction: column;
-
-            .user-label {
-                cursor: pointer;
-                font-size: 18px;
-
-                input {
-                    height: 20px;
-                    width: 20px;
-                    cursor: pointer;
-                }
-            }
-        }
-
         .signin-form {
             padding: 15px;
         }
@@ -62,4 +44,9 @@
             }
         }
     }
+}
+
+.user-form {
+    width: 269px;
+    margin: 0 auto;
 }

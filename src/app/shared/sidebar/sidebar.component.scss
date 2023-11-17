@@ -101,3 +101,48 @@ img {
         width: 100%;
     }
 }
+        .profile-user {
+            position: fixed;
+            width: 211px;
+            left: 0;
+            bottom: 10px;
+            border-top: 1px solid var(--color-common-secondary-border);
+            z-index: 991;
+            background-color: var(--color-sidebar-footer-logout-section-background);
+
+            .profile-name {
+                cursor: pointer;
+
+                .profile-alice {
+                    display: inline-flex;
+                    width: 40px;
+                    height: 40px;
+                    background-color: var(--color-giddh-blue);
+                    border-radius: 30px;
+                    font-size: var(--font-size-12);
+                    justify-content: center;
+                    align-items: center;
+                    color: var(--color-white);
+                    letter-spacing: -1px;
+                    margin-left: 16px;
+                }
+            }
+
+            .profile-logout {
+                display: flex;
+                align-items: center;
+
+                button {
+                    border: 1px solid var(--color-giddh-blue);
+                    background: var(--color-white);
+                    color: var(--color-black);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: var(--font-size-12);
+                    padding: 5px 10px;
+                    border-radius: 5px !important;
+                    font-size: var(--font-size-12);
+                }
+            }
+        }

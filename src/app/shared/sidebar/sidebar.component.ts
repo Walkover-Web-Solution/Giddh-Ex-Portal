@@ -101,7 +101,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
             if (accountsResponse && accountsResponse.status === 'success') {
                 this.isLoading = false;
                 this.userDetails = accountsResponse.body;
+                let userName = this.generalService.getInitialsFromString(this.userDetails.name);
+                this.userDetails.name = userName;
             } else {
+                this.isLoading = false;
                 this.generalService.showSnackbar(accountsResponse?.message);
             }
         });
@@ -149,12 +152,23 @@ export class SidebarComponent implements OnInit, OnDestroy {
             }
         });
     }
-
+    /**
+     * This listner is used for mouse move events
+     *
+     * @param {MouseEvent} event
+     * @memberof SidebarComponent
+     */
     @HostListener('window:mousemove', ['$event'])
     onMouseMove(event: MouseEvent) {
         this.checkAndRenewUserSession();
     }
 
+    /**
+     * This will be use for keypress events
+     *
+     * @param {KeyboardEvent} event
+     * @memberof SidebarComponent
+     */
     @HostListener('document:keypress', ['$event'])
     onKeyDown(event: KeyboardEvent) {
         this.checkAndRenewUserSession();
@@ -166,17 +180,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof HeaderComponent
      */
     public checkAndRenewUserSession(): void {
-        let expiresAtList = this.storeData.session?.expiresAt?.split(" ");
-        let expiryDate = expiresAtList[0]?.split("-").reverse().join("-");
-        let sessionExpiresAt = dayjs(expiryDate + " " + expiresAtList[1]);
-        if (sessionExpiresAt.diff(dayjs(), 'hours') < 24) {
-            this.authService.renewSession(this.storeData?.userDetails?.vendorContactUniqueName, this.storeData?.session?.id).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
-                if (response && response.status === 'success') {
-                    this.store.dispatch(setSessionToken({ session: response.body.session }));
-                } else {
-                    this.generalService.showSnackbar(response?.message);
+        if (this.storeData.session.expiresAt) {
+            let expiresAtList = this.storeData.session?.expiresAt?.split(" ");
+            if (expiresAtList) {
+                let expiryDate = expiresAtList[0]?.split("-").reverse().join("-");
+                let sessionExpiresAt = dayjs(expiryDate + " " + expiresAtList[1]);
+                if (sessionExpiresAt.diff(dayjs(), 'hours') < 24) {
+                    this.authService.renewSession(this.storeData?.userDetails?.vendorContactUniqueName, this.storeData?.session?.id).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+                        if (response && response.status === 'success') {
+                            this.store.dispatch(setSessionToken({ session: response.body.session }));
+                        } else {
+                            this.generalService.showSnackbar(response?.message);
+                        }
+                    });
                 }
-            });
+            }
         }
     }
 
