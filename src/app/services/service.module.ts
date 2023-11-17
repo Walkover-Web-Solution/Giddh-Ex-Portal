@@ -10,28 +10,30 @@ import { AuthService } from "./auth.service";
 import { DashboardService } from "./dashboard.service.";
 import { InvoiceService } from "./invoice.service";
 import { PaymentService } from "./payment.service.";
+import { WelcomeService } from "./welcome.service";
 
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
  */
 
 @NgModule({
-  imports: [CommonModule, RouterModule],
-  exports: [CommonModule, FormsModule, RouterModule]
+    imports: [CommonModule, RouterModule],
+    exports: [CommonModule, FormsModule, RouterModule]
 })
 export class ServiceModule {
-  public static forRoot(): ModuleWithProviders<ServiceModule> {
-    return {
-      ngModule: ServiceModule,
-      providers: [
-        GiddhErrorHandler,
-        HttpWrapperService,
-        GeneralService,
-        AuthService,
-        DashboardService,
-        InvoiceService,
-        PaymentService
-      ]
-    };
-  }
+    public static forRoot(): ModuleWithProviders<ServiceModule> {
+        return {
+            ngModule: ServiceModule,
+            providers: [
+                GiddhErrorHandler,
+                HttpWrapperService,
+                GeneralService,
+                AuthService,
+                DashboardService,
+                InvoiceService,
+                PaymentService,
+                WelcomeService
+            ]
+        };
+    }
 }

@@ -1,28 +1,28 @@
 <div class="footer-wrapper">
-  <div class="logo-footer">
-    <div class="mr-t5">
-      <img src="../../../assets/images/giddh_logo.svg" alt="logo" />
+    <div class="logo-footer">
+        <div class="mr-t5">
+            <img src="../../../assets/images/giddh_logo.svg" alt="logo" />
+        </div>
+        <div>
+            <h4>Giddh GmbH</h4>
+            <p>
+                <br />
+                {{ companyDetails?.country }} <br />
+                {{ companyDetails?.addresses[0]?.taxType }}
+                {{ companyDetails?.addresses[0]?.taxNumber }} <br />
+                {{ companyDetails?.addresses[0]?.address }} -
+                {{ companyDetails?.addresses[0]?.stateName }} <br />
+                {{ companyDetails?.addresses[0]?.pincode }}
+            </p>
+        </div>
     </div>
-    <div>
-      <h4>Giddh GmbH</h4>
-      <p>
-        <br />
-        {{ companyDetails?.country }} <br />
-        {{ companyDetails?.addresses[0]?.taxType }}
-        {{ companyDetails?.addresses[0]?.taxNumber }} <br />
-        {{ companyDetails?.addresses[0]?.address }} -
-        {{ companyDetails?.addresses[0]?.stateName }} <br />
-        {{ companyDetails?.addresses[0]?.pincode }}
-      </p>
+    <div class="mail-profile d-flex">
+        <div>
+            <img src="../../../assets/images/profile-large.svg" alt="profile" />
+        </div>
+        <div>
+            <p>Giddh</p>
+            <span>books.giddh.com</span>
+        </div>
     </div>
-  </div>
-  <div class="mail-profile d-flex">
-    <div>
-      <img src="../../../assets/images/profile-large.svg" alt="profile" />
-    </div>
-    <div>
-      <p>Giddh</p>
-      <span>books.giddh.com</span>
-    </div>
-  </div>
 </div>

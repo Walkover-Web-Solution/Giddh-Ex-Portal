@@ -5,93 +5,92 @@ import { catchError, map } from "rxjs/operators";
 import { API } from "./apiurls/auth.api";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
-import { GeneralService } from "./general.service";
 
 @Injectable()
 export class AuthService {
 
-  constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService, private generalService : GeneralService) {
-  }
+    constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService) {
+    }
 
-  /**
-   * This will be use for authentication with proxy
-   *
-   * @param {string} proxyAuthToken
-   * @return {*}  {Observable<BaseResponse<any, any>>}
-   * @memberof AuthService
-   */
-  public authenticateProxy(proxyAuthToken: string): Observable<BaseResponse<any, any>> {
-    return this.http.portalLogin(API.GET_PROXY, proxyAuthToken).pipe(
-      map((res) => {
-        let data: BaseResponse<string, any> = res;
-        return data;
-      }),
-      catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));
-  }
+    /**
+     * This will be use for authentication with proxy
+     *
+     * @param {string} proxyAuthToken
+     * @return {*}  {Observable<BaseResponse<any, any>>}
+     * @memberof AuthService
+     */
+    public authenticateProxy(proxyAuthToken: string): Observable<BaseResponse<any, any>> {
+        return this.http.portalLogin(API.GET_PROXY, proxyAuthToken).pipe(
+            map((res) => {
+                let data: BaseResponse<string, any> = res;
+                return data;
+            }),
+            catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));
+    }
 
 
-  /**
-   * This will be use for verify protal login
-   *
-   * @param {string} emailId
-   * @param {string} token
-   * @param {string} domain
-   * @return {*}  {Observable<BaseResponse<any, any>>}
-   * @memberof AuthService
-   */
-  public verifyPortalLogin(model: any): Observable<BaseResponse<any, any>> {
-    return this.http.post(API.VERIFY_PORTAL, model).pipe(
-      map((res) => {
-        let data: BaseResponse<any, any> = res;
-        data.request = model;
-        return data;
-      }),
-      catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
-    );
-  }
+    /**
+     * This will be use for verify protal login
+     *
+     * @param {string} emailId
+     * @param {string} token
+     * @param {string} domain
+     * @return {*}  {Observable<BaseResponse<any, any>>}
+     * @memberof AuthService
+     */
+    public verifyPortalLogin(model: any): Observable<BaseResponse<any, any>> {
+        return this.http.post(API.VERIFY_PORTAL, model).pipe(
+            map((res) => {
+                let data: BaseResponse<any, any> = res;
+                data.request = model;
+                return data;
+            }),
+            catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
+        );
+    }
 
-  /**
-   * This will be use for save portal user login
-   *
-   * @param {*} model
-   * @return {*}  {Observable<BaseResponse<any, any>>}
-   * @memberof AuthService
-   */
-  public savePortalUserSession(model: any): Observable<BaseResponse<any, any>> {
-    return this.http.post(API.SAVE_PORTAL_SESSION, model).pipe(
-      map((res) => {
-        let data: BaseResponse<any, any> = res;
-        data.request = model;
-        return data;
-      }),
-      catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
-    );
-  }
+    /**
+     * This will be use for save portal user login
+     *
+     * @param {*} model
+     * @return {*}  {Observable<BaseResponse<any, any>>}
+     * @memberof AuthService
+     */
+    public savePortalUserSession(model: any): Observable<BaseResponse<any, any>> {
+        return this.http.post(API.SAVE_PORTAL_SESSION, model).pipe(
+            map((res) => {
+                let data: BaseResponse<any, any> = res;
+                data.request = model;
+                return data;
+            }),
+            catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
+        );
+    }
 
-/**
- * This will be use for renew session token
- *
- * @param {*} model
- * @return {*}  {Observable<BaseResponse<any, any>>}
- * @memberof AuthService
- */
-public logoutUser(model: any): Observable<BaseResponse<any, any>> {
-    let args: any = { headers: {} };
-    args.headers['Session-id'] = model?.sessionId;
-    return this.http.delete(API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), '',args).pipe(map((res) => {
-      let data: BaseResponse<any, any> = res;
-      data.request = model;
-      return data;
-    }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e, model)));
-}
+    /**
+     * This will be use for renew session token
+     *
+     * @param {*} model
+     * @return {*}  {Observable<BaseResponse<any, any>>}
+     * @memberof AuthService
+     */
+    public logoutUser(model: any): Observable<BaseResponse<any, any>> {
+        let args: any = { headers: {} };
+        args.headers['Session-id'] = model?.sessionId;
+        return this.http.delete(API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), '', args).pipe(map((res) => {
+            let data: BaseResponse<any, any> = res;
+            data.request = model;
+            return data;
+        }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e, model)));
+    }
 
-  public renewSession(userUniqueName : string, sessionId:string): Observable<BaseResponse<any, any>> {
-    let args: any = { headers: {} };
-    args.headers['Session-id'] = sessionId;
-    return this.http.put(API.RENEW_SESSION?.replace(':userUniqueName', encodeURIComponent(userUniqueName)), null, args).pipe(map((res) => {
-      let data: BaseResponse<string, any> = res;
-      return data;
-    }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));
-  }
+    public renewSession(userUniqueName: string, sessionId: string): Observable<BaseResponse<any, any>> {
+        let args: any = { headers: {} };
+        args.headers['Session-id'] = sessionId;
+        return this.http.put(API.RENEW_SESSION?.replace(':userUniqueName', encodeURIComponent(userUniqueName)), null, args).pipe(map((res) => {
+            let data: BaseResponse<string, any> = res;
+            return data;
+        }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e)));
+    }
 
 }

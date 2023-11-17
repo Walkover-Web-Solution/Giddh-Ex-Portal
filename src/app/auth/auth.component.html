@@ -1,31 +1,23 @@
 <div class="common-wrapper">
-  <mat-spinner [diameter]="50"  *ngIf="isLoading"></mat-spinner>
-  <!-- <header></header> -->
-  <div class="page-wrapper" *ngIf="!isLoading">
-    <div class="login-wrapper">
-      <div class="text-center">
-        <img
-          src="../../assets/images/giddh_logo.svg"
-          alt="logo"
-          class="mr-t5 mr-b15"
-        />
-        <div class="signin-content">
-          <form [formGroup]="userForm">
-            <div formArrayName="checkboxes" class="user-form">
-              <div class="mr-b15" *ngFor="let option of users; let i = index">
-                <label class="user-label">
-                  <input
-                    type="checkbox"
-                    [formControl]="userForm?.get('checkboxes')['controls'][i]"
-                    (change)="onUserSelected(i)"
-                  />
-                  {{ option?.account?.name }}
-                </label>
-              </div>
+    <mat-spinner [diameter]="50" *ngIf="isLoading"></mat-spinner>
+    <div class="page-wrapper" *ngIf="!isLoading">
+        <div class="login-wrapper">
+            <div class="text-center">
+                <img src="../../assets/images/giddh_logo.svg" alt="logo" class="mr-t5 mr-b15" />
+                <div class="signin-content">
+                    <form [formGroup]="userForm">
+                        <div formArrayName="checkboxes" class="user-form">
+                            <div class="mr-b15" *ngFor="let option of users; let i = index">
+                                <label class="user-label">
+                                    <input type="checkbox" [formControl]="userForm?.get('checkboxes')['controls'][i]"
+                                        (change)="onUserSelected(i)" />
+                                    {{ option?.account?.name }}
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-          </form>
         </div>
-      </div>
     </div>
-  </div>
 </div>

@@ -16,25 +16,25 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { SharedModule } from "../shared/shared.module";
 
 @NgModule({
-  declarations: [
-    InvoicePayComponent
-  ],
-  imports: [
-    InvoicePayRoutingModule,
-    SharedModule,
-    CommonModule,
-    MatCheckboxModule,
-    MatSidenavModule,
-    MatListModule,
-    MatSelectModule,
-    MatTableModule,
-    MatDialogModule,
-    MatExpansionModule,
-    MatTabsModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatAutocompleteModule
-  ]
+    declarations: [
+        InvoicePayComponent
+    ],
+    imports: [
+        InvoicePayRoutingModule,
+        SharedModule,
+        CommonModule,
+        MatCheckboxModule,
+        MatSidenavModule,
+        MatListModule,
+        MatSelectModule,
+        MatTableModule,
+        MatDialogModule,
+        MatExpansionModule,
+        MatTabsModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatAutocompleteModule
+    ]
 })
 export class InvoicePayModule {
 

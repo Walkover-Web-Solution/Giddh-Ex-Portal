@@ -1,65 +1,65 @@
 .page-wrapper {
-  max-width: 400px;
-  width: 100%;
-  margin: 30px auto;
-  background-color: var(--color-bg-login);
+    max-width: 400px;
+    width: 100%;
+    margin: 30px auto;
+    background-color: var(--color-bg-login);
 
-  .login-wrapper {
-    background-color: var(--color-white);
-    padding: 20px;
-    box-shadow: 0 5px 16px 0 #00000010;
+    .login-wrapper {
+        background-color: var(--color-white);
+        padding: 20px;
+        box-shadow: 0 5px 16px 0 #00000010;
 
-    .signin-content {
-      border-top: 1px solid var(--color-gray);
-      padding-top: 20px;
-      width: 100%;
+        .signin-content {
+            border-top: 1px solid var(--color-gray);
+            padding-top: 20px;
+            width: 100%;
 
-      h4 {
-        margin-bottom: 10px !important;
-      }
+            h4 {
+                margin-bottom: 10px !important;
+            }
 
-      p {
-        color: var(--color-content);
-      }
-    }
-
-    .user-form {
-      align-items: baseline;
-      display: flex;
-      width: 100%;
-      flex-direction: column;
-
-      .user-label {
-        cursor: pointer;
-        font-size: 18px;
-
-        input {
-          height: 20px;
-          width: 20px;
-          cursor: pointer;
+            p {
+                color: var(--color-content);
+            }
         }
-      }
-    }
 
-    .signin-form {
-      padding: 15px;
+        .user-form {
+            align-items: baseline;
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+
+            .user-label {
+                cursor: pointer;
+                font-size: 18px;
+
+                input {
+                    height: 20px;
+                    width: 20px;
+                    cursor: pointer;
+                }
+            }
+        }
+
+        .signin-form {
+            padding: 15px;
+        }
     }
-  }
 }
 
 /*---- responsive ----*/
 @media screen and (max-width: 360px) {
-  .page-wrapper {
-    .login-wrapper {
-      .signin-form {
-        .login-btn-wrap {
-          .or-divide {
-            &::after {
-              width: 225px;
+    .page-wrapper {
+        .login-wrapper {
+            .signin-form {
+                .login-btn-wrap {
+                    .or-divide {
+                        &::after {
+                            width: 225px;
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 }

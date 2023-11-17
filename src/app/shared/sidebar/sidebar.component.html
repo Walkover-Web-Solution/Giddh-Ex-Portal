@@ -1,65 +1,44 @@
 <div class="common-wrapper">
-  <mat-drawer-container
-    class="sidebar h-100"
-    autosize
-    [ngClass]="{ 'sidebar-open': isExpanded, 'sidebar-close': !isExpanded }"
-  >
-    <mat-drawer #drawer class="example-sidenav" mode="side" opened="true">
-      <div class="sidebar-head">
-        <button type="button" (click)="toggleMenu()" class="cp">
-          <img src="../../../assets/images/toggle.svg" alt="toggle" />
-        </button>
-        <span class="pd-l1 d-inline-block toggle-heading">Giddh GmbH</span>
-      </div>
-      <mat-list role="list">
-        <mat-list-item
-          role="listitem"
-          *ngFor="let item of menuItems"
-          [routerLink]="[item.url]"
-          routerLinkActive="active"
-        >
-          <a href="javascript:;">
-            <img
-              [src]="'../../../assets/images/' + item.icon"
-              alt="{{ item.label }}"
-            />
-            <span class="side-menu">{{ item.label }}</span>
-          </a>
-        </mat-list-item>
-      </mat-list>
-      <div class="sidebar-footer">
-        <div class="loader-line" *ngIf="isLoading"></div>
-        <div *ngIf="!isLoading">
-          <a
-            href="javascript:;"
-            [matTooltip]="userDetails?.email"
-            matTooltipClass="example-tooltip-uppercase"
-          >
-            {{ userDetails?.name }}
-          </a>
-          <button
-            mat-stroked-button
-            color="primary"
-            (click)="logoutUser()"
-            class="logout-btn"
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-    </mat-drawer>
+    <mat-drawer-container class="sidebar h-100" autosize
+        [ngClass]="{ 'sidebar-open': isExpanded, 'sidebar-close': !isExpanded }">
+        <mat-drawer #drawer class="example-sidenav" mode="side" opened="true">
+            <div class="sidebar-head">
+                <button type="button" (click)="toggleMenu()" class="cp">
+                    <img src="../../../assets/images/toggle.svg" alt="toggle" />
+                </button>
+                <span class="pd-l1 d-inline-block toggle-heading">Giddh GmbH</span>
+            </div>
+            <mat-list role="list">
+                <mat-list-item role="listitem" *ngFor="let item of menuItems" [routerLink]="[item.url]"
+                    routerLinkActive="active">
+                    <a href="javascript:;">
+                        <img [src]="'../../../assets/images/' + item.icon" alt="{{ item.label }}" />
+                        <span class="side-menu">{{ item.label }}</span>
+                    </a>
+                </mat-list-item>
+            </mat-list>
+            <div class="sidebar-footer">
+                <div class="loader-line" *ngIf="isLoading"></div>
+                <div *ngIf="!isLoading">
+                    <a href="javascript:;" [matTooltip]="userDetails?.email"
+                        matTooltipClass="example-tooltip-uppercase">
+                        {{ userDetails?.name }}
+                    </a>
+                    <button mat-stroked-button color="primary" (click)="logoutUser()" class="logout-btn">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </mat-drawer>
 
-    <div class="sidenav-content">
-      <div class="sidebar-mobile-head">
-        <button type="button" (click)="toggleMenu()" class="cp">
-          <img
-            src="../../../assets/images/toggle-responsive.svg"
-            alt="toggle"
-          />
-        </button>
-        <span class="pd-l1 d-inline-block toggle-heading">Giddh</span>
-      </div>
-      <router-outlet></router-outlet>
-    </div>
-  </mat-drawer-container>
+        <div class="sidenav-content">
+            <div class="sidebar-mobile-head">
+                <button type="button" (click)="toggleMenu()" class="cp">
+                    <img src="../../../assets/images/toggle-responsive.svg" alt="toggle" />
+                </button>
+                <span class="pd-l1 d-inline-block toggle-heading">Giddh</span>
+            </div>
+            <router-outlet></router-outlet>
+        </div>
+    </mat-drawer-container>
 </div>

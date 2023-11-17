@@ -3,30 +3,37 @@
     padding: 30px;
     margin-top: auto;
 }
+
 .footer-wrapper {
     display: flex;
     align-items: center;
     column-gap: 60px;
+
     .logo-footer {
         display: flex;
         column-gap: 20px;
         width: 33.33%;
-        img{
+
+        img {
             width: 100px;
         }
+
         h4 {
             font-size: var(--font-size-20);
             margin-bottom: 10px !important;
         }
+
         p {
             font-weight: 400;
             color: var(--color-text);
         }
     }
+
     .mail-profile {
         column-gap: 20px;
         width: 33.33%;
         position: relative;
+
         &::before {
             content: "";
             display: inline-block;
@@ -36,16 +43,20 @@
             top: -17px;
             position: absolute;
         }
+
         img {
             width: 40px;
             padding-left: 22px;
         }
+
         span {
             color: var(--color-mute);
         }
     }
+
     .email-btn {
         width: 33.33%;
+
         button {
             img {
                 width: 12px;
@@ -59,18 +70,23 @@
     .footer-wrapper {
         flex-wrap: wrap;
         row-gap: 20px;
+
         .logo-footer {
             width: 100%;
         }
+
         .mail-profile {
             width: 100%;
+
             &::before {
                 display: none;
             }
+
             img {
                 padding-left: 0;
             }
         }
+
         .email-btn {
             width: 100%;
         }

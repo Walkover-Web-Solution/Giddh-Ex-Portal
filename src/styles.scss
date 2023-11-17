@@ -972,3 +972,11 @@ mat-sidenav[style] {
     cursor: pointer !important;
   }
 }
+
+.success-message {
+    color: var(--color-green);
+}
+
+.error-message {
+    color: var(--color-red);
+}

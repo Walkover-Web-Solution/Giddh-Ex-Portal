@@ -28,7 +28,7 @@ export class HttpWrapperService {
         );
     };
     public post = (url: string, body: any, options?: any): Observable<any> => {
-      options = this.prepareOptions(options);
+        options = this.prepareOptions(options);
         return this.http.post(url, body, options).pipe(
             tap(res => {
                 //
@@ -82,40 +82,40 @@ export class HttpWrapperService {
         );
     };
 
-  public portalLogin = (url: string, proxy_auth_token: any): Observable<any> => {
-    let options: any = { headers: {}, body: {} };
-    options.headers["Content-Type"] = "application/json";
-    options.headers["Accept"] = "application/json";
-    options.headers["proxy_auth_token"] = proxy_auth_token;
-    options.headers = new HttpHeaders(options.headers);
-    return this.http.get(url, options).pipe(
-      tap(res => {
-        //
-      }),
-      finalize(() => {
+    public portalLogin = (url: string, proxy_auth_token: any): Observable<any> => {
+        let options: any = { headers: {}, body: {} };
+        options.headers["Content-Type"] = "application/json";
+        options.headers["Accept"] = "application/json";
+        options.headers["proxy_auth_token"] = proxy_auth_token;
+        options.headers = new HttpHeaders(options.headers);
+        return this.http.get(url, options).pipe(
+            tap(res => {
+                //
+            }),
+            finalize(() => {
 
-      })
-    );
-  };
-
-
-  public verifyPortal = (url: string, emailId: string, proxy_auth_token: any, domain: any): Observable<any> => {
-    const existingHeaders = new HttpHeaders();
-    const dataObj = {
-      emailId: emailId,
-      subDomain: domain
+            })
+        );
     };
-    const headers = existingHeaders.append('proxy_auth_token', proxy_auth_token)
-    const options = { headers: headers };
 
-    return this.http.post(url, dataObj, options).pipe(
-      tap(res => {
-      }),
-      finalize(() => {
-        // Perform any finalization tasks
-      })
-    );
-  };
+
+    public verifyPortal = (url: string, emailId: string, proxy_auth_token: any, domain: any): Observable<any> => {
+        const existingHeaders = new HttpHeaders();
+        const dataObj = {
+            emailId: emailId,
+            subDomain: domain
+        };
+        const headers = existingHeaders.append('proxy_auth_token', proxy_auth_token)
+        const options = { headers: headers };
+
+        return this.http.post(url, dataObj, options).pipe(
+            tap(res => {
+            }),
+            finalize(() => {
+                // Perform any finalization tasks
+            })
+        );
+    };
 
     public patch = (url: string, body: any, options?: any): Observable<any> => {
         options = this.prepareOptions(options);

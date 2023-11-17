@@ -6,15 +6,15 @@ import { LoginRoutingModule } from "./login.routing.module";
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @NgModule({
-  declarations: [
-    LoginComponent
-  ],
-  imports: [
-    LoginRoutingModule,
-    SharedModule,
-    CommonModule,
-    MatCheckboxModule
-  ]
+    declarations: [
+        LoginComponent
+    ],
+    imports: [
+        LoginRoutingModule,
+        SharedModule,
+        CommonModule,
+        MatCheckboxModule
+    ]
 })
 export class LoginModule {
 
