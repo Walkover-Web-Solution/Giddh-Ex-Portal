@@ -1,64 +1,111 @@
 <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
-<div class="common-wrapper" *ngIf="!isLoading">
-
-    <!-- invoice-click -->
-    <div class="invoice-open small-container mr-t15">
-        <div class="back-header d-flex justify-content-between align-items-center" *ngIf="selectedPaymentVoucher?.length">
-            <a href="javascript:;" (click)="backToInvoices()">
-                <img src="../../assets/images/chevron.svg" alt="arrow" /> Back
-            </a>
-            <div class="d-flex column-gap10">
-                <button mat-stroked-button color="primary" *ngIf="
-            selectedPaymentVoucher[0]?.balanceStatus === 'UNPAID' ||
-            selectedPaymentVoucher[0]?.balanceStatus === 'PARTIAL-PAID'
-          " (click)="initializePayment(paymentDetails)">
-                    Pay Now
-                </button>
-                <button mat-stroked-button color="primary" (click)="printVoucher()">
-                    <img src="../../assets/images/print.svg" alt="print" /> Print
-                </button>
-                <button mat-stroked-button color="primary" (click)="
-            downloadPdf(
-              voucherUniqueName,
-              selectedPaymentVoucher[0]?.voucherNumber
-            )
-          ">
-                    <img src="../../assets/images/download.svg" alt="download" />
-                </button>
+<div class="d-flex w-100">
+    <sidebar></sidebar>
+    <div class="common-wrapper" *ngIf="!isLoading">
+        <!-- invoice-click -->
+        <div class="invoice-open small-container mr-t15">
+            <div
+                class="back-header d-flex justify-content-between align-items-center"
+                *ngIf="selectedPaymentVoucher?.length"
+            >
+                <a href="javascript:;" (click)="backToInvoices()">
+                    <img src="../../assets/images/chevron.svg" alt="arrow" />
+                    Back
+                </a>
+                <div class="d-flex column-gap10">
+                    <button
+                        mat-stroked-button
+                        color="primary"
+                        *ngIf="
+                            selectedPaymentVoucher[0]?.balanceStatus ===
+                                'UNPAID' ||
+                            selectedPaymentVoucher[0]?.balanceStatus ===
+                                'PARTIAL-PAID'
+                        "
+                        (click)="initializePayment(paymentDetails)"
+                    >
+                        Pay Now
+                    </button>
+                    <button
+                        mat-stroked-button
+                        color="primary"
+                        (click)="printVoucher()"
+                    >
+                        <img src="../../assets/images/print.svg" alt="print" />
+                        Print
+                    </button>
+                    <button
+                        mat-stroked-button
+                        color="primary"
+                        (click)="
+                            downloadPdf(
+                                voucherUniqueName,
+                                selectedPaymentVoucher[0]?.voucherNumber
+                            )
+                        "
+                    >
+                        <img
+                            class="download-button"
+                            src="../../assets/images/download.svg"
+                            alt="download"
+                        />
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="comment-container">
-            <form [formGroup]="commentForm">
-                <mat-form-field class="w-100 mr-t5 mr-b15" appearance="outline">
-                    <mat-label>Enter Your Comments</mat-label>
-                    <textarea rows="2" matInput placeholder="Enter Your Comments"
-                        formControlName="commentText"></textarea>
-                </mat-form-field>
-                <button mat-stroked-button color="primary" (click)="addComment()">
-                    Add Comment
-                </button>
-            </form>
+            <div class="comment-container">
+                <form [formGroup]="commentForm">
+                    <mat-form-field
+                        class="w-100 mr-t5 mr-b15"
+                        appearance="outline"
+                    >
+                        <mat-label>Enter Your Comments</mat-label>
+                        <textarea
+                            rows="2"
+                            matInput
+                            placeholder="Enter Your Comments"
+                            formControlName="commentText"
+                        ></textarea>
+                    </mat-form-field>
+                    <button
+                        mat-stroked-button
+                        color="primary"
+                        (click)="addComment()"
+                    >
+                        Add Comment
+                    </button>
+                </form>
 
-            <ng-container *ngIf="voucherComments?.length">
-                <ul class="list-unstyled d-none d-md-block mr-t15" *ngFor="let comment of voucherComments">
-                    <li class="media">
-                        <div class="comment-time-web">
-                            <p class="text-muted font-sm">
-                                {{ comment?.dateString }}
-                            </p>
-                        </div>
-                        <div class="media-body">
-                            <p class="comment media-heading font-sm">
-                                {{ comment?.description }}
-                                <i class="text-muted"> by {{ comment?.userName }}</i>
-                            </p>
-                        </div>
-                    </li>
-                </ul>
-            </ng-container>
-        </div>
-        <div class="pdf-wrapper mr-b50 h-100">
-            <iframe #pdfContainer width="100%" height="100%" [src]="sanitizedPdfFileUrl"></iframe>
+                <ng-container *ngIf="voucherComments?.length">
+                    <ul
+                        class="list-unstyled d-none d-md-block mr-t15"
+                        *ngFor="let comment of voucherComments"
+                    >
+                        <li class="media">
+                            <div class="comment-time-web">
+                                <p class="text-muted font-sm">
+                                    {{ comment?.dateString }}
+                                </p>
+                            </div>
+                            <div class="media-body">
+                                <p class="comment media-heading font-sm">
+                                    {{ comment?.description }}
+                                    <i class="text-muted">
+                                        by {{ comment?.userName }}</i
+                                    >
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </ng-container>
+            </div>
+            <div class="pdf-wrapper mr-b50 h-100">
+                <iframe
+                    #pdfContainer
+                    width="100%"
+                    height="100%"
+                    [src]="sanitizedPdfFileUrl"
+                ></iframe>
+            </div>
         </div>
     </div>
 </div>

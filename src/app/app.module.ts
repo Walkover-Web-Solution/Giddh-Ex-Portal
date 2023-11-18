@@ -10,6 +10,7 @@ import { ServiceModule } from './services/service.module';
 import { metaReducers, reducers } from './store';
 import { SessionEffects } from './store/effects/session.effects';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { SharedModule } from './shared/shared.module';
 @NgModule({
     declarations: [
         AppComponent
@@ -19,6 +20,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
         AppRoutingModule,
         BrowserAnimationsModule,
         HttpClientModule,
+        SharedModule,
         MatSnackBarModule,
         ServiceModule.forRoot(),
         StoreModule.forRoot(reducers, {

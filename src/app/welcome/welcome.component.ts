@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { select, Store } from '@ngrx/store';
 import { takeUntil } from "rxjs/operators";
