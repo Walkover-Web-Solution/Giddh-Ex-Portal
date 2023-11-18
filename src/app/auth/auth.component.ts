@@ -107,7 +107,7 @@ export class AuthComponent implements OnInit, OnDestroy {
                 this.savePortalUserSession['companyUniqueName'] = response.body.companyUniqueName;
                 this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
                 this.store.dispatch(setSessionToken({ session: response.body.session }));
-                let url = '/'+this.portalParamsRequest.subDomain +'/welcome';
+                let url = '/' + this.portalParamsRequest.subDomain + '/welcome';
                 this.router.navigate([url]);
             } else {
                 this.isLoading = false;
