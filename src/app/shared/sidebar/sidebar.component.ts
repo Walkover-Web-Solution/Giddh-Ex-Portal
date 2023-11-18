@@ -67,9 +67,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 this.setActiveMenuItem();
 
                 this.menuItems = [
-                    { icon: "home.svg", label: "Home", url: this.portalDomain + "/welcome" },
-                    { icon: "invoice.svg", label: "Invoices", url: this.portalDomain + "/invoice" },
-                    { icon: "payment.svg", label: "Payments Made", url: this.portalDomain + "/payment" }
+                    { icon: "home.svg", label: "Home", url:'/'+ this.portalDomain + "/welcome" },
+                    { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
+                    { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
                 ];
             }
         });

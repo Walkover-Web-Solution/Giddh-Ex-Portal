@@ -20,7 +20,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SidebarRoutingModule } from "./sidebar.routing.module";
 
 @NgModule({
     declarations: [
@@ -30,7 +29,6 @@ import { SidebarRoutingModule } from "./sidebar.routing.module";
     ],
     imports: [
         MatSidenavModule,
-        SidebarRoutingModule,
         MatToolbarModule,
         CommonModule,
         MatTreeModule,

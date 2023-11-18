@@ -201,3 +201,13 @@
         font-weight: 300;
     }
 }
+
+.inner-header {
+    padding: 15px 0px;
+    border-bottom: 1px solid var(--color-border);
+
+    h2 {
+        font-size: var(--font-size-24);
+        font-weight: 300;
+    }
+}

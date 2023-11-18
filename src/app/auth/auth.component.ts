@@ -15,7 +15,7 @@ import { GeneralService } from '../services/general.service';
 })
 export class AuthComponent implements OnInit, OnDestroy {
     /** True if api call in progress */
-    public isLoading: boolean = true;
+    public isLoading: boolean = false;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     /** Request body for get portal url params */
