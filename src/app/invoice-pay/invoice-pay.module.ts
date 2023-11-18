@@ -1,9 +1,4 @@
 import { NgModule } from "@angular/core";
-import { SharedModule } from "../shared/sidebar.module";
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from "@angular/common";
 import { InvoicePayComponent } from "./invoice-pay.component";
 import { InvoicePayRoutingModule } from "./invoice-pay.routing.module";
@@ -18,6 +13,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { SharedModule } from "../shared/shared.module";
 
 @NgModule({
     declarations: [
@@ -26,10 +22,6 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
     imports: [
         InvoicePayRoutingModule,
         SharedModule,
-        MatButtonModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
         CommonModule,
         MatCheckboxModule,
         MatSidenavModule,
@@ -41,7 +33,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
         MatTabsModule,
         MatDatepickerModule,
         MatNativeDateModule,
-        MatAutocompleteModule,
+        MatAutocompleteModule
     ]
 })
 export class InvoicePayModule {

@@ -1,157 +1,210 @@
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
-import { FlatTreeControl } from "@angular/cdk/tree";
-import { Component, Input, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { MatTreeFlatDataSource, MatTreeFlattener } from "@angular/material/tree";
-import { NavigationEnd, Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { Observable, ReplaySubject } from "rxjs";
 import { map, shareReplay, takeUntil } from 'rxjs/operators';
-interface SidebarNode {
-    name: string;
-    link?: string;
-    hiddenLink?: string[]; // This will hold links of the pages which are not directly accessible.
-    openActiveMenu?: boolean;
-    children?: SidebarNode[];
-}
-/** Flat node with expandable and level information */
-interface SidebarFlatNode {
-    expandable: boolean;
-    name: string;
-    level: number;
-    link?: string;
-    openActiveMenu?: boolean;
-    hiddenLink?: string[];
-}
+import { DashboardService } from "src/app/services/dashboard.service.";
+import { AuthService } from "src/app/services/auth.service";
+import * as dayjs from 'dayjs';
+import { resetLocalStorage, setSessionToken } from "src/app/store/actions/session.action";
+import { select, Store } from '@ngrx/store';
+import { GeneralService } from "src/app/services/general.service";
+
 @Component({
     selector: "sidebar",
     templateUrl: "sidebar.component.html",
     styleUrls: ["sidebar.component.scss"]
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-    /** Instance of mat dialog */
-    @ViewChild('changepassword', { static: true }) public changepassword: any;
-    /** Instance of modal */
-    public modalDialogRef: any;
-    /** Holds current page url */
-    private currentUrl: string = "";
+    /** Is side bar expanded*/
+    public isExpanded: boolean = true;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
-    public destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-    /** Holds transformer data */
-    public transformer = (node: SidebarNode, level: number) => ({
-        expandable: !!node.children && node.children.length > 0,
-        name: node.name,
-        level: level,
-        link: node.link,
-        openActiveMenu: node?.openActiveMenu,
-        hiddenLink: node?.hiddenLink
-    });
-    /** Holds treeControl data */
-    public treeControl = new FlatTreeControl<SidebarFlatNode>(
-        node => node.level,
-        node => node.expandable,
-    );
-    /** Holds treeFlattener data */
-    public treeFlattener = new MatTreeFlattener<SidebarNode, SidebarFlatNode>(
-        this.transformer,
-        node => node.level,
-        node => node.expandable,
-        node => node.children,
-    );
-    /** Holds dataSource data */
-    public dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
-    /** Holds tree data has child */
-    public hasChild = (_: number, node: SidebarFlatNode) => node.expandable;
-    public isExpanded = true;
-    public isMobile$: Observable<boolean>;
+    public destroyed$: ReplaySubject<boolean> = new ReplaySubject(1); public isMobile$: Observable<boolean>;
+    /* Hold user details from localStorage*/
+    public userDetails: any = '';
+    /* Hold user details from localStorage*/
+    public portalDomain: string = '';
+    /** Request body for get account details url params */
+    public accountUrlRequest = {
+        companyUniqueName: undefined,
+        accountUniqueName: undefined,
+        sessionId: undefined,
+    };
+    /** True if api call in progress */
+    public isLoading: boolean = false;
+    /** Hold menu items*/
+    public menuItems: any = [];
+    /** Instance of dayjs*/
+    public dayjs = dayjs;
+    /** This will be use for date format*/
+    public dateFormat: string = 'DD-MM-YYYY h:m:s';
+    /** Hold  store data */
+    public storeData: any = {};
+
     constructor(
         private router: Router,
+        public route: ActivatedRoute,
         public breakpointObserver: BreakpointObserver,
-        public dialog: MatDialog
-    ) {
+        public dialog: MatDialog,
+        private dashboardService: DashboardService,
+        private authService: AuthService,
+        private store: Store,
+        private generalService: GeneralService) {
         this.isMobile$ = this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small])
             .pipe(
                 map(result => result.matches),
                 shareReplay()
             );
-        this.dataSource.data = [
-            {
-                name: 'Sync',
-                children: [
-                    { name: 'Shopify to Giddh', openActiveMenu: true, hiddenLink: ['/connect'] }
-                ],
-            },
-            {
-                name: 'Mapping',
-                children:
-                    [
-                        { name: 'Unit Mapping', hiddenLink: ['/mapping/unit-mapping'] },
-                        { name: 'Shopify to Giddh', hiddenLink: ['/mapping/welcome'] },
-                        { name: 'Other', hiddenLink: ['/mapping/other'] }
-                    ],
-            },
-            {
-                name: 'Logs',
-                children: [
-                    { name: 'Failed Logs', hiddenLink: ['logs/failed-log'] },
-                    { name: 'Settings', hiddenLink: ['logs/setting'] }
-                ],
-            },
-            {
-                name: 'Faq',
-                link: '/faq',
-            }
+        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+            this.storeData = sessionState.session;
+        });
+    }
+
+    /**
+     * This will be use for component initialization
+     *
+     * @memberof SidebarComponent
+     */
+    public ngOnInit(): void {
+        this.accountUrlRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+        this.accountUrlRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+        this.accountUrlRequest.sessionId = this.storeData.session.id;
+        this.portalDomain = this.storeData?.domain;
+        this.getAccountDetails();
+        this.setActiveMenuItem();
+        this.menuItems = [
+            { icon: "home.svg", label: "Home", url: this.portalDomain + "/welcome" },
+            { icon: "invoice.svg", label: "Invoices", url: this.portalDomain + "/invoice" },
+            { icon: "payment.svg", label: "Payments Made", url: this.portalDomain + "/payment" }
         ];
     }
+
     /**
-     * Initializes the component
+     * This will be use for set active menu item
+     *
+     * @memberof SidebarComponent
      */
-    ngOnInit(): void {
-        this.currentUrl = this.router.url;
-        this.router.events.pipe(takeUntil(this.destroyed$)).subscribe(event => {
-            if (event instanceof NavigationEnd) {
-                this.currentUrl = event.url;
-                this.openActiveMenu(this.currentUrl);
+    public setActiveMenuItem(): void {
+        const currentUrl = this.router.url.split('/')[2]; // Assuming the structure is /domain/welcome
+        this.menuItems.forEach(item => item.url === currentUrl);
+    }
+
+    /**
+     * This will be use for get account details
+     *
+     * @memberof SidebarComponent
+     */
+    public getAccountDetails(): void {
+        this.isLoading = true;
+        this.dashboardService.getAccountDetails(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((accountsResponse: any) => {
+            if (accountsResponse && accountsResponse.status === 'success') {
+                this.isLoading = false;
+                this.userDetails = accountsResponse.body;
+                let userName = this.generalService.getInitialsFromString(this.userDetails.name);
+                this.userDetails.name = userName;
+            } else {
+                this.isLoading = false;
+                this.generalService.showSnackbar(accountsResponse?.message);
             }
         });
     }
-    /*---- open dialog change password ----*/
-    public openChangePassword(): void {
-        this.modalDialogRef = this.dialog.open(this.changepassword, {
-            width: '600px'
-        });
-    }
 
-    // const isSmallScreen = breakpointObserver.isMatched('(max-width: 599px)');
-
-    public toggleMenu() {
+    /**
+     * This will be use for toggle menu
+     *
+     * @memberof SidebarComponent
+     */
+    public toggleMenu(): void {
         this.isExpanded = !this.isExpanded;
     }
-    /**
-     * Cleans up resources when the component is destroyed
-     */
-    ngOnDestroy(): void {
-        this.destroyed$.next(true);
-        this.destroyed$.complete();
-    }
-    /**
-     * Open the active menu based on the current URL
-     * @param url The current URL
-     */
-    public openActiveMenu(url: string): void {
-        let activeNodeIndex: number | null = null;
-        console.log(this.dataSource.data)
-        this.dataSource.data?.forEach((tree, index) => {
-            if (activeNodeIndex === null) {
-                let activeNode = tree?.children?.filter(node => node?.link === url || node?.hiddenLink?.includes(url));
 
-                if (activeNode?.length) {
-                    activeNodeIndex = index;
-                }
+    /**
+     * This will be use for redirection
+     *
+     * @param {*} url
+     * @memberof SidebarComponent
+     */
+    public redirectionToUrl(url: any): void {
+        let updatedUrl = `/${this.portalDomain}/${url}`;
+        this.router.navigate([updatedUrl]);
+    }
+
+    /**
+     * This will be use for logout user
+     *
+     * @memberof SidebarComponent
+     */
+    public logoutUser(): void {
+        this.accountUrlRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+        this.accountUrlRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+        this.accountUrlRequest.sessionId = this.storeData.session.id;
+        this.isLoading = true;
+        this.authService.logoutUser(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+            if (response && response.status === 'success') {
+                this.isLoading = false;
+                this.generalService.showSnackbar('You have successfully logged out.');
+                let url = this.storeData.domain + '/login';
+                this.store.dispatch(resetLocalStorage());
+                this.router.navigate([url]);
+            } else {
+                this.generalService.showSnackbar(response?.message);
             }
         });
-        let rootLevelNodes = this.treeControl.dataNodes?.filter(node => node.level === 0);
-        if (activeNodeIndex !== null) {
-            this.treeControl.expand(rootLevelNodes[activeNodeIndex]);
+    }
+    /**
+     * This listner is used for mouse move events
+     *
+     * @param {MouseEvent} event
+     * @memberof SidebarComponent
+     */
+    @HostListener('window:mousemove', ['$event'])
+    onMouseMove(event: MouseEvent) {
+        this.checkAndRenewUserSession();
+    }
+
+    /**
+     * This will be use for keypress events
+     *
+     * @param {KeyboardEvent} event
+     * @memberof SidebarComponent
+     */
+    @HostListener('document:keypress', ['$event'])
+    onKeyDown(event: KeyboardEvent) {
+        this.checkAndRenewUserSession();
+    }
+
+    /**
+     * This will check and renew user session if close to expiry
+     *
+     * @memberof HeaderComponent
+     */
+    public checkAndRenewUserSession(): void {
+        if (this.storeData.session.expiresAt) {
+            let expiresAtList = this.storeData.session?.expiresAt?.split(" ");
+            if (expiresAtList) {
+                let expiryDate = expiresAtList[0]?.split("-").reverse().join("-");
+                let sessionExpiresAt = dayjs(expiryDate + " " + expiresAtList[1]);
+                if (sessionExpiresAt.diff(dayjs(), 'hours') < 24) {
+                    this.authService.renewSession(this.storeData?.userDetails?.vendorContactUniqueName, this.storeData?.session?.id).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+                        if (response && response.status === 'success') {
+                            this.store.dispatch(setSessionToken({ session: response.body.session }));
+                        } else {
+                            this.generalService.showSnackbar(response?.message);
+                        }
+                    });
+                }
+            }
         }
+    }
+
+    /**
+     * Cleans up resources when the component is destroyed
+     *
+     * @memberof SidebarComponent
+     */
+    public ngOnDestroy(): void {
+        this.destroyed$.next(true);
+        this.destroyed$.complete();
     }
 }

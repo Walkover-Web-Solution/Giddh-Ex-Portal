@@ -1,160 +1,275 @@
 <div class="common-wrapper">
-    <header></header>
-    <div class="container">
-        <div class="index-wrapper">
-            <div class="balance-wrap">
-                <h4>Balance Summary</h4>
-                <div class="summary-box mr-t15">
-                    <div class="desktop">
-                        <div class="summary-head">
-                            <p>Currency</p>
-                            <p>
-                                <span class="line green"></span>
-                                <span>Available Credits</span>
-                            </p>
-                            <p>
-                                <span class="line orange"></span>
-                                <span>Balance Payable</span>
-                            </p>
+    <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
+    <div class="page-wrapper d-flex flex-column h-100" *ngIf="!isLoading">
+        <header (companyData)="receivedCompanyDetails"></header>
+        <div class="container" *ngIf="!isShowAccountDetails">
+            <div class="index-wrapper">
+                <div class="balance-wrap">
+                    <div class="payment-width">
+                        <h4>Balance Summary</h4>
+                        <div class="summary-box mr-t15">
+                            <div class="desktop">
+                                <div class="summary-head">
+                                    <p>Currency</p>
+                                    <p>
+                                        <span class="line orange"></span>
+                                        <span>Balance Payable</span>
+                                    </p>
+                                </div>
+                                <div class="summary-content">
+                                    <span
+                                        >{{ balanceSummary?.currency?.code }} -
+                                        {{
+                                            balanceSummary?.currency?.symbol
+                                        }}</span
+                                    >
+                                    <span class="number-pay">
+                                        <div class="number text-right">
+                                            {{
+                                                balanceSummary?.currency?.symbol
+                                            }}
+                                            {{
+                                                balanceSummary?.balancePayable
+                                            }}
+                                            <br />
+                                            Number of Invoices :
+                                            {{ balanceSummary?.noOfInvoices }}
+                                        </div>
+                                        <div></div>
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- mobile-design -->
+                            <div class="mobile-screen">
+                                <div class="currency-head">
+                                    <span class="text-uppercase"
+                                        >Currency :</span
+                                    >&nbsp;
+                                    <span
+                                        >{{ balanceSummary?.currency?.code }} -
+                                        {{
+                                            balanceSummary?.currency?.symbol
+                                        }}</span
+                                    >
+                                </div>
+                                <div class="d-flex mobile-pay mr-t1 mr-b15">
+                                    <span>Balance Payable</span>
+                                    <span class="number-pay">
+                                        {{ balanceSummary?.currency?.symbol }}
+                                        {{ balanceSummary?.balancePayable }}
+                                        <a
+                                            href="javascript:;"
+                                            class="d-block text-right"
+                                            >Pay
+                                            <img
+                                                src="../../assets/images/right-arrow.svg"
+                                                alt="arrow"
+                                            />
+                                        </a>
+                                    </span>
+                                </div>
+                                <div class="d-flex mobile-pay mr-b15">
+                                    <span>Outstanding Invoices</span>
+                                    <span class="number-pay">
+                                        {{ balanceSummary?.noOfInvoices }}</span
+                                    >
+                                </div>
+                            </div>
                         </div>
-                        <div class="summary-content">
-                            <span>EUR- Euro</span>
-                            <span class="available text-right">€0,00</span>
-                            <span class="number-pay">
-                                <div class="number text-right">
-                                    €4.405,87 <br>
-                                    Number of Invoices : 2
+                    </div>
+                </div>
+                <div
+                    class="balance-wrap"
+                    *ngIf="voucherData?.items[0]?.balanceStatus === 'ADJUSTED'"
+                >
+                    <div class="payment-width">
+                        <h4>Last Payment Made</h4>
+                        <div class="payment-made mr-t15">
+                            <div>
+                                <span class="d-block pay mr-b1"
+                                    >{{
+                                        voucherData?.items[0]
+                                            ?.accountCurrencySymbol
+                                    }}{{
+                                        voucherData?.items[0]?.grandTotal
+                                            ?.amountForAccount
+                                    }}</span
+                                >
+                                <span
+                                    >{{
+                                        voucherData?.items[0]?.balanceStatus ===
+                                        "ADJUSTED"
+                                            ? "PAID"
+                                            : "UNPAID"
+                                    }}
+                                    for
+                                    <a
+                                        href="javascript:;"
+                                        (click)="
+                                            invoicePreview(
+                                                voucherData?.items[0]
+                                                    ?.adjustments[0]?.uniqueName
+                                            )
+                                        "
+                                        >{{
+                                            voucherData?.items[0]
+                                                ?.adjustments[0]?.voucherNumber
+                                        }}</a
+                                    >
+                                </span>
+                            </div>
+                            <div>
+                                <span class="d-block pay-head mr-b1"
+                                    >Paid On</span
+                                >
+                                <span>{{
+                                    voucherData?.items[0]?.voucherDate
+                                }}</span>
+                            </div>
+                            <div>
+                                <span class="d-block pay-head mr-b1"
+                                    >Payment #</span
+                                >
+                                <span>
+                                    <a
+                                        href="javascript:;"
+                                        (click)="
+                                            receiptPreview(
+                                                voucherData?.items[0]
+                                                    ?.uniqueName
+                                            )
+                                        "
+                                        >{{
+                                            voucherData?.items[0]?.voucherNumber
+                                        }}</a
+                                    >
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="balance-wrap">
+                    <div class="payment-width">
+                        <div class="d-flex justify-content-between">
+                            <h4>My Details</h4>
+                            <a
+                                href="javascript:;"
+                                (click)="isShowAccountDetails = true"
+                                >View More</a
+                            >
+                        </div>
+                        <div class="payment-made mr-t15">
+                            <div>
+                                <span class="d-block company-head mr-b1">{{
+                                    receivedCompanyDetails?.name
+                                }}</span>
+                                <span class="d-block mr-b1">
+                                    {{ accountDetails?.name }}</span
+                                >
+                                <span class="d-block mr-t5 mr-b5">
+                                    <img
+                                        src="../../assets/images/profile.svg"
+                                        alt="profile"
+                                    />
+                                    {{ accounts?.length }} Contact Persons</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- my-detail -->
+        <div class="container" *ngIf="isShowAccountDetails">
+            <button
+                class="mr-t15"
+                mat-stroked-button
+                color="primary"
+                (click)="isShowAccountDetails = false"
+            >
+                Back
+            </button>
+            <div class="index-wrapper">
+                <div class="balance-wrap balance-account">
+                    <div class="account-left">
+                        <h4>Account Details</h4>
+                        <div class="account-details mr-t15">
+                            <div>
+                                <span class="account-head d-block mr-b1"
+                                    >Portal User Name</span
+                                >
+                                <div>
+                                    <span class="d-block account-name mr-b5">{{
+                                        accountDetails?.name
+                                    }}</span>
+                                    <span class="d-block mr-b5">{{
+                                        accountDetails?.email
+                                    }}</span>
+                                </div>
+                            </div>
+                            <div class="billing-address">
+                                <div>
+                                    <span class="text-mute"
+                                        >BILLING ADDRESS</span
+                                    >
+                                    <p class="mr-t15">
+                                        {{ accountDetails?.attentionTo }}<br />
+                                        {{ accountDetails?.email }}<br />
+                                        {{ accountDetails?.mobileNo }}<br />
+                                        {{ accountDetails?.data?.address }}
+                                        <br />
+                                        {{ accountDetails?.data?.stateName }}
+                                        {{ accountDetails?.data?.pincode }}
+                                        <br />
+                                        {{ accountDetails?.countryName }} <br />
+                                    </p>
                                 </div>
                                 <div>
-                                    <a href="javascript:;">Pay
-                                        <img src="../../assets/images/right-arrow.svg" alt="arrow">
-                                    </a>
+                                    <span class="text-mute"
+                                        >SHIPPING ADDRESS</span
+                                    >
+                                    <p class="mr-t2">
+                                        {{ accountDetails?.attentionTo }}<br />
+                                        {{ accountDetails?.email }}<br />
+                                        {{ accountDetails?.mobileNo }}<br />
+                                        {{ accountDetails?.data?.address }}
+                                        <br />
+                                        {{ accountDetails?.data?.stateName }}
+                                        {{ accountDetails?.data?.pincode }}
+                                        <br />
+                                        {{ accountDetails?.countryName }} <br />
+                                    </p>
                                 </div>
-                            </span>
-                        </div>
-                    </div>
-                    <!-- mobile-design -->
-                    <div class="mobile-screen">
-                        <div class="currency-head">
-                            <span class="text-uppercase">Currency :</span>&nbsp;
-                            <span>EUR- Euro</span>
-                        </div>
-                        <div class="d-flex mobile-pay mr-t1 mr-b15">
-                            <span>Balance Payable</span>
-                            <span class="number-pay">
-                                €4.405,87
-                                <a href="javascript:;" class="d-block text-right">Pay
-                                    <img src="../../assets/images/right-arrow.svg" alt="arrow">
-                                </a>
-                            </span>
-                        </div>
-                        <div class="d-flex mobile-pay mr-b15">
-                            <span>Outstanding Invoices</span>
-                            <span class="number-pay">2</span>
-                        </div>
-                        <div class="d-flex mobile-pay">
-                            <span>Available Credits</span>
-                            <span class="number-pay">€0,00</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="balance-wrap">
-                <div class="payment-width">
-                    <h4>Last Payment Made</h4>
-                    <div class="payment-made mr-t15">
-                        <div>
-                            <span class="d-block pay mr-b1">€3.953,00</span>
-                            <span>Paid for
-                                <a href="javascript:;">INV2023-080561,</a>
-                                <a href="javascript:;">INV2023-070924</a>
-                            </span>
-                        </div>
-                        <div>
-                            <span class="d-block pay-head mr-b1">Paid On</span>
-                            <span>30-08-2023</span>
-                        </div>
-                        <div>
-                            <span class="d-block pay-head mr-b1">Payment #</span>
-                            <span>
-                                <a href="javascript:;">21242</a>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="balance-wrap">
-                <div class="payment-width">
-                    <div class="d-flex justify-content-between">
-                        <h4>My Details</h4>
-                        <a href="javascript:;">View More</a>
-                    </div>
-                    <div class="payment-made mr-t15">
-                        <div>
-                            <span class="d-block company-head mr-b1">Walkover web solutions Pvt ltd</span>
-                            <span class="d-block mr-b1"> Shubhendra Agrawal</span>
-                            <span class="d-block mr-t5 mr-b5">
-                                <img src="../../assets/images/profile.svg" alt="profile">
-                                2 Contact Persons</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- my-detail -->
-    <div class="container">
-        <div class="index-wrapper">
-            <div class="balance-wrap balance-account">
-                <div class="account-left">
-                    <h4>Account Details</h4>
-                    <div class="account-details mr-t15">
-                        <div>
-                            <span class="account-head d-block mr-b1">Walkover web solutions Pvt ltd</span>
-                            <div>
-                                <span class="d-block account-name mr-b5">Shubhendra Agrawal</span>
-                                <span class="d-block mr-b5">shubhendra@msg91.com</span>
-                            </div>
-                        </div>
-                        <div class="billing-address">
-                            <div>
-                                <span class="text-mute">BILLING ADDRESS</span>
-                                <p class="mr-t15">405 capt cs Naidyu Arcade old palasia <br> Indore MP <br>
-                                    India <br>
-                                    452018</p>
-                            </div>
-                            <div>
-                                <span class="text-mute">SHIPPING ADDRESS</span>
-                                <p class="mr-t2 pd-t1">Yet to add shipping address</p>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="account-right">
-                    <h4>Contact Persons</h4>
-                    <div class="account-details mr-t15">
-                        <div class="d-flex account-profile">
-                            <div>
-                                <img src="../../assets/images/profile-white.png" alt="profile">
-                            </div>
-                            <div>
-                                <span class="d-block mr-b5">Shubhendra Agrawal</span>
-                                <span class="d-block account-email">shubhendra@msg91.com</span>
-                            </div>
-                        </div>
-                        <div class="d-flex account-profile account-two">
-                            <div>
-                                <img src="../../assets/images/profile-white.png" alt="profile">
-                            </div>
-                            <div>
-                                <span class="d-block mr-b5">Shubhendra Agrawal</span>
-                                <span class="d-block account-email">shubhendra@msg91.com</span>
+                    <div class="account-right">
+                        <h4>Contact Persons</h4>
+                        <div class="account-details">
+                            <div
+                                class="d-flex account-profile mr-b5 mr-t15"
+                                *ngFor="let user of accounts"
+                            >
+                                <div>
+                                    <img
+                                        src="../../assets/images/profile-white.png"
+                                        alt="profile"
+                                    />
+                                </div>
+                                <div>
+                                    <span class="d-block mr-b5">{{
+                                        user?.name
+                                    }}</span>
+                                    <span class="d-block account-email">{{
+                                        user?.email
+                                    }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <footer (companyData)="onCompanyDataReceived($event)"></footer>
     </div>
-    <footer></footer>
 </div>

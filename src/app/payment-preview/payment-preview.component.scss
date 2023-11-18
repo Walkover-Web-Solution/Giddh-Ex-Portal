@@ -1,0 +1,26 @@
+.common-wrapper {
+    .invoice-open {
+        max-width: 820px;
+        height: 100%;
+
+        .back-header {
+            img {
+                width: 12px;
+            }
+        }
+    }
+}
+
+/*---- responsive ----*/
+@media screen and (max-width: 768px) {
+    .common-wrapper {
+        .payment-open {
+            margin: 0 15px;
+
+            .back-header {
+                flex-wrap: wrap;
+                row-gap: 15px;
+            }
+        }
+    }
+}

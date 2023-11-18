@@ -1,58 +1,74 @@
 <div class="common-wrapper">
-    <mat-drawer-container class="sidebar h-100" autosize
-        [ngClass]="{'sidebar-open': isExpanded, 'sidebar-close': !isExpanded}">
+    <mat-drawer-container
+        class="sidebar h-100"
+        autosize
+        [ngClass]="{ 'sidebar-open': isExpanded, 'sidebar-close': !isExpanded }"
+    >
         <mat-drawer #drawer class="example-sidenav" mode="side" opened="true">
             <div class="sidebar-head">
-                <button type="button" (click)="drawer.toggle();toggleMenu()" class="cp">
-                    <img src="../../../assets/images/toggle.svg" alt="toggle">
+                <button type="button" (click)="toggleMenu()" class="cp">
+                    <img src="../../../assets/images/toggle.svg" alt="toggle" />
                 </button>
-                <span class="pd-l1 d-inline-block toggle-heading">Giddh GmbH</span>
+                <span class="pd-l1 d-inline-block toggle-heading">
+                    {{ storeData?.companyDetails?.name }}</span
+                >
             </div>
             <mat-list role="list">
-                <mat-list-item role="listitem" class="active">
+                <mat-list-item
+                    role="listitem"
+                    *ngFor="let item of menuItems"
+                    [routerLink]="[item.url]"
+                    routerLinkActive="active"
+                >
                     <a href="javascript:;">
-                        <img src="../../../assets/images/home.svg" alt="home">
-                        <span class="side-menu">Home</span>
-                    </a>
-                </mat-list-item>
-                <mat-list-item role="listitem">
-                    <a href="javascript:;">
-                        <img src="../../../assets/images/estimates.svg" alt="estimates">
-                        <span class="side-menu">Estimates</span>
-                    </a>
-                </mat-list-item>
-                <mat-list-item role="listitem">
-                    <a href="javascript:;">
-                        <img src="../../../assets/images/invoice.svg" alt="invoice">
-                        <span class="side-menu">Invoices</span>
-                    </a>
-                </mat-list-item>
-                <mat-list-item role="listitem">
-                    <a href="javascript:;">
-                        <img src="../../../assets/images/payment.svg" alt="payment">
-                        <span class="side-menu">Payments Made</span>
-                    </a>
-                </mat-list-item>
-                <mat-list-item role="listitem">
-                    <a href="javascript:;">
-                        <img src="../../../assets/images/statement.svg" alt="statement">
-                        <span class="side-menu">Statements</span>
+                        <img
+                            [src]="'../../../assets/images/' + item.icon"
+                            alt="{{ item.label }}"
+                        />
+                        <span class="side-menu">{{ item.label }}</span>
                     </a>
                 </mat-list-item>
             </mat-list>
             <div class="sidebar-footer">
-                <a href="javascript:;" matTooltip="shubhendra@msg91.com"
-                    matTooltipClass="example-tooltip-uppercase">Shubhendra Agrawal</a>
-                <button mat-stroked-button color="primary" class="logout-btn">Logout</button>
+                <div class="loader-line" *ngIf="isLoading"></div>
+                <div *ngIf="!isLoading">
+                    <div
+                        class="profile-user font-12 d-flex justify-content-between align-items-center pd-15"
+                    >
+                        <div
+                            class="profile-name cursor-pointer d-flex align-items-center"
+                            [matTooltip]="userDetails?.email"
+                            placement="top"
+                        >
+                            <span class="profile-alice">{{
+                                userDetails?.name
+                            }}</span>
+                        </div>
+                        <div class="profile-logout">
+                            <button
+                                mat-stroked-button
+                                color="primary"
+                                class="logout-btn"
+                                (click)="logoutUser()"
+                                *ngIf="userDetails?.name"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </mat-drawer>
 
         <div class="sidenav-content">
             <div class="sidebar-mobile-head">
-                <button type="button" (click)="drawer.toggle();toggleMenu()" class="cp">
-                    <img src="../../../assets/images/toggle-responsive.svg" alt="toggle">
+                <button type="button" (click)="toggleMenu()" class="cp">
+                    <img
+                        src="../../../assets/images/toggle-responsive.svg"
+                        alt="toggle"
+                    />
                 </button>
-                <span class="pd-l1 d-inline-block toggle-heading">Giddh GmbH</span>
+                <span class="pd-l1 d-inline-block toggle-heading">Giddh</span>
             </div>
             <router-outlet></router-outlet>
         </div>

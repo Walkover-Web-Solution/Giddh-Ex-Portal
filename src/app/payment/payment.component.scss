@@ -1,25 +1,102 @@
 .common-wrapper {
     .inner-content {
         margin: 30px 0 20px 0;
-        .payment-table {
+
+        .invoice-table {
             table {
                 .mdc-data-table__content {
                     .mat-mdc-row {
                         cursor: pointer;
                     }
                 }
-                .mat-mdc-header-cell {
-                    &.unused-width {
-                        min-width: 150px;
-                    }
-                }
-                .mat-mdc-cell {
-                    &.date-width,
-                    &.mode-width {
-                        min-width: 150px;
-                    }
+            }
+        }
+    }
+
+    .invoice-open {
+        .back-header {
+            img {
+                width: 12px;
+            }
+        }
+
+        .comment-container {
+            background-color: var(--color-bg-login);
+            padding: 22px 20px 30px;
+            margin: 50px 0 20px;
+        }
+    }
+}
+
+/*---- responsive ----*/
+@media screen and (max-width: 768px) {
+    .common-wrapper {
+        .inner-header {
+            padding: 15px 15px;
+        }
+
+        .inner-content {
+            margin: 30px 15px 20px 15px;
+        }
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .invoice-res-reslected {
+        flex-wrap: wrap;
+        row-gap: 10px;
+
+        p {
+            margin-left: 0 !important;
+        }
+    }
+
+    .common-wrapper {
+        .invoice-open {
+            .back-header {
+                display: block;
+
+                a {
+                    margin-bottom: 15px !important;
+                    display: inline-block;
                 }
             }
         }
     }
+}
+
+.media {
+    display: flex;
+    align-items: flex-start;
+}
+
+.list-inline,
+.list-unstyled {
+    padding-left: 0;
+    list-style: none;
+}
+
+.comment-time-web {
+    width: 170px;
+}
+
+.font-sm {
+    font-size: 13px;
+}
+
+.text-muted {
+    color: #5d678a !important;
+}
+
+.media-body {
+    flex: 1;
+}
+
+.comments-container .comment {
+    white-space: pre-wrap;
+}
+
+.clear-button {
+    height: 48px;
+    width: 100px;
 }
