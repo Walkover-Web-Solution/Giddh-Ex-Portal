@@ -1,5 +1,4 @@
 # Giddh Portal
->>>>>>> 56a8880347d537aba016d91e25c1a5fb924a1e96
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.0.1.
 
