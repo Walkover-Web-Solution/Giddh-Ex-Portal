@@ -126,7 +126,6 @@ export class AuthComponent implements OnInit, OnDestroy {
         this.authService.authenticateProxy(this.portalParamsRequest.proxyAuthToken).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
             if (response && response.status === 'success') {
                 this.portalParamsRequest.emailId = response.data[0]?.email;
-
                 this.authService.verifyPortalLogin(this.portalParamsRequest).pipe(takeUntil(this.destroyed$)).subscribe((portal) => {
                     if (portal && portal.status === 'success') {
                         this.users = portal.body;
