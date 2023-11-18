@@ -1,26 +1,45 @@
 <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
 <div class="common-wrapper" *ngIf="!isLoading && selectedPaymentVoucher">
     <div class="invoice-open small-container mr-t15">
-        <div class="back-header d-flex justify-content-between align-items-center">
+        <div
+            class="back-header d-flex justify-content-between align-items-center"
+        >
             <a href="javascript:;" (click)="backToInvoices()">
                 <img src="../../assets/images/chevron.svg" alt="arrow" /> Back
             </a>
             <div class="d-flex column-gap10">
-                <button mat-stroked-button color="primary" (click)="printVoucher()">
-                    <img src="../../assets/images/print.svg" alt="print" /> Print
+                <button
+                    mat-stroked-button
+                    color="primary"
+                    (click)="printVoucher()"
+                >
+                    <img src="../../assets/images/print.svg" alt="print" />
+                    Print
                 </button>
-                <button mat-stroked-button color="primary" (click)="
-            downloadPdf(
-              voucherUniqueName,
-              selectedPaymentVoucher[0]?.voucherNumber
-            )
-          ">
-                    <img src="../../assets/images/download.svg" alt="download" />
+                <button
+                    mat-stroked-button
+                    color="primary"
+                    (click)="
+                        downloadPdf(
+                            voucherUniqueName,
+                            selectedPaymentVoucher[0]?.voucherNumber
+                        )
+                    "
+                >
+                    <img
+                        src="../../assets/images/download.svg"
+                        alt="download"
+                    />
                 </button>
             </div>
         </div>
         <div class="pdf-wrapper mr-b50 h-100 mr-t15">
-            <iframe #pdfContainer width="100%" height="100%" [src]="sanitizedPdfFileUrl"></iframe>
+            <iframe
+                #pdfContainer
+                width="100%"
+                height="100%"
+                [src]="sanitizedPdfFileUrl"
+            ></iframe>
         </div>
     </div>
 </div>

@@ -58,18 +58,20 @@ export class FooterComponent implements OnInit, OnDestroy {
      * @memberof FooterComponent
      */
     public getCompanyDetails(): void {
-        this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-        this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-        this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
-        this.welcomeService.getCompanyDetails(this.companyDetailsQueryParams).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-            if (response && response.status === 'success') {
-                this.companyDetails = response.body;
-                this.companyData.emit(this.companyDetails);
-                this.store.dispatch(setCompanyDetails({ companyDetails: this.companyDetails }));
-            } else {
-                this.generalService.showSnackbar(response?.message);
-            }
-        });
+        if (this.storeData.session.id) {
+            this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+            this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+            this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
+            this.welcomeService.getCompanyDetails(this.companyDetailsQueryParams).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+                if (response && response.status === 'success') {
+                    this.companyDetails = response.body;
+                    this.companyData.emit(this.companyDetails);
+                    this.store.dispatch(setCompanyDetails({ companyDetails: this.companyDetails }));
+                } else {
+                    this.generalService.showSnackbar(response?.message);
+                }
+            });
+        }
     }
 
     /**

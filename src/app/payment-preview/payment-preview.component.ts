@@ -35,18 +35,19 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
     public selectedPaymentVoucher: any[] = [];
     /** Hold payment details*/
     public paymentDetails: any;
-    /** This will be use for invoice url params request*/
-    public invoiceListRequest: any = {
+    /** Hold invocie url request */
+    public paymentListRequest: any = {
         companyUniqueName: undefined,
         accountUniqueName: undefined,
         sessionId: undefined,
-        type: 'sales',
+        type: 'receipt',
         page: 1,
         count: PAGINATION_LIMIT,
-        sortBy: 'ASC',
-        sort: '',
-        balanceStatus: []
-    };
+        sortBy: 'grandTotal',
+        sort: 'asc',
+        balanceStatus: [],
+        uniqueNames: []
+    }
     /** Hold  store data */
     public storeData: any = {};
 
@@ -58,7 +59,7 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
         private domSanitizer: DomSanitizer,
         private store: Store
     ) {
-        
+
     }
 
     /**
@@ -67,16 +68,15 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
      * @memberof PaymentPreviewComponent
      */
     public ngOnInit(): void {
+        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
+            if (params) {
+                this.voucherUniqueName = params.voucher;
+            }
+        });
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             if (sessionState.session) {
                 this.storeData = sessionState.session;
                 this.getPaymentDetails();
-            }
-        });
-
-        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (params) {
-                this.voucherUniqueName = params.voucher;
             }
         });
     }
@@ -100,6 +100,7 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
                 (voucherDetailsResponse: any) => {
                     this.isLoading = false;
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
+                        this.getInvoiceList();
                         this.isLoading = false;
                         this.paymentDetails = voucherDetailsResponse.body;
                         let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body, 'application/pdf', 512);
@@ -112,6 +113,27 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
                         this.generalService.showSnackbar(voucherDetailsResponse?.message);
                     }
                 });
+    }
+
+    /**
+     * This will be use for get receipt list
+     *
+     * @memberof PaymentPreviewComponent
+     */
+    public getInvoiceList(): void {
+        this.paymentListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+        this.paymentListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+        this.paymentListRequest.sessionId = this.storeData.session.id;
+        this.paymentListRequest.uniqueNames = this.voucherUniqueName;
+        this.isLoading = true;
+        this.paymentService.getInvoiceList(this.paymentListRequest).pipe(takeUntil(this.destroyed$)).subscribe((invoiceListResponse: any) => {
+            this.isLoading = false;
+            if (invoiceListResponse && invoiceListResponse.status === 'success') {
+                this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === this.voucherUniqueName);
+            } else {
+                this.generalService.showSnackbar(invoiceListResponse?.message);
+            }
+        });
     }
 
     /**

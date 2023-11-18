@@ -28,7 +28,8 @@ export class PaymentService {
         let data = {
             companyUniqueName: model.companyUniqueName,
             accountUniqueName: model.accountUniqueName,
-            balanceStatus: model.balanceStatus
+            balanceStatus: model.balanceStatus,
+            uniqueNames: model.uniqueNames ? [model.uniqueNames] : []
         };
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;

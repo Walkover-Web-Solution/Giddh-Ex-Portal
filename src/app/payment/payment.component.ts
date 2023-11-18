@@ -33,7 +33,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     /** Hold table displayed columns*/
-    public displayedColumns: string[] = ['payment', 'voucherDate', 'amount', 'mode', 'unused'];
+    public displayedColumns: string[] = ['payment', 'voucherDate', 'grandTotal', 'mode', 'unused'];
     /** Hold table datasource */
     public dataSource = new MatTableDataSource<any>();
     /** Hold panel open state*/
@@ -79,7 +79,6 @@ export class PaymentComponent implements OnInit, OnDestroy {
         private router: Router,
         private store: Store
     ) {
-        
     }
 
     /**

@@ -14,8 +14,6 @@ import { WelcomeService } from "../services/welcome.service";
     styleUrls: ["welcome.component.scss"]
 })
 export class WelcomeComponent implements OnInit, OnDestroy {
-    /**Instance of company data emit */
-    @Output() companyData: EventEmitter<CompanyResponse> = new EventEmitter<CompanyResponse>();
     /** This will be use for company details */
     public receivedCompanyDetails: CompanyResponse;
     /** True if api call in progress */
@@ -197,7 +195,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      */
     public onCompanyDataReceived(companyDetails: CompanyResponse): void {
         this.receivedCompanyDetails = companyDetails;
-            this.companyData.emit(companyDetails);
     }
 
     /**
