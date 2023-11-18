@@ -18,7 +18,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     public isLoading: boolean = true;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-    /** Request body for get shopify url params */
+    /** Request body for get portal url params */
     public portalParamsRequest = {
         proxyAuthToken: undefined,
         subDomain: undefined,
@@ -117,7 +117,7 @@ export class AuthComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * This will be use for get shopify authorization
+     * This will be use for get portal authorization
      *
      * @memberof AuthComponent
      */
