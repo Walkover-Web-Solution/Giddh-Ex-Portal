@@ -21,7 +21,7 @@ export class FooterComponent implements OnInit, OnDestroy {
     public isLoading: boolean = true;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-    /** Request body for get shopify url params */
+    /** Request body for get portal url params */
     public companyDetailsQueryParams = {
         companyUniqueName: undefined,
         accountUniqueName: undefined,
