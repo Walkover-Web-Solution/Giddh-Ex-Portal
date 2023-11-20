@@ -141,20 +141,12 @@ export class AuthComponent implements OnInit, OnDestroy {
                                 proxyAuthToken: this.portalParamsRequest.proxyAuthToken,
                                 subDomain: this.portalParamsRequest.subDomain
                             };
-
-                            this.authService.savePortalUserSession(this.savePortalUserSession).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
-                                if (response && response.status === 'success') {
-                                    this.companyUniqueName = response.companyUniqueName;
-                                    this.savePortalUserSession['companyUniqueName'] = this.companyUniqueName;
-                                    this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
-                                    this.store.dispatch(setSessionToken({ session: response.body.session }));
-                                    let url = '/' + this.portalParamsRequest.subDomain + '/welcome'
-                                    this.router.navigate([url]);
-                                } else {
-                                    this.generalService.showSnackbar(response?.data?.message);
-                                    this.isLoading = false;
-                                }
-                            });
+                            this.companyUniqueName = this.users[0]?.companyUniqueName;
+                            this.savePortalUserSession['companyUniqueName'] = this.companyUniqueName;
+                            this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
+                            this.store.dispatch(setSessionToken({ session: this.users[0]?.session }));
+                            let url = '/' + this.portalParamsRequest.subDomain + '/welcome'
+                            this.router.navigate([url]);
                         }
                     } else {
                         this.generalService.showSnackbar(portal?.message);
