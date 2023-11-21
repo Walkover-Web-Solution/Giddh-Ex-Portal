@@ -20,4 +20,9 @@ export const setUserDetails = createAction(
   '[User] Set User Details',
   props<{ userDetails: any }>()
 );
+
+export const setPortalUserDetails = createAction(
+    '[User] Set Portal User Details',
+    props<{ portalDetails: any }>()
+);
 export const resetLocalStorage = createAction('[Reset] Reset Local Storage');
