@@ -17,10 +17,11 @@
                         mat-stroked-button
                         color="primary"
                         *ngIf="
-                            selectedPaymentVoucher[0]?.balanceStatus ===
+                            (selectedPaymentVoucher[0]?.balanceStatus ===
                                 'UNPAID' ||
-                            selectedPaymentVoucher[0]?.balanceStatus ===
-                                'PARTIAL-PAID'
+                                selectedPaymentVoucher[0]?.balanceStatus ===
+                                    'PARTIAL-PAID') &&
+                            paymentDetails.canPay
                         "
                         (click)="initializePayment(paymentDetails)"
                     >
@@ -52,6 +53,9 @@
                     </button>
                 </div>
             </div>
+            <span class="razorpay-message error-message " *ngIf="!paymentDetails.canPay"
+                >{{ paymentDetails.message }}</span
+            >
             <div class="comment-container">
                 <form [formGroup]="commentForm">
                     <mat-form-field

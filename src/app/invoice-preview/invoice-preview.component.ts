@@ -89,6 +89,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.invoiceListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
                 this.invoiceListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
                 this.invoiceListRequest.sessionId = this.storeData.session.id;
+                this.invoiceListRequest.uniqueNames = params.voucher;
                 let request = { accountUniqueName: this.storeData.userDetails.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: this.storeData.userDetails.companyUniqueName, sessionId: this.storeData.session.id };
 
                 combineLatest([
