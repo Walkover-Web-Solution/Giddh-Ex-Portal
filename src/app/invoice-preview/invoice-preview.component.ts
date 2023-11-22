@@ -86,10 +86,11 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
             if (params) {
                 this.voucherUniqueName = params.voucher;
-                this.invoiceListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-                this.invoiceListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-                this.invoiceListRequest.sessionId = this.storeData.session.id;
-                let request = { accountUniqueName: this.storeData.userDetails.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: this.storeData.userDetails.companyUniqueName, sessionId: this.storeData.session.id };
+                this.invoiceListRequest.accountUniqueName = this.storeData.userDetails?.account.uniqueName;
+                this.invoiceListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+                this.invoiceListRequest.sessionId = this.storeData.session?.id;
+                this.invoiceListRequest.uniqueNames = params.voucher;
+                let request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id };
 
                 combineLatest([
                     this.invoiceService.getInvoiceList(this.invoiceListRequest),

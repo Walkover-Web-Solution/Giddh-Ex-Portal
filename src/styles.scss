@@ -559,16 +559,6 @@ table {
             white-space: nowrap;
         }
 
-        thead {
-            .mat-mdc-header-row {
-                .mat-sort-header {
-                    .mat-sort-header-container {
-                        color: var(--color-sort-column);
-                    }
-                }
-            }
-        }
-
         .mdc-data-table__content {
             .mat-mdc-row {
                 .mat-mdc-cell {

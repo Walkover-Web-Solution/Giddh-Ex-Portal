@@ -130,10 +130,12 @@
                                 <div class="d-flex column-gap10">
                                     <button
                                         *ngIf="
-                                            element?.balanceStatus ===
+                                            (element?.balanceStatus ===
                                                 'UNPAID' ||
-                                            element?.balanceStatus ===
-                                                'PARTIAL-PAID'
+                                                element?.balanceStatus ===
+                                                    'PARTIAL-PAID') &&
+                                            storeData?.companyDetails
+                                                ?.razorpayIntegrated
                                         "
                                         mat-stroked-button
                                         color="primary"
@@ -192,9 +194,6 @@
                     class="mr-t5"
                 />
                 <p>
-                    Looks like you've already initiated payment(s) for this
-                    invoice. Initiating a new payment will
-                    <strong>not</strong> override the payment(s) in progress.
                     Are you sure you want to proceed?
                 </p>
             </div>

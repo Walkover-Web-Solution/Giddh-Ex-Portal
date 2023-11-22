@@ -126,7 +126,7 @@ export class AuthComponent implements OnInit, OnDestroy {
         this.authService.authenticateProxy(this.portalParamsRequest.proxyAuthToken).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
             if (response && response.status === 'success') {
                 this.portalParamsRequest.emailId = response.data[0]?.email;
-                this.authService.verifyPortalLogin(this.portalParamsRequest).pipe(takeUntil(this.destroyed$)).subscribe((portal) => {
+                this.authService.verifyPortalLogin(this.portalParamsRequest).pipe(takeUntil(this.destroyed$)).subscribe((portal: any) => {
                     if (portal && portal.status === 'success') {
                         this.users = portal.body;
                         if (this.users?.length > 1) {
@@ -151,6 +151,8 @@ export class AuthComponent implements OnInit, OnDestroy {
                     } else {
                         this.generalService.showSnackbar(portal?.message);
                         this.isLoading = false;
+                        let url = '/' + this.portalParamsRequest.subDomain + '/login'
+                        this.router.navigate([url]);
                     }
                 });
             } else {

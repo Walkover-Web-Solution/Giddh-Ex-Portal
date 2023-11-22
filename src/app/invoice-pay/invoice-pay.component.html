@@ -3,7 +3,7 @@
 <div class="d-flex w-100">
     <sidebar></sidebar>
     <div
-        class="pay-invoice-wrapper"
+        class="w-100 pay-invoice-wrapper"
         *ngIf="!isLoading && selectedPaymentVoucher?.length"
     >
         <div
@@ -40,7 +40,15 @@
                     </div>
                 </div>
             </div>
+            <div class="mr-t2">
+                <span
+                    class="razorpay-message error-message"
+                    *ngIf="!paymentDetails.canPay"
+                    >{{ paymentDetails.message }}</span
+                >
+            </div>
             <button
+                *ngIf="paymentDetails.canPay"
                 mat-stroked-button
                 color="primary"
                 class="text-uppercase mr-t15 mr-b2"

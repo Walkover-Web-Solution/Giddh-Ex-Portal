@@ -7,6 +7,7 @@ import { CompanyResponse, ReciptResponse } from "../models/Company";
 import { DashboardService } from "../services/dashboard.service.";
 import { Router } from "@angular/router";
 import { WelcomeService } from "../services/welcome.service";
+import { setPortalUserDetails } from "../store/actions/session.action";
 
 @Component({
     selector: "welcome",
@@ -62,6 +63,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     public lastPaymentRequest: any = {
         companyUniqueName: undefined,
         accountUniqueName: undefined,
+        vendorUniqueName: undefined,
         sessionId: undefined,
         type: 'receipt',
         page: 1,
@@ -99,21 +101,24 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         this.userBalanceSummary.sessionId = this.storeData.session.session.id;
         this.lastPaymentRequest.accountUniqueName = this.storeData.session.userDetails.account.uniqueName;
         this.lastPaymentRequest.companyUniqueName = this.storeData.session.userDetails.companyUniqueName;
+        this.lastPaymentRequest.vendorUniqueName = this.storeData.session.userDetails.vendorContactUniqueName;
         this.lastPaymentRequest.sessionId = this.storeData.session.session.id;
         this.isLoading = true;
         const balanceSummary$ = this.dashboardService.getBalanceSummary(this.userBalanceSummary);
         const accountDetails$ = this.dashboardService.getAccountDetails(this.userBalanceSummary);
         const accounts$ = this.dashboardService.getAccounts(this.userBalanceSummary);
         const lastPayment$ = this.welcomeService.getLastPaymentMade(this.lastPaymentRequest);
+        const portalDetails$ = this.welcomeService.getPortalUserDetails(this.lastPaymentRequest);
 
-        combineLatest([balanceSummary$, accountDetails$, accounts$, lastPayment$])
+        combineLatest([balanceSummary$, accountDetails$, accounts$, lastPayment$, portalDetails$])
             .pipe(takeUntil(this.destroyed$))
             .subscribe(
-                ([balanceSummaryResponse, accountDetailsResponse, accountsResponse, lastPaymentResponse]) => {
+                ([balanceSummaryResponse, accountDetailsResponse, accountsResponse, lastPaymentResponse, portalUserResponse]) => {
                     this.handleBalanceSummaryResponse(balanceSummaryResponse);
                     this.handleAccountDetailsResponse(accountDetailsResponse);
                     this.handleAccountsResponse(accountsResponse);
                     this.handleLastPaymentResponse(lastPaymentResponse);
+                    this.handlePortalUserResponse(portalUserResponse);
                     this.isLoading = false;
                 },
                 (error) => {
@@ -151,7 +156,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             this.accountDetails.countryName = response.body.countryName;
             this.accountDetails.data = response.body.addresses[0];
             this.accountDetails.attentionTo = response.body.attentionTo;
-            this.accountDetails.mobileNo= response.body.mobileNo;
+            this.accountDetails.mobileNo = response.body.mobileNo;
         } else {
             this.generalService.showSnackbar(response?.message);
         }
@@ -182,6 +187,21 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     private handleLastPaymentResponse(response: any): void {
         if (response && response.status === 'success') {
             this.voucherData = response.body;
+        } else {
+            this.generalService.showSnackbar(response?.message);
+        }
+    }
+
+    /**
+     * This will be use for handle last portal made  response
+     *
+     * @private
+     * @param {*} response
+     * @memberof WelcomeComponent
+     */
+    private handlePortalUserResponse(response: any): void {
+        if (response && response.status === 'success') {
+            this.store.dispatch(setPortalUserDetails({ portalDetails: response.body }));
         } else {
             this.generalService.showSnackbar(response?.message);
         }

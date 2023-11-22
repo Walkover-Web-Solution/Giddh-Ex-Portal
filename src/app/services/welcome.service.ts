@@ -15,7 +15,7 @@ export class WelcomeService {
     constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService) {
         this.apiUrl = environment.apiUrl;
     }
-    
+
     /**
      * This will be use for get last payment made
      *
@@ -66,6 +66,30 @@ export class WelcomeService {
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
         return this.http.get(this.apiUrl + WELCOME_API.GET_COMPANY_DETAILS?.replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName)), '', args).pipe(
+            map((res) => {
+                let data: BaseResponse<any, string> = res;
+                data.queryString = { data };
+                return data;
+            }),
+            catchError((e) => this.errorHandler.HandleCatch<any, any>(e)));
+    }
+
+    /**
+ * This will be use for get portal user details
+ *
+ * @param {*} model
+ * @return {*}  {Observable<BaseResponse<any, any>>}
+ * @memberof GeneralService
+ */
+    public getPortalUserDetails(model: any): Observable<BaseResponse<any, any>> {
+        let data = {
+            companyUniqueName: model.companyUniqueName,
+            accountUniqueName: model.accountUniqueName,
+            vendorUniqueName: model.vendorUniqueName
+        }
+        let args: any = { headers: {} };
+        args.headers['Session-id'] = model?.sessionId;
+        return this.http.get(this.apiUrl + WELCOME_API.GET_PORTAL_USER_DETAILS?.replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName))?.replace(':vendorUniqueName', encodeURIComponent(data.vendorUniqueName)), '', args).pipe(
             map((res) => {
                 let data: BaseResponse<any, string> = res;
                 data.queryString = { data };
