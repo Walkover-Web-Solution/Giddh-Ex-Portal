@@ -603,7 +603,6 @@ table {
     position: relative;
     display: flex;
     flex-direction: column;
-
     .inner-header {
         padding: 15px 0px;
         border-bottom: 1px solid var(--color-border);
@@ -613,6 +612,10 @@ table {
             font-weight: 300;
         }
     }
+}
+
+.main-wrapper {
+        padding: 0 30px;
 }
 
 /*---- sidebar -----*/

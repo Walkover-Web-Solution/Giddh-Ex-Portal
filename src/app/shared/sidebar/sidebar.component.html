@@ -1,18 +1,10 @@
-<div class="sidebar-wrapper">
+<div [ngClass]="{ 'sidebar-small': !isExpanded, 'sidebar-large': isExpanded }">
     <mat-drawer-container
         class="sidebar h-100"
         autosize
         [ngClass]="{ 'sidebar-open': isExpanded, 'sidebar-close': !isExpanded }"
     >
         <mat-drawer #drawer class="example-sidenav" mode="side" opened="true">
-            <div class="sidebar-head">
-                <button type="button" (click)="toggleMenu()" class="cp">
-                    <img src="../../../assets/images/toggle.svg" alt="toggle" />
-                </button>
-                <span class="pd-l1 d-inline-block toggle-heading">
-                  {{storeData?.portalDetails?.name}}</span
-                >
-            </div>
             <mat-list role="list">
                 <mat-list-item
                     role="listitem"
@@ -40,11 +32,16 @@
                             [matTooltip]="userDetails?.email"
                             placement="top"
                         >
-                            <span class="profile-alice">{{
-                                userDetails?.name
-                            }}</span>
+                            <span
+                                class="profile-alice"
+                                [ngClass]="{
+                                    'profile-slice-small': !isExpanded
+                                }"
+                                (click)="toggleMenu()"
+                                >{{ userDetails?.name }}</span
+                            >
                         </div>
-                        <div class="profile-logout">
+                        <div class="profile-logout" *ngIf="isExpanded">
                             <button
                                 mat-stroked-button
                                 color="primary"
