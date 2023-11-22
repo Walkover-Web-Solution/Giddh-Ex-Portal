@@ -174,24 +174,26 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @memberof InvoiceComponent
      */
     public getInvoiceList(initialLoading: boolean, filtersLoading: boolean): void {
-        this.invoiceListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-        this.invoiceListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-        this.invoiceListRequest.sessionId = this.storeData.session.id;
-        this.isLoading = filtersLoading;
-        this.initialLoading = initialLoading;
-        this.invoiceService.getInvoiceList(this.invoiceListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
-            this.isLoading = false;
-            this.initialLoading = false;
-            if (response && response.status === 'success') {
-                this.dataSource = new MatTableDataSource(response.body.items);
-                this.invoiceListData = response.body.items;
-                this.dataSource.paginator = this.paginator;
-                this.dataSource.sort = this.sort;
-                this.voucherData = response.body;
-            } else {
-                this.generalService.showSnackbar(response?.message);
-            }
-        });
+        if (this.storeData) {
+            this.invoiceListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+            this.invoiceListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+            this.invoiceListRequest.sessionId = this.storeData.session.id;
+            this.isLoading = filtersLoading;
+            this.initialLoading = initialLoading;
+            this.invoiceService.getInvoiceList(this.invoiceListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+                this.isLoading = false;
+                this.initialLoading = false;
+                if (response && response.status === 'success') {
+                    this.dataSource = new MatTableDataSource(response.body.items);
+                    this.invoiceListData = response.body.items;
+                    this.dataSource.paginator = this.paginator;
+                    this.dataSource.sort = this.sort;
+                    this.voucherData = response.body;
+                } else {
+                    this.generalService.showSnackbar(response?.message);
+                }
+            });
+        }
     }
 
     /**

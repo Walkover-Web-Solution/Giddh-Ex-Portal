@@ -53,8 +53,8 @@
                     </button>
                 </div>
             </div>
-            <span class="razorpay-message error-message " *ngIf="!paymentDetails.canPay"
-                >{{ paymentDetails.message }}</span
+            <span class="razorpay-message error-message " *ngIf="!paymentDetails?.canPay"
+                >{{ paymentDetails?.message }}</span
             >
             <div class="comment-container">
                 <form [formGroup]="commentForm">
@@ -102,7 +102,7 @@
                     </ul>
                 </ng-container>
             </div>
-            <div class="pdf-wrapper mr-b50 h-100">
+            <div class="pdf-wrapper mr-b50 h-100" *ngIf="sanitizedPdfFileUrl">
                 <iframe
                     #pdfContainer
                     width="100%"

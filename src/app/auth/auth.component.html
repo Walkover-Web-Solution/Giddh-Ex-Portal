@@ -1,4 +1,4 @@
-<mat-spinner [diameter]="50" *ngIf="isLoading"></mat-spinner>
+<mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
 <div class="common-wrapper">
     <div class="page-wrapper" *ngIf="!isLoading">
         <div class="login-wrapper">
@@ -9,24 +9,24 @@
                     class="mr-t5 mr-b15"
                 />
                 <div class="signin-content">
-                    <form [formGroup]="userForm">
-                        <div formArrayName="user" class="user-form">
-                            <mat-list
-                                *ngFor="let option of users; let i = index"
-                            >
-                                <mat-list-item
-                                    ><a
-                                        href="javascript:;"
-                                        class="user-item"
-                                        (click)="onUserSelected(option)"
-                                    >
-                                        {{ option?.account?.name }}</a
-                                    >
-                                </mat-list-item>
-                                <mat-divider></mat-divider>
-                            </mat-list>
-                        </div>
-                    </form>
+                        <form [formGroup]="userForm">
+                            <div formArrayName="user" class="user-form">
+                                <mat-list
+                                    *ngFor="let option of users; let i = index"
+                                >
+                                    <mat-list-item
+                                        ><a
+                                            href="javascript:;"
+                                            class="user-item"
+                                            (click)="onUserSelected(option)"
+                                        >
+                                            {{ option?.account?.name }}</a
+                                        >
+                                    </mat-list-item>
+                                    <mat-divider></mat-divider>
+                                </mat-list>
+                            </div>
+                        </form>
                 </div>
             </div>
         </div>

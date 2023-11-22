@@ -11,6 +11,7 @@ import { metaReducers, reducers } from './store';
 import { SessionEffects } from './store/effects/session.effects';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { SharedModule } from './shared/shared.module';
+import { DecoratorsModule } from './decorators/decorators.module';
 @NgModule({
     declarations: [
         AppComponent
@@ -23,6 +24,7 @@ import { SharedModule } from './shared/shared.module';
         SharedModule,
         MatSnackBarModule,
         ServiceModule.forRoot(),
+        DecoratorsModule.forRoot(),
         StoreModule.forRoot(reducers, {
             metaReducers,
             runtimeChecks: {
