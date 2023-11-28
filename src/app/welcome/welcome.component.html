@@ -1,6 +1,6 @@
 <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
 <div class="d-flex w-100">
-    <sidebar></sidebar>
+    <sidebar ></sidebar>
     <div class="common-wrapper">
         <div class="page-wrapper d-flex flex-column h-100" *ngIf="!isLoading">
             <header (companyData)="(receivedCompanyDetails)"></header>

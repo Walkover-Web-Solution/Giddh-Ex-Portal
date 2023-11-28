@@ -963,9 +963,11 @@ mat-sidenav[style] {
     margin-top: 50px;
 }
 
+
 .login-btn-wrap {
     button {
         cursor: pointer !important;
+        background-color: var(--color-white) !important;
     }
 }
 

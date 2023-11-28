@@ -179,5 +179,32 @@ export class InvoiceService {
             );
     }
 
-
+    /**
+     * This will be use for get voucher details if user is not logged in
+     *
+     * @param {*} model
+     * @return {*}  {Observable<BaseResponse<any, any>>}
+     * @memberof InvoiceService
+     */
+    public getVoucherDetailsFromWithoutSession(model: any): Observable<BaseResponse<any, any>> {
+        let data = {
+            companyUniqueName: model.companyUniqueName,
+            accountUniqueName: model.accountUniqueName,
+            voucherUniqueName: model.voucherUniqueName
+        }
+        return this.http.get(
+            this.apiUrl + API.GET_VOUCHER_LIST
+                .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
+                .replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName))
+                .replace(':voucherUniqueName', encodeURIComponent(data.voucherUniqueName)),
+            '', ''
+        ).pipe(
+            map((res) => {
+                let data: BaseResponse<any, string> = res;
+                data.queryString = { data };
+                return data;
+            }),
+            catchError((e) => this.errorHandler.HandleCatch<any, any>(e))
+        );
+    }
 }

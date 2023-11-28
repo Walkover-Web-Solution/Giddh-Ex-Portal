@@ -34,6 +34,7 @@
                         >
                             <span
                                 class="profile-alice"
+                                *ngIf="userDetails?.name"
                                 [ngClass]="{
                                     'profile-slice-small': !isExpanded
                                 }"

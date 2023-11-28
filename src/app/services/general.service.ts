@@ -1,8 +1,10 @@
 import { Injectable } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
-
+declare var initVerification: any;
 @Injectable()
 export class GeneralService {
+
+    public scriptLoaded: boolean = false;
 
     constructor(private snackBar: MatSnackBar) {
     }
@@ -81,4 +83,29 @@ export class GeneralService {
         }
         return '';
     }
+
+    public loadScript(id: any, configuration: any): Promise<void> {
+        const scriptSrc = 'https://proxy.msg91.com/assets/proxy-auth/proxy-auth.js';
+        return new Promise((resolve, reject) => {
+            if (!this.scriptLoaded) {
+                const script = document.createElement('script');
+                script.src = scriptSrc;
+                script.type = 'text/javascript';
+                script.defer = true;
+                script.onload = () => {
+                    this.scriptLoaded = true;
+                    initVerification(configuration);
+                    resolve();
+                };
+                script.onerror = (error) => {
+                    reject(error);
+                };
+                document.getElementById(id)?.append(script);
+            } else {
+                initVerification(configuration);
+                resolve();
+            }
+        });
+    }
+
 }

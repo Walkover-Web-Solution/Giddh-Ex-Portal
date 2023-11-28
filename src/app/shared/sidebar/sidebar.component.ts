@@ -58,20 +58,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
             );
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             this.storeData = sessionState.session;
-            if (this.storeData.userDetails) {
-                this.accountUrlRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-                this.accountUrlRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-                this.accountUrlRequest.sessionId = this.storeData.session.id;
+                this.accountUrlRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+                this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+                this.accountUrlRequest.sessionId = this.storeData.session?.id;
                 this.portalDomain = this.storeData?.domain;
                 this.getAccountDetails();
                 this.setActiveMenuItem();
-
                 this.menuItems = [
-                    { icon: "home.svg", label: "Home", url:'/'+ this.portalDomain + "/welcome" },
+                    { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + "/welcome" },
                     { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
                     { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
                 ];
-            }
         });
 
     }
@@ -100,18 +97,20 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof SidebarComponent
      */
     public getAccountDetails(): void {
+        if (this.storeData.session?.id) {
         this.isLoading = true;
-        this.dashboardService.getAccountDetails(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((accountsResponse: any) => {
-            if (accountsResponse && accountsResponse.status === 'success') {
-                this.isLoading = false;
-                this.userDetails = accountsResponse.body;
-                let userName = this.generalService.getInitialsFromString(this.userDetails.name);
-                this.userDetails.name = userName;
-            } else {
-                this.isLoading = false;
-                this.generalService.showSnackbar(accountsResponse?.message);
-            }
-        });
+            this.dashboardService.getAccountDetails(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((accountsResponse: any) => {
+                if (accountsResponse && accountsResponse.status === 'success') {
+                    this.isLoading = false;
+                    this.userDetails = accountsResponse.body;
+                    let userName = this.generalService.getInitialsFromString(this.userDetails.name);
+                    this.userDetails.name = userName;
+                } else {
+                    this.isLoading = false;
+                    this.generalService.showSnackbar(accountsResponse?.message);
+                }
+            });
+        }
     }
 
     /**
@@ -140,9 +139,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof SidebarComponent
      */
     public logoutUser(): void {
-        this.accountUrlRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-        this.accountUrlRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-        this.accountUrlRequest.sessionId = this.storeData.session.id;
+        this.accountUrlRequest.accountUniqueName = this.storeData.userDetails.account?.uniqueName;
+        this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+        this.accountUrlRequest.sessionId = this.storeData.session?.id;
         this.isLoading = true;
         this.authService.logoutUser(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
             if (response && response.status === 'success') {
@@ -164,7 +163,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     @HostListener('window:mousemove', ['$event'])
     onMouseMove(event: MouseEvent) {
-        this.checkAndRenewUserSession();
+        if (this.storeData.session?.id) {
+            this.checkAndRenewUserSession();
+        }
     }
 
     /**
@@ -175,7 +176,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     @HostListener('document:keypress', ['$event'])
     onKeyDown(event: KeyboardEvent) {
-        this.checkAndRenewUserSession();
+        if (this.storeData.session?.id) {
+            this.checkAndRenewUserSession();
+        }
     }
 
     /**
@@ -194,7 +197,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         if (response && response.status === 'success') {
                             this.store.dispatch(setSessionToken({ session: response.body.session }));
                         } else {
-                            this.generalService.showSnackbar(response?.message);
+                            this.generalService.showSnackbar(response.message);
                         }
                     });
                 }
