@@ -4,7 +4,7 @@ import { RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { ModuleWithProviders, NgModule } from "@angular/core";
 import { HttpWrapperService } from "./http-wrapper.service";
-import { GiddhErrorHandler } from "./catch-manager/catchmanger";
+import { PortalErrorHandler } from "./catch-manager/catchmanger";
 import { GeneralService } from "./general.service";
 import { AuthService } from "./auth.service";
 import { DashboardService } from "./dashboard.service.";
@@ -25,7 +25,7 @@ export class ServiceModule {
         return {
             ngModule: ServiceModule,
             providers: [
-                GiddhErrorHandler,
+                PortalErrorHandler,
                 HttpWrapperService,
                 GeneralService,
                 AuthService,

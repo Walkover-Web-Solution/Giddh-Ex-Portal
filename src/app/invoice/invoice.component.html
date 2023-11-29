@@ -92,7 +92,8 @@
                                 *matCellDef="let element"
                                 class="text-right"
                             >
-                                {{ element?.grandTotal?.amountForAccount }}
+                                {{ element?.account?.currency?.symbol
+                                }}{{ element?.grandTotal?.amountForAccount }}
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="status">
@@ -170,7 +171,7 @@
                     </div>
                     <mat-paginator
                         (page)="handlePageChange($event)"
-                        [length]="invoiceListData?.length"
+                        [length]="totalRecords"
                         [pageSize]="invoiceListRequest.count"
                         [showFirstLastButtons]="true"
                         [pageSizeOptions]="pageSizeOptions"
@@ -193,9 +194,7 @@
                     alt="warning"
                     class="mr-t5"
                 />
-                <p>
-                    Are you sure you want to proceed?
-                </p>
+                <p>Are you sure you want to proceed?</p>
             </div>
             <div class="d-flex column-gap5 footer-btn">
                 <button

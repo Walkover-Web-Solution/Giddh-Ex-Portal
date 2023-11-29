@@ -89,7 +89,7 @@
                                 *matHeaderCellDef
                                 class="text-right sort-header-right"
                             >
-                                Mode
+                                Payment Account
                             </th>
                             <td
                                 mat-cell
@@ -118,10 +118,8 @@
                             >
                                 {{ element?.accountCurrencySymbol }}
                                 {{
-                                    element?.adjustments[0]?.voucherTotal
-                                        ?.amountForAccount
-                                        ? element?.adjustments[0]?.unadjustedAmount
-                                              ?.amountForAccount
+                                    element?.balanceDue?.amountForAccount
+                                        ? element?.balanceDue?.amountForAccount
                                         : 0
                                 }}
                             </td>
@@ -143,7 +141,7 @@
                     </div>
                     <mat-paginator
                         (page)="handlePageChange($event)"
-                        [length]="paymentListData?.length"
+                        [length]="totalRecords"
                         [pageSize]="paymentListRequest.count"
                         [showFirstLastButtons]="true"
                         [pageSizeOptions]="pageSizeOptions"

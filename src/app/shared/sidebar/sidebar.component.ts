@@ -7,7 +7,7 @@ import { map, shareReplay, takeUntil } from 'rxjs/operators';
 import { DashboardService } from "src/app/services/dashboard.service.";
 import { AuthService } from "src/app/services/auth.service";
 import * as dayjs from 'dayjs';
-import { resetLocalStorage, setSessionToken } from "src/app/store/actions/session.action";
+import {  resetLocalStorage, setSessionToken } from "src/app/store/actions/session.action";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "src/app/services/general.service";
 
@@ -97,7 +97,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     public getAccountDetails(): void {
         if (this.storeData.session?.id) {
-        this.isLoading = true;
+            this.isLoading = true;
             this.dashboardService.getAccountDetails(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((accountsResponse: any) => {
                 if (accountsResponse && accountsResponse.status === 'success') {
                     this.isLoading = false;
@@ -142,17 +142,34 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
         this.accountUrlRequest.sessionId = this.storeData.session?.id;
         this.isLoading = true;
-        this.authService.logoutUser(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
-            if (response && response.status === 'success') {
-                this.isLoading = false;
-                this.generalService.showSnackbar('You have successfully logged out.');
-                let url = this.storeData.domain + '/login';
-                this.store.dispatch(resetLocalStorage());
-                this.router.navigate([url]);
-            } else {
-                this.generalService.showSnackbar(response?.message);
-            }
-        });
+        // this.store.dispatch(logoutUser(this.accountUrlRequest as any));
+        // this.store.pipe(select(logoutUserSuccess), takeUntil(this.destroyed$)).subscribe((state: any) => {
+        //     console.log(state);
+        //     let user = state?.session?.logoutUser;
+        //     if (user && user.status === 'success') {
+        //         console.log(' this.storeData', this.storeData);
+        //         this.isLoading = false;
+        //         this.generalService.showSnackbar('You have successfully logged out.');
+        //         let url = this.portalDomain + '/login';
+        //         // this.store.dispatch(resetLocalStorage());
+        //         this.router.navigate([url]);
+        //     } else {
+        //         this.generalService.showSnackbar(state?.message);
+        //         // this.generalService.sessionExpiredAction(state);
+        //     }
+        // });
+        // this.authService.logoutUser(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+        //     if (response && response.status === 'success') {
+        //         this.isLoading = false;
+        //         this.generalService.showSnackbar('You have successfully logged out.');
+        //         let url = this.storeData.domain + '/login';
+        //         this.store.dispatch(resetLocalStorage());
+        //         this.router.navigate([url]);
+        //     } else {
+        //         this.generalService.showSnackbar(response?.message);
+        //         this.generalService.sessionExpiredAction(response);
+        //     }
+        // });
     }
     /**
      * This listner is used for mouse move events
@@ -197,6 +214,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             this.store.dispatch(setSessionToken({ session: response.body.session }));
                         } else {
                             this.generalService.showSnackbar(response.message);
+                            this.generalService.sessionExpiredAction(response);
                         }
                     });
                 }

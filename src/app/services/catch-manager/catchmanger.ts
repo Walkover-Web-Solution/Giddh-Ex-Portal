@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { AppState } from '../../store';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { HttpWrapperService } from '../http-wrapper.service';
 import { BaseResponse } from 'src/app/models/BaseResponse';
 
 @Injectable()
-export class GiddhErrorHandler {
+export class PortalErrorHandler {
 
     constructor(
         private router: Router,
         private http: HttpWrapperService,
-        private store: Store<AppState>
+        private store: Store
     ) { }
 
     public HandleCatch<TResponce, TRequest>(r: HttpErrorResponse, request?: any, queryString?: any): Observable<BaseResponse<TResponce, TRequest>> {
@@ -49,7 +48,7 @@ export class GiddhErrorHandler {
             } else {
                 data = r.error as any;
                 if (data) {
-                    if (data.code === 'SESSION_EXPIRED_OR_INVALID') {
+                    if (data.code === 'SESSION_EXPIRED_OR_INVALID' || data.code === 'INVALID_SESSION_ID') {
                         this.store.dispatch({ type: 'LoginOut' });
                     } else if (data.code === 'INVALID_JSON') {
                         let dataToSend = {

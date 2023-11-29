@@ -71,7 +71,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         { value: 'paid', label: 'Paid' },
         { value: 'partial-paid', label: 'Partial Paid' },
         { value: 'unpaid', label: 'Unpaid' },
-        { value: 'hold', label: 'Hold' }
+        { value: 'hold', label: 'Hold' },
+        { value: 'cancel', label: 'Cancel' }
     ];
     /** Hold  sort by options*/
     public sortByOptions = [
@@ -82,6 +83,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public storeData: any = {};
     /** Holds page size options */
     public pageSizeOptions: any[] = PAGE_SIZE_OPTIONS;
+    /** Count of total records for pagination */
+    public totalRecords: number = 0;
 
     constructor(
         public dialog: MatDialog,
@@ -189,6 +192,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
                     this.dataSource.paginator = this.paginator;
                     this.dataSource.sort = this.sort;
                     this.voucherData = response.body;
+                    this.totalRecords = response?.body?.totalItems;
                 } else {
                     this.generalService.showSnackbar(response?.message);
                 }

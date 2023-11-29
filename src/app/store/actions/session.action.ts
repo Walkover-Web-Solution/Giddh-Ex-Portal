@@ -1,5 +1,6 @@
 // session.actions.ts
 import { createAction, props } from '@ngrx/store';
+import { BaseResponse } from 'src/app/models/BaseResponse';
 
 export const setPortalDomain = createAction(
   '[Domain] Set Portal Domain',
@@ -17,12 +18,28 @@ export const setCompanyDetails = createAction(
 );
 
 export const setUserDetails = createAction(
-  '[User] Set User Details',
+  '[Session] Set User Details',
   props<{ userDetails: any }>()
 );
 
 export const setPortalUserDetails = createAction(
-    '[User] Set Portal User Details',
+    '[Session] Set Portal User Details',
     props<{ portalDetails: any }>()
 );
-export const resetLocalStorage = createAction('[Reset] Reset Local Storage');
+export const resetLocalStorage = createAction(
+    '[Session] Reset Local Storage');
+
+// export const logoutUser = createAction(
+//     '[Auth] Logout User',
+//     props<{ model: any }>()
+// );
+
+// export const logoutUserSuccess = createAction(
+//     '[Auth] Logout User Success',
+//     props<{ response: BaseResponse<any, any> }>()
+// );
+
+// export const logoutUserFailure = createAction(
+//     '[Auth] Logout User Failure',
+//     props<{ error: any }>()
+// );

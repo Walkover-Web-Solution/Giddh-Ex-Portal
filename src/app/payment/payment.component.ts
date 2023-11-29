@@ -71,6 +71,8 @@ export class PaymentComponent implements OnInit, OnDestroy {
     public storeData: any = {};
     /** Holds page size options */
     public pageSizeOptions: any[] = PAGE_SIZE_OPTIONS;
+    /** Count of total records for pagination */
+    public totalRecords: number = 0;
 
     constructor(
         public dialog: MatDialog,
@@ -139,6 +141,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
                 this.dataSource.paginator = this.paginator;
                 this.dataSource.sort = this.sort;
                 this.voucherData = response.body;
+                this.totalRecords = response?.body?.totalItems;
             } else {
                 this.generalService.showSnackbar(response?.message);
             }
