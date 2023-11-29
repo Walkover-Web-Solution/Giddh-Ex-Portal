@@ -50,15 +50,10 @@
             .mat-drawer {
                 visibility: visible !important;
                 display: block !important;
-                width: 0px !important;
+                width: 60px !important;
             }
             .mat-drawer-content {
                 margin-left: 0px !important;
-            }
-        }
-        .sidenav-content {
-            .sidebar-mobile-head {
-                display: block;
             }
         }
     }
@@ -148,6 +143,6 @@
 /*---- max-width-380px-end ----*/
 
 /*---- max-width-320-start ----*/
-@media screen and (max-width: 320px) {   
+@media screen and (max-width: 320px) {
 }
 /*---- max-width-320-end ----*/

@@ -158,6 +158,8 @@ export class AuthComponent implements OnInit, OnDestroy {
             } else {
                 this.generalService.showSnackbar(response?.data?.message);
                 this.isLoading = false;
+                let url = '/' + this.portalParamsRequest.subDomain + '/login'
+                this.router.navigate([url]);
             }
         });
     }
