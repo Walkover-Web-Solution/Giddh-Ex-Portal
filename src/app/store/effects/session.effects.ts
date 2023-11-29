@@ -5,20 +5,21 @@ import { AuthService } from 'src/app/services/auth.service';
 import * as fromApp from '../reducer/session.reducer';
 // import { logoutUser, logoutUserFailure, logoutUserSuccess } from '../actions/session.action';
 import { catchError, map, mergeMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { EMPTY } from 'rxjs';
+import { logoutUser, logoutUserSuccess } from '../actions/session.action';
 
 @Injectable()
 export class SessionEffects {
     constructor(private actions$: Actions, private store: Store<fromApp.SessionState>, private authService: AuthService) { }
-    // logoutUser$ = createEffect(() =>
-    //     this.actions$.pipe(
-    //         ofType(logoutUser),
-    //         mergeMap(action =>
-    //             this.authService.logoutUser(action).pipe(
-    //                 map(response => logoutUserSuccess({ response })),
-    //                 catchError(error => of(logoutUserFailure({ error })))
-    //             )
-    //         )
-    //     )
-    // );
+    logoutUser$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(logoutUser),
+            mergeMap(action =>
+                this.authService.logoutUser(action).pipe(
+                    map(response => logoutUserSuccess({ response })),
+                    catchError(error => EMPTY)
+                )
+            )
+        )
+    );
 }

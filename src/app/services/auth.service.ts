@@ -79,7 +79,6 @@ export class AuthService {
      * @memberof AuthService
      */
     public logoutUser(model: any): Observable<BaseResponse<any, any>> {
-        console.log(model);
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
         return this.http.delete(this.apiUrl + API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), '', args).pipe(map((res) => {

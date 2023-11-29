@@ -29,17 +29,17 @@ export const setPortalUserDetails = createAction(
 export const resetLocalStorage = createAction(
     '[Session] Reset Local Storage');
 
-// export const logoutUser = createAction(
-//     '[Auth] Logout User',
-//     props<{ model: any }>()
-// );
+export const logoutUser = createAction(
+    '[Auth] Logout User',
+    props<{ model: any }>()
+);
 
-// export const logoutUserSuccess = createAction(
-//     '[Auth] Logout User Success',
-//     props<{ response: BaseResponse<any, any> }>()
-// );
+export const logoutUserSuccess = createAction(
+    '[Auth] Logout User Success',
+    props<{ response: BaseResponse<any, any> }>()
+);
 
-// export const logoutUserFailure = createAction(
-//     '[Auth] Logout User Failure',
-//     props<{ error: any }>()
-// );
+export const logoutUserFailure = createAction(
+    '[Auth] Logout User Failure',
+    props<{ error: any }>()
+);

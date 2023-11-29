@@ -5,7 +5,7 @@ import { CustomActions } from "../custom-actions";
  */
 // session.reducer.ts
 import { createReducer, on } from '@ngrx/store';
-import { resetLocalStorage, setCompanyDetails, setPortalDomain, setPortalUserDetails, setSessionToken, setUserDetails, } from '../actions/session.action';
+import { logoutUser, logoutUserFailure, logoutUserSuccess, resetLocalStorage, setCompanyDetails, setPortalDomain, setPortalUserDetails, setSessionToken, setUserDetails, } from '../actions/session.action';
 
 // session-state.model.ts
 export interface SessionState {
@@ -14,7 +14,7 @@ export interface SessionState {
     userDetails: any;
     companyDetails: any;
     portalDetails: any;
-    // logoutUser: any;
+    logoutUser: any;
 }
 export const initialState: SessionState = {
     session: null,
@@ -22,7 +22,7 @@ export const initialState: SessionState = {
     userDetails: null,
     companyDetails: null,
     portalDetails: null,
-    // logoutUser: null
+    logoutUser: null
 };
 export const sessionReducer = createReducer(
     initialState,
@@ -49,20 +49,8 @@ export const sessionReducer = createReducer(
         ...state,
         portalDetails,
     })),
-    // on(logoutUser, state => ({
-    //     ...state,
-
-    //     // You might want to include a loading flag in your state if needed
-    // })),
-
-    // on(logoutUserSuccess, (state, { response }) => ({
-    //     ...state,
-    //     logoutUser:response,
-    //     // Handle success, clear relevant session data or update the state as needed
-    // })),
-
-    // on(logoutUserFailure, (state, { error }) => ({
-    //     ...state
-    //     // Handle failure, update the state or set an error flag if needed
-    // }))
+    on(logoutUserSuccess, (state, { response }) => ({
+        ...state,
+        logoutUser:response,
+    }))
 );

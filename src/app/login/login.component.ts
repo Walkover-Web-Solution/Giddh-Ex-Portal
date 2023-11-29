@@ -31,7 +31,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         private generalService: GeneralService
     ) {
         this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            console.log(params);
             if (params) {
                 this.portalParamsRequest.domain = params.companyDomainUniqueName;
                 this.store.dispatch(setPortalDomain({ domain: this.portalParamsRequest.domain }));

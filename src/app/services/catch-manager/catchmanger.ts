@@ -1,19 +1,29 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Store } from '@ngrx/store';
+import { select, Store } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { HttpWrapperService } from '../http-wrapper.service';
 import { BaseResponse } from 'src/app/models/BaseResponse';
+import { logoutUser, logoutUserSuccess, resetLocalStorage } from 'src/app/store/actions/session.action';
+import {  filter, takeUntil } from 'rxjs/operators';
+import { GeneralService } from '../general.service';
 
 @Injectable()
 export class PortalErrorHandler {
-
+    /** Hold  store data */
+    public storeData: any = {};
     constructor(
         private router: Router,
         private http: HttpWrapperService,
-        private store: Store
-    ) { }
+        private store: Store,
+        private generalService: GeneralService
+    ) {
+        this.store.pipe(select(state => state)).subscribe((sessionState: any) => {
+            this.storeData = sessionState.session;
+            console.log(this.storeData);
+        });
+    }
 
     public HandleCatch<TResponce, TRequest>(r: HttpErrorResponse, request?: any, queryString?: any): Observable<BaseResponse<TResponce, TRequest>> {
         let data: BaseResponse<TResponce, TRequest> = new BaseResponse<TResponce, TRequest>();
@@ -49,7 +59,19 @@ export class PortalErrorHandler {
                 data = r.error as any;
                 if (data) {
                     if (data.code === 'SESSION_EXPIRED_OR_INVALID' || data.code === 'INVALID_SESSION_ID') {
-                        this.store.dispatch({ type: 'LoginOut' });
+                        request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName,  companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id };
+                        this.store.dispatch(logoutUser(request));
+                        this.store.pipe(select(logoutUserSuccess), filter(Boolean)).subscribe((state: any) => {
+                            let user = state?.session?.logoutUser;
+                            if (user && user.status === 'success') {
+                                this.generalService.showSnackbar('You have successfully logged out.');
+                                let url = this.storeData.domain + '/login';
+                                this.store.dispatch(resetLocalStorage());
+                                this.router.navigate([url]);
+                            } else {
+                                this.generalService.showSnackbar(state?.message);
+                            }
+                        });
                     } else if (data.code === 'INVALID_JSON') {
                         let dataToSend = {
                             requestBody: '',
