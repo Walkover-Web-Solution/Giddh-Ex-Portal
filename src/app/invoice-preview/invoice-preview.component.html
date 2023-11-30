@@ -4,7 +4,7 @@
     <div class="common-wrapper main-wrapper" *ngIf="!isLoading">
         <div
             class="login-section"
-            *ngIf="this.notUserLoginDetails.show"
+            *ngIf="notUserLoginDetails.show"
         >
             <div
                 class="login-btn-wrap"
@@ -16,14 +16,14 @@
             <div
                 class="back-header d-flex justify-content-between align-items-center"
                 [ngClass]="{
-                    'mr-b15 position-section': this.notUserLoginDetails.show
+                    'mr-b15 position-section': notUserLoginDetails.show
                 }"
                 *ngIf="selectedPaymentVoucher?.length"
             >
                 <a
                     href="javascript:;"
                     (click)="backToInvoices()"
-                    *ngIf="!this.notUserLoginDetails.show"
+                    *ngIf="!notUserLoginDetails.show"
                 >
                     <img src="../../assets/images/chevron.svg" alt="arrow" />
                     Back
