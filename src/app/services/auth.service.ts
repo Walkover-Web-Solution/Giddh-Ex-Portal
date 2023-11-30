@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { HttpWrapperService } from "./http-wrapper.service";
-import { GiddhErrorHandler } from './catch-manager/catchmanger';
+import { PortalErrorHandler } from './catch-manager/catchmanger';
 import { catchError, map } from "rxjs/operators";
 import { API } from "./apiurls/auth.api";
 import { BaseResponse } from "../models/BaseResponse";
@@ -11,7 +11,7 @@ import { environment } from "src/environments/environment";
 export class AuthService {
     private apiUrl: string = '';
     private proxyUrl: string = '';
-    constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService) {
+    constructor(private errorHandler: PortalErrorHandler, private http: HttpWrapperService) {
         this.apiUrl = environment.apiUrl;
         this.proxyUrl = environment.proxyUrl;
     }
@@ -79,15 +79,28 @@ export class AuthService {
      * @memberof AuthService
      */
     public logoutUser(model: any): Observable<BaseResponse<any, any>> {
+        let request = {
+            accountUniqueName: model?.accountUniqueName,
+            companyUniqueName: model?.companyUniqueName,
+            sessionId: model?.sessionId
+        }
         let args: any = { headers: {} };
-        args.headers['Session-id'] = model?.sessionId;
-        return this.http.delete(this.apiUrl + API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), '', args).pipe(map((res) => {
+        args.headers['Session-id'] = request?.sessionId;
+        return this.http.delete(this.apiUrl + API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(request.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(request.accountUniqueName)), '', args).pipe(map((res) => {
             let data: BaseResponse<any, any> = res;
-            data.request = model;
+            data.request = request;
             return data;
-        }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e, model)));
+        }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e, request)));
     }
 
+    /**
+     * This will be use for renew user session
+     *
+     * @param {string} userUniqueName
+     * @param {string} sessionId
+     * @return {*}  {Observable<BaseResponse<any, any>>}
+     * @memberof AuthService
+     */
     public renewSession(userUniqueName: string, sessionId: string): Observable<BaseResponse<any, any>> {
         let args: any = { headers: {} };
         args.headers['Session-id'] = sessionId;

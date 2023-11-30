@@ -1,20 +1,24 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Store } from '@ngrx/store';
-import { AppState } from '../../store';
+import { select, Store } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { HttpWrapperService } from '../http-wrapper.service';
 import { BaseResponse } from 'src/app/models/BaseResponse';
+import { logoutUser } from 'src/app/store/actions/session.action';
 
 @Injectable()
-export class GiddhErrorHandler {
+export class PortalErrorHandler {
+    /** Hold  store data */
+    public storeData: any = {};
 
     constructor(
-        private router: Router,
         private http: HttpWrapperService,
-        private store: Store<AppState>
-    ) { }
+        private store: Store
+    ) {
+        this.store.pipe(select(state => state)).subscribe((sessionState: any) => {
+            this.storeData = sessionState.session;
+        });
+    }
 
     public HandleCatch<TResponce, TRequest>(r: HttpErrorResponse, request?: any, queryString?: any): Observable<BaseResponse<TResponce, TRequest>> {
         let data: BaseResponse<TResponce, TRequest> = new BaseResponse<TResponce, TRequest>();
@@ -49,22 +53,9 @@ export class GiddhErrorHandler {
             } else {
                 data = r.error as any;
                 if (data) {
-                    if (data.code === 'SESSION_EXPIRED_OR_INVALID') {
-                        this.store.dispatch({ type: 'LoginOut' });
-                    } else if (data.code === 'INVALID_JSON') {
-                        let dataToSend = {
-                            requestBody: '',
-                            queryString: data.queryString,
-                            method: '',
-                            url: r.url,
-                            email: null,
-                            userUniqueName: null,
-                            environment: null,
-                            key: r.error.message ? r.error.message.substring(r.error.message?.indexOf(':') + 2, r.error.message.length) : null,
-                        };
-                        this.store.dispatch({ type: 'REPORT_INVALID_JSON', payload: dataToSend });
-                    } else if (data.code === '') {
-                        // handle unshared company response
+                    if (data.code === 'SESSION_EXPIRED_OR_INVALID' || data.code === 'INVALID_SESSION_ID') {
+                        request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id };
+                        this.store.dispatch(logoutUser(request));
                     }
                     if (typeof data !== 'string') {
                         data.request = request;
@@ -92,36 +83,4 @@ export class GiddhErrorHandler {
             o.next(data);
         });
     }
-}
-
-export function HandleCatch<TResponce, TRequest>(r: any, request?: any, queryString?: any): Observable<BaseResponse<TResponce, TRequest>> {
-    let data: BaseResponse<TResponce, TRequest> = new BaseResponse<TResponce, TRequest>();
-    // logout if invalid session detacted
-    if (r?.status === 0) {
-        data = {
-            body: null,
-            code: 'Internal Error',
-            message: 'something went wrong',
-            status: 'error'
-        };
-        data.request = request;
-        data.queryString = queryString;
-    } else {
-        if (r?.text() === '') {
-            data.status = 'error';
-            data.message = 'Something went wrong';
-            data.body = null;
-            data.code = 'Internal Error';
-        } else {
-            data = r?.json();
-            if (data.code === 'SESSION_EXPIRED_OR_INVALID') {
-                this.store.dispatch({ type: 'LoginOut' });
-            }
-        }
-        data.request = request;
-        data.queryString = queryString;
-    }
-    return new Observable<BaseResponse<TResponce, TRequest>>((o) => {
-        o.next(data);
-    });
 }

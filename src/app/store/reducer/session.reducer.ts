@@ -1,11 +1,9 @@
-import { CustomActions } from "../custom-actions";
-
 /**
  * Keeping Track of the AuthenticationState
  */
 // session.reducer.ts
 import { createReducer, on } from '@ngrx/store';
-import { resetLocalStorage, setCompanyDetails, setPortalDomain, setPortalUserDetails, setSessionToken, setUserDetails } from '../actions/session.action';
+import {resetLocalStorage, setCompanyDetails, setPortalDomain, setPortalUserDetails, setSessionToken, setUserDetails, } from '../actions/session.action';
 
 // session-state.model.ts
 export interface SessionState {
@@ -37,7 +35,7 @@ export const sessionReducer = createReducer(
         userDetails,
     })),
     on(resetLocalStorage, (state) => ({
-        ...initialState, // Reset the entire state to initialState
+        ...initialState,
     })),
     on(setCompanyDetails, (state, { companyDetails }) => ({
         ...state,

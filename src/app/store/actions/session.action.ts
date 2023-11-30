@@ -17,12 +17,18 @@ export const setCompanyDetails = createAction(
 );
 
 export const setUserDetails = createAction(
-  '[User] Set User Details',
+  '[Session] Set User Details',
   props<{ userDetails: any }>()
 );
 
 export const setPortalUserDetails = createAction(
-    '[User] Set Portal User Details',
+    '[Session] Set Portal User Details',
     props<{ portalDetails: any }>()
 );
-export const resetLocalStorage = createAction('[Reset] Reset Local Storage');
+export const resetLocalStorage = createAction(
+    '[Session] Reset Local Storage');
+
+export const logoutUser = createAction(
+    '[Auth] Logout User',
+    props<{ user: any }>()
+);

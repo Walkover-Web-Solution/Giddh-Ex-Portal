@@ -5,7 +5,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { Store } from '@ngrx/store';
 import { setSessionToken, setUserDetails } from '../store/actions/session.action';
-import { FormBuilder, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
+import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { GeneralService } from '../services/general.service';
 
 @Component({
@@ -158,6 +158,8 @@ export class AuthComponent implements OnInit, OnDestroy {
             } else {
                 this.generalService.showSnackbar(response?.data?.message);
                 this.isLoading = false;
+                let url = '/' + this.portalParamsRequest.subDomain + '/login'
+                this.router.navigate([url]);
             }
         });
     }

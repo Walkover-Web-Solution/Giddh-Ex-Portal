@@ -1,10 +1,21 @@
 import { Injectable } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
-
+import { select, Store } from '@ngrx/store';
+import { Router } from "@angular/router";
+import { take } from "rxjs/operators";
+declare var initVerification: any;
 @Injectable()
 export class GeneralService {
+    /** True if script is loaded */
+    public scriptLoaded: boolean = false;
+    /** Hold  store data */
+    public storeData: any = {};
 
-    constructor(private snackBar: MatSnackBar) {
+    constructor(private snackBar: MatSnackBar, private store: Store,
+        private router: Router) {
+        this.store.pipe(select(state => state), take(1)).subscribe((sessionState) => {
+            this.storeData = sessionState;
+        });
     }
 
     /**
@@ -81,4 +92,37 @@ export class GeneralService {
         }
         return '';
     }
+
+    /**
+     * This will be use for load script for proxy login button
+     *
+     * @param {*} id
+     * @param {*} configuration
+     * @return {*}  {Promise<void>}
+     * @memberof GeneralService
+     */
+    public loadScript(id: any, configuration: any): Promise<void> {
+        const scriptSrc = 'https://proxy.msg91.com/assets/proxy-auth/proxy-auth.js';
+        return new Promise((resolve, reject) => {
+            if (!this.scriptLoaded) {
+                const script = document.createElement('script');
+                script.src = scriptSrc;
+                script.type = 'text/javascript';
+                script.defer = true;
+                script.onload = () => {
+                    this.scriptLoaded = true;
+                    initVerification(configuration);
+                    resolve();
+                };
+                script.onerror = (error) => {
+                    reject(error);
+                };
+                document.getElementById(id)?.append(script);
+            } else {
+                initVerification(configuration);
+                resolve();
+            }
+        });
+    }
+
 }

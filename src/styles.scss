@@ -603,7 +603,6 @@ table {
     position: relative;
     display: flex;
     flex-direction: column;
-
     .inner-header {
         padding: 15px 0px;
         border-bottom: 1px solid var(--color-border);
@@ -615,14 +614,16 @@ table {
     }
 }
 
-/*---- sidebar -----*/
+.main-wrapper {
+        padding: 0 30px;
+}
 
+/*---- sidebar -----*/
 .welcome-main {
     .sidenav-content {
         margin: 0 !important;
     }
 }
-
 mat-sidenav[style] {
     visibility: visible !important;
 }
@@ -960,9 +961,11 @@ mat-sidenav[style] {
     margin-top: 50px;
 }
 
+
 .login-btn-wrap {
     button {
         cursor: pointer !important;
+        background-color: var(--color-white) !important;
     }
 }
 

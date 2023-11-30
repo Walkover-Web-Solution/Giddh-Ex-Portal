@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSort, Sort } from "@angular/material/sort";
+import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReplaySubject } from "rxjs";
@@ -71,6 +71,8 @@ export class PaymentComponent implements OnInit, OnDestroy {
     public storeData: any = {};
     /** Holds page size options */
     public pageSizeOptions: any[] = PAGE_SIZE_OPTIONS;
+    /** Count of total records for pagination */
+    public totalRecords: number = 0;
 
     constructor(
         public dialog: MatDialog,
@@ -125,9 +127,9 @@ export class PaymentComponent implements OnInit, OnDestroy {
      * @memberof PaymentComponent
      */
     public getPaymentList(initialLoading: boolean, filtersLoading: boolean): void {
-        this.paymentListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-        this.paymentListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-        this.paymentListRequest.sessionId = this.storeData.session.id;
+        this.paymentListRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+        this.paymentListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+        this.paymentListRequest.sessionId = this.storeData.session?.id;
         this.isLoading = filtersLoading;
         this.initialLoading = initialLoading;
         this.paymentService.getInvoiceList(this.paymentListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
@@ -139,6 +141,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
                 this.dataSource.paginator = this.paginator;
                 this.dataSource.sort = this.sort;
                 this.voucherData = response.body;
+                this.totalRecords = response?.body?.totalItems;
             } else {
                 this.generalService.showSnackbar(response?.message);
             }

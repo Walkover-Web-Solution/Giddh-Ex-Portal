@@ -49,8 +49,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         MatInputModule,
         ReactiveFormsModule,
         MatIconModule,
-        MatProgressSpinnerModule,
-
+        MatProgressSpinnerModule
     ],
     exports: [
         HeaderComponent,

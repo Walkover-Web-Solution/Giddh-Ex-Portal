@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { ServiceModule } from './services/service.module';
@@ -12,6 +12,7 @@ import { SessionEffects } from './store/effects/session.effects';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { SharedModule } from './shared/shared.module';
 import { DecoratorsModule } from './decorators/decorators.module';
+import { PortalHttpInterceptor } from './services/http.interceptor';
 @NgModule({
     declarations: [
         AppComponent
@@ -34,7 +35,13 @@ import { DecoratorsModule } from './decorators/decorators.module';
         }),
         EffectsModule.forRoot([SessionEffects])
     ],
-    providers: [],
+    providers: [
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: PortalHttpInterceptor,
+            multi: true
+        },
+    ],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

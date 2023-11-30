@@ -45,28 +45,29 @@ export class LoginComponent implements OnInit, OnDestroy {
      * @memberof LoginComponent
      */
     public ngOnInit(): void {
-        let configuration = {
-            referenceId: environment.proxyReferenceId,
-            addInfo: {
-                redirect_path: this.url
-            },
-            success: (data: any) => {
-            },
-            failure: (error: any) => {
-                this.generalService.showSnackbar(error?.message);
-            }
-        };
+        this.loginButtonScriptLoaded();
+    }
 
-        /* OTP LOGIN */
-        let scriptTag = document.createElement('script');
-        scriptTag.src = 'https://proxy.msg91.com/assets/proxy-auth/proxy-auth.js';
-        scriptTag.type = 'text/javascript';
-        scriptTag.defer = true;
-        scriptTag.onload = () => {
-            initVerification(configuration);
-        };
-        document.getElementById(environment.proxyReferenceId).appendChild(scriptTag);
-
+    /**
+ *  This will be use for login button script loading
+ *
+ * @memberof LoginComponent
+ */
+    public loginButtonScriptLoaded(): void {
+        setTimeout(() => {
+            let configuration = {
+                referenceId: environment.proxyReferenceId,
+                addInfo: {
+                    redirect_path: this.url
+                },
+                success: (data: any) => {
+                },
+                failure: (error: any) => {
+                    this.generalService.showSnackbar(error?.message);
+                }
+            };
+            this.generalService.loadScript(environment.proxyReferenceId, configuration);
+        }, 200)
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { InvoiceService } from "../services/invoice.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ReplaySubject, combineLatest } from "rxjs";
@@ -10,7 +10,7 @@ import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
-
+declare var initVerification: any;
 @Component({
     selector: "invoice-preview",
     templateUrl: "invoice-preview.component.html",
@@ -57,6 +57,17 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public commentForm: UntypedFormGroup;
     /** Hold  store data */
     public storeData: any = {};
+    /** Request params for not user login details*/
+    public notUserLoginDetails = {
+        show: false,
+        token: undefined,
+        voucherUniqueName: undefined,
+        accountUniqueName: undefined,
+        companyUniqueName: undefined
+    }
+    public loginId = environment.proxyReferenceId;
+    /** Hold current url*/
+    public url: string = '';
 
     constructor(
         private generalService: GeneralService,
@@ -81,24 +92,54 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.commentForm = this.formBuilder.group({
             commentText: ['']
         });
-
         this.isLoading = true;
+        let request;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (params) {
+            if (!this.storeData.session?.id && params.token) {
+                this.notUserLoginDetails.token = params.token;
+                this.notUserLoginDetails.voucherUniqueName = params.voucherUniqueName;
+                this.notUserLoginDetails.companyUniqueName = params.companyUniqueName;
+                this.notUserLoginDetails.accountUniqueName = params.accountUniqueName;
+                this.notUserLoginDetails.show = true;
+                request = { accountUniqueName: this.notUserLoginDetails.accountUniqueName, voucherUniqueName: this.notUserLoginDetails.voucherUniqueName, companyUniqueName: this.notUserLoginDetails.companyUniqueName, sessionId: '' };
+                combineLatest([
+                    this.invoiceService.getVoucherDetailsFromWithoutSession(this.notUserLoginDetails),
+                    this.invoiceService.getVoucherDetails(request),
+                ]).pipe(takeUntil(this.destroyed$)).subscribe(([invoiceListResponse, voucherDetailsResponse]) => {
+                    this.isLoading = false;
+                    this.loginButtonScriptLoaded();
+                    if (invoiceListResponse && invoiceListResponse.status === 'success') {
+                        this.selectedPaymentVoucher = [invoiceListResponse.body];
+                    } else {
+                        this.generalService.showSnackbar(invoiceListResponse?.message);
+                    }
+
+                    if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
+                        this.paymentDetails = voucherDetailsResponse.body[0];
+                        let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body[0].content, 'application/pdf', 512);
+                        const file = new Blob([blob], { type: 'application/pdf' });
+                        URL.revokeObjectURL(this.pdfFileURL);
+                        this.pdfFileURL = URL.createObjectURL(file);
+                        this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
+                    } else {
+                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                    }
+                });
+            } else {
+                this.notUserLoginDetails.show = false;
                 this.voucherUniqueName = params.voucher;
                 this.invoiceListRequest.accountUniqueName = this.storeData.userDetails?.account.uniqueName;
                 this.invoiceListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
                 this.invoiceListRequest.sessionId = this.storeData.session?.id;
-                this.invoiceListRequest.uniqueNames = params.voucher;
-                let request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id };
+                this.invoiceListRequest.uniqueNames = params.voucher ?? params.voucherUniqueName;
 
+                request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, voucherUniqueName: (params.voucher?? params?.voucherUniqueName), companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id };
                 combineLatest([
                     this.invoiceService.getInvoiceList(this.invoiceListRequest),
                     this.invoiceService.getVoucherDetails(request),
                     this.invoiceService.getInvoiceComments(request)
-                ]).pipe(takeUntil(this.destroyed$)).subscribe(([invoiceListResponse, voucherDetailsResponse, commentsResponse]) => {
+                ]).pipe(takeUntil(this.destroyed$))?.subscribe(([invoiceListResponse, voucherDetailsResponse, commentsResponse]) => {
                     this.isLoading = false;
-
                     if (invoiceListResponse && invoiceListResponse.status === 'success') {
                         this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === params?.voucher);
                     } else {
@@ -107,7 +148,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body[0];
-                        let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body[0].content, 'application/pdf', 512);
+                        let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body[0]?.content, 'application/pdf', 512);
                         const file = new Blob([blob], { type: 'application/pdf' });
                         URL.revokeObjectURL(this.pdfFileURL);
                         this.pdfFileURL = URL.createObjectURL(file);
@@ -125,6 +166,30 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         });
     }
 
+
+    /**
+     *  This will be use for login button script loading
+     *
+     * @memberof InvoicePreviewComponent
+     */
+    public loginButtonScriptLoaded(): void {
+        this.url = `/${this.storeData.domain}/auth`;
+        setTimeout(() => {
+            let configuration = {
+                referenceId: environment.proxyReferenceId,
+                addInfo: {
+                    redirect_path: this.url
+                },
+                success: (data: any) => {
+                },
+                failure: (error: any) => {
+                    this.generalService.showSnackbar(error?.message);
+                }
+            };
+            this.generalService.loadScript(environment.proxyReferenceId, configuration);
+        }, 200)
+    }
+
     /**
      * This will be use for  download pdf file
      *
@@ -132,11 +197,21 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @memberof InvoicePreviewComponent
      */
     public downloadPdf(voucherUniqueName: any, voucherNumber: any): void {
-        let urlRequest = {
-            accountUniqueName: this.storeData.userDetails.account.uniqueName,
-            companyUniqueName: this.storeData.userDetails.companyUniqueName,
-            sessionId: this.storeData.session.id,
-            voucherUniqueName: voucherUniqueName
+        let urlRequest;
+        if (this.notUserLoginDetails.show) {
+            urlRequest = {
+                accountUniqueName: this.notUserLoginDetails.accountUniqueName,
+                companyUniqueName: this.notUserLoginDetails.companyUniqueName,
+                voucherUniqueName: voucherUniqueName,
+                sessionId: '',
+            }
+        } else {
+            urlRequest = {
+                accountUniqueName: this.storeData.userDetails.account.uniqueName,
+                companyUniqueName: this.storeData.userDetails.companyUniqueName,
+                sessionId: this.storeData.session.id,
+                voucherUniqueName: voucherUniqueName
+            }
         }
         this.invoiceService.downloadVoucher(urlRequest)
             .pipe(takeUntil(this.destroyed$))

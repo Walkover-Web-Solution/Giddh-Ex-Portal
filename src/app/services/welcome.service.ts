@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { HttpWrapperService } from "./http-wrapper.service";
-import { GiddhErrorHandler } from './catch-manager/catchmanger';
+import { PortalErrorHandler } from './catch-manager/catchmanger';
 import { catchError, map } from "rxjs/operators";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
@@ -12,7 +12,7 @@ export class WelcomeService {
 
     private apiUrl: string = '';
 
-    constructor(private errorHandler: GiddhErrorHandler, private http: HttpWrapperService) {
+    constructor(private errorHandler: PortalErrorHandler, private http: HttpWrapperService) {
         this.apiUrl = environment.apiUrl;
     }
 

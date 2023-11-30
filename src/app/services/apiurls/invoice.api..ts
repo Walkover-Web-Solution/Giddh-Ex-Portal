@@ -3,5 +3,6 @@ export const API = {
     GET_VOUCHER_DETAILS: 'portal/company/:companyUniqueName/accounts/:accountUniqueName/invoice-pay-request?voucherVersion=2',
     GET_COMMENTS: 'portal/company/:companyUniqueName/accounts/:accountUniqueName/:voucherUniqueName/comments?voucherVersion=2',
     ADD_COMMENTS: 'portal/company/:companyUniqueName/accounts/:accountUniqueName/:voucherUniqueName/add-comment?voucherVersion=2',
-    PAY_VOUCHER: 'company/:companyUniqueName/invoices/:invoiceNumber/pay?voucherVersion=2'
+    PAY_VOUCHER: 'company/:companyUniqueName/invoices/:invoiceNumber/pay?voucherVersion=2',
+    GET_VOUCHER_LIST: 'portal/company/:companyUniqueName/accounts/:accountUniqueName/voucher/:voucherUniqueName?voucherVersion=2'
 }

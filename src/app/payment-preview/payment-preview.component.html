@@ -1,7 +1,7 @@
 <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
 <div class="d-flex w-100">
     <sidebar></sidebar>
-    <div class="common-wrapper" *ngIf="!isLoading && selectedPaymentVoucher">
+    <div class="common-wrapper main-wrapper" *ngIf="!isLoading && selectedPaymentVoucher">
         <div class="invoice-open small-container mr-t15">
             <div
                 class="back-header d-flex justify-content-between align-items-center"
@@ -37,7 +37,7 @@
                     </button>
                 </div>
             </div>
-            <div class="pdf-wrapper mr-b50 h-100 mr-t15">
+            <div class="pdf-wrapper mr-b50  mr-t15">
                 <iframe
                     #pdfContainer
                     width="100%"
