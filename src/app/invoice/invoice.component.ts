@@ -178,9 +178,9 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      */
     public getInvoiceList(initialLoading: boolean, filtersLoading: boolean): void {
         if (this.storeData) {
-            this.invoiceListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-            this.invoiceListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-            this.invoiceListRequest.sessionId = this.storeData.session.id;
+            this.invoiceListRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+            this.invoiceListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+            this.invoiceListRequest.sessionId = this.storeData.session?.id;
             this.isLoading = filtersLoading;
             this.initialLoading = initialLoading;
             this.invoiceService.getInvoiceList(this.invoiceListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {

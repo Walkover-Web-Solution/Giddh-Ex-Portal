@@ -79,13 +79,18 @@ export class AuthService {
      * @memberof AuthService
      */
     public logoutUser(model: any): Observable<BaseResponse<any, any>> {
+        let request = {
+            accountUniqueName: model?.accountUniqueName,
+            companyUniqueName: model?.companyUniqueName,
+            sessionId: model?.sessionId
+        }
         let args: any = { headers: {} };
-        args.headers['Session-id'] = model?.sessionId;
-        return this.http.delete(this.apiUrl + API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), '', args).pipe(map((res) => {
+        args.headers['Session-id'] = request?.sessionId;
+        return this.http.delete(this.apiUrl + API.LOGOUT_USER?.replace(':companyUniqueName', encodeURIComponent(request.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(request.accountUniqueName)), '', args).pipe(map((res) => {
             let data: BaseResponse<any, any> = res;
-            data.request = model;
+            data.request = request;
             return data;
-        }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e, model)));
+        }), catchError((e) => this.errorHandler.HandleCatch<string, any>(e, request)));
     }
 
     /**

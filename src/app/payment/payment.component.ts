@@ -127,9 +127,9 @@ export class PaymentComponent implements OnInit, OnDestroy {
      * @memberof PaymentComponent
      */
     public getPaymentList(initialLoading: boolean, filtersLoading: boolean): void {
-        this.paymentListRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-        this.paymentListRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-        this.paymentListRequest.sessionId = this.storeData.session.id;
+        this.paymentListRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+        this.paymentListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+        this.paymentListRequest.sessionId = this.storeData.session?.id;
         this.isLoading = filtersLoading;
         this.initialLoading = initialLoading;
         this.paymentService.getInvoiceList(this.paymentListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
