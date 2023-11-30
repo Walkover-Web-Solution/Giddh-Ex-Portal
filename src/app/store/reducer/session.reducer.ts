@@ -1,5 +1,3 @@
-import { CustomActions } from "../custom-actions";
-
 /**
  * Keeping Track of the AuthenticationState
  */
@@ -14,15 +12,13 @@ export interface SessionState {
     userDetails: any;
     companyDetails: any;
     portalDetails: any;
-    logoutUser: any;
 }
 export const initialState: SessionState = {
     session: null,
     domain: null,
     userDetails: null,
     companyDetails: null,
-    portalDetails: null,
-    logoutUser: null
+    portalDetails: null
 };
 export const sessionReducer = createReducer(
     initialState,

@@ -3,7 +3,7 @@ import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Observable, ReplaySubject } from "rxjs";
-import { filter, map, shareReplay, takeUntil } from 'rxjs/operators';
+import { map, shareReplay, takeUntil } from 'rxjs/operators';
 import { DashboardService } from "src/app/services/dashboard.service.";
 import { AuthService } from "src/app/services/auth.service";
 import * as dayjs from 'dayjs';
@@ -186,7 +186,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             this.store.dispatch(setSessionToken({ session: response.body.session }));
                         } else {
                             this.generalService.showSnackbar(response.message);
-                            this.generalService.sessionExpiredAction(response);
                         }
                     });
                 }

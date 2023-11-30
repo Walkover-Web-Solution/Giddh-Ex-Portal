@@ -112,7 +112,6 @@ export class AuthComponent implements OnInit, OnDestroy {
             } else {
                 this.isLoading = false;
                 this.generalService.showSnackbar(response?.data?.message);
-                this.generalService.sessionExpiredAction(response);
             }
         });
     }
@@ -154,7 +153,6 @@ export class AuthComponent implements OnInit, OnDestroy {
                         this.isLoading = false;
                         let url = '/' + this.portalParamsRequest.subDomain + '/login'
                         this.router.navigate([url]);
-                        this.generalService.sessionExpiredAction(response);
                     }
                 });
             } else {
@@ -162,7 +160,6 @@ export class AuthComponent implements OnInit, OnDestroy {
                 this.isLoading = false;
                 let url = '/' + this.portalParamsRequest.subDomain + '/login'
                 this.router.navigate([url]);
-                this.generalService.sessionExpiredAction(response);
             }
         });
     }

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { select, Store } from '@ngrx/store';
-import { filter, takeUntil } from "rxjs/operators";
+import { takeUntil } from "rxjs/operators";
 import { GeneralService } from "../services/general.service";
 import { CompanyResponse, ReciptResponse } from "../models/Company";
 import { DashboardService } from "../services/dashboard.service.";
@@ -92,7 +92,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public ngOnInit(): void {
-        this.store.pipe(select(state => state), filter(Boolean), takeUntil(this.destroyed$)).subscribe((sessionState) => {
+        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState) => {
             this.storeData = sessionState;
         });
         document.querySelector('body')?.classList.add('welcome-main');

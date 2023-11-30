@@ -94,21 +94,6 @@ export class GeneralService {
     }
 
     /**
-     * This will be called when the user session has expired or invalid
-     *
-     * @param {*} response
-     * @memberof GeneralService
-     */
-    public sessionExpiredAction(response: any): void {
-        // if (response && response.code && response.code === 'SESSION_EXPIRED_OR_INVALID' || response.code === 'INVALID_SESSION_ID') {
-        //     let url = this.storeData.session.domain + '/login';
-        //     this.router.navigate([url]);
-        // } else {
-        //     return;
-        // }
-    }
-
-    /**
      * This will be use for load script for proxy login button
      *
      * @param {*} id
