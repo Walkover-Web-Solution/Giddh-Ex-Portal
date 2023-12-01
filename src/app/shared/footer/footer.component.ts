@@ -68,7 +68,9 @@ export class FooterComponent implements OnInit, OnDestroy {
                     this.companyData.emit(this.companyDetails);
                     this.store.dispatch(setCompanyDetails({ companyDetails: this.companyDetails }));
                 } else {
-                    this.generalService.showSnackbar(response?.message);
+                    if (response?.status === 'error') {
+                        this.generalService.showSnackbar(response?.message);
+                    }
                 }
             });
         }

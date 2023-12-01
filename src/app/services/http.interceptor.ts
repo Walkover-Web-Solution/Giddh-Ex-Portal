@@ -3,22 +3,15 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { GeneralService } from './general.service';
 import { catchError, retryWhen, tap } from 'rxjs/operators';
-import * as dayjs from 'dayjs';
 import { Store } from '@ngrx/store';
-import { logoutUser } from '../store/actions/session.action';
 
 @Injectable()
 export class PortalHttpInterceptor implements HttpInterceptor {
     /** Hold of online status */
     private isOnline: boolean = navigator.onLine;
-    /** Instance of  day js */
-    public dayjs = dayjs;
-    /** True if logout state called */
-    private logoutDispatched: boolean = false;
 
     constructor(
-        private generalService: GeneralService,
-        private store: Store
+        private generalService: GeneralService
     ) {
 
         window.addEventListener('online', () => {
@@ -30,22 +23,6 @@ export class PortalHttpInterceptor implements HttpInterceptor {
     }
 
     public intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        var session = JSON.parse(localStorage.getItem("session"));
-        let requestObj
-        if (session?.session?.expiresAt) {
-            let expiresAtList = session?.expiresAt?.split(" ");
-            if (expiresAtList) {
-                let expiryDate = expiresAtList[0]?.split("-").reverse().join("-");
-                let sessionExpiresAt = dayjs(expiryDate + " " + expiresAtList[1]);
-                if (sessionExpiresAt && sessionExpiresAt.diff(dayjs(), 'hours') < 0) {
-                    if (!this.logoutDispatched) {
-                        requestObj = { accountUniqueName: session.userDetails?.account.uniqueName, companyUniqueName: session.userDetails?.companyUniqueName, sessionId: session.session?.id };
-                        this.store.dispatch(logoutUser(requestObj));
-                        this.logoutDispatched = true;
-                    }
-                }
-            }
-        }
         if (this.isOnline) {
             /** Holds api call retry limit */
             let retryLimit: number = 1;

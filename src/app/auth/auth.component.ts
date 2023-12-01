@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ReplaySubject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
-import { Store } from '@ngrx/store';
+import { select, Store } from '@ngrx/store';
 import { setSessionToken, setUserDetails } from '../store/actions/session.action';
 import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { GeneralService } from '../services/general.service';
@@ -62,6 +62,9 @@ export class AuthComponent implements OnInit, OnDestroy {
                 this.portalParamsRequest.subDomain = params.companyDomainUniqueName;
             }
         });
+        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+            this.storeData = sessionState.session;
+        });
     }
 
     /**
@@ -107,13 +110,48 @@ export class AuthComponent implements OnInit, OnDestroy {
                 this.savePortalUserSession['companyUniqueName'] = response.body.companyUniqueName;
                 this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
                 this.store.dispatch(setSessionToken({ session: response.body.session }));
-                let url = '/' + this.portalParamsRequest.subDomain + '/welcome';
-                this.router.navigate([url]);
+                let url = '';
+                if (!this.storeData?.url) {
+                    url = '/' + this.portalParamsRequest.subDomain + '/welcome';
+                    this.router.navigate([url]);
+                } else {
+                    url = '/' + this.portalParamsRequest.subDomain + this.storeData.url;
+                    const updatedUrl = url.split('?');
+                    if (updatedUrl.length > 1) {
+                        const baseUrl = updatedUrl[0];
+                        const queryParams = this.parseQueryParams(updatedUrl[1]);
+                        this.router.navigate([baseUrl], { queryParams: queryParams });
+                    }
+                }
             } else {
                 this.isLoading = false;
-                this.generalService.showSnackbar(response?.data?.message);
+                if (response?.status === 'error') {
+                    this.generalService.showSnackbar(response?.data?.message);
+                }
             }
         });
+    }
+
+    /**
+     * This will be use for parse query parameters
+     *
+     * @param {string} queryString
+     * @return {*}  {*}
+     * @memberof AuthComponent
+     */
+    public parseQueryParams(queryString: string): any {
+        const params = {};
+        const pairs = queryString.split('&');
+
+        for (const pair of pairs) {
+            const keyValue = pair.split('=');
+            const key = decodeURIComponent(keyValue[0]);
+            const value = keyValue.length > 1 ? decodeURIComponent(keyValue[1]) : null;
+
+            params[key] = value;
+        }
+
+        return params;
     }
 
     /**
@@ -145,21 +183,36 @@ export class AuthComponent implements OnInit, OnDestroy {
                             this.savePortalUserSession['companyUniqueName'] = this.companyUniqueName;
                             this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
                             this.store.dispatch(setSessionToken({ session: this.users[0]?.session }));
-                            let url = '/' + this.portalParamsRequest.subDomain + '/welcome'
-                            this.router.navigate([url]);
+                            let url = '';
+                            if (!this.storeData?.url) {
+                                url = '/' + this.portalParamsRequest.subDomain + '/welcome';
+                                this.router.navigate([url]);
+                            } else {
+                                url = '/' + this.portalParamsRequest.subDomain + this.storeData.url;
+                                const updatedUrl = url.split('?');
+                                if (updatedUrl.length > 1) {
+                                    const baseUrl = updatedUrl[0];
+                                    const queryParams = this.parseQueryParams(updatedUrl[1]);
+                                    this.router.navigate([baseUrl], { queryParams: queryParams });
+                                }
+                            }
                         }
                     } else {
-                        this.generalService.showSnackbar(portal?.message);
-                        this.isLoading = false;
-                        let url = '/' + this.portalParamsRequest.subDomain + '/login'
-                        this.router.navigate([url]);
+                        if (portal?.status === 'error') {
+                            this.generalService.showSnackbar(portal?.message);
+                            this.isLoading = false;
+                            let url = '/' + this.portalParamsRequest.subDomain + '/login'
+                            this.router.navigate([url]);
+                        }
                     }
                 });
             } else {
-                this.generalService.showSnackbar(response?.data?.message);
-                this.isLoading = false;
-                let url = '/' + this.portalParamsRequest.subDomain + '/login'
-                this.router.navigate([url]);
+                if (response?.status === 'error') {
+                    this.generalService.showSnackbar(response?.data?.message);
+                    this.isLoading = false;
+                    let url = '/' + this.portalParamsRequest.subDomain + '/login'
+                    this.router.navigate([url]);
+                }
             }
         });
     }

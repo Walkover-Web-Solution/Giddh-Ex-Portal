@@ -37,3 +37,8 @@ export const setSidebarState = createAction(
     '[Session] Set Sidebar state',
     props<{ sidebarState: any }>()
 );
+
+export const setRouterState = createAction(
+    '[Session] Set Invoice Preview URL',
+    props<{ url: any }>()
+);

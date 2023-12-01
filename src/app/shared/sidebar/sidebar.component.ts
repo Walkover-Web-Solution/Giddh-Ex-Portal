@@ -107,7 +107,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     this.userDetails.name = userName;
                 } else {
                     this.isLoading = false;
-                    this.generalService.showSnackbar(accountsResponse?.message);
+                    if (accountsResponse?.status === 'error') {
+                        this.generalService.showSnackbar(accountsResponse?.message);
+                    }
                 }
             });
         }
@@ -187,7 +189,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                         if (response && response.status === 'success') {
                             this.store.dispatch(setSessionToken({ session: response.body.session }));
                         } else {
-                            this.generalService.showSnackbar(response.message);
+                            if (response?.status === 'error') {
+                                this.generalService.showSnackbar(response?.message);
+                            }
                         }
                     });
                 }
