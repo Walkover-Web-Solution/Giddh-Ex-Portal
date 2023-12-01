@@ -5,15 +5,19 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { HttpWrapperService } from '../http-wrapper.service';
 import { BaseResponse } from 'src/app/models/BaseResponse';
 import { logoutUser } from 'src/app/store/actions/session.action';
+import { GeneralService } from '../general.service';
 
 @Injectable()
 export class PortalErrorHandler {
     /** Hold  store data */
     public storeData: any = {};
+    /** True if logout state called */
+    private logoutDispatched: boolean = false;
 
     constructor(
         private http: HttpWrapperService,
-        private store: Store
+        private store: Store,
+        private generalService: GeneralService
     ) {
         this.store.pipe(select(state => state)).subscribe((sessionState: any) => {
             this.storeData = sessionState.session;
@@ -22,7 +26,6 @@ export class PortalErrorHandler {
 
     public HandleCatch<TResponce, TRequest>(r: HttpErrorResponse, request?: any, queryString?: any): Observable<BaseResponse<TResponce, TRequest>> {
         let data: BaseResponse<TResponce, TRequest> = new BaseResponse<TResponce, TRequest>();
-        // logout if invalid session detacted
         if (r?.status === 0) {
             data = {
                 body: null,
@@ -53,9 +56,10 @@ export class PortalErrorHandler {
             } else {
                 data = r.error as any;
                 if (data) {
-                    if (data.code === 'SESSION_EXPIRED_OR_INVALID' || data.code === 'INVALID_SESSION_ID') {
+                    if (!this.logoutDispatched && (data?.code === 'SESSION_EXPIRED_OR_INVALID' || data?.code === 'INVALID_SESSION_ID')) {
                         request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id };
                         this.store.dispatch(logoutUser(request));
+                        this.logoutDispatched = true;
                     }
                     if (typeof data !== 'string') {
                         data.request = request;

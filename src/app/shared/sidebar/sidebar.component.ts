@@ -7,7 +7,7 @@ import { map, shareReplay, takeUntil } from 'rxjs/operators';
 import { DashboardService } from "src/app/services/dashboard.service.";
 import { AuthService } from "src/app/services/auth.service";
 import * as dayjs from 'dayjs';
-import { logoutUser, setSessionToken } from "src/app/store/actions/session.action";
+import { logoutUser, setSessionToken, setSidebarState } from "src/app/store/actions/session.action";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "src/app/services/general.service";
 
@@ -18,7 +18,7 @@ import { GeneralService } from "src/app/services/general.service";
 })
 export class SidebarComponent implements OnInit, OnDestroy {
     /** Is side bar expanded*/
-    public isExpanded: boolean = true;
+    public isExpanded: boolean;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     public destroyed$: ReplaySubject<boolean> = new ReplaySubject(1); public isMobile$: Observable<boolean>;
     /* Hold user details from localStorage*/
@@ -66,6 +66,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public ngOnInit(): void {
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             this.storeData = sessionState.session;
+            this.isExpanded = this.storeData.sidebarState;
             this.accountUrlRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
             this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
             this.accountUrlRequest.sessionId = this.storeData.session?.id;
@@ -119,6 +120,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     public toggleMenu(): void {
         this.isExpanded = !this.isExpanded;
+        this.store.dispatch(setSidebarState({ sidebarState: this.isExpanded }));
     }
 
     /**

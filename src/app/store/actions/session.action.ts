@@ -32,3 +32,8 @@ export const logoutUser = createAction(
     '[Auth] Logout User',
     props<{ user: any }>()
 );
+
+export const setSidebarState = createAction(
+    '[Session] Set Sidebar state',
+    props<{ sidebarState: any }>()
+);
