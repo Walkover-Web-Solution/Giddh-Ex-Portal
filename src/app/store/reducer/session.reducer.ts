@@ -3,7 +3,7 @@
  */
 // session.reducer.ts
 import { createReducer, on } from '@ngrx/store';
-import {resetLocalStorage, setCompanyDetails, setPortalDomain, setPortalUserDetails, setSessionToken, setUserDetails, } from '../actions/session.action';
+import {resetLocalStorage, setCompanyDetails, setPortalDomain, setPortalUserDetails, setRouterState, setSessionToken, setSidebarState, setUserDetails, } from '../actions/session.action';
 
 // session-state.model.ts
 export interface SessionState {
@@ -12,13 +12,17 @@ export interface SessionState {
     userDetails: any;
     companyDetails: any;
     portalDetails: any;
+    sidebarState: any;
+    url: any;
 }
 export const initialState: SessionState = {
     session: null,
     domain: null,
     userDetails: null,
     companyDetails: null,
-    portalDetails: null
+    portalDetails: null,
+    sidebarState: true,
+    url: null
 };
 export const sessionReducer = createReducer(
     initialState,
@@ -44,5 +48,9 @@ export const sessionReducer = createReducer(
     on(setPortalUserDetails, (state, { portalDetails }) => ({
         ...state,
         portalDetails,
+    })),
+    on(setRouterState, (state, { url }) => ({
+        ...state,
+        url,
     }))
 );

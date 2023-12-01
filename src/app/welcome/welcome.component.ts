@@ -138,7 +138,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         if (response && response.status === 'success') {
             this.balanceSummary = response.body;
         } else {
-            this.generalService.showSnackbar(response?.message);
+            if (response?.status === 'error') {
+                this.generalService.showSnackbar(response?.message);
+            }
         }
     }
 
@@ -158,7 +160,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
             this.accountDetails.attentionTo = response.body.attentionTo;
             this.accountDetails.mobileNo = response.body.mobileNo;
         } else {
-            this.generalService.showSnackbar(response?.message);
+            if (response?.status === 'error') {
+                this.generalService.showSnackbar(response?.message);
+            }
         }
     }
 
@@ -173,7 +177,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         if (response && response.status === 'success') {
             this.accounts = response.body;
         } else {
-            this.generalService.showSnackbar(response?.message);
+            if (response?.status === 'error') {
+                this.generalService.showSnackbar(response?.message);
+            }
         }
     }
 
@@ -188,7 +194,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         if (response && response.status === 'success') {
             this.voucherData = response.body;
         } else {
-            this.generalService.showSnackbar(response?.message);
+            if (response?.status === 'error') {
+                this.generalService.showSnackbar(response?.message);
+            }
         }
     }
 
@@ -203,7 +211,9 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         if (response && response.status === 'success') {
             this.store.dispatch(setPortalUserDetails({ portalDetails: response.body }));
         } else {
-            this.generalService.showSnackbar(response?.message);
+            if (response?.status === 'error') {
+                this.generalService.showSnackbar(response?.message);
+            }
         }
     }
 

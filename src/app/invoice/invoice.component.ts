@@ -131,7 +131,9 @@ export class InvoiceComponent implements OnInit, OnDestroy {
                         let blob: Blob = this.generalService.base64ToBlob(response.body, 'application/pdf', 512);
                         saveAs(blob, item?.voucherNumber, 'application/pdf');
                     } else {
-                        this.generalService.showSnackbar(response?.message);
+                        if (response?.status === 'error') {
+                            this.generalService.showSnackbar(response?.message);
+                        }
                     }
                 });
     }
@@ -194,7 +196,9 @@ export class InvoiceComponent implements OnInit, OnDestroy {
                     this.voucherData = response.body;
                     this.totalRecords = response?.body?.totalItems;
                 } else {
-                    this.generalService.showSnackbar(response?.message);
+                    if (response?.status === 'error') {
+                        this.generalService.showSnackbar(response?.message);
+                    }
                 }
             });
         }

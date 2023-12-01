@@ -10,6 +10,7 @@ import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
+import { setRouterState } from "../store/actions/session.action";
 declare var initVerification: any;
 @Component({
     selector: "invoice-preview",
@@ -76,7 +77,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private domSanitizer: DomSanitizer,
         private formBuilder: FormBuilder,
-        private store: Store
+        private store: Store,
+        private activateRoute : ActivatedRoute
     ) {
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             this.storeData = sessionState.session;
@@ -95,7 +97,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         let request;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (!this.storeData.session?.id && params.token) {
+            if (!this.storeData.session?.id) {
                 this.notUserLoginDetails.token = params.token;
                 this.notUserLoginDetails.voucherUniqueName = params.voucherUniqueName;
                 this.notUserLoginDetails.companyUniqueName = params.companyUniqueName;
@@ -111,7 +113,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     if (invoiceListResponse && invoiceListResponse.status === 'success') {
                         this.selectedPaymentVoucher = [invoiceListResponse.body];
                     } else {
-                        this.generalService.showSnackbar(invoiceListResponse?.message);
+                        if (invoiceListResponse?.status === 'error') {
+                            this.generalService.showSnackbar(invoiceListResponse?.message);
+                        }
                     }
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
@@ -122,7 +126,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                         this.pdfFileURL = URL.createObjectURL(file);
                         this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
                     } else {
-                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        if (voucherDetailsResponse?.status === 'error') {
+                            this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        }
                     }
                 });
             } else {
@@ -141,9 +147,11 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 ]).pipe(takeUntil(this.destroyed$))?.subscribe(([invoiceListResponse, voucherDetailsResponse, commentsResponse]) => {
                     this.isLoading = false;
                     if (invoiceListResponse && invoiceListResponse.status === 'success') {
-                        this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === params?.voucher);
+                        this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === (params?.voucher ?? params?.voucherUniqueName));
                     } else {
-                        this.generalService.showSnackbar(invoiceListResponse?.message);
+                        if (invoiceListResponse?.status === 'error') {
+                            this.generalService.showSnackbar(invoiceListResponse?.message);
+                        }
                     }
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
@@ -154,12 +162,16 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                         this.pdfFileURL = URL.createObjectURL(file);
                         this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
                     } else {
-                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        if (voucherDetailsResponse?.status === 'error') {
+                            this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        }
                     }
                     if (commentsResponse && commentsResponse.status === 'success') {
                         this.voucherComments = commentsResponse.body;
                     } else {
-                        this.generalService.showSnackbar(commentsResponse?.message);
+                        if (commentsResponse?.status === 'error') {
+                            this.generalService.showSnackbar(commentsResponse?.message);
+                        }
                     }
                 });
             }
@@ -186,6 +198,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     this.generalService.showSnackbar(error?.message);
                 }
             };
+            const routerState = (this.route as any)._routerState?.snapshot?.url;
+            const updatedUrl = routerState.replace('/'+this.storeData.domain, '');
+            this.store.dispatch(setRouterState({ url: updatedUrl }));
             this.generalService.loadScript(environment.proxyReferenceId, configuration);
         }, 200)
     }
@@ -221,7 +236,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                         let blob: Blob = this.generalService.base64ToBlob(response.body, 'application/pdf', 512);
                         saveAs(blob, voucherNumber, 'application/pdf');
                     } else {
-                        this.generalService.showSnackbar(response?.message);
+                        if (response?.status === 'error') {
+                            this.generalService.showSnackbar(response?.message);
+                        }
                     }
                 });
     }
@@ -320,7 +337,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                         this.generalService.showSnackbar(response?.body, "success");
                         this.backToInvoice();
                     } else {
-                        this.generalService.showSnackbar(response?.message);
+                        if (response?.status === 'error') {
+                            this.generalService.showSnackbar(response?.message);
+                        }
                     }
                 });
             }
@@ -358,11 +377,15 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     if (commentsResponse && commentsResponse.status === 'success') {
                         this.voucherComments = commentsResponse.body;
                     } else {
-                        this.generalService.showSnackbar(commentsResponse?.message);
+                        if (commentsResponse?.status === 'error') {
+                            this.generalService.showSnackbar(commentsResponse?.message);
+                        }
                     }
                 });
             } else {
-                this.generalService.showSnackbar(response?.message);
+                if (response?.status === 'error') {
+                    this.generalService.showSnackbar(response?.message);
+                }
             }
         });
     }

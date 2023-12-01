@@ -4,7 +4,8 @@ import { select, Store } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
 import { HttpWrapperService } from '../http-wrapper.service';
 import { BaseResponse } from 'src/app/models/BaseResponse';
-import { logoutUser } from 'src/app/store/actions/session.action';
+import { resetLocalStorage } from 'src/app/store/actions/session.action';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class PortalErrorHandler {
@@ -13,7 +14,8 @@ export class PortalErrorHandler {
 
     constructor(
         private http: HttpWrapperService,
-        private store: Store
+        private store: Store,
+        private router: Router
     ) {
         this.store.pipe(select(state => state)).subscribe((sessionState: any) => {
             this.storeData = sessionState.session;
@@ -22,7 +24,6 @@ export class PortalErrorHandler {
 
     public HandleCatch<TResponce, TRequest>(r: HttpErrorResponse, request?: any, queryString?: any): Observable<BaseResponse<TResponce, TRequest>> {
         let data: BaseResponse<TResponce, TRequest> = new BaseResponse<TResponce, TRequest>();
-        // logout if invalid session detacted
         if (r?.status === 0) {
             data = {
                 body: null,
@@ -53,9 +54,10 @@ export class PortalErrorHandler {
             } else {
                 data = r.error as any;
                 if (data) {
-                    if (data.code === 'SESSION_EXPIRED_OR_INVALID' || data.code === 'INVALID_SESSION_ID') {
-                        request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id };
-                        this.store.dispatch(logoutUser(request));
+                    if (data?.code === 'SESSION_EXPIRED_OR_INVALID' || data?.code === 'INVALID_SESSION_ID') {
+                        const url = this.storeData.domain + '/login';
+                        this.router.navigate([url]);
+                        this.store.dispatch(resetLocalStorage());
                     }
                     if (typeof data !== 'string') {
                         data.request = request;

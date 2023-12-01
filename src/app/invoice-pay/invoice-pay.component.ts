@@ -82,12 +82,16 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     if (invoiceListResponse && invoiceListResponse.status === 'success') {
                         this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === params?.voucher);
                     } else {
-                        this.generalService.showSnackbar(invoiceListResponse?.message);
+                        if (invoiceListResponse?.status === 'error') {
+                            this.generalService.showSnackbar(invoiceListResponse?.message);
+                        }
                     }
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body[0];
                     } else {
-                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        if (voucherDetailsResponse?.status === 'error') {
+                            this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        }
                     }
                 });
             }
@@ -163,7 +167,9 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                         this.generalService.showSnackbar(response?.body, "success");
                         this.backToInvoice();
                     } else {
-                        this.generalService.showSnackbar(response?.message);
+                        if (response?.status === 'error') {
+                            this.generalService.showSnackbar(response?.message);
+                        }
                     }
                 });
             }

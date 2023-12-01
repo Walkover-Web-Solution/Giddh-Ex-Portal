@@ -3,15 +3,17 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { GeneralService } from './general.service';
 import { catchError, retryWhen, tap } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
 
 @Injectable()
 export class PortalHttpInterceptor implements HttpInterceptor {
-
+    /** Hold of online status */
     private isOnline: boolean = navigator.onLine;
 
     constructor(
         private generalService: GeneralService
     ) {
+
         window.addEventListener('online', () => {
             this.isOnline = true;
         });

@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { select, Store } from '@ngrx/store';
 import { AuthService } from 'src/app/services/auth.service';
 import * as fromApp from '../reducer/session.reducer';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { logoutUser, resetLocalStorage } from '../actions/session.action';
 import { GeneralService } from 'src/app/services/general.service';
@@ -32,22 +32,25 @@ export class SessionEffects {
         this.actions$.pipe(
             ofType(logoutUser),
             switchMap((action: any) =>
-                this.authService.logoutUser(action.user).pipe(
-                    map((response: any) => {
+                this.authService.logoutUser(action).pipe(
+                    tap((response: any) => {
                         if (response?.status === 'error') {
-                            this.generalService.showSnackbar(action?.payload?.message);
+                            this.generalService.showSnackbar(response?.message);
+                            if (response?.code === 'SESSION_EXPIRED_OR_INVALID' || response?.code === 'INVALID_SESSION_ID') {
+                                const url = this.portalDomain + '/login';
+                                this.router.navigate([url]);
+                                this.store.dispatch(resetLocalStorage());
+                            }
                         } else {
                             this.generalService.showSnackbar('You have successfully logged out.');
                             const url = this.portalDomain + '/login';
                             this.router.navigate([url]);
                             this.store.dispatch(resetLocalStorage());
                         }
-                        return response.body;
-                    }
-                    ),
+                    }),
                     catchError(error => EMPTY)
                 )
             )
-        )
+        ), { dispatch: false }
     );
 }

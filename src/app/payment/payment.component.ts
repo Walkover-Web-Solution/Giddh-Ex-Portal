@@ -143,7 +143,9 @@ export class PaymentComponent implements OnInit, OnDestroy {
                 this.voucherData = response.body;
                 this.totalRecords = response?.body?.totalItems;
             } else {
-                this.generalService.showSnackbar(response?.message);
+                if (response?.status === 'error') {
+                    this.generalService.showSnackbar(response?.message);
+                }
             }
         });
     }
