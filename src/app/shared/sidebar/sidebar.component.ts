@@ -123,7 +123,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     public toggleMenu(): void {
         this.isExpanded = !this.isExpanded;
-        console.log(this.isExpanded);
         this.store.dispatch(setSidebarState({ sidebarState: this.isExpanded }));
     }
 
