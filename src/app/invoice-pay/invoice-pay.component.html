@@ -41,11 +41,6 @@
                 </div>
             </div>
             <div class="mr-t2">
-                <span
-                    class="razorpay-message error-message"
-                    *ngIf="!paymentDetails.canPay"
-                    >{{ paymentDetails.message }}</span
-                >
             </div>
             <button
                 *ngIf="paymentDetails.canPay"

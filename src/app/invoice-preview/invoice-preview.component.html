@@ -75,11 +75,6 @@
                     </button>
                 </div>
             </div>
-            <span
-                class="razorpay-message error-message mr-t15"
-                *ngIf="!paymentDetails?.canPay"
-                >{{ paymentDetails?.message }}</span
-            >
             <div
                 class="pay-invoice-content mr-t15"
                 *ngIf="notUserLoginDetails.show"

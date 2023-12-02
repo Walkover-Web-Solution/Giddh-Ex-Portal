@@ -49,6 +49,10 @@ export const sessionReducer = createReducer(
         ...state,
         portalDetails,
     })),
+    on(setSidebarState, (state, { sidebarState }) => ({
+        ...state,
+        sidebarState,
+    })),
     on(setRouterState, (state, { url }) => ({
         ...state,
         url,

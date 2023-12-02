@@ -603,6 +603,7 @@ table {
     position: relative;
     display: flex;
     flex-direction: column;
+
     .inner-header {
         padding: 15px 0px;
         border-bottom: 1px solid var(--color-border);
@@ -615,7 +616,7 @@ table {
 }
 
 .main-wrapper {
-        padding: 0 30px;
+    padding: 0 30px;
 }
 
 /*---- sidebar -----*/
@@ -624,6 +625,7 @@ table {
         margin: 0 !important;
     }
 }
+
 mat-sidenav[style] {
     visibility: visible !important;
 }
@@ -979,4 +981,12 @@ mat-sidenav[style] {
 
 .download-button {
     width: 20px !important;
+}
+
+@media screen and (max-width: 991px) {
+    .invoice-table {
+        table.mat-mdc-table {
+            white-space: unset !important;
+        }
+    }
 }
