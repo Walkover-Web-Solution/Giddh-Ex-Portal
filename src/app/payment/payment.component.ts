@@ -81,6 +81,11 @@ export class PaymentComponent implements OnInit, OnDestroy {
         private router: Router,
         private store: Store
     ) {
+        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+            if (sessionState.session) {
+                this.storeData = sessionState.session;
+            }
+        });
     }
 
     /**
@@ -89,12 +94,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
      * @memberof PaymentComponent
      */
     public ngOnInit(): void {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            if (sessionState.session) {
-                this.storeData = sessionState.session;
-                this.getPaymentList(true, false);
-            }
-        });
+        this.getPaymentList(true, false);
     }
 
     /**
@@ -174,7 +174,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
             companyUniqueName: undefined,
             accountUniqueName: undefined,
             sessionId: undefined,
-            type: 'sales',
+            type: 'receipt',
             page: 1,
             count: PAGINATION_LIMIT,
             sortBy: 'grandTotal',

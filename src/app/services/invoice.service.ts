@@ -137,16 +137,19 @@ export class InvoiceService {
             accountUniqueName: model.accountUniqueName,
             voucherUniqueName: model.voucherUniqueName
         }
+        let request = {
+            description: comment
+        }
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
         return this.http.post(this.apiUrl + API.ADD_COMMENTS
             .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
             .replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName))
             .replace(':voucherUniqueName', encodeURIComponent(data.voucherUniqueName)),
-            comment, args).pipe(
+            request, args).pipe(
                 map((res) => {
                     let data: BaseResponse<any, any> = res;
-                    data.request = comment;
+                    data.request = request;
                     return data;
                 }),
                 catchError((e) => this.errorHandler.HandleCatch<string, any>(e))
