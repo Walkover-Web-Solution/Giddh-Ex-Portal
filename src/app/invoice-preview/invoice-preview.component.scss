@@ -135,6 +135,10 @@
     align-items: center;
 }
 
+.textarea-resize{
+    resize: none;
+}
+
 .invoice-content-header {
     .date-border {
         border-right: 1px solid var(--color-border);

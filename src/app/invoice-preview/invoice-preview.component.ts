@@ -363,31 +363,33 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      */
     public addComment(): void {
         const commentText = this.commentForm.get('commentText').value;
-        let urlRequest = {
-            accountUniqueName: this.storeData.userDetails.account.uniqueName,
-            companyUniqueName: this.storeData.userDetails.companyUniqueName,
-            sessionId: this.storeData.session.id,
-            voucherUniqueName: this.voucherUniqueName
-        }
-        this.invoiceService.addComments(urlRequest, commentText).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
-            if (response && response.status === 'success') {
-                this.commentForm.reset();
-                this.generalService.showSnackbar('Comment successfully added', "success");
-                this.invoiceService.getInvoiceComments(urlRequest).pipe(takeUntil(this.destroyed$)).subscribe((commentsResponse: any) => {
-                    if (commentsResponse && commentsResponse.status === 'success') {
-                        this.voucherComments = commentsResponse.body;
-                    } else {
-                        if (commentsResponse?.status === 'error') {
-                            this.generalService.showSnackbar(commentsResponse?.message);
-                        }
-                    }
-                });
-            } else {
-                if (response?.status === 'error') {
-                    this.generalService.showSnackbar(response?.message);
-                }
+        if (commentText) {
+            let urlRequest = {
+                accountUniqueName: this.storeData.userDetails.account.uniqueName,
+                companyUniqueName: this.storeData.userDetails.companyUniqueName,
+                sessionId: this.storeData.session.id,
+                voucherUniqueName: this.voucherUniqueName
             }
-        });
+            this.invoiceService.addComments(urlRequest, commentText).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+                if (response && response.status === 'success') {
+                    this.commentForm.reset();
+                    this.generalService.showSnackbar('Comment successfully added', "success");
+                    this.invoiceService.getInvoiceComments(urlRequest).pipe(takeUntil(this.destroyed$)).subscribe((commentsResponse: any) => {
+                        if (commentsResponse && commentsResponse.status === 'success') {
+                            this.voucherComments = commentsResponse.body;
+                        } else {
+                            if (commentsResponse?.status === 'error') {
+                                this.generalService.showSnackbar(commentsResponse?.message);
+                            }
+                        }
+                    });
+                } else {
+                    if (response?.status === 'error') {
+                        this.generalService.showSnackbar(response?.message);
+                    }
+                }
+            });
+        }
     }
 
     /**

@@ -93,7 +93,11 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         private router: Router,
         private store: Store
     ) {
-
+        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+            if (sessionState.session) {
+                this.storeData = sessionState.session;
+            }
+        });
     }
 
     /**
@@ -102,12 +106,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @memberof InvoiceComponent
      */
     public ngOnInit(): void {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            if (sessionState.session) {
-                this.storeData = sessionState.session;
-                this.getInvoiceList(true, false);
-            }
-        });
+        this.getInvoiceList(true, false);
     }
 
     /**
