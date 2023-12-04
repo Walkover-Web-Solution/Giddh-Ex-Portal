@@ -55,7 +55,22 @@ export class SidebarComponent implements OnInit, OnDestroy {
             .pipe(
                 map(result => result.matches),
                 shareReplay()
-            );
+        );
+
+        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+            this.storeData = sessionState.session;
+            this.isExpanded = this.storeData.sidebarState;
+            this.accountUrlRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+            this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+            this.accountUrlRequest.sessionId = this.storeData.session?.id;
+            this.portalDomain = this.storeData?.domain;
+            this.setActiveMenuItem();
+            this.menuItems = [
+                { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + "/welcome" },
+                { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
+                { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
+            ];
+        });
     }
 
     /**
@@ -64,21 +79,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof SidebarComponent
      */
     public ngOnInit(): void {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            this.storeData = sessionState.session;
-            this.isExpanded = this.storeData.sidebarState;
-            this.accountUrlRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
-            this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
-            this.accountUrlRequest.sessionId = this.storeData.session?.id;
-            this.portalDomain = this.storeData?.domain;
-            this.getAccountDetails();
-            this.setActiveMenuItem();
-            this.menuItems = [
-                { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + "/welcome" },
-                { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
-                { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
-            ];
-        });
+        this.getAccountDetails();
     }
 
     /**
