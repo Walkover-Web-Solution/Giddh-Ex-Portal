@@ -1,15 +1,21 @@
 <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
 <div class="d-flex w-100">
     <sidebar></sidebar>
-    <div class="common-wrapper main-wrapper" *ngIf="!isLoading && selectedPaymentVoucher">
+    <div
+        class="common-wrapper main-wrapper"
+        *ngIf="!isLoading && selectedPaymentVoucher"
+    >
         <div class="invoice-open small-container mr-t15">
             <div
                 class="back-header d-flex justify-content-between align-items-center"
             >
-                <a href="javascript:;" (click)="backToInvoices()">
-                    <img src="../../assets/images/chevron.svg" alt="arrow" />
+                <button
+                    mat-stroked-button
+                    color="primary"
+                    (click)="backToInvoices()"
+                >
                     Back
-                </a>
+                </button>
                 <div class="d-flex column-gap10">
                     <button
                         mat-stroked-button
@@ -37,7 +43,7 @@
                     </button>
                 </div>
             </div>
-            <div class="pdf-wrapper mr-b50  mr-t15">
+            <div class="pdf-wrapper mr-b50 mr-t15">
                 <iframe
                     #pdfContainer
                     width="100%"
