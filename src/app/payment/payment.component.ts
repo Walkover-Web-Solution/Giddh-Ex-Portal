@@ -11,6 +11,7 @@ import { takeUntil } from "rxjs/operators";
 import { select, Store } from '@ngrx/store';
 import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
 import { GeneralService } from "../services/general.service";
+import { CommonService } from "../services/common.service";
 
 @Component({
     selector: "payment",
@@ -51,7 +52,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
         sessionId: undefined,
         type: 'receipt',
         page: 1,
-        count: PAGINATION_LIMIT,
+        count: undefined,
         sortBy: 'grandTotal',
         sort: 'asc',
         balanceStatus: []
@@ -79,7 +80,8 @@ export class PaymentComponent implements OnInit, OnDestroy {
         private generalService: GeneralService,
         private paymentService: PaymentService,
         private router: Router,
-        private store: Store
+        private store: Store,
+        private commonService: CommonService
     ) {
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             if (sessionState.session) {
@@ -94,7 +96,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
      * @memberof PaymentComponent
      */
     public ngOnInit(): void {
-        this.getPaymentList(true, false);
+        this.getCountPage();
     }
 
     /**
@@ -118,7 +120,66 @@ export class PaymentComponent implements OnInit, OnDestroy {
         this.pageIndex = event.pageIndex;
         this.paymentListRequest.count = event.pageSize;
         this.paymentListRequest.page = event.pageIndex + 1;
+        this.setCountPage();
         this.getPaymentList(false, true);
+    }
+
+    /**
+ * This will be use for get count page
+ *
+ * @memberof PaymentComponent
+ */
+    public getCountPage(): void {
+        if (this.storeData) {
+            let request = {
+                accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
+                companyUniqueName: this.storeData.userDetails?.companyUniqueName,
+                vendorUniqueName: this.storeData.userDetails?.vendorContactUniqueName,
+                sessionId: this.storeData.session?.id,
+                page: 'PAYMENTS'
+
+            }
+            this.isLoading = true;
+            this.commonService.getVoucherCountPage(request).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+                this.isLoading = false;
+                if (response && response.status === 'success') {
+                    this.paymentListRequest.count = response.body?.countOfRecords || PAGINATION_LIMIT;
+                    this.getPaymentList(true, false);
+                } else {
+                    if (response?.status === 'error') {
+                        this.generalService.showSnackbar(response?.message);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * This will be use for set count page
+     *
+     * @memberof PaymentComponent
+     */
+    public setCountPage(): void {
+        if (this.storeData) {
+            let request = {
+                accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
+                companyUniqueName: this.storeData.userDetails?.companyUniqueName,
+                vendorUniqueName: this.storeData.userDetails?.vendorContactUniqueName,
+                sessionId: this.storeData.session?.id,
+                page: 'PAYMENTS',
+                count: this.paymentListRequest.count
+            }
+            this.isLoading = true;
+            this.commonService.setVoucherCountPage(request).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+                this.isLoading = false;
+                if (response && response.status === 'success') {
+                } else {
+                    if (response?.status === 'error') {
+                        this.generalService.showSnackbar(response?.message);
+                    }
+                }
+            });
+        }
     }
 
     /**

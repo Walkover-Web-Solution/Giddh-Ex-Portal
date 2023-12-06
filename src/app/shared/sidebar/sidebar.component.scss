@@ -94,7 +94,7 @@
       }
 
       .profile-user {
-          position: fixed;
+          position: relative;
           width: 211px;
           left: 0;
           bottom: 10px;
@@ -120,7 +120,7 @@
               }
 
               .profile-slice-small {
-                  margin-left: 8px !important;
+                  margin-left: 8px ;
               }
           }
 

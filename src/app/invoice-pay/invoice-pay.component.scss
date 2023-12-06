@@ -9,99 +9,100 @@
 
 /*---- pay-invoices ----*/
 
-    .pay-invoice-content {
-        max-width: 790px;
-        border-radius: 3px;
-        box-shadow: 0 1px 8px 0 var(--color-box-shadow);
-        padding: 20px 30px;
+.pay-invoice-content {
+    max-width: 790px;
+    border-radius: 3px;
+    box-shadow: 0 1px 8px 0 var(--color-box-shadow);
+    padding: 20px 30px;
 
-        &.invoice-tab {
-            padding: 0 !important;
-            max-width: 850px;
-        }
+    &.invoice-tab {
+        padding: 0 !important;
+        max-width: 850px;
     }
 
-    .invoice-content-header {
-        .amount-total {
+}
+
+.invoice-content-header {
+    .amount-total {
+        display: flex;
+        align-items: center;
+        column-gap: 15px;
+
+        img {
+            width: 50px;
+        }
+
+        p {
+            font-size: var(--font-size-12);
+        }
+
+        span {
+            font-weight: 500;
+        }
+    }
+}
+
+.invoice-content {
+    padding: 20px 30px;
+
+    .mat-expansion-panel {
+        box-shadow: none !important;
+
+        .inv-header {
             display: flex;
-            align-items: center;
-            column-gap: 15px;
-
-            img {
-                width: 50px;
-            }
+            justify-content: space-between;
+            padding: 8px 0;
+            border-top: 1px dashed var(--color-border);
+            border-bottom: 1px solid var(--color-border);
 
             p {
-                font-size: var(--font-size-12);
+                min-width: 120px;
             }
+        }
 
-            span {
-                font-weight: 500;
+        .inv-body {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+
+            p {
+                min-width: 120px;
             }
         }
     }
 
-    .invoice-content {
-        padding: 20px 30px;
+    .mendatory {
+        background-color: var(--color-bg-mandatory);
+        padding: 8px;
 
-        .mat-expansion-panel {
-            box-shadow: none !important;
-
-            .inv-header {
-                display: flex;
-                justify-content: space-between;
-                padding: 8px 0;
-                border-top: 1px dashed var(--color-border);
-                border-bottom: 1px solid var(--color-border);
-
-                p {
-                    min-width: 120px;
-                }
-            }
-
-            .inv-body {
-                display: flex;
-                justify-content: space-between;
-                padding: 8px 0;
-
-                p {
-                    min-width: 120px;
-                }
-            }
+        img {
+            width: 15px;
         }
 
-        .mendatory {
-            background-color: var(--color-bg-mandatory);
-            padding: 8px;
-
-            img {
-                width: 15px;
-            }
-
-            p {
-                color: var(--color-red);
-            }
+        p {
+            color: var(--color-red);
         }
+    }
 
-        .credit-tab {
-            max-width: 450px;
+    .credit-tab {
+        max-width: 450px;
 
-            .detail-card {
-                max-width: 470px;
-            }
+        .detail-card {
+            max-width: 470px;
         }
+    }
 
-        /*--- tabs ---*/
-        .mat-mdc-tab-group {
-            flex-direction: row;
+    /*--- tabs ---*/
+    .mat-mdc-tab-group {
+        flex-direction: row;
 
-            .mat-mdc-tab-header {
-                .mat-mdc-tab-label-container {
-                    flex-direction: column;
-                }
+        .mat-mdc-tab-header {
+            .mat-mdc-tab-label-container {
+                flex-direction: column;
             }
         }
     }
+}
 
 
 /*---- responsive ----*/
@@ -204,6 +205,7 @@
     padding: 15px 0px;
     border-bottom: 1px solid var(--color-border);
     padding-right: 23px;
+
     h2 {
         font-size: var(--font-size-24);
         font-weight: 300;

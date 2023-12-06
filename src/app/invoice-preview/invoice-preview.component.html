@@ -2,10 +2,7 @@
 <div class="d-flex w-100">
     <sidebar></sidebar>
     <div class="common-wrapper main-wrapper" *ngIf="!isLoading">
-        <div
-            class="login-section"
-            *ngIf="notUserLoginDetails.show"
-        >
+        <div class="login-section" *ngIf="notUserLoginDetails.show">
             <div
                 class="login-btn-wrap"
                 id="117230p1697093599652797df30cea"
@@ -20,14 +17,14 @@
                 }"
                 *ngIf="selectedPaymentVoucher?.length"
             >
-                <a
-                    href="javascript:;"
+                <button
+                    mat-stroked-button
+                    color="primary"
                     (click)="backToInvoices()"
                     *ngIf="!notUserLoginDetails.show"
                 >
-                    <img src="../../assets/images/chevron.svg" alt="arrow" />
                     Back
-                </a>
+                </button>
                 <div class="d-flex column-gap10">
                     <button
                         mat-stroked-button
@@ -68,7 +65,7 @@
                         "
                     >
                         <img
-                            class="download-button"
+                            class="download-button icon-size"
                             src="../../assets/images/download.svg"
                             alt="download"
                         />

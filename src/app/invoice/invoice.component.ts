@@ -12,6 +12,7 @@ import { InvoiceService } from "../services/invoice.service";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "../services/general.service";
 import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
+import { CommonService } from "../services/common.service";
 
 @Component({
     selector: "invoice",
@@ -54,7 +55,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         sessionId: undefined,
         type: 'sales',
         page: 1,
-        count: PAGINATION_LIMIT,
+        count: undefined,
         sortBy: 'grandTotal',
         sort: 'asc',
         balanceStatus: []
@@ -90,6 +91,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         public dialog: MatDialog,
         private generalService: GeneralService,
         private invoiceService: InvoiceService,
+        private commonService: CommonService,
         private router: Router,
         private store: Store
     ) {
@@ -106,7 +108,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @memberof InvoiceComponent
      */
     public ngOnInit(): void {
-        this.getInvoiceList(true, false);
+        this.getCountPage();
     }
 
     /**
@@ -169,6 +171,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.pageIndex = event.pageIndex;
         this.invoiceListRequest.count = event.pageSize;
         this.invoiceListRequest.page = event.pageIndex + 1;
+        this.setCountPage();
         this.getInvoiceList(false, true);
     }
 
@@ -202,6 +205,66 @@ export class InvoiceComponent implements OnInit, OnDestroy {
             });
         }
     }
+
+/**
+ * This will be use for get count page
+ *
+ * @memberof InvoiceComponent
+ */
+public getCountPage(): void {
+        if (this.storeData) {
+            let request = {
+                accountUniqueName : this.storeData.userDetails?.account?.uniqueName,
+                companyUniqueName: this.storeData.userDetails?.companyUniqueName,
+                vendorUniqueName: this.storeData.userDetails?.vendorContactUniqueName,
+                sessionId: this.storeData.session?.id,
+                page: 'INVOICE'
+
+            }
+            this.isLoading = true;
+            this.commonService.getVoucherCountPage(request).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+                this.isLoading = false;
+                if (response && response.status === 'success') {
+                    this.invoiceListRequest.count = response.body?.countOfRecords || PAGINATION_LIMIT;
+                    this.getInvoiceList(true, false);
+                } else {
+                    if (response?.status === 'error') {
+                        this.getInvoiceList(true, false);
+                        this.generalService.showSnackbar(response?.message);
+                    }
+                }
+            });
+        }
+    }
+
+/**
+ * This will be use for set count page
+ *
+ * @memberof InvoiceComponent
+ */
+public setCountPage(): void {
+        if (this.storeData) {
+            let request = {
+                accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
+                companyUniqueName: this.storeData.userDetails?.companyUniqueName,
+                vendorUniqueName: this.storeData.userDetails?.vendorContactUniqueName,
+                sessionId: this.storeData.session?.id,
+                page: 'INVOICE',
+                count: this.invoiceListRequest.count
+            }
+            this.isLoading = true;
+            this.commonService.setVoucherCountPage(request).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+                this.isLoading = false;
+                if (response && response.status === 'success') {
+                } else {
+                    if (response?.status === 'error') {
+                        this.generalService.showSnackbar(response?.message);
+                    }
+                }
+            });
+        }
+    }
+
 
     /**
      * This will be use for open pay dialog confirmation

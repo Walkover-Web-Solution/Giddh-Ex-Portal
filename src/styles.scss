@@ -35,15 +35,18 @@ body {
     --font-size-15: 15px;
     --font-size-20: 20px;
     --font-size-24: 24px;
+}
 
-    height: 100%;
-    background-color: var(--color-bg-body);
+* {
+    box-sizing: border-box;
 }
 
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif !important;
     box-sizing: border-box;
+    height: 100%;
+    background-color: var(--color-bg-body);
 }
 
 h1,
@@ -151,6 +154,7 @@ ul {
 
 .cp {
     cursor: pointer;
+    font-size: var(--font-size-24);
 }
 
 /*---- margin-css ----*/
@@ -603,6 +607,7 @@ table {
     position: relative;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 
     .inner-header {
         padding: 15px 0px;
@@ -979,14 +984,57 @@ mat-sidenav[style] {
     color: var(--color-red);
 }
 
-.download-button {
+.icon-size {
     width: 20px !important;
 }
 
-@media screen and (max-width: 991px) {
-    .invoice-table {
-        table.mat-mdc-table {
-            white-space: unset !important;
+@media screen and (max-width: 767px) {
+    .profile-user {
+        position: relative;
+        width: 100% ;
+    }
+
+    .small-container {
+        max-width: none !important;
+    }
+
+    .profile-slice-small {
+        margin-left: 0 !important;
+    }
+
+    .state {
+        .common-wrapper {
+            width: calc(100vw - 60px);
+        }
+    }
+
+    .common-wrapper {
+        .pdf-wrapper {
+            height: calc(100% - 278px) !important;
+        }
+    }
+
+    .back-header {
+        margin-bottom: 10px !important;
+    }
+
+
+    .sidebar-large {
+        width: 230px;
+        height: 100vh;
+        position: fixed;
+        z-index: 999;
+        top: 0;
+        left: 0;
+    }
+
+    .sidebar.sidebar-close {
+        .mat-drawer {
+            .sidebar-footer {
+                flex-direction: unset !important;
+            }
         }
     }
 }
+
+@media screen and (max-width: 991px) {}

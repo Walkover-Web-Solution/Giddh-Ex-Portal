@@ -59,7 +59,11 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
         private domSanitizer: DomSanitizer,
         private store: Store
     ) {
-
+        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
+            if (sessionState.session) {
+                this.storeData = sessionState.session;
+            }
+        });
     }
 
     /**
@@ -73,12 +77,8 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
                 this.voucherUniqueName = params.voucher;
             }
         });
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            if (sessionState.session) {
-                this.storeData = sessionState.session;
-                this.getPaymentDetails();
-            }
-        });
+        this.getPaymentDetails();
+
     }
 
     /**
