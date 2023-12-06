@@ -35,9 +35,6 @@ body {
     --font-size-15: 15px;
     --font-size-20: 20px;
     --font-size-24: 24px;
-
-    height: 100%;
-    background-color: var(--color-bg-body);
 }
 
 * {
@@ -48,6 +45,8 @@ body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif !important;
     box-sizing: border-box;
+    height: 100%;
+    background-color: var(--color-bg-body);
 }
 
 h1,
@@ -608,6 +607,7 @@ table {
     position: relative;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 
     .inner-header {
         padding: 15px 0px;
@@ -984,18 +984,22 @@ mat-sidenav[style] {
     color: var(--color-red);
 }
 
-.download-button {
+.icon-size {
     width: 20px !important;
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 767px) {
     .profile-user {
-        position: absolute !important;
-        width: 100% !important;
+        position: relative;
+        width: 100% ;
     }
 
     .small-container {
         max-width: none !important;
+    }
+
+    .profile-slice-small {
+        margin-left: 0 !important;
     }
 
     .state {
@@ -1032,3 +1036,5 @@ mat-sidenav[style] {
         }
     }
 }
+
+@media screen and (max-width: 991px) {}

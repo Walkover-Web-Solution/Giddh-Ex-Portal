@@ -140,6 +140,7 @@
                                         "
                                         mat-stroked-button
                                         color="primary"
+                                        class="pay-now-button"
                                         (click)="openPayDialog(element)"
                                     >
                                         Pay Now
@@ -147,6 +148,7 @@
                                     <button
                                         mat-stroked-button
                                         color="primary"
+                                        class="download-button"
                                         (click)="downloadPdf(element)"
                                     >
                                         Download PDF
@@ -169,17 +171,17 @@
                             approval.
                         </p>
                     </div>
-                    <mat-paginator
-                        (page)="handlePageChange($event)"
-                        [length]="totalRecords"
-                        [pageSize]="invoiceListRequest.count"
-                        [showFirstLastButtons]="true"
-                        [pageSizeOptions]="pageSizeOptions"
-                        [hidePageSize]="false"
-                        [pageIndex]="pageIndex"
-                    >
-                    </mat-paginator>
                 </div>
+                <mat-paginator
+                    (page)="handlePageChange($event)"
+                    [length]="totalRecords"
+                    [pageSize]="invoiceListRequest.count"
+                    [showFirstLastButtons]="true"
+                    [pageSizeOptions]="pageSizeOptions"
+                    [hidePageSize]="false"
+                    [pageIndex]="pageIndex"
+                >
+                </mat-paginator>
             </div>
         </div>
     </div>
