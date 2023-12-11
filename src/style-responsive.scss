@@ -43,6 +43,10 @@
         margin: 0 15px;
     }
 
+    .footer-wrapper {
+        column-gap: 18px !important;
+    }
+
     .pay-now-button {
         .mdc-button__label {
             font-size: var(--font-size-12) !important;
@@ -161,8 +165,14 @@
 /*---- max-width-576-start ----*/
 @media screen and (max-width: 576px) {
     .profile-user {
-            width: auto ;
-        }
+        width: auto;
+    }
+
+    .pay-head {
+        text-align: left !important;
+        margin-top: 10px;;
+    }
+
     .footer-wrapper {
         display: block;
         float: left;
@@ -171,7 +181,7 @@
         .logo-footer {
             width: 100%;
             column-gap: 172px;
-            display: block ;
+            display: block;
         }
 
         .address {
@@ -179,7 +189,7 @@
         }
 
         .mail-profile {
-            margin-top: 20px ;
+            margin-top: 20px;
         }
 
     }
@@ -207,6 +217,49 @@
 /*---- max-width-480-start ----*/
 @media screen and (max-width: 480px) {
     .common-wrapper {
+        .back-header {
+            display: flex;
+        }
+
+        .back-header-mobile {
+            margin-top: 15px;
+        }
+
+        .account-profile {
+            display: block !important;
+
+            .account-email {
+                word-wrap: break-word;
+            }
+        }
+
+        .number-pay {
+            a {
+                margin-top: 15px !important;
+            }
+        }
+
+        .footer-wrapper {
+            display: block !important;
+            float: left;
+            width: 100%;
+
+            .logo-footer {
+                display: block !important;
+                width: 100%;
+                column-gap: 172px;
+            }
+
+            .address {
+                margin-top: 20px;
+            }
+
+            .mail-profile {
+                margin-top: 20px;
+            }
+
+        }
+
         .inner-content {
             .res-field {
                 flex-wrap: wrap;
@@ -224,6 +277,45 @@
 
 /*---- max-width-380px-start ----*/
 @media screen and (max-width: 380px) {
+    .back-header {
+        display: block;
+    }
+
+    .account-profile {
+        display: block !important;
+
+        .account-email {
+            word-wrap: break-word;
+        }
+    }
+
+    .number-pay {
+        a {
+            margin-top: 15px !important;
+        }
+    }
+
+    .footer-wrapper {
+        display: block !important;
+        float: left;
+        width: 100%;
+
+        .logo-footer {
+            display: block !important;
+            width: 100%;
+            column-gap: 172px;
+        }
+
+        .address {
+            margin-top: 20px;
+        }
+
+        .mail-profile {
+            margin-top: 20px;
+        }
+
+    }
+
     .common-dialog {
         .mat-mdc-dialog-content {
             .footer-btn {

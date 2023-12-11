@@ -49,8 +49,8 @@
                                 </div>
                                 <!-- mobile-design -->
                                 <div class="mobile-screen">
-                                    <div class="currency-head">
-                                        <span class="text-uppercase"
+                                    <div class="currency-head d-flex justify-content-between">
+                                        <span
                                             >Currency :</span
                                         >&nbsp;
                                         <span
@@ -69,20 +69,12 @@
                                             {{
                                                 balanceSummary?.currency?.symbol
                                             }}
+                                               <span class="line orange"></span>
                                             {{ balanceSummary?.balancePayable }}
-                                            <a
-                                                href="javascript:;"
-                                                class="d-block text-right"
-                                                >Pay
-                                                <img
-                                                    src="../../assets/images/right-arrow.svg"
-                                                    alt="arrow"
-                                                />
-                                            </a>
                                         </span>
                                     </div>
                                     <div class="d-flex mobile-pay mr-b15">
-                                        <span>Outstanding Invoices</span>
+                                        <span>  Number of Invoices :</span>
                                         <span class="number-pay">
                                             {{
                                                 balanceSummary?.noOfInvoices
