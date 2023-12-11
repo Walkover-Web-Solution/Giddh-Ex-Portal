@@ -104,9 +104,8 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
                         this.isLoading = false;
                         this.paymentDetails = voucherDetailsResponse.body;
                         let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body, 'application/pdf', 512);
-                        const file = new Blob([blob], { type: 'application/pdf' });
                         URL.revokeObjectURL(this.pdfFileURL);
-                        this.pdfFileURL = URL.createObjectURL(file);
+                        this.pdfFileURL = URL.createObjectURL(blob);
                         this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
                     } else {
                         this.isLoading = false;

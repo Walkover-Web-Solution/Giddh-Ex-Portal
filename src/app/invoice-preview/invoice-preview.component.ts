@@ -121,9 +121,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body[0];
                         let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body[0].content, 'application/pdf', 512);
-                        const file = new Blob([blob], { type: 'application/pdf' });
                         URL.revokeObjectURL(this.pdfFileURL);
-                        this.pdfFileURL = URL.createObjectURL(file);
+                        this.pdfFileURL = URL.createObjectURL(blob);
                         this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
                     } else {
                         if (voucherDetailsResponse?.status === 'error') {
@@ -157,9 +156,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body[0];
                         let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body[0]?.content, 'application/pdf', 512);
-                        const file = new Blob([blob], { type: 'application/pdf' });
                         URL.revokeObjectURL(this.pdfFileURL);
-                        this.pdfFileURL = URL.createObjectURL(file);
+                        this.pdfFileURL = URL.createObjectURL(blob);
                         this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
                     } else {
                         if (voucherDetailsResponse?.status === 'error') {

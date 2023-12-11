@@ -30,6 +30,8 @@
             background-color: var(--color-bg-login);
             padding: 22px 20px 30px;
             margin: 15px 0 20px;
+            float: left;
+            width: 100%;
         }
     }
 }
@@ -107,6 +109,8 @@
 
 .razorpay-message {
     font-size: var(--font-size-15);
+    float: left;
+    width: 100%;
 }
 
 .pay-invoice-content {
