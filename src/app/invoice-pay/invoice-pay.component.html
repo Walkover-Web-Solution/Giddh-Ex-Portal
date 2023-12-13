@@ -43,12 +43,12 @@
             <div class="mr-t2">
                 <span
                     class="razorpay-message error-message"
-                    *ngIf="!paymentDetails.canPay"
-                    >{{ paymentDetails.message }}</span
+                    *ngIf="!paymentDetails?.vouchers[0].canPay"
+                    >{{ paymentDetails?.vouchers[0].message }}</span
                 >
             </div>
             <button
-                *ngIf="paymentDetails.canPay"
+                *ngIf="paymentDetails?.vouchers[0].canPay"
                 mat-stroked-button
                 color="primary"
                 class="text-uppercase mr-t15 mr-b2"
