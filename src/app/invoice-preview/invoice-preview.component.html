@@ -30,15 +30,7 @@
                         mat-stroked-button
                         color="primary"
                         *ngIf="
-                            ((selectedPaymentVoucher[0]?.balanceStatus ===
-                                'UNPAID' ||
-                                selectedPaymentVoucher[0]?.balanceStatus ===
-                                    'PARTIAL-PAID') &&
-                                paymentDetails?.canPay) ||
-                            ((selectedPaymentVoucher[0]?.status === 'UNPAID' ||
-                                selectedPaymentVoucher[0]?.status ===
-                                    'PARTIAL-PAID') &&
-                                paymentDetails?.canPay)
+                            (selectedPaymentVoucher[0]?.balanceStatus === 'UNPAID' || selectedPaymentVoucher[0]?.balanceStatus === 'PARTIAL-PAID') && paymentDetails?.vouchers[0]?.canPay
                         "
                         (click)="initializePayment(paymentDetails)"
                     >
@@ -74,8 +66,8 @@
             </div>
             <span
                 class="razorpay-message error-message mr-t15"
-                *ngIf="!paymentDetails?.canPay"
-                >{{ paymentDetails?.message }}</span
+                *ngIf="!paymentDetails?.vouchers[0]?.canPay"
+                >{{ paymentDetails?.vouchers[0]?.message }}</span
             >
             <div
                 class="pay-invoice-content mr-t15"
