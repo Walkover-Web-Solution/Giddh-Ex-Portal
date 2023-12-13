@@ -10,7 +10,7 @@ import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
-import { setRouterState } from "../store/actions/session.action";
+import { setPortalDomain, setRouterState } from "../store/actions/session.action";
 declare var initVerification: any;
 @Component({
     selector: "invoice-preview",
@@ -78,7 +78,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         private domSanitizer: DomSanitizer,
         private formBuilder: FormBuilder,
         private store: Store,
-        private activateRoute : ActivatedRoute
+        private activateRoute: ActivatedRoute
     ) {
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             this.storeData = sessionState.session;
@@ -97,6 +97,11 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         let request;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
+            this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
+                if (params.companyDomainUniqueName) {
+                    this.store.dispatch(setPortalDomain({ domain: params.companyDomainUniqueName }));
+                }
+            });
             if (!this.storeData.session?.id) {
                 this.notUserLoginDetails.token = params.token;
                 this.notUserLoginDetails.voucherUniqueName = params.voucherUniqueName;
@@ -130,15 +135,16 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                         }
                     }
                 });
+
             } else {
                 this.notUserLoginDetails.show = false;
-                this.voucherUniqueName = params.voucher;
-                this.invoiceListRequest.accountUniqueName = this.storeData.userDetails?.account.uniqueName;
-                this.invoiceListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+                this.voucherUniqueName = params.voucherUniqueName ?? params.voucher;
+                this.invoiceListRequest.accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+                this.invoiceListRequest.companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
                 this.invoiceListRequest.sessionId = this.storeData.session?.id;
-                this.invoiceListRequest.uniqueNames = params.voucher ?? params.voucherUniqueName;
+                this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher ;
 
-                request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, voucherUniqueName: (params.voucher?? params?.voucherUniqueName), companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
+                request = { accountUniqueName: (params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName), voucherUniqueName: (params?.voucherUniqueName ?? params.voucher), companyUniqueName: (params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName), sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
                 combineLatest([
                     this.invoiceService.getInvoiceList(this.invoiceListRequest),
                     this.invoiceService.getVoucherDetails(request),
@@ -197,7 +203,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 }
             };
             const routerState = (this.route as any)._routerState?.snapshot?.url;
-            const updatedUrl = routerState.replace('/'+this.storeData.domain, '');
+            const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
             this.store.dispatch(setRouterState({ url: updatedUrl }));
             this.generalService.loadScript(environment.proxyReferenceId, configuration);
         }, 200)
