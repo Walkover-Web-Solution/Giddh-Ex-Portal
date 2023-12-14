@@ -114,7 +114,6 @@
 }
 
 .pay-invoice-content {
-    max-width: 790px;
     border-radius: 3px;
     box-shadow: 0 1px 8px 0 var(--color-box-shadow);
     padding: 20px 30px;
@@ -135,8 +134,9 @@
     background-color: var(--color-giddh-blue);
     width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
+    padding-left: 22px;
 }
 
 .textarea-resize{

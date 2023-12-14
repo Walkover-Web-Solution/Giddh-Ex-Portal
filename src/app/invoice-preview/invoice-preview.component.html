@@ -1,13 +1,14 @@
 <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
 <div class="d-flex w-100">
     <sidebar></sidebar>
-    <div class="common-wrapper main-wrapper" *ngIf="!isLoading">
+    <div class="w-100" *ngIf="!isLoading">
         <div class="login-section" *ngIf="notUserLoginDetails.show">
             <div
                 class="login-btn-wrap"
                 id="117230p1697093599652797df30cea"
             ></div>
         </div>
+         <div class="common-wrapper main-wrapper">
         <!-- invoice-click -->
         <div class="invoice-open small-container mr-t15">
             <div
@@ -160,6 +161,7 @@
                     [src]="sanitizedPdfFileUrl"
                 ></iframe>
             </div>
+        </div>
         </div>
     </div>
 </div>

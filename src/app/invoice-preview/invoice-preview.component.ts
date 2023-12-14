@@ -10,7 +10,7 @@ import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
-import { setPortalDomain, setRouterState } from "../store/actions/session.action";
+import { setPortalDomain, setRouterState, setSidebarState } from "../store/actions/session.action";
 declare var initVerification: any;
 @Component({
     selector: "invoice-preview",
@@ -103,6 +103,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 }
             });
             if (!this.storeData.session?.id) {
+                this.store.dispatch(setSidebarState({ sidebarState: false }));
                 this.notUserLoginDetails.token = params.token;
                 this.notUserLoginDetails.voucherUniqueName = params.voucherUniqueName;
                 this.notUserLoginDetails.companyUniqueName = params.companyUniqueName;
