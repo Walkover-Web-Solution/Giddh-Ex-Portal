@@ -11,6 +11,7 @@ import { PAGINATION_LIMIT } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
 import { setPortalDomain, setRouterState, setSidebarState } from "../store/actions/session.action";
+import { BreakpointObserver } from "@angular/cdk/layout";
 declare var initVerification: any;
 @Component({
     selector: "invoice-preview",
@@ -69,10 +70,13 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public loginId = environment.proxyReferenceId;
     /** Hold current url*/
     public url: string = '';
+    /** True if it is mobile screen */
+    public isMobileScreen: boolean = false;
 
     constructor(
         private generalService: GeneralService,
         private invoiceService: InvoiceService,
+        private breakpointObserver: BreakpointObserver,
         private router: Router,
         private route: ActivatedRoute,
         private domSanitizer: DomSanitizer,
@@ -91,6 +95,11 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @memberof InvoicePreviewComponent
      */
     public ngOnInit(): void {
+        this.breakpointObserver.observe([
+            "(max-width: 576px)",
+        ]).pipe(takeUntil(this.destroyed$)).subscribe(result => {
+            this.isMobileScreen = result?.breakpoints["(max-width: 576px)"];
+        });
         this.commentForm = this.formBuilder.group({
             commentText: ['']
         });
@@ -103,7 +112,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 }
             });
             if (!this.storeData.session?.id) {
-                this.store.dispatch(setSidebarState({ sidebarState: false }));
+                if (this.isMobileScreen) {
+                    this.store.dispatch(setSidebarState({ sidebarState: false }));
+                }
                 this.notUserLoginDetails.token = params.token;
                 this.notUserLoginDetails.voucherUniqueName = params.voucherUniqueName;
                 this.notUserLoginDetails.companyUniqueName = params.companyUniqueName;
