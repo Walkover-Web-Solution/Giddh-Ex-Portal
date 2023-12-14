@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { select, Store } from '@ngrx/store';
-import { Router } from "@angular/router";
 import { take } from "rxjs/operators";
+import { environment } from "src/environments/environment";
 declare var initVerification: any;
 @Injectable()
 export class GeneralService {
@@ -11,8 +11,7 @@ export class GeneralService {
     /** Hold  store data */
     public storeData: any = {};
 
-    constructor(private snackBar: MatSnackBar, private store: Store,
-        private router: Router) {
+    constructor(private snackBar: MatSnackBar, private store: Store) {
         this.store.pipe(select(state => state), take(1)).subscribe((sessionState) => {
             this.storeData = sessionState;
         });
@@ -125,4 +124,16 @@ export class GeneralService {
         });
     }
 
+    /**
+     * Returns paypal ipn url
+     *
+     * @param {string} companyUniqueName
+     * @param {string} accountUniqueName
+     * @param {string} paymentId
+     * @returns {string}
+     * @memberof GeneralService
+     */
+    public getPaypalIpnUrl(companyUniqueName: string, accountUniqueName: string, paymentId: string): string {
+        return environment.apiUrl + 'portal/company/' + companyUniqueName + '/accounts/' + accountUniqueName + '/invoices/' + paymentId + '/paypal/ipn?voucherVersion=2';
+    }
 }

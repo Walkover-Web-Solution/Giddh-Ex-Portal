@@ -4,3 +4,7 @@ export const PAGE_SIZE_OPTIONS = [
     50,
     100
 ];
+export enum PAYMENT_GATEWAYS {
+    RAZORPAY = 'RAZORPAY',
+    PAYPAL = 'PAYPAL'
+}

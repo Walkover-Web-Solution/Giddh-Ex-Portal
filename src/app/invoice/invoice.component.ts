@@ -206,15 +206,15 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         }
     }
 
-/**
- * This will be use for get count page
- *
- * @memberof InvoiceComponent
- */
-public getCountPage(): void {
+    /**
+     * This will be use for get count page
+     *
+     * @memberof InvoiceComponent
+     */
+    public getCountPage(): void {
         if (this.storeData) {
             let request = {
-                accountUniqueName : this.storeData.userDetails?.account?.uniqueName,
+                accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
                 companyUniqueName: this.storeData.userDetails?.companyUniqueName,
                 vendorUniqueName: this.storeData.userDetails?.vendorContactUniqueName,
                 sessionId: this.storeData.session?.id,
@@ -237,12 +237,12 @@ public getCountPage(): void {
         }
     }
 
-/**
- * This will be use for set count page
- *
- * @memberof InvoiceComponent
- */
-public setCountPage(): void {
+    /**
+     * This will be use for set count page
+     *
+     * @memberof InvoiceComponent
+     */
+    public setCountPage(): void {
         if (this.storeData) {
             let request = {
                 accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
@@ -339,12 +339,8 @@ public setCountPage(): void {
      * @memberof InvoiceComponent
      */
     public invoicePreview(invoice: any): void {
-        let url = this.storeData.domain + '/invoice/preview';
-        this.router.navigate([url], {
-            queryParams: {
-                voucher: invoice?.uniqueName,
-            }
-        });
+        let url = this.storeData.domain + '/invoice/preview/voucher/' + invoice?.uniqueName;
+        this.router.navigate([url]);
     }
 
     /**
