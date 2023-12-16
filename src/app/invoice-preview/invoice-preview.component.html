@@ -16,7 +16,7 @@
                 [ngClass]="{
                     'mr-b15 position-section': notUserLoginDetails.show
                 }"
-                *ngIf="selectedPaymentVoucher?.length"
+                *ngIf="paymentDetails?.vouchers?.length"
             >
                 <button
                     mat-stroked-button
@@ -31,7 +31,7 @@
                         mat-stroked-button
                         color="primary"
                         *ngIf="
-                            (selectedPaymentVoucher[0]?.balanceStatus === 'UNPAID' || selectedPaymentVoucher[0]?.balanceStatus === 'PARTIAL-PAID') && paymentDetails?.vouchers[0]?.canPay
+                            (paymentDetails?.vouchers[0]?.status === 'UNPAID' || paymentDetails?.vouchers[0]?.status === 'PARTIAL-PAID') && paymentDetails?.vouchers[0]?.canPay
                         "
                         (click)="initializePayment(paymentDetails)"
                     >
@@ -49,12 +49,7 @@
                         mat-stroked-button
                         color="primary"
                         (click)="
-                            downloadPdf(
-                                voucherUniqueName ||
-                                    notUserLoginDetails?.voucherUniqueName,
-                                selectedPaymentVoucher[0]?.voucherNumber ||
-                                    selectedPaymentVoucher[0]?.number
-                            )
+                            downloadPdf(voucherUniqueName || notUserLoginDetails?.voucherUniqueName, paymentDetails?.vouchers[0]?.number)
                         "
                     >
                         <img
@@ -84,22 +79,20 @@
                         />
                         <div class="date-border">
                             <p class="text-mute">
-                                {{ selectedPaymentVoucher[0]?.voucherNumber }}1
+                                {{ paymentDetails?.vouchers[0]?.number }}1
                             </p>
                             <span class="mr-t5 d-block">{{
-                                selectedPaymentVoucher[0]?.dueDate
+                                paymentDetails?.vouchers[0]?.dueDate
                             }}</span>
                         </div>
                         <div class="balance-due">
                             <p class="text-mute balance-txt">Balance Due</p>
                             <span class="mr-t5 d-block balance-number">
                                 {{
-                                    selectedPaymentVoucher[0]
-                                        ?.accountCurrencySymbol
+                                    paymentDetails?.currency?.symbol
                                 }}
                                 {{
-                                    selectedPaymentVoucher[0]?.balanceTotal
-                                        ?.amountForAccount
+                                    (paymentDetails?.totalAmount / 100) | number
                                 }}</span
                             >
                         </div>
