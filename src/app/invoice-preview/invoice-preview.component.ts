@@ -103,6 +103,16 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             commentText: ['']
         });
 
+        this.getVoucherDetails();
+    }
+
+    /**
+     * Get voucher details
+     *
+     * @private
+     * @memberof InvoicePreviewComponent
+     */
+    private getVoucherDetails(): void {
         this.isLoading = true;
         let request;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
@@ -177,7 +187,6 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             }
         });
     }
-
 
     /**
      *  This will be use for login button script loading
@@ -336,7 +345,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             this.invoiceService.payInvoice(payRequest, payload).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
                 if (response && response.status === 'success') {
                     this.generalService.showSnackbar(response?.body, "success");
-                    this.backToInvoice();
+                    this.getVoucherDetails();
                 } else {
                     if (response?.status === 'error') {
                         this.generalService.showSnackbar(response?.message);
@@ -344,16 +353,6 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 }
             });
         }
-    }
-
-    /**
-     * This will be use for back to invoice
-     *
-     * @memberof InvoicePreviewComponent
-     */
-    public backToInvoice(): void {
-        let url = this.storeData.domain + '/invoice';
-        this.router.navigate([url]);
     }
 
     /**
