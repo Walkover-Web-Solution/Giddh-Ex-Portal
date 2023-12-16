@@ -103,7 +103,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             commentText: ['']
         });
 
-        this.getVoucherDetails();
+        this.getVoucherDetails(true);
     }
 
     /**
@@ -112,7 +112,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @private
      * @memberof InvoicePreviewComponent
      */
-    private getVoucherDetails(): void {
+    private getVoucherDetails(isDefault: boolean = false): void {
         this.isLoading = true;
         let request;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
@@ -135,7 +135,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
 
                 this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
                     this.isLoading = false;
-                    this.loginButtonScriptLoaded();
+                    if (isDefault) {
+                        this.loginButtonScriptLoaded();
+                    }
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body;
