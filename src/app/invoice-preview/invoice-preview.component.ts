@@ -168,7 +168,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.invoiceListRequest.accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
                 this.invoiceListRequest.companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
                 this.invoiceListRequest.sessionId = this.storeData.session?.id;
-                this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher ;
+                this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher;
 
                 request = { accountUniqueName: (params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName), voucherUniqueName: (params?.voucherUniqueName ?? params.voucher), companyUniqueName: (params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName), sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
                 combineLatest([
