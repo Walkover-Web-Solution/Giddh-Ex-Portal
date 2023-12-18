@@ -10,8 +10,8 @@ import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT, PAYMENT_GATEWAYS } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
-import { setRouterState } from "../store/actions/session.action";
-
+import { setPortalDomain, setRouterState, setSidebarState } from "../store/actions/session.action";
+import { BreakpointObserver } from "@angular/cdk/layout";
 declare var initVerification: any;
 @Component({
     selector: "invoice-preview",
@@ -35,8 +35,6 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public voucherUniqueName: any = '';
     /** Hold payment id*/
     public paymentId: string = '';
-    /** Hold selected paymentvoucher */
-    public selectedPaymentVoucher: any[] = [];
     /** Hold razorpay elements*/
     public razorpay: any;
     /** Hold payment details*/
@@ -74,10 +72,13 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public showPaypalForm: boolean = false;
     /** Paypal form instance */
     public paypalForm: UntypedFormGroup;
+    /** True if it is mobile screen */
+    public isMobileScreen: boolean = false;
 
     constructor(
         private generalService: GeneralService,
         private invoiceService: InvoiceService,
+        private breakpointObserver: BreakpointObserver,
         private router: Router,
         private route: ActivatedRoute,
         private domSanitizer: DomSanitizer,
@@ -95,32 +96,53 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @memberof InvoicePreviewComponent
      */
     public ngOnInit(): void {
+        this.breakpointObserver.observe([
+            "(max-width: 576px)",
+        ]).pipe(takeUntil(this.destroyed$)).subscribe(result => {
+            this.isMobileScreen = result?.breakpoints["(max-width: 576px)"];
+        });
+
         this.commentForm = this.formBuilder.group({
             commentText: ['']
         });
-        
-        let request;
 
-        this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
+        this.getVoucherDetails(true);
+    }
+
+    /**
+     * Get voucher details
+     *
+     * @private
+     * @memberof InvoicePreviewComponent
+     */
+    private getVoucherDetails(isDefault: boolean = false): void {
+        this.isLoading = true;
+        let request;
+        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
+            this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
+                if (params.companyDomainUniqueName) {
+                    this.store.dispatch(setPortalDomain({ domain: params.companyDomainUniqueName }));
+                }
+            });
             if (!this.storeData.session?.id) {
+                if (this.isMobileScreen) {
+                    this.store.dispatch(setSidebarState({ sidebarState: false }));
+                }
                 this.notUserLoginDetails.token = params.token;
                 this.notUserLoginDetails.voucherUniqueName = params.voucherUniqueName;
                 this.notUserLoginDetails.companyUniqueName = params.companyUniqueName;
                 this.notUserLoginDetails.accountUniqueName = params.accountUniqueName;
                 this.notUserLoginDetails.show = true;
+
                 request = { accountUniqueName: this.notUserLoginDetails.accountUniqueName, voucherUniqueName: this.notUserLoginDetails.voucherUniqueName, companyUniqueName: this.notUserLoginDetails.companyUniqueName, sessionId: '', paymentMethod: 'RAZORPAY' };
+
                 combineLatest([
-                    this.invoiceService.getVoucherDetailsFromWithoutSession(this.notUserLoginDetails),
                     this.invoiceService.getVoucherDetails(request),
-                ]).pipe(takeUntil(this.destroyed$)).subscribe(([invoiceListResponse, voucherDetailsResponse]) => {
+                    this.invoiceService.getInvoiceComments(request)
+                ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
                     this.isLoading = false;
-                    this.loginButtonScriptLoaded();
-                    if (invoiceListResponse && invoiceListResponse.status === 'success') {
-                        this.selectedPaymentVoucher = [invoiceListResponse.body];
-                    } else {
-                        if (invoiceListResponse?.status === 'error') {
-                            this.generalService.showSnackbar(invoiceListResponse?.message);
-                        }
+                    if (isDefault) {
+                        this.loginButtonScriptLoaded();
                     }
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
@@ -134,29 +156,29 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                             this.generalService.showSnackbar(voucherDetailsResponse?.message);
                         }
                     }
-                });
-            } else {
-                this.notUserLoginDetails.show = false;
-                this.voucherUniqueName = params.voucher;
-                this.invoiceListRequest.accountUniqueName = this.storeData.userDetails?.account.uniqueName;
-                this.invoiceListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
-                this.invoiceListRequest.sessionId = this.storeData.session?.id;
-                this.invoiceListRequest.uniqueNames = params.voucher ?? params.voucherUniqueName;
-
-                request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, voucherUniqueName: (params.voucher?? params?.voucherUniqueName), companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: PAYMENT_GATEWAYS.RAZORPAY };
-                combineLatest([
-                    this.invoiceService.getInvoiceList(this.invoiceListRequest),
-                    this.invoiceService.getVoucherDetails(request),
-                    this.invoiceService.getInvoiceComments(request)
-                ]).pipe(takeUntil(this.destroyed$))?.subscribe(([invoiceListResponse, voucherDetailsResponse, commentsResponse]) => {
-                    this.isLoading = false;
-                    if (invoiceListResponse && invoiceListResponse.status === 'success') {
-                        this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === (params?.voucher ?? params?.voucherUniqueName));
+                    if (commentsResponse && commentsResponse.status === 'success') {
+                        this.voucherComments = commentsResponse.body;
                     } else {
-                        if (invoiceListResponse?.status === 'error') {
-                            this.generalService.showSnackbar(invoiceListResponse?.message);
+                        if (commentsResponse?.status === 'error') {
+                            this.generalService.showSnackbar(commentsResponse?.message);
                         }
                     }
+                });
+
+            } else {
+                this.notUserLoginDetails.show = false;
+                this.voucherUniqueName = params.voucherUniqueName ?? params.voucher;
+                this.invoiceListRequest.accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+                this.invoiceListRequest.companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+                this.invoiceListRequest.sessionId = this.storeData.session?.id;
+                this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher;
+
+                request = { accountUniqueName: (params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName), voucherUniqueName: (params?.voucherUniqueName ?? params.voucher), companyUniqueName: (params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName), sessionId: this.storeData.session?.id, paymentMethod: PAYMENT_GATEWAYS.RAZORPAY };
+                combineLatest([
+                    this.invoiceService.getVoucherDetails(request),
+                    this.invoiceService.getInvoiceComments(request)
+                ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
+                    this.isLoading = false;
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body;
@@ -181,7 +203,6 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         });
     }
 
-
     /**
      *  This will be use for login button script loading
      *
@@ -202,7 +223,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 }
             };
             const routerState = (this.route as any)._routerState?.snapshot?.url;
-            const updatedUrl = routerState.replace('/'+this.storeData.domain, '');
+            const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
             this.store.dispatch(setRouterState({ url: updatedUrl }));
             this.generalService.loadScript(environment.proxyReferenceId, configuration);
         }, 200)
@@ -284,11 +305,11 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
 
             this.paypalForm = this.formBuilder.group({
                 businessEmail: [paymentRequest.paymentKey],
-                itemName: [this.selectedPaymentVoucher[0]?.voucherNumber],
+                itemName: [paymentRequest.vouchers[0]?.number],
                 custom: [''],
                 amount: [paymentRequest.totalAmount],
                 currencyCode: [paymentRequest.currency.code],
-                notifyUrl: [this.generalService.getPaypalIpnUrl(this.storeData.userDetails.companyUniqueName, this.selectedPaymentVoucher[0]?.uniqueName, paymentRequest.paymentId)],
+                notifyUrl: [this.generalService.getPaypalIpnUrl(this.storeData.userDetails.companyUniqueName, paymentRequest.vouchers[0]?.uniqueName, paymentRequest.paymentId)],
                 returnUrl: [document.URL],
                 cancelReturnUrl: [document.URL]
             });
@@ -359,7 +380,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             this.invoiceService.payInvoice(payRequest, payload).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
                 if (response && response.status === 'success') {
                     this.generalService.showSnackbar(response?.body, "success");
-                    this.backToInvoice();
+                    this.getVoucherDetails();
                 } else {
                     if (response?.status === 'error') {
                         this.generalService.showSnackbar(response?.message);
@@ -367,16 +388,6 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 }
             });
         }
-    }
-
-    /**
-     * This will be use for back to invoice
-     *
-     * @memberof InvoicePreviewComponent
-     */
-    public backToInvoice(): void {
-        let url = this.storeData.domain + '/invoice';
-        this.router.navigate([url]);
     }
 
     /**
@@ -388,9 +399,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         const commentText = this.commentForm.get('commentText').value;
         if (commentText) {
             let urlRequest = {
-                accountUniqueName: this.storeData.userDetails.account.uniqueName,
-                companyUniqueName: this.storeData.userDetails.companyUniqueName,
-                sessionId: this.storeData.session.id,
+                accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
+                companyUniqueName: this.storeData?.userDetails?.companyUniqueName,
+                sessionId: this.storeData.session?.id,
                 voucherUniqueName: this.voucherUniqueName
             }
             this.invoiceService.addComments(urlRequest, commentText).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {

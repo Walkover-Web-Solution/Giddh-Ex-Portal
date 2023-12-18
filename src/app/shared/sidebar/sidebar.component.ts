@@ -7,9 +7,10 @@ import { map, shareReplay, takeUntil } from 'rxjs/operators';
 import { DashboardService } from "src/app/services/dashboard.service.";
 import { AuthService } from "src/app/services/auth.service";
 import * as dayjs from 'dayjs';
-import { logoutUser, setSessionToken, setSidebarState } from "src/app/store/actions/session.action";
+import { logoutUser, setCompanyDetails, setSessionToken, setSidebarState } from "src/app/store/actions/session.action";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "src/app/services/general.service";
+import { WelcomeService } from "src/app/services/welcome.service";
 
 @Component({
     selector: "sidebar",
@@ -41,6 +42,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public dateFormat: string = 'DD-MM-YYYY h:m:s';
     /** Hold  store data */
     public storeData: any = {};
+    /** Request body for get portal url params */
+    public companyDetailsQueryParams = {
+        companyUniqueName: undefined,
+        accountUniqueName: undefined,
+        sessionId: undefined,
+    };
 
     constructor(
         private router: Router,
@@ -48,6 +55,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         public breakpointObserver: BreakpointObserver,
         public dialog: MatDialog,
         private dashboardService: DashboardService,
+        private welcomeService: WelcomeService,
         private authService: AuthService,
         private store: Store,
         private generalService: GeneralService) {
@@ -80,6 +88,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     public ngOnInit(): void {
         this.getAccountDetails();
+        this.getCompanyDetails();
     }
 
     /**
@@ -110,6 +119,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     this.isLoading = false;
                     if (accountsResponse?.status === 'error') {
                         this.generalService.showSnackbar(accountsResponse?.message);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+   * This will be use for get company details
+   *
+   * @memberof SidebarComponent
+   */
+    public getCompanyDetails(): void {
+        if (this.storeData.session?.id) {
+            this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+            this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+            this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
+            this.welcomeService.getCompanyDetails(this.companyDetailsQueryParams).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+                if (response && response.status === 'success') {
+                    this.store.dispatch(setCompanyDetails({ companyDetails: response?.body }));
+                } else {
+                    if (response?.status === 'error') {
+                        this.generalService.showSnackbar(response?.message);
                     }
                 }
             });

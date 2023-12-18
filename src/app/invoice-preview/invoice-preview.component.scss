@@ -14,11 +14,11 @@
     }
 
     .pdf-wrapper {
-        height: calc(100% - 196px);
+        height: 100%;
     }
 
     .invoice-open {
-        height: calc(100% - 100px);
+        height: 100%;
 
         .back-header {
             img {
@@ -30,6 +30,14 @@
             background-color: var(--color-bg-login);
             padding: 22px 20px 30px;
             margin: 15px 0 20px;
+            float: left;
+            width: 100%;
+        }
+
+        .comment-wrapper {
+            background-color: var(--color-bg-login);
+            padding: 10px 20px 10px;
+            margin-bottom: 15px;
             float: left;
             width: 100%;
         }
@@ -114,11 +122,11 @@
 }
 
 .pay-invoice-content {
-    max-width: 790px;
     border-radius: 3px;
     box-shadow: 0 1px 8px 0 var(--color-box-shadow);
     padding: 20px 30px;
     margin-bottom: 17px;
+    clear: both;
 
     &.invoice-tab {
         padding: 0 !important;
@@ -135,11 +143,12 @@
     background-color: var(--color-giddh-blue);
     width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
+    padding-left: 22px;
 }
 
-.textarea-resize{
+.textarea-resize {
     resize: none;
 }
 

@@ -45,6 +45,7 @@ export class LoginComponent implements OnInit, OnDestroy {
      * @memberof LoginComponent
      */
     public ngOnInit(): void {
+        document.querySelector('body').classList.add('login-body');
         this.loginButtonScriptLoaded();
     }
 
@@ -76,6 +77,7 @@ export class LoginComponent implements OnInit, OnDestroy {
      * @memberof LoginComponent
      */
     public ngOnDestroy(): void {
+        document.querySelector('body').classList.remove('login-body');
         this.destroyed$.next(true);
         this.destroyed$.complete();
     }
