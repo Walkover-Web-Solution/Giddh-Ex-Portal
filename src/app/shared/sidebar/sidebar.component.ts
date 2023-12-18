@@ -19,7 +19,7 @@ import { WelcomeService } from "src/app/services/welcome.service";
 })
 export class SidebarComponent implements OnInit, OnDestroy {
     /** Is side bar expanded*/
-    public isExpanded: boolean;
+    public isExpanded: boolean = true;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     public destroyed$: ReplaySubject<boolean> = new ReplaySubject(1); public isMobile$: Observable<boolean>;
     /* Hold user details from localStorage*/
