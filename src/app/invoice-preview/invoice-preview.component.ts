@@ -98,7 +98,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         ]).pipe(takeUntil(this.destroyed$)).subscribe(result => {
             this.isMobileScreen = result?.breakpoints["(max-width: 576px)"];
         });
-        
+
         this.commentForm = this.formBuilder.group({
             commentText: ['']
         });
@@ -133,7 +133,10 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
 
                 request = { accountUniqueName: this.notUserLoginDetails.accountUniqueName, voucherUniqueName: this.notUserLoginDetails.voucherUniqueName, companyUniqueName: this.notUserLoginDetails.companyUniqueName, sessionId: '', paymentMethod: 'RAZORPAY' };
 
-                this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
+                combineLatest([
+                    this.invoiceService.getVoucherDetails(request),
+                    this.invoiceService.getInvoiceComments(request)
+                ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
                     this.isLoading = false;
                     if (isDefault) {
                         this.loginButtonScriptLoaded();
@@ -150,6 +153,13 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                             this.generalService.showSnackbar(voucherDetailsResponse?.message);
                         }
                     }
+                    if (commentsResponse && commentsResponse.status === 'success') {
+                        this.voucherComments = commentsResponse.body;
+                    } else {
+                        if (commentsResponse?.status === 'error') {
+                            this.generalService.showSnackbar(commentsResponse?.message);
+                        }
+                    }
                 });
 
             } else {
@@ -158,7 +168,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.invoiceListRequest.accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
                 this.invoiceListRequest.companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
                 this.invoiceListRequest.sessionId = this.storeData.session?.id;
-                this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher ;
+                this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher;
 
                 request = { accountUniqueName: (params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName), voucherUniqueName: (params?.voucherUniqueName ?? params.voucher), companyUniqueName: (params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName), sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
                 combineLatest([
@@ -366,9 +376,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         const commentText = this.commentForm.get('commentText').value;
         if (commentText) {
             let urlRequest = {
-                accountUniqueName: this.storeData.userDetails.account.uniqueName,
-                companyUniqueName: this.storeData.userDetails.companyUniqueName,
-                sessionId: this.storeData.session.id,
+                accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
+                companyUniqueName: this.storeData?.userDetails?.companyUniqueName,
+                sessionId: this.storeData.session?.id,
                 voucherUniqueName: this.voucherUniqueName
             }
             this.invoiceService.addComments(urlRequest, commentText).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
