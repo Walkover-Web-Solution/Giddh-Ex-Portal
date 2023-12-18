@@ -3,9 +3,6 @@ import { ReplaySubject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { CompanyResponse } from "src/app/models/Company";
 import { select, Store } from '@ngrx/store';
-import { WelcomeService } from "src/app/services/welcome.service";
-import { GeneralService } from "src/app/services/general.service";
-import { setCompanyDetails } from "src/app/store/actions/session.action";
 
 @Component({
     selector: "footer",
@@ -17,22 +14,12 @@ export class FooterComponent implements OnInit, OnDestroy {
     @Output() companyData: EventEmitter<CompanyResponse> = new EventEmitter<CompanyResponse>();
     /** Hold company response */
     public companyDetails: CompanyResponse;
-    /** True if api call in progress */
-    public isLoading: boolean = true;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-    /** Request body for get portal url params */
-    public companyDetailsQueryParams = {
-        companyUniqueName: undefined,
-        accountUniqueName: undefined,
-        sessionId: undefined,
-    };
     /** Hold  store data */
     public storeData: any = {};
 
     constructor(
-        private welcomeService: WelcomeService,
-        private generalService: GeneralService,
         private store: Store
     ) {
 
@@ -47,34 +34,13 @@ export class FooterComponent implements OnInit, OnDestroy {
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             if (sessionState.session) {
                 this.storeData = sessionState.session;
+                this.companyData.emit(this.storeData.companyDetails);
+                this.companyDetails = this.storeData.companyDetails;
             }
         });
-        this.getCompanyDetails();
     }
 
-    /**
-     * This will be use for get company details
-     *
-     * @memberof FooterComponent
-     */
-    public getCompanyDetails(): void {
-        if (this.storeData.session.id) {
-            this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-            this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails.companyUniqueName;
-            this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
-            this.welcomeService.getCompanyDetails(this.companyDetailsQueryParams).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-                if (response && response.status === 'success') {
-                    this.companyDetails = response.body;
-                    this.companyData.emit(this.companyDetails);
-                    this.store.dispatch(setCompanyDetails({ companyDetails: this.companyDetails }));
-                } else {
-                    if (response?.status === 'error') {
-                        this.generalService.showSnackbar(response?.message);
-                    }
-                }
-            });
-        }
-    }
+
 
     /**
      * This will be use for component destroy

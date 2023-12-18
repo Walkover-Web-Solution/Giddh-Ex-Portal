@@ -130,13 +130,8 @@
                             <td mat-cell *matCellDef="let element">
                                 <div class="d-flex column-gap10">
                                     <button
-                                        *ngIf="
-                                            (element?.balanceStatus ===
-                                                'UNPAID' ||
-                                                element?.balanceStatus ===
-                                                    'PARTIAL-PAID') &&
-                                            storeData?.companyDetails
-                                                ?.razorpayIntegrated
+                                        *ngIf="storeData?.companyDetails
+                                                .razorpayIntegrated && element?.canPay
                                         "
                                         mat-stroked-button
                                         color="primary"
