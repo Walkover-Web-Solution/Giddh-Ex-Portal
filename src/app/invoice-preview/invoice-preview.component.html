@@ -30,9 +30,7 @@
                         <button
                             mat-stroked-button
                             color="primary"
-                            *ngIf="
-                               paymentDetails?.vouchers[0]?.canPay
-                            "
+                            *ngIf="paymentDetails?.vouchers[0]?.canPay"
                             (click)="initializePayment(paymentDetails)"
                         >
                             Pay Now
@@ -105,9 +103,36 @@
                         </div>
                     </div>
                 </div>
+                   <div
+                    class="comment-wrapper" *ngIf="notUserLoginDetails.show && voucherComments?.length"
+                >
+                <h3 class="text-muted">Comments :</h3>
+                <br />
+                    <ng-container >
+                        <ul
+                            class="list-unstyled d-none d-md-block"
+                            *ngFor="let comment of voucherComments"
+                        >
+                            <li class="media">
+                                <div class="comment-time-web">
+                                    <p class="text-muted font-sm">
+                                        {{ comment?.dateString }}
+                                    </p>
+                                </div>
+                                <div class="media-body">
+                                    <p class="comment media-heading font-sm">
+                                        {{ comment?.description }}
+                                        <i class="text-muted">
+                                            by {{ comment?.userName }}</i
+                                        >
+                                    </p>
+                                </div>
+                            </li>
+                        </ul>
+                    </ng-container>
+                </div>
                 <div
-                    class="comment-container"
-                    *ngIf="!notUserLoginDetails.show"
+                    class="comment-container" *ngIf="!notUserLoginDetails.show"
                 >
                     <form [formGroup]="commentForm">
                         <mat-form-field

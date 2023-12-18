@@ -21,7 +21,7 @@
                     </a>
                 </mat-list-item>
             </mat-list>
-            <div class="sidebar-footer">
+            <div class="sidebar-footer"  *ngIf="userDetails?.name">
                 <div class="loader-line" *ngIf="isLoading"></div>
                 <div *ngIf="!isLoading">
                     <div
@@ -34,7 +34,6 @@
                         >
                             <span
                                 class="profile-alice"
-                                *ngIf="userDetails?.name"
                                 [ngClass]="{
                                     'profile-slice-small': !isExpanded
                                 }"
@@ -48,7 +47,6 @@
                                 color="primary"
                                 class="logout-btn"
                                 (click)="logoutUser()"
-                                *ngIf="userDetails?.name"
                             >
                                 Logout
                             </button>

@@ -131,9 +131,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * @memberof SidebarComponent
    */
     public getCompanyDetails(): void {
-        if (this.storeData.session.id) {
-            this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-            this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+        if (this.storeData.session?.id) {
+            this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+            this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
             this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
             this.welcomeService.getCompanyDetails(this.companyDetailsQueryParams).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
                 if (response && response.status === 'success') {
