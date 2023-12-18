@@ -65,6 +65,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         accountUniqueName: undefined,
         companyUniqueName: undefined
     }
+    /** Hold proxy button  id */
     public loginId = environment.proxyReferenceId;
     /** Hold current url*/
     public url: string = '';
@@ -122,7 +123,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     this.store.dispatch(setPortalDomain({ domain: params.companyDomainUniqueName }));
                 }
             });
-            
+
             if (!this.storeData.session?.id) {
                 if (this.isMobileScreen) {
                     this.store.dispatch(setSidebarState({ sidebarState: false }));
@@ -140,7 +141,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     this.invoiceService.getInvoiceComments(request)
                 ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
                     this.isLoading = false;
-                    
+
                     this.loginButtonScriptLoaded();
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
