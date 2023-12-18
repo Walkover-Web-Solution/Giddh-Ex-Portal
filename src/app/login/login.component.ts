@@ -24,6 +24,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
     /** Hold current url*/
     public url: string = '';
+    /** Hold proxy button  id */
+    public loginId = environment.proxyReferenceId;
 
     constructor(
         private route: ActivatedRoute,
