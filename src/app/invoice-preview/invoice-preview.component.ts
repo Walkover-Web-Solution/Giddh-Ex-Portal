@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { InvoiceService } from "../services/invoice.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { ReplaySubject, combineLatest } from "rxjs";
@@ -80,7 +80,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         private domSanitizer: DomSanitizer,
         private formBuilder: FormBuilder,
         private store: Store,
-        private activateRoute: ActivatedRoute
+        private changeDetectionRef: ChangeDetectorRef
     ) {
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             this.storeData = sessionState.session;
@@ -103,17 +103,18 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             commentText: ['']
         });
 
-        this.getVoucherDetails(true);
+        this.getVoucherDetails();
     }
 
     /**
      * Get voucher details
      *
-     * @private
+     * @public
      * @memberof InvoicePreviewComponent
      */
-    private getVoucherDetails(isDefault: boolean = false): void {
+    public getVoucherDetails(): void {
         this.isLoading = true;
+        this.changeDetectionRef.detectChanges();
         let request;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
             this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
@@ -121,6 +122,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     this.store.dispatch(setPortalDomain({ domain: params.companyDomainUniqueName }));
                 }
             });
+            
             if (!this.storeData.session?.id) {
                 if (this.isMobileScreen) {
                     this.store.dispatch(setSidebarState({ sidebarState: false }));
@@ -138,9 +140,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     this.invoiceService.getInvoiceComments(request)
                 ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
                     this.isLoading = false;
-                    if (isDefault) {
-                        this.loginButtonScriptLoaded();
-                    }
+                    
+                    this.loginButtonScriptLoaded();
 
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body;
@@ -160,6 +161,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                             this.generalService.showSnackbar(commentsResponse?.message);
                         }
                     }
+
+                    this.changeDetectionRef.detectChanges();
                 });
 
             } else {
