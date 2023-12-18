@@ -19,7 +19,7 @@ import { WelcomeService } from "src/app/services/welcome.service";
 })
 export class SidebarComponent implements OnInit, OnDestroy {
     /** Is side bar expanded*/
-    public isExpanded: boolean;
+    public isExpanded: boolean = true;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     public destroyed$: ReplaySubject<boolean> = new ReplaySubject(1); public isMobile$: Observable<boolean>;
     /* Hold user details from localStorage*/
@@ -131,9 +131,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * @memberof SidebarComponent
    */
     public getCompanyDetails(): void {
-        if (this.storeData.session.id) {
-            this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails.account.uniqueName;
-            this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+        if (this.storeData.session?.id) {
+            this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+            this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
             this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
             this.welcomeService.getCompanyDetails(this.companyDetailsQueryParams).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
                 if (response && response.status === 'success') {

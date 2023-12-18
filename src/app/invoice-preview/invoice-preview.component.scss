@@ -33,6 +33,14 @@
             float: left;
             width: 100%;
         }
+
+        .comment-wrapper {
+            background-color: var(--color-bg-login);
+            padding: 10px 20px 10px;
+            margin-bottom: 15px;
+            float: left;
+            width: 100%;
+        }
     }
 }
 
@@ -76,6 +84,10 @@
 .media {
     display: flex;
     align-items: flex-start;
+    width: 100%;
+    column-gap: 20px;
+    row-gap: 15px;
+    flex-wrap: wrap;
 }
 
 .list-inline,
@@ -86,7 +98,7 @@
 
 
 .comment-time-web {
-    width: 170px;
+    width: 12%;
 }
 
 .font-sm {
@@ -99,6 +111,10 @@
 
 .media-body {
     flex: 1;
+    .media-heading {
+        white-space: normal;
+        word-break: break-all;
+    }
 }
 
 
@@ -140,7 +156,7 @@
     padding-left: 22px;
 }
 
-.textarea-resize{
+.textarea-resize {
     resize: none;
 }
 

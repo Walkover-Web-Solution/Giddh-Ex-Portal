@@ -88,7 +88,7 @@
                     <div
                         class="balance-wrap"
                         *ngIf="
-                            voucherData?.items[0]?.balanceStatus === 'ADJUSTED'
+                            voucherData?.items[0]?.balanceStatus === 'ADJUSTED' || voucherData?.items[0]?.balanceStatus === 'PARTIAL-ADJUSTED'
                         "
                     >
                         <div class="payment-width">
