@@ -164,6 +164,10 @@
 
 /*---- max-width-576-start ----*/
 @media screen and (max-width: 576px) {
+    .pdf-wrapper {
+        display: none;
+    }
+
     .profile-user {
         width: auto;
     }
@@ -214,10 +218,11 @@
 
 /*---- max-width-576-end ----*/
 .login-body {
-        .common-wrapper {
-            width: 100% !important;
-        }
+    .common-wrapper {
+        width: 100% !important;
+    }
 }
+
 /*---- max-width-480-start ----*/
 @media screen and (max-width: 480px) {
     .common-wrapper {
