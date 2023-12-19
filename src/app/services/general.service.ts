@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { select, Store } from '@ngrx/store';
-import { Router } from "@angular/router";
 import { take } from "rxjs/operators";
+import { SnackBarComponent } from "../shared/snackbar/snackbar.component";
 declare var initVerification: any;
+
 @Injectable()
 export class GeneralService {
     /** True if script is loaded */
@@ -11,8 +12,7 @@ export class GeneralService {
     /** Hold  store data */
     public storeData: any = {};
 
-    constructor(private snackBar: MatSnackBar, private store: Store,
-        private router: Router) {
+    constructor(private snackBar: MatSnackBar, private store: Store) {
         this.store.pipe(select(state => state), take(1)).subscribe((sessionState) => {
             this.storeData = sessionState;
         });
@@ -26,9 +26,11 @@ export class GeneralService {
      * @memberof GeneralService
      */
     public showSnackbar(message: string, type: string = "error"): void {
-        this.snackBar.open(message, '', {
-            duration: 3000,
-            panelClass: type === "success" ? "success-message" : "error-message"
+        this.snackBar.openFromComponent(SnackBarComponent, {
+            data: { message: message },
+            horizontalPosition: "center",
+            verticalPosition: "top",
+            panelClass: type
         });
     }
 
