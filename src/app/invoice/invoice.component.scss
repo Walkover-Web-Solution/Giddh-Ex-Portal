@@ -401,6 +401,14 @@
 
 /*---- responsive ----*/
 @media screen and (max-width: 768px) {
+    .inner-content {
+        .res-field {
+            .clear-button {
+                min-width: 84px;
+            }
+        }
+    }
+
     .pay-invoice-wrapper {
         margin: 0 0px 50px 0px;
 
@@ -418,6 +426,22 @@
 }
 
 @media screen and (max-width: 576px) {
+    .inner-content {
+        .mat-mdc-form-field {
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            display: block;
+        }
+
+        .clear-button {
+            width: 100%;
+            margin-top: 11px;
+            min-width: 84px;
+        }
+    }
+
     .pay-invoice-wrapper {
         .invoice-content {
             .mat-mdc-tab-group {
@@ -443,6 +467,25 @@
 }
 
 @media screen and (max-width: 480px) {
+    .inner-content {
+        .res-field {
+            display: block;
+
+            .action-buttons {
+                display: block;
+            }
+
+            .mat-mdc-form-field {
+                margin-top: 10px;
+            }
+
+            .clear-button {
+                width: 100%;
+                margin-top: 11px;
+            }
+        }
+    }
+
     .pay-invoice-wrapper {
         .invoice-content-header {
             flex-wrap: wrap;

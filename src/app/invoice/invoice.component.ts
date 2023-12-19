@@ -13,6 +13,7 @@ import { select, Store } from '@ngrx/store';
 import { GeneralService } from "../services/general.service";
 import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
 import { CommonService } from "../services/common.service";
+import { SelectionModel } from "@angular/cdk/collections";
 
 @Component({
     selector: "invoice",
@@ -86,6 +87,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public pageSizeOptions: any[] = PAGE_SIZE_OPTIONS;
     /** Count of total records for pagination */
     public totalRecords: number = 0;
+    /** Hold selected voucher event */
+    public selection = new SelectionModel<any>(true, []);
 
     constructor(
         public dialog: MatDialog,
@@ -101,6 +104,33 @@ export class InvoiceComponent implements OnInit, OnDestroy {
             }
         });
     }
+
+    /**
+     * This will be use for is all selected vouchers
+     *
+     * @return {*}
+     * @memberof InvoiceComponent
+     */
+    isAllSelected() {
+        const numSelected = this.selection.selected.length;
+        const numRows = this.dataSource.data.length;
+        return numSelected === numRows;
+    }
+
+    /**
+     * This will be use for selecting all voucher
+     *
+     * @return {*}  {void}
+     * @memberof InvoiceComponent
+     */
+    public selectAllVoucher(): void {
+        if (this.isAllSelected()) {
+            this.selection.clear();
+            return;
+        }
+        this.selection.select(...this.dataSource.data);
+    }
+
 
     /**
      * This will be use for component initialization
@@ -206,15 +236,15 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         }
     }
 
-/**
- * This will be use for get count page
- *
- * @memberof InvoiceComponent
- */
-public getCountPage(): void {
+    /**
+     * This will be use for get count page
+     *
+     * @memberof InvoiceComponent
+     */
+    public getCountPage(): void {
         if (this.storeData) {
             let request = {
-                accountUniqueName : this.storeData.userDetails?.account?.uniqueName,
+                accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
                 companyUniqueName: this.storeData.userDetails?.companyUniqueName,
                 vendorUniqueName: this.storeData.userDetails?.vendorContactUniqueName,
                 sessionId: this.storeData.session?.id,
@@ -237,12 +267,12 @@ public getCountPage(): void {
         }
     }
 
-/**
- * This will be use for set count page
- *
- * @memberof InvoiceComponent
- */
-public setCountPage(): void {
+    /**
+     * This will be use for set count page
+     *
+     * @memberof InvoiceComponent
+     */
+    public setCountPage(): void {
         if (this.storeData) {
             let request = {
                 accountUniqueName: this.storeData.userDetails?.account?.uniqueName,

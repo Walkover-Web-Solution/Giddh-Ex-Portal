@@ -43,6 +43,10 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public paymentDetails: any;
     /** Hold  store data */
     public storeData: any = {};
+    /** Hold  is expanded */
+    public isExpanded = true;
+    /** Hold  panel open state*/
+    public panelOpenState: boolean = true;
 
     constructor(
         public dialog: MatDialog,
@@ -55,6 +59,15 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
             this.storeData = sessionState.session;
         });
+    }
+
+    /**
+     * This will be use for toggle panel
+     *
+     * @memberof InvoicePayComponent
+     */
+    public togglePanel() {
+        this.panelOpenState = !this.panelOpenState;
     }
 
     /**

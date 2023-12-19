@@ -1,198 +1,207 @@
-<mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
 <div class="d-flex w-100">
     <sidebar></sidebar>
-    <div class="w-100" *ngIf="!isLoading">
-        <div class="login-section" *ngIf="notUserLoginDetails.show">
-            <div
-                class="login-btn-wrap"
-                id="117230e170290843965805217bfd25"
-            ></div>
-        </div>
-        <div class="common-wrapper main-wrapper">
-            <!-- invoice-click -->
-            <div class="invoice-open small-container mr-t15">
-                <div
-                    class="back-header d-flex justify-content-between align-items-center"
-                    [ngClass]="{
-                        'mr-b15 position-section': notUserLoginDetails.show
-                    }"
-                    *ngIf="paymentDetails?.vouchers?.length"
-                >
-                    <button
-                        mat-stroked-button
-                        color="primary"
-                        (click)="backToInvoices()"
-                        *ngIf="!notUserLoginDetails.show"
-                    >
-                        Back
-                    </button>
-                    <div class="d-flex column-gap10 back-header-mobile">
-                        <button
-                            mat-stroked-button
-                            color="primary"
-                            *ngIf="paymentDetails?.vouchers[0]?.canPay"
-                            (click)="initializePayment(paymentDetails)"
-                        >
-                            Pay Now
-                        </button>
-                        <button
-                            mat-stroked-button
-                            color="primary"
-                            (click)="printVoucher()"
-                        >
-                            <img
-                                src="../../assets/images/print.svg"
-                                alt="print"
-                            />
-                            Print
-                        </button>
-                        <button
-                            mat-stroked-button
-                            color="primary"
-                            (click)="
-                                downloadPdf(
-                                    voucherUniqueName ||
-                                        notUserLoginDetails?.voucherUniqueName,
-                                    paymentDetails?.vouchers[0]?.number
-                                )
-                            "
-                        >
-                            <img
-                                class="download-button icon-size"
-                                src="../../assets/images/download.svg"
-                                alt="download"
-                            />
-                        </button>
-                    </div>
-                </div>
-                <span
-                    class="razorpay-message error-message mr-t15 mr-b15"
-                    *ngIf="!paymentDetails?.vouchers[0]?.canPay"
-                    >{{ paymentDetails?.vouchers[0]?.message }}</span
-                >
-                <div
-                    class="pay-invoice-content mr-t15"
-                    *ngIf="notUserLoginDetails.show"
-                >
+    <div class="w-100">
+        <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
+        <ng-container *ngIf="!isLoading">
+            <div class="login-section" *ngIf="notUserLoginDetails.show">
+                <div class="login-btn-wrap" [id]="loginId"></div>
+            </div>
+            <div class="common-wrapper main-wrapper">
+                <!-- invoice-click -->
+                <div class="invoice-open small-container mr-t15">
                     <div
-                        class="invoice-content-header d-flex justify-content-between align-items-center"
+                        class="back-header d-flex justify-content-between align-items-center"
+                        [ngClass]="{
+                            'mr-b15 position-section': notUserLoginDetails.show
+                        }"
+                        *ngIf="paymentDetails?.vouchers?.length"
                     >
-                        <div class="amount-total date-amount">
-                            <img
-                                src="../../assets/images/note.svg"
-                                alt="notebook"
-                            />
-                            <div class="date-border">
-                                <p class="text-mute">
-                                    {{ paymentDetails?.vouchers[0]?.number }}1
-                                </p>
-                                <span class="mr-t5 d-block">{{
-                                    paymentDetails?.vouchers[0]?.dueDate
-                                }}</span>
-                            </div>
-                            <div class="balance-due">
-                                <p class="text-mute balance-txt">Balance Due</p>
-                                <span class="mr-t5 d-block balance-number">
-                                    {{ paymentDetails?.currency?.symbol }}
-                                    {{
-                                        paymentDetails?.totalAmount / 100
-                                            | number
-                                    }}</span
-                                >
+                        <button
+                            mat-stroked-button
+                            color="primary"
+                            (click)="backToInvoices()"
+                            *ngIf="!notUserLoginDetails.show"
+                        >
+                            Back
+                        </button>
+                        <div class="d-flex column-gap10 back-header-mobile">
+                            <button
+                                mat-stroked-button
+                                color="primary"
+                                *ngIf="paymentDetails?.vouchers[0]?.canPay"
+                                (click)="initializePayment(paymentDetails)"
+                            >
+                                Pay Now
+                            </button>
+                            <button
+                                mat-stroked-button
+                                color="primary"
+                                (click)="printVoucher()"
+                            >
+                                <img
+                                    src="../../assets/images/print.svg"
+                                    alt="print"
+                                />
+                                Print
+                            </button>
+                            <button
+                                mat-stroked-button
+                                color="primary"
+                                (click)="
+                                    downloadPdf(
+                                        voucherUniqueName ||
+                                            notUserLoginDetails?.voucherUniqueName,
+                                        paymentDetails?.vouchers[0]?.number
+                                    )
+                                "
+                            >
+                                <img
+                                    class="download-button icon-size"
+                                    src="../../assets/images/download.svg"
+                                    alt="download"
+                                />
+                            </button>
+                        </div>
+                    </div>
+                    <span
+                        class="razorpay-message error-message mr-t15 mr-b15"
+                        *ngIf="!paymentDetails?.vouchers[0]?.canPay"
+                        >{{ paymentDetails?.vouchers[0]?.message }}</span
+                    >
+                    <div
+                        class="pay-invoice-content mr-t15"
+                        *ngIf="notUserLoginDetails.show"
+                    >
+                        <div
+                            class="invoice-content-header d-flex justify-content-between align-items-center"
+                        >
+                            <div class="amount-total date-amount">
+                                <img
+                                    src="../../assets/images/note.svg"
+                                    alt="notebook"
+                                />
+                                <div class="date-border">
+                                    <p class="text-mute">
+                                        {{
+                                            paymentDetails?.vouchers[0]?.number
+                                        }}1
+                                    </p>
+                                    <span class="mr-t5 d-block">{{
+                                        paymentDetails?.vouchers[0]?.dueDate
+                                    }}</span>
+                                </div>
+                                <div class="balance-due">
+                                    <p class="text-mute balance-txt">
+                                        Balance Due
+                                    </p>
+                                    <span class="mr-t5 d-block balance-number">
+                                        {{ paymentDetails?.currency?.symbol }}
+                                        {{
+                                            paymentDetails?.totalAmount / 100
+                                                | number
+                                        }}</span
+                                    >
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div
-                    class="comment-wrapper"
-                    *ngIf="notUserLoginDetails.show && voucherComments?.length"
-                >
-                    <h3 class="text-muted">Comments :</h3>
-                    <br />
-                    <ng-container>
-                        <ul
-                            class="list-unstyled d-none d-md-block"
-                            *ngFor="let comment of voucherComments"
-                        >
-                            <li class="media">
-                                <div class="comment-time-web">
-                                    <p class="text-muted font-sm">
-                                        {{ comment?.dateString }}
-                                    </p>
-                                </div>
-                                <div class="media-body">
-                                    <p class="comment media-heading font-sm">
-                                        {{ comment?.description }}
+                    <div
+                        class="comment-wrapper"
+                        *ngIf="
+                            notUserLoginDetails.show && voucherComments?.length
+                        "
+                    >
+                        <h3 class="text-muted">Comments :</h3>
+                        <br />
+                        <ng-container>
+                            <ul
+                                class="list-unstyled d-none d-md-block"
+                                *ngFor="let comment of voucherComments"
+                            >
+                                <li class="media">
+                                    <div class="comment-time-web">
+                                        <p class="text-muted font-sm">
+                                            {{ comment?.dateString }}
+                                        </p>
+                                    </div>
+                                    <div class="media-body">
+                                        <p
+                                            class="comment media-heading font-sm"
+                                        >
+                                            {{ comment?.description }}
+                                            <i class="text-muted">
+                                                by {{ comment?.userName }}</i
+                                            >
+                                        </p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </ng-container>
+                    </div>
+                    <div
+                        class="comment-container"
+                        *ngIf="!notUserLoginDetails.show"
+                    >
+                        <form [formGroup]="commentForm">
+                            <mat-form-field
+                                class="w-100 mr-t5 mr-b15"
+                                appearance="outline"
+                            >
+                                <mat-label>Enter Your Comments</mat-label>
+                                <textarea
+                                    rows="2"
+                                    matInput
+                                    placeholder="Enter Your Comments"
+                                    formControlName="commentText"
+                                    class="textarea-resize"
+                                ></textarea>
+                            </mat-form-field>
+                            <button
+                                mat-stroked-button
+                                color="primary"
+                                (click)="addComment()"
+                            >
+                                Add Comment
+                            </button>
+                        </form>
+
+                        <ng-container *ngIf="voucherComments?.length">
+                            <div
+                                class="list-unstyled d-none d-md-block mr-t15"
+                                *ngFor="let comment of voucherComments"
+                            >
+                                <div class="media">
+                                    <div class="comment-time-web">
+                                        <p class="text-muted font-sm">
+                                            {{ comment?.dateString }}
+                                        </p>
+                                    </div>
+                                    <div class="media-body">
+                                        <p
+                                            class="comment media-heading font-sm"
+                                        >
+                                            {{ comment?.description }}
+                                        </p>
+                                    </div>
+                                    <div class="media-content">
                                         <i class="text-muted">
                                             by {{ comment?.userName }}</i
                                         >
-                                    </p>
-                                </div>
-                            </li>
-                        </ul>
-                    </ng-container>
-                </div>
-                <div
-                    class="comment-container"
-                    *ngIf="!notUserLoginDetails.show"
-                >
-                    <form [formGroup]="commentForm">
-                        <mat-form-field
-                            class="w-100 mr-t5 mr-b15"
-                            appearance="outline"
-                        >
-                            <mat-label>Enter Your Comments</mat-label>
-                            <textarea
-                                rows="2"
-                                matInput
-                                placeholder="Enter Your Comments"
-                                formControlName="commentText"
-                                class="textarea-resize"
-                            ></textarea>
-                        </mat-form-field>
-                        <button
-                            mat-stroked-button
-                            color="primary"
-                            (click)="addComment()"
-                        >
-                            Add Comment
-                        </button>
-                    </form>
-
-                    <ng-container *ngIf="voucherComments?.length">
-                        <div
-                            class="list-unstyled d-none d-md-block mr-t15"
-                            *ngFor="let comment of voucherComments"
-                        >
-                            <div class="media">
-                                <div class="comment-time-web">
-                                    <p class="text-muted font-sm">
-                                        {{ comment?.dateString }}
-                                    </p>
-                                </div>
-                                <div class="media-body">
-                                    <p class="comment media-heading font-sm">
-                                        {{ comment?.description }}
-                                    </p>
-                                </div>
-                                <div class="media-content">
-                                      <i class="text-muted">
-                                            by {{ comment?.userName }}</i
-                                        >
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </ng-container>
-                </div>
-                <div class="pdf-wrapper mr-b50" *ngIf="sanitizedPdfFileUrl">
-                    <iframe
-                        #pdfContainer
-                        width="100%"
-                        height="100%"
-                        [src]="sanitizedPdfFileUrl"
-                    ></iframe>
+                        </ng-container>
+                    </div>
+                    <div class="pdf-wrapper mr-b50" *ngIf="sanitizedPdfFileUrl">
+                        <iframe
+                            #pdfContainer
+                            width="100%"
+                            height="100%"
+                            [src]="sanitizedPdfFileUrl"
+                        ></iframe>
+                    </div>
                 </div>
             </div>
-        </div>
+        </ng-container>
     </div>
 </div>
