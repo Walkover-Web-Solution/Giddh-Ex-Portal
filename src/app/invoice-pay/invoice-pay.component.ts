@@ -6,7 +6,7 @@ import { ReciptResponse } from "../models/Company";
 import { ActivatedRoute, Router } from "@angular/router";
 import { InvoiceService } from "../services/invoice.service";
 import { select, Store } from '@ngrx/store';
-import { PAGINATION_LIMIT } from "../app.constant";
+import { PAGINATION_LIMIT, PAYMENT_METHODS_ENUM } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 
 @Component({
@@ -21,22 +21,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     /** Hold voucher data */
     public voucherData: ReciptResponse;
-    /** Request vody for invoice list */
-    public invoiceListRequest: any = {
-        companyUniqueName: undefined,
-        accountUniqueName: undefined,
-        sessionId: undefined,
-        type: 'sales',
-        page: 1,
-        count: PAGINATION_LIMIT,
-        sortBy: 'ASC',
-        sort: '',
-        balanceStatus: []
-    }
     /** Hold payment id */
     public paymentId: string = '';
-    /** Hold selected payment voucher */
-    public selectedPaymentVoucher: any[] = [];
     /** Instance of razaor pay*/
     public razorpay: any;
     /** Hold payment details*/
@@ -62,48 +48,30 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * This will be use for toggle panel
-     *
-     * @memberof InvoicePayComponent
-     */
-    public togglePanel() {
-        this.panelOpenState = !this.panelOpenState;
-    }
-
-    /**
      * This will be use for component initialization
      *
      * @memberof InvoicePayComponent
      */
     public ngOnInit(): void {
+        this.getVoucherDetails();
+    }
+
+    private getVoucherDetails(): void {
         this.isLoading = true;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
             if (params?.account) {
-                this.invoiceListRequest.accountUniqueName = this.storeData.userDetails?.account.uniqueName;
-                this.invoiceListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
-                this.invoiceListRequest.sessionId = this.storeData.session?.id;
-                this.invoiceListRequest['uniqueNames'] = params.voucher;
-                let request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
+                const accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+                const companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+                const voucherUniqueName = params.voucherUniqueName ?? params.voucher;
+                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueName?.split(","), companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: PAYMENT_METHODS_ENUM.RAZORPAY };
 
-                combineLatest([
-                    this.invoiceService.getInvoiceList(this.invoiceListRequest),
-                    this.invoiceService.getVoucherDetails(request)
-                ]).pipe(takeUntil(this.destroyed$)).subscribe(([invoiceListResponse, voucherDetailsResponse]) => {
+                this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
                     this.isLoading = false;
 
-                    if (invoiceListResponse && invoiceListResponse.status === 'success') {
-                        this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === params?.voucher);
-                    } else {
-                        if (invoiceListResponse?.status === 'error') {
-                            this.generalService.showSnackbar(invoiceListResponse?.message);
-                        }
-                    }
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                         this.paymentDetails = voucherDetailsResponse.body;
                     } else {
-                        if (voucherDetailsResponse?.status === 'error') {
-                            this.generalService.showSnackbar(voucherDetailsResponse?.message);
-                        }
+                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
                     }
                 });
             }
@@ -176,7 +144,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             this.invoiceService.payInvoice(payRequest, payload).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
                 if (response && response.status === 'success') {
                     this.generalService.showSnackbar(response?.body, "success");
-                    this.backToInvoice();
+                    this.getVoucherDetails();
                 } else {
                     if (response?.status === 'error') {
                         this.generalService.showSnackbar(response?.message);
@@ -204,5 +172,14 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public ngOnDestroy(): void {
         this.destroyed$.next(true);
         this.destroyed$.complete();
+    }
+
+    /**
+     * This will be use for toggle panel
+     *
+     * @memberof InvoicePayComponent
+     */
+    public togglePanel() {
+        this.panelOpenState = !this.panelOpenState;
     }
 }

@@ -83,7 +83,7 @@ export class InvoiceService {
     public getVoucherDetails(model: any): Observable<BaseResponse<any, any>> {
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.post(this.apiUrl + API.GET_VOUCHER_DETAILS?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName))?.replace(':paymentMethod', encodeURIComponent(model.paymentMethod)), [model.voucherUniqueName], args).pipe(
+        return this.http.post(this.apiUrl + API.GET_VOUCHER_DETAILS?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName))?.replace(':paymentMethod', encodeURIComponent(model.paymentMethod)), model.voucherUniqueName, args).pipe(
             map((res) => {
                 let data: BaseResponse<any, any> = res;
                 return data;

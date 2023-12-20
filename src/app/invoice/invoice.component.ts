@@ -26,9 +26,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     /** Instance of mat sort */
     @ViewChild(MatSort) sort!: MatSort;
     /** Instance of mat pay modal dialog */
-    @ViewChild('paymodal', { static: true }) public paymodal: any;
-    /** Instance of mat pay table modal dialog */
-    @ViewChild('paytablemodal', { static: true }) public paytablemodal: any;
+    @ViewChild('payModal', { static: true }) public payModal: any;
     /** True if api call in progress */
     public isLoading: boolean = false;
     /** True if api call in progress */
@@ -104,33 +102,6 @@ export class InvoiceComponent implements OnInit, OnDestroy {
             }
         });
     }
-
-    /**
-     * This will be use for is all selected vouchers
-     *
-     * @return {*}
-     * @memberof InvoiceComponent
-     */
-    isAllSelected() {
-        const numSelected = this.selection.selected.length;
-        const numRows = this.dataSource.data.length;
-        return numSelected === numRows;
-    }
-
-    /**
-     * This will be use for selecting all voucher
-     *
-     * @return {*}  {void}
-     * @memberof InvoiceComponent
-     */
-    public selectAllVoucher(): void {
-        if (this.isAllSelected()) {
-            this.selection.clear();
-            return;
-        }
-        this.selection.select(...this.dataSource.data);
-    }
-
 
     /**
      * This will be use for component initialization
@@ -302,11 +273,13 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @param {*} item
      * @memberof InvoiceComponent
      */
-    public openPayDialog(item: any): void {
-        this.dialog.open(this.paytablemodal, {
+    public openPayDialog(item?: any): void {
+        this.dialog.open(this.payModal, {
             width: '600px'
         });
-        this.selectedPaymentVoucher = item;
+        if (!this.selection?.selected?.length) {
+            this.selectedPaymentVoucher = item;
+        }
     }
 
     /**
@@ -317,12 +290,26 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public voucherPay(): void {
         this.dialog?.closeAll();
         let url = this.storeData.domain + '/invoice-pay';
-        this.router.navigate([url], {
-            queryParams: {
-                account: this.selectedPaymentVoucher.account.uniqueName,
-                voucher: this.selectedPaymentVoucher.uniqueName
-            }
-        });
+
+        if (this.selection?.selected?.length) {
+            const voucherUniqueNames = this.selection?.selected?.map(voucher => {
+                return voucher.uniqueName;
+            });
+
+            this.router.navigate([url], {
+                queryParams: {
+                    accountUniqueName: this.selection?.selected[0].account.uniqueName,
+                    voucher: voucherUniqueNames.join(",")
+                }
+            });
+        } else {
+            this.router.navigate([url], {
+                queryParams: {
+                    accountUniqueName: this.selectedPaymentVoucher.account.uniqueName,
+                    voucher: this.selectedPaymentVoucher.uniqueName
+                }
+            });
+        }
     }
 
     /**
@@ -385,5 +372,43 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public ngOnDestroy(): void {
         this.destroyed$.next(true);
         this.destroyed$.complete();
+    }
+
+    /**
+     * This will be use for is all selected vouchers
+     *
+     * @return {*}
+     * @memberof InvoiceComponent
+     */
+    public isAllSelected(): boolean {
+        const numSelected = this.selection.selected.length;
+        const numRows = this.dataSource.data.length;
+        return numSelected === numRows;
+    }
+
+    /**
+     * This will be use for selecting all voucher
+     *
+     * @return {*}  {void}
+     * @memberof InvoiceComponent
+     */
+    public selectAllVoucher(): void {
+        if (this.isAllSelected()) {
+            this.selection.clear();
+            return;
+        }
+        this.selection.select(...this.dataSource.data);
+    }
+
+    public paySelectedVouchers(): void {
+        if (this.selection?.selected?.length) {
+            let hasPaidVouchers = this.selection?.selected?.filter(voucher => voucher.balanceStatus === "PAID");
+            if (!hasPaidVouchers?.length) {
+                this.openPayDialog();
+            } else {
+                const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.voucherNumber });
+                this.generalService.showSnackbar(paidVoucherNumbers.join(", ") + " are already PAID.");
+            }
+        }
     }
 }

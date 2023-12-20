@@ -4,16 +4,16 @@
     <sidebar></sidebar>
     <div
         class="w-100 main-wrapper"
-        *ngIf="!isLoading && selectedPaymentVoucher?.length"
+        *ngIf="!isLoading && paymentDetails.vouchers?.length"
     >
         <div
             class="inner-header d-flex justify-content-between align-items-center"
         >
-            <h2>Payment for {{ selectedPaymentVoucher[0]?.voucherNumber }}</h2>
-            <h2>Payment All Invoices</h2>
+            <h2 *ngIf="paymentDetails.vouchers?.length === 1">Payment for {{ paymentDetails.vouchers[0]?.voucherNumber }}</h2>
+            <h2 *ngIf="paymentDetails.vouchers?.length > 1">Payment All Invoices</h2>
             <span class="cp" (click)="backToInvoice()">×</span>
         </div>
-        <div class="pay-invoice-content mr-t15">
+        <div class="pay-invoice-content mr-t15" *ngIf="paymentDetails.vouchers?.length === 1">
             <div
                 class="invoice-content-header d-flex justify-content-between align-items-center"
             >
@@ -21,21 +21,20 @@
                     <img src="../../assets/images/note.svg" alt="notebook" />
                     <div class="date-border">
                         <p class="text-mute">
-                            {{ selectedPaymentVoucher[0]?.voucherNumber }}1
+                            {{ paymentDetails.vouchers[0]?.voucherNumber }}1
                         </p>
                         <span class="mr-t5 d-block">{{
-                            selectedPaymentVoucher[0]?.dueDate
+                            paymentDetails.vouchers[0]?.dueDate
                         }}</span>
                     </div>
                     <div class="balance-due">
                         <p class="text-mute balance-txt">Balance Due</p>
                         <span class="mr-t5 d-block balance-number">
                             {{
-                                selectedPaymentVoucher[0]?.accountCurrencySymbol
+                                paymentDetails.currency?.symbol
                             }}
                             {{
-                                selectedPaymentVoucher[0]?.balanceDue
-                                    ?.amountForAccount
+                                paymentDetails.vouchers[0]?.amount
                             }}</span
                         >
                     </div>
@@ -47,18 +46,9 @@
                     *ngIf="!paymentDetails?.vouchers[0].canPay"
                     >{{ paymentDetails?.vouchers[0].message }}</span
                 >
-                <button
-                    *ngIf="paymentDetails?.vouchers[0].canPay"
-                    mat-stroked-button
-                    color="primary"
-                    class="text-uppercase mr-t15 mr-b2 proceed-button"
-                    (click)="initializePayment(paymentDetails)"
-                >
-                    Proceed to payment
-                </button>
             </div>
         </div>
-        <div class="pay-invoice-content mr-t15 multiple-voucher">
+        <div class="pay-invoice-content mr-t15 multiple-voucher" *ngIf="paymentDetails.vouchers?.length > 1">
             <div
                 class="invoice-content-header d-flex justify-content-between align-items-center"
             >
@@ -66,7 +56,7 @@
                     <img src="../../assets/images/note.svg" alt="notebook" />
                     <div>
                         <p class="text-mute">Total Amount</p>
-                        <span class="mr-t5 d-block">€4.405,87</span>
+                        <span class="mr-t5 d-block">{{ paymentDetails.currency?.symbol }}{{ paymentDetails.totalAmount }}</span>
                     </div>
                 </div>
                 <button
@@ -75,7 +65,7 @@
                     (click)="togglePanel()"
                     class="multiple-button"
                 >
-                    For 2 invoices
+                    For {{ paymentDetails.vouchers?.length }} invoices
                 </button>
             </div>
             <div class="invoice-content content-wrapper">
@@ -86,20 +76,15 @@
                             <p class="text-uppercase">Due on</p>
                             <p class="text-right text-uppercase">Balance Due</p>
                         </div>
-                        <div class="inv-body">
-                            <p>INV2023-090562</p>
-                            <p>08-09-2023</p>
-                            <p class="text-right">€349,00</p>
-                        </div>
-                        <div class="inv-body">
-                            <p>INV2023-090562</p>
-                            <p>08-09-2023</p>
-                            <p class="text-right">€349,00</p>
+                        <div class="inv-body" *ngFor="let voucher of paymentDetails.vouchers">
+                            <p>{{ voucher?.number }}</p>
+                            <p>{{ voucher?.dueDate }}</p>
+                            <p class="text-right">{{ paymentDetails.currency?.symbol }}{{ voucher.amount }}</p>
                         </div>
                         <p class="mr-t1">
                             If you want to pay only for an individual invoice,
                             you can do so from the
-                            <a href="javascript:;">list view of invoices.</a>
+                            <a href="javascript:;" (click)="backToInvoice()">list view of invoices.</a>
                         </p>
                     </mat-expansion-panel>
                 </mat-accordion>

@@ -44,8 +44,8 @@
                         Clear
                     </button>
                 </div>
-                <button mat-stroked-button color="primary" class="clear-button">
-                    Pay All
+                <button mat-stroked-button color="primary" class="clear-button" *ngIf="selection?.selected?.length" (click)="paySelectedVouchers()">
+                    Pay Now
                 </button>
             </div>
             <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
@@ -166,7 +166,7 @@
                                         *ngIf="
                                             storeData?.companyDetails
                                                 .razorpayIntegrated &&
-                                            element?.canPay
+                                            element?.canPay && !selection?.selected?.length
                                         "
                                         mat-stroked-button
                                         color="primary"
@@ -217,7 +217,7 @@
     </div>
 </div>
 <!-- onclick table-paynow -->
-<ng-template #paytablemodal>
+<ng-template #payModal>
     <div class="common-dialog">
         <mat-dialog-content>
             <div class="d-flex column-gap15 danger-wrap">

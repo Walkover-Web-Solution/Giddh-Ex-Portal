@@ -13,6 +13,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { SharedModule } from './shared/shared.module';
 import { DecoratorsModule } from './decorators/decorators.module';
 import { PortalHttpInterceptor } from './services/http.interceptor';
+import { SnackBarModule } from './shared/snackbar/snackbar.module';
 @NgModule({
     declarations: [
         AppComponent
@@ -33,7 +34,8 @@ import { PortalHttpInterceptor } from './services/http.interceptor';
                 strictActionImmutability: true,
             },
         }),
-        EffectsModule.forRoot([SessionEffects])
+        EffectsModule.forRoot([SessionEffects]),
+        SnackBarModule
     ],
     providers: [
         {
