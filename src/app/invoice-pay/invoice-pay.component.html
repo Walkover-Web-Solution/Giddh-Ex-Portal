@@ -9,7 +9,7 @@
         <div
             class="inner-header d-flex justify-content-between align-items-center"
         >
-            <h2 *ngIf="paymentDetails.vouchers?.length === 1">Payment for {{ paymentDetails.vouchers[0]?.voucherNumber }}</h2>
+            <h2 *ngIf="paymentDetails.vouchers?.length === 1">Payment for {{ paymentDetails.vouchers[0]?.number }}</h2>
             <h2 *ngIf="paymentDetails.vouchers?.length > 1">Payment All Invoices</h2>
             <span class="cp" (click)="backToInvoice()">×</span>
         </div>
@@ -21,7 +21,7 @@
                     <img src="../../assets/images/note.svg" alt="notebook" />
                     <div class="date-border">
                         <p class="text-mute">
-                            {{ paymentDetails.vouchers[0]?.voucherNumber }}1
+                            {{ paymentDetails.vouchers[0]?.number }}
                         </p>
                         <span class="mr-t5 d-block">{{
                             paymentDetails.vouchers[0]?.dueDate
@@ -100,6 +100,7 @@
                             mat-stroked-button
                             color="primary"
                             class="text-uppercase mr-t15 mr-b2"
+                            (click)="initializePayment(paymentDetails)"
                         >
                             Proceed to payment
                         </button>
@@ -119,3 +120,16 @@
         </div>
     </div>
 </div>
+<ng-container *ngIf="showPaypalForm">
+    <form action="https://www.paypal.com/cgi-bin/webscr" method="post" name="paypalForm" id="paypalForm"
+        [formGroup]="paypalForm" target="_blank">
+        <input type="hidden" name="business" formControlName="businessEmail">
+        <input type="hidden" name="cmd" value="_xclick">
+        <input type="hidden" name="custom" formControlName="custom">
+        <input type="hidden" name="amount" formControlName="amount">
+        <input type="hidden" name="currency_code" formControlName="currencyCode">
+        <input type="hidden" name="notify_url" formControlName="notifyUrl">
+        <input type="hidden" name="return" formControlName="returnUrl">
+        <input type="hidden" name="cancel_return" formControlName="cancelReturnUrl">
+    </form>
+</ng-container>

@@ -3,6 +3,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { select, Store } from '@ngrx/store';
 import { take } from "rxjs/operators";
 import { SnackBarComponent } from "../shared/snackbar/snackbar.component";
+import { environment } from "src/environments/environment";
 declare var initVerification: any;
 
 @Injectable()
@@ -127,4 +128,16 @@ export class GeneralService {
         });
     }
 
+    /**
+     * Returns paypal ipn url
+     *
+     * @param {string} companyUniqueName
+     * @param {string} accountUniqueName
+     * @param {string} paymentId
+     * @returns {string}
+     * @memberof GeneralService
+     */
+    public getPaypalIpnUrl(companyUniqueName: string, accountUniqueName: string, paymentId: string): string {
+        return environment.apiUrl + 'portal/company/' + companyUniqueName + '/accounts/' + accountUniqueName + '/invoices/' + paymentId + '/paypal/ipn?voucherVersion=2';
+    }
 }
