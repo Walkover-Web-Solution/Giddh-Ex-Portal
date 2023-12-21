@@ -2,13 +2,13 @@
 import { createAction, props } from '@ngrx/store';
 
 export const setPortalDomain = createAction(
-  '[Domain] Set Portal Domain',
-  props<{ domain: any }>()
+    '[Domain] Set Portal Domain',
+    props<{ domain: any }>()
 );
 
 export const setSessionToken = createAction(
-  '[Session] Set Session Token',
-  props<{ session: any }>()
+    '[Session] Set Session Token',
+    props<{ session: any }>()
 );
 
 export const setCompanyDetails = createAction(
@@ -17,8 +17,8 @@ export const setCompanyDetails = createAction(
 );
 
 export const setUserDetails = createAction(
-  '[Session] Set User Details',
-  props<{ userDetails: any }>()
+    '[Session] Set User Details',
+    props<{ userDetails: any }>()
 );
 
 export const setPortalUserDetails = createAction(
@@ -41,4 +41,9 @@ export const setSidebarState = createAction(
 export const setRouterState = createAction(
     '[Session] Set Invoice Preview URL',
     props<{ url: any }>()
+);
+
+export const setFolderData = createAction(
+    '[Session] Set Folder Data',
+    props<{ folderName: any, data: any }>()
 );

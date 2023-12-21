@@ -52,9 +52,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         private router: Router,
         private store: Store
     ) {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            this.storeData = sessionState.session;
-        });
+        
     }
 
     /**
@@ -64,35 +62,40 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     public ngOnInit(): void {
         this.isLoading = true;
-        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (params?.account) {
-                this.invoiceListRequest.accountUniqueName = this.storeData.userDetails?.account.uniqueName;
-                this.invoiceListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
-                this.invoiceListRequest.sessionId = this.storeData.session?.id;
-                this.invoiceListRequest['uniqueNames'] = params.voucher;
-                let request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, voucherUniqueName: params.voucher, companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
 
-                combineLatest([
-                    this.invoiceService.getInvoiceList(this.invoiceListRequest),
-                    this.invoiceService.getVoucherDetails(request)
-                ]).pipe(takeUntil(this.destroyed$)).subscribe(([invoiceListResponse, voucherDetailsResponse]) => {
-                    this.isLoading = false;
-
-                    if (invoiceListResponse && invoiceListResponse.status === 'success') {
-                        this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === params?.voucher);
-                    } else {
-                        if (invoiceListResponse?.status === 'error') {
-                            this.generalService.showSnackbar(invoiceListResponse?.message);
+        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && response[2] && !this.storeData?.session) {
+                this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
+                
+                if (response[0]?.account) {
+                    this.invoiceListRequest.accountUniqueName = this.storeData.userDetails?.account.uniqueName;
+                    this.invoiceListRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+                    this.invoiceListRequest.sessionId = this.storeData.session?.id;
+                    this.invoiceListRequest['uniqueNames'] = response[0].voucher;
+                    let request = { accountUniqueName: this.storeData.userDetails?.account.uniqueName, voucherUniqueName: response[0].voucher, companyUniqueName: this.storeData.userDetails?.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
+    
+                    combineLatest([
+                        this.invoiceService.getInvoiceList(this.invoiceListRequest),
+                        this.invoiceService.getVoucherDetails(request)
+                    ]).pipe(takeUntil(this.destroyed$)).subscribe(([invoiceListResponse, voucherDetailsResponse]) => {
+                        this.isLoading = false;
+    
+                        if (invoiceListResponse && invoiceListResponse.status === 'success') {
+                            this.selectedPaymentVoucher = invoiceListResponse.body.items.filter(invoice => invoice.uniqueName === response[0]?.voucher);
+                        } else {
+                            if (invoiceListResponse?.status === 'error') {
+                                this.generalService.showSnackbar(invoiceListResponse?.message);
+                            }
                         }
-                    }
-                    if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
-                        this.paymentDetails = voucherDetailsResponse.body;
-                    } else {
-                        if (voucherDetailsResponse?.status === 'error') {
-                            this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
+                            this.paymentDetails = voucherDetailsResponse.body;
+                        } else {
+                            if (voucherDetailsResponse?.status === 'error') {
+                                this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
