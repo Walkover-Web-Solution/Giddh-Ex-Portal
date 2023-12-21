@@ -2,12 +2,12 @@ import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
 import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Observable, ReplaySubject } from "rxjs";
+import { Observable, ReplaySubject, combineLatest } from "rxjs";
 import { map, shareReplay, takeUntil } from 'rxjs/operators';
 import { DashboardService } from "src/app/services/dashboard.service.";
 import { AuthService } from "src/app/services/auth.service";
 import * as dayjs from 'dayjs';
-import { logoutUser, setCompanyDetails, setSessionToken, setSidebarState } from "src/app/store/actions/session.action";
+import { logoutUser, setCompanyDetails, setFolderData, setSessionToken, setSidebarState } from "src/app/store/actions/session.action";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "src/app/services/general.service";
 import { WelcomeService } from "src/app/services/welcome.service";
@@ -58,27 +58,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
         private welcomeService: WelcomeService,
         private authService: AuthService,
         private store: Store,
-        private generalService: GeneralService) {
-        this.isMobile$ = this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small])
-            .pipe(
-                map(result => result.matches),
-                shareReplay()
-        );
-
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            this.storeData = sessionState.session;
-            this.isExpanded = this.storeData.sidebarState;
-            this.accountUrlRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
-            this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
-            this.accountUrlRequest.sessionId = this.storeData.session?.id;
-            this.portalDomain = this.storeData?.domain;
-            this.setActiveMenuItem();
-            this.menuItems = [
-                { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + "/welcome" },
-                { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
-                { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
-            ];
-        });
+        private generalService: GeneralService
+    ) {
+        this.isMobile$ = this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small]).pipe(map(result => result.matches),shareReplay());
     }
 
     /**
@@ -87,8 +69,25 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof SidebarComponent
      */
     public ngOnInit(): void {
-        this.getAccountDetails();
-        this.getCompanyDetails();
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                this.isExpanded = this.storeData.sidebarState;
+                this.accountUrlRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
+                this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+                this.accountUrlRequest.sessionId = this.storeData.session?.id;
+                this.portalDomain = this.storeData?.domain;
+                this.setActiveMenuItem();
+                this.menuItems = [
+                    { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + "/welcome" },
+                    { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
+                    { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
+                ];
+
+                this.getAccountDetails();
+                this.getCompanyDetails();
+            }
+        });
     }
 
     /**
@@ -137,7 +136,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
             this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
             this.welcomeService.getCompanyDetails(this.companyDetailsQueryParams).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
                 if (response && response.status === 'success') {
-                    this.store.dispatch(setCompanyDetails({ companyDetails: response?.body }));
+                    this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { companyDetails: response?.body } }));
                 } else {
                     if (response?.status === 'error') {
                         this.generalService.showSnackbar(response?.message);
@@ -154,7 +153,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     public toggleMenu(): void {
         this.isExpanded = !this.isExpanded;
-        this.store.dispatch(setSidebarState({ sidebarState: this.isExpanded }));
+        this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: this.isExpanded } }));
     }
 
     /**
@@ -179,6 +178,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.accountUrlRequest.sessionId = this.storeData.session?.id;
         this.store.dispatch(logoutUser(this.accountUrlRequest as any));
     }
+    
     /**
      * This listner is used for mouse move events
      *
@@ -219,7 +219,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 if (sessionExpiresAt.diff(dayjs(), 'hours') < 24) {
                     this.authService.renewSession(this.storeData?.userDetails?.vendorContactUniqueName, this.storeData?.session?.id).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
                         if (response && response.status === 'success') {
-                            this.store.dispatch(setSessionToken({ session: response.body.session }));
+                            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { session: response.body.session } }));
                         } else {
                             if (response?.status === 'error') {
                                 this.generalService.showSnackbar(response?.message);
