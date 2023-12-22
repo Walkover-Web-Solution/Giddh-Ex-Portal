@@ -204,6 +204,12 @@
     }
 }
 
+.mat-column-sno {
+    min-width: 50px;
+    width: 50px;
+}
+
+
 /*---- responsive ----*/
 @media screen and (max-width: 768px) {
     .common-wrapper {

@@ -44,7 +44,13 @@
                         Clear
                     </button>
                 </div>
-                <button mat-stroked-button color="primary" class="clear-button" *ngIf="selection?.selected?.length" (click)="paySelectedVouchers()">
+                <button
+                    mat-stroked-button
+                    color="primary"
+                    class="clear-button"
+                    *ngIf="selection?.selected?.length"
+                    (click)="paySelectedVouchers()"
+                >
                     Pay Now
                 </button>
             </div>
@@ -60,8 +66,11 @@
                         [matSortDirection]="invoiceListRequest.sort"
                         [matSortActive]="invoiceListRequest.sortBy"
                     >
-                        <ng-container matColumnDef="invoice">
-                            <th mat-header-cell *matHeaderCellDef>
+                        <ng-container matColumnDef="sno">
+                            <th
+                                mat-header-cell
+                                *matHeaderCellDef
+                            >
                                 <mat-checkbox
                                     (change)="
                                         $event ? selectAllVoucher() : null
@@ -74,27 +83,36 @@
                                     "
                                     class="pd-r2"
                                 >
-                                </mat-checkbox
-                                >Invoice#
+                                </mat-checkbox>
+                                S.no
+                            </th>
+                            <td
+                                mat-cell
+                                *matCellDef="let element; let i = index"
+                            >
+                                <mat-checkbox
+                                    (click)="$event.stopPropagation()"
+                                    (change)="
+                                        $event
+                                            ? selection.toggle(element)
+                                            : null
+                                    "
+                                    [checked]="selection.isSelected(element)"
+                                    class="pd-r2"
+                                >
+                                </mat-checkbox>
+                                {{ i + 1 }}
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="invoice">
+                            <th mat-header-cell *matHeaderCellDef>
+                                Invoice No.
                             </th>
                             <td mat-cell *matCellDef="let element">
                                 <a
                                     href="javascript:;"
                                     (click)="invoicePreview(element)"
                                 >
-                                    <mat-checkbox
-                                        (click)="$event.stopPropagation()"
-                                        (change)="
-                                            $event
-                                                ? selection.toggle(element)
-                                                : null
-                                        "
-                                        [checked]="
-                                            selection.isSelected(element)
-                                        "
-                                        class="pd-r2"
-                                    >
-                                    </mat-checkbox>
                                     {{ element.voucherNumber }}
                                 </a>
                             </td>
@@ -166,7 +184,8 @@
                                         *ngIf="
                                             storeData?.companyDetails
                                                 .razorpayIntegrated &&
-                                            element?.canPay && !selection?.selected?.length
+                                            element?.canPay &&
+                                            !selection?.selected?.length
                                         "
                                         mat-stroked-button
                                         color="primary"

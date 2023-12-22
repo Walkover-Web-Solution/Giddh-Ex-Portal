@@ -34,7 +34,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     /** Hold table displayed columns*/
-    public displayedColumns: string[] = ['invoice', 'voucherDate', 'grandTotal', 'status', 'overdue', 'action'];
+    public displayedColumns: string[] = ['sno','invoice', 'voucherDate', 'grandTotal', 'status', 'overdue', 'action'];
     /** Hold table datasource */
     public dataSource = new MatTableDataSource<any>();
     /** Hold panel open state*/
@@ -290,25 +290,17 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public voucherPay(): void {
         this.dialog?.closeAll();
         let url = this.storeData.domain + '/invoice-pay';
-
         if (this.selection?.selected?.length) {
             const voucherUniqueNames = this.selection?.selected?.map(voucher => {
                 return voucher.uniqueName;
             });
-
-            this.router.navigate([url], {
-                queryParams: {
-                    accountUniqueName: this.selection?.selected[0].account.uniqueName,
-                    voucher: voucherUniqueNames.join(",")
-                }
-            });
+            const accountUniqueName = this.selection?.selected[0].account.uniqueName;
+            const encodedVoucherUniqueNames = voucherUniqueNames.map(encodeURIComponent);
+            url = url + `/account/${accountUniqueName}/voucher/${encodedVoucherUniqueNames.join('|')}`;
+            this.router.navigate([url]);
         } else {
-            this.router.navigate([url], {
-                queryParams: {
-                    accountUniqueName: this.selectedPaymentVoucher.account.uniqueName,
-                    voucher: this.selectedPaymentVoucher.uniqueName
-                }
-            });
+            url = url + '/account/' + this.selectedPaymentVoucher.account.uniqueName + '/voucher/' + this.selectedPaymentVoucher.uniqueName;
+            this.router.navigate([url]);
         }
     }
 
