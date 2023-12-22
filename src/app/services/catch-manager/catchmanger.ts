@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
-import { HttpWrapperService } from '../http-wrapper.service';
 import { BaseResponse } from 'src/app/models/BaseResponse';
-import { resetLocalStorage } from 'src/app/store/actions/session.action';
-import { Router } from '@angular/router';
+import { setFolderData } from 'src/app/store/actions/session.action';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Injectable()
 export class PortalErrorHandler {
@@ -13,12 +12,14 @@ export class PortalErrorHandler {
     public storeData: any = {};
 
     constructor(
-        private http: HttpWrapperService,
         private store: Store,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ) {
-        this.store.pipe(select(state => state)).subscribe((sessionState: any) => {
-            this.storeData = sessionState.session;
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+            }
         });
     }
 
@@ -57,7 +58,7 @@ export class PortalErrorHandler {
                     if (data?.code === 'SESSION_EXPIRED_OR_INVALID' || data?.code === 'INVALID_SESSION_ID') {
                         const url = this.storeData.domain + '/login';
                         this.router.navigate([url]);
-                        this.store.dispatch(resetLocalStorage());
+                        this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: null, session: null, domain: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
                     }
                     if (typeof data !== 'string') {
                         data.request = request;

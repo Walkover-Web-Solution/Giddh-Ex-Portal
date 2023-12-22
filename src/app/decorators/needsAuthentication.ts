@@ -18,14 +18,8 @@ export class NeedsAuthentication {
      */
     public canActivate() {
         return this.store.pipe(select(state => state), map(response => {
-            // this.route.params.subscribe((params: any) => {
-            //     if (params) {
-            //         console.log(params, this.router.url);
-            //         //this.folderName = params.companyDomainUniqueName;
-            //     }
-            // });
             console.log(response);
-            // let url = response.domain + '/login';
+            // let url = this.folderName + '/login';
             // if (!response.session) {
             //     this.router.navigate([url]);
             // }
