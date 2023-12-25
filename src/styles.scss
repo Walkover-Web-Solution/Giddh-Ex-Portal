@@ -517,8 +517,8 @@ button {
 }
 
 /*---- tabs ----*/
-.mat-mdc-tab-labels {
-    border-bottom: 1px solid #cbcfd2;
+.mat-mdc-tab {
+    border-bottom: 1px solid #cbcfd2 !important;
 }
 
 .mat-mdc-tab.mdc-tab--active {
