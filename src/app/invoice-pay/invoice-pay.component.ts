@@ -164,7 +164,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     custom: [''],
                     amount: [paymentRequest.totalAmount],
                     currencyCode: [paymentRequest.currency.code],
-                    notifyUrl: [this.generalService.getPaypalIpnUrl(this.storeData.userDetails.companyUniqueName, paymentRequest.vouchers[0]?.uniqueName, paymentRequest.paymentId)],
+                    notifyUrl: [this.generalService.getPaypalIpnUrl(this.storeData.userDetails.companyUniqueName, this.storeData.userDetails?.account.uniqueName, paymentRequest.paymentId)],
                     returnUrl: [document.URL],
                     cancelReturnUrl: [document.URL]
                 });
