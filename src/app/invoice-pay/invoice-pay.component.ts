@@ -298,7 +298,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      *
      * @memberof InvoicePayComponent
      */
-    public togglePanel() {
+    public togglePanel(): void {
         this.panelOpenState = !this.panelOpenState;
     }
 }
