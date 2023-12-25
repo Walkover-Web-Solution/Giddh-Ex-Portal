@@ -1,13 +1,16 @@
 import { map } from 'rxjs/operators';
 import { AppState } from '../store';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, Router } from '@angular/router';
 import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 
 @Injectable()
 export class NeedsAuthentication {
-    constructor(public router: Router, private route: ActivatedRoute, private store: Store<AppState>) {
-        
+    constructor(
+        public router: Router,
+        private store: Store<AppState>
+    ) {
+
     }
 
     /**
@@ -16,13 +19,13 @@ export class NeedsAuthentication {
      * @return {*}
      * @memberof NeedsAuthentication
      */
-    public canActivate() {
+    public canActivate(next: ActivatedRouteSnapshot) {
         return this.store.pipe(select(state => state), map(response => {
-            console.log(response);
-            // let url = this.folderName + '/login';
-            // if (!response.session) {
-            //     this.router.navigate([url]);
-            // }
+            let storeData = response['folderName'][next?.url[0]?.path];
+            if (!storeData?.session) {
+                let url = next?.url[0]?.path + '/login';
+                this.router.navigate([url]);
+            }
         }));
     }
 }

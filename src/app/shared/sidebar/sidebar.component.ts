@@ -7,7 +7,7 @@ import { map, shareReplay, takeUntil } from 'rxjs/operators';
 import { DashboardService } from "src/app/services/dashboard.service.";
 import { AuthService } from "src/app/services/auth.service";
 import * as dayjs from 'dayjs';
-import { logoutUser, setCompanyDetails, setFolderData, setSessionToken, setSidebarState } from "src/app/store/actions/session.action";
+import { setFolderData } from "src/app/store/actions/session.action";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "src/app/services/general.service";
 import { WelcomeService } from "src/app/services/welcome.service";
@@ -125,10 +125,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
 
     /**
-   * This will be use for get company details
-   *
-   * @memberof SidebarComponent
-   */
+     * This will be use for get company details
+     *
+     * @memberof SidebarComponent
+     */
     public getCompanyDetails(): void {
         if (this.storeData.session?.id) {
             this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;

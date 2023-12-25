@@ -1,26 +1,20 @@
 import { Injectable } from '@angular/core';
-import { combineLatest, Observable } from 'rxjs';
-import { select, Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BaseResponse } from 'src/app/models/BaseResponse';
 import { setFolderData } from 'src/app/store/actions/session.action';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import { GeneralService } from '../general.service';
 
 @Injectable()
 export class PortalErrorHandler {
-    /** Hold  store data */
-    public storeData: any = {};
-
     constructor(
         private store: Store,
         private router: Router,
-        private route: ActivatedRoute
+        private generalService: GeneralService
     ) {
-        combineLatest([this.route.params, this.store.pipe(select(state => state))]).subscribe((response) => {
-            if (response[0] && response[1] && !this.storeData?.session) {
-                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-            }
-        });
+
     }
 
     public HandleCatch<TResponce, TRequest>(r: HttpErrorResponse, request?: any, queryString?: any): Observable<BaseResponse<TResponce, TRequest>> {
@@ -56,9 +50,10 @@ export class PortalErrorHandler {
                 data = r.error as any;
                 if (data) {
                     if (data?.code === 'SESSION_EXPIRED_OR_INVALID' || data?.code === 'INVALID_SESSION_ID') {
-                        const url = this.storeData.domain + '/login';
+                        const folderName = this.generalService.getStoreFolderName();
+                        const url = folderName + '/login';
                         this.router.navigate([url]);
-                        this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: null, session: null, domain: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
+                        this.store.dispatch(setFolderData({ folderName: folderName, data: { userDetails: null, session: null, domain: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
                     }
                     if (typeof data !== 'string') {
                         data.request = request;
