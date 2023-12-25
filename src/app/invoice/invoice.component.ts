@@ -397,7 +397,12 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.selection.select(...this.dataSource.data);
     }
 
-    public paySelectedVouchers(): void {
+/**
+ * This will be use for pay selected voucher
+ *
+ * @memberof InvoiceComponent
+ */
+public paySelectedVouchers(): void {
         if (this.selection?.selected?.length) {
             let hasPaidVouchers = this.selection?.selected?.filter(voucher => voucher.balanceStatus === "PAID");
             if (!hasPaidVouchers?.length) {

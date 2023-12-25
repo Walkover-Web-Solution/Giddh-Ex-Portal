@@ -17,7 +17,7 @@
             </div>
             <div
                 class="pay-invoice-content mr-t15"
-                *ngIf="paymentDetails.vouchers?.length === 1"
+                *ngIf="paymentDetails?.vouchers?.length === 1"
             >
                 <div
                     class="invoice-content-header d-flex justify-content-between align-items-center"
@@ -29,17 +29,17 @@
                         />
                         <div class="date-border">
                             <p class="text-mute">
-                                {{ paymentDetails.vouchers[0]?.number }}
+                                {{ paymentDetails?.vouchers[0]?.number }}
                             </p>
                             <span class="mr-t5 d-block">{{
-                                paymentDetails.vouchers[0]?.dueDate
+                                paymentDetails?.vouchers[0]?.dueDate
                             }}</span>
                         </div>
                         <div class="balance-due">
                             <p class="text-mute balance-txt">Balance Due</p>
                             <span class="mr-t5 d-block balance-number">
-                                {{ paymentDetails.currency?.symbol }}
-                                {{ paymentDetails.vouchers[0]?.amount }}</span
+                                {{ paymentDetails?.currency?.symbol }}
+                                {{ paymentDetails?.vouchers[0]?.amount }}</span
                             >
                         </div>
                     </div>
@@ -54,7 +54,7 @@
             </div>
             <div
                 class="pay-invoice-content mr-t15 multiple-voucher"
-                *ngIf="paymentDetails.vouchers?.length > 1"
+                *ngIf="paymentDetails?.vouchers?.length > 1"
             >
                 <div
                     class="invoice-content-header d-flex justify-content-between align-items-center"
@@ -67,18 +67,18 @@
                         <div>
                             <p class="text-mute">Total Amount</p>
                             <span class="mr-t5 d-block"
-                                >{{ paymentDetails.currency?.symbol
+                                >{{ paymentDetails?.currency?.symbol
                                 }}<span
                                     *ngIf="
                                         paymentDetails?.paymentGatewayType !==
-                                        'RAZORPAY'
+                                        paymentMethodEnum.RAZORPAY
                                     "
-                                    >{{ paymentDetails.totalAmount }}</span
+                                    >{{ paymentDetails?.totalAmount }}</span
                                 >
                                 <span
                                     *ngIf="
                                         paymentDetails?.paymentGatewayType ===
-                                        'RAZORPAY'
+                                        paymentMethodEnum.RAZORPAY
                                     "
                                     >{{
                                         paymentDetails.totalAmount / 100
@@ -93,7 +93,7 @@
                         (click)="togglePanel()"
                         class="multiple-button"
                     >
-                        For {{ paymentDetails.vouchers?.length }} invoices
+                        For {{ paymentDetails?.vouchers?.length }} invoices
                     </button>
                 </div>
                 <div class="invoice-content content-wrapper">
@@ -111,12 +111,12 @@
                             </div>
                             <div
                                 class="inv-body"
-                                *ngFor="let voucher of paymentDetails.vouchers"
+                                *ngFor="let voucher of paymentDetails?.vouchers"
                             >
                                 <p>{{ voucher?.number }}</p>
                                 <p>{{ voucher?.dueDate }}</p>
                                 <p class="text-right">
-                                    {{ paymentDetails.currency?.symbol
+                                    {{ paymentDetails?.currency?.symbol
                                     }}{{ voucher.amount }}
                                 </p>
                             </div>
@@ -152,15 +152,15 @@
                         animationDuration="0ms"
                         (selectedTabChange)="tabChange($event)"
                         [selectedIndex]="
-                            activeTab === 'RAZORPAY'
+                            activeTab === paymentMethodEnum.RAZORPAY
                                 ? 0
-                                : activeTab === 'PAYPAL'
+                                : activeTab === paymentMethodEnum.PAYPAL
                                 ? 1
                                 : 0
                         "
                     >
                         <mat-tab
-                            label="RAZORPAY"
+                            [label]="paymentMethodEnum.RAZORPAY"
                             *ngIf="paymentMethodIntegrated?.razorpay"
                         >
                             <button
@@ -178,7 +178,7 @@
                             </button>
                         </mat-tab>
                         <mat-tab
-                            label="PAYPAL"
+                            [label]="paymentMethodEnum.PAYPAL"
                             *ngIf="paymentMethodIntegrated?.paypal"
                         >
                             <button
@@ -186,7 +186,10 @@
                                 color="primary"
                                 class="text-uppercase mr-t15 mr-b2"
                                 (click)="
-                                    initializePayment(paymentDetails, paymentMethodEnum.PAYPAL)
+                                    initializePayment(
+                                        paymentDetails,
+                                        paymentMethodEnum.PAYPAL
+                                    )
                                 "
                             >
                                 Proceed to payment

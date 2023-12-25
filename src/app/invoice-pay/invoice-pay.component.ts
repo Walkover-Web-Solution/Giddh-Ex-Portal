@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { switchMap, takeUntil } from "rxjs/operators";
-import { ReplaySubject, combineLatest, forkJoin } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import { ReplaySubject, combineLatest } from "rxjs";
 import { ReciptResponse } from "../models/Company";
 import { ActivatedRoute, Router } from "@angular/router";
 import { InvoiceService } from "../services/invoice.service";

@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import { DomSanitizer } from "@angular/platform-browser";
 import { FormBuilder, UntypedFormGroup } from "@angular/forms";
 import { select, Store } from '@ngrx/store';
-import { PAGINATION_LIMIT } from "../app.constant";
+import { PAGINATION_LIMIT, PAYMENT_METHODS_ENUM } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
 import { setFolderData } from "../store/actions/session.action";
@@ -67,6 +67,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public url: string = '';
     /** True if it is mobile screen */
     public isMobileScreen: boolean = false;
+    /** Holds payment methods */
+    public paymentMethodEnum: any = PAYMENT_METHODS_ENUM;
 
     constructor(
         private generalService: GeneralService,
@@ -101,7 +103,34 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-                this.getVoucherDetails();
+                this.getPaymentMethods();
+            }
+        });
+    }
+
+    /**
+   * This will be use for get payment methods
+   *
+   * @private
+   * @memberof InvoicePayComponent
+   */
+    private getPaymentMethods(): void {
+        this.isLoading = true;
+        const accountUniqueName = this.storeData.userDetails?.account.uniqueName;
+        const companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+        const request = { accountUniqueName: accountUniqueName, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id };
+        this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
+            this.isLoading = false;
+            if (response && response.status === 'success') {
+                if (response.body?.RAZORPAY) {
+                    this.getVoucherDetails(this.paymentMethodEnum.RAZORPAY);
+                } else if (response.body?.PAYPAL) {
+                    this.getVoucherDetails(this.paymentMethodEnum.PAYPAL);
+                } else {
+                    this.generalService.showSnackbar('warning', 'No payment method is integrated');
+                }
+            } else {
+                this.generalService.showSnackbar(response?.message);
             }
         });
     }
@@ -112,7 +141,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @public
      * @memberof InvoicePreviewComponent
      */
-    public getVoucherDetails(): void {
+    public getVoucherDetails(paymentType?: string): void {
         this.isLoading = true;
         this.changeDetectionRef.detectChanges();
         let request;
@@ -131,7 +160,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.invoiceListRequest.companyUniqueName = params.companyUniqueName;
                 this.invoiceListRequest.uniqueNames = params.voucherUniqueName;
 
-                request = { accountUniqueName: this.notUserLoginDetails.accountUniqueName, voucherUniqueName: [this.notUserLoginDetails.voucherUniqueName], companyUniqueName: this.notUserLoginDetails.companyUniqueName, sessionId: '', paymentMethod: 'RAZORPAY' };
+                request = { accountUniqueName: this.notUserLoginDetails.accountUniqueName, voucherUniqueName: [this.notUserLoginDetails.voucherUniqueName], companyUniqueName: this.notUserLoginDetails.companyUniqueName, sessionId: '', paymentMethod: paymentType };
 
                 combineLatest([
                     this.invoiceService.getVoucherDetails(request),
