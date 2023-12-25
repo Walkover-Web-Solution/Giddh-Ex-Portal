@@ -4,7 +4,7 @@ import { ReplaySubject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { select, Store } from '@ngrx/store';
-import { setFolderData, setSessionToken, setUserDetails } from '../store/actions/session.action';
+import { setFolderData } from '../store/actions/session.action';
 import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { GeneralService } from '../services/general.service';
 
