@@ -136,7 +136,7 @@ export class GeneralService {
      * @memberof GeneralService
      */
     public getPaypalIpnUrl(companyUniqueName: string, accountUniqueName: string, paymentId: string): string {
-        return environment.apiUrl + 'portal/company/' + companyUniqueName + '/accounts/' + accountUniqueName + '/invoices/' + paymentId + '/paypal/ipn?voucherVersion=2';
+        return environment.giddhApiUrl + 'portal/company/' + companyUniqueName + '/accounts/' + accountUniqueName + '/invoices/' + paymentId + '/paypal/ipn?voucherVersion=2';
     }
 
     /**
