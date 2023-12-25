@@ -69,9 +69,7 @@
                         <ng-container matColumnDef="sno">
                             <th mat-header-cell *matHeaderCellDef>
                                 <mat-checkbox
-                                    *ngIf="
-                                        selection?.selected?.length
-                                    "
+                                    *ngIf="selection?.selected?.length"
                                     (change)="
                                         $event ? selectAllVoucher() : null
                                     "
@@ -84,14 +82,20 @@
                                     class="pd-r2"
                                 >
                                 </mat-checkbox>
-                                S.no
+                                <ng-container
+                                    *ngIf="!selection?.selected?.length"
+                                    >S.no</ng-container
+                                >
                             </th>
                             <td
                                 mat-cell
                                 *matCellDef="let element; let i = index"
                             >
                                 <mat-checkbox
-                                    *ngIf="element.activeRow || selection?.selected?.length"
+                                    *ngIf="
+                                        element.activeRow ||
+                                        selection?.selected?.length
+                                    "
                                     (click)="$event.stopPropagation()"
                                     (change)="
                                         $event
@@ -102,7 +106,13 @@
                                     class="pd-2"
                                 >
                                 </mat-checkbox>
-                                <ng-container *ngIf="!element.activeRow && !selection?.selected?.length">{{ i + 1 }}</ng-container>
+                                <ng-container
+                                    *ngIf="
+                                        !element.activeRow &&
+                                        !selection?.selected?.length
+                                    "
+                                    >{{ i + 1 }}</ng-container
+                                >
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="invoice">

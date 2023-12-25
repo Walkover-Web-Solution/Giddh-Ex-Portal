@@ -17,7 +17,7 @@ import { FormBuilder, UntypedFormGroup } from "@angular/forms";
 })
 export class InvoicePayComponent implements OnInit, OnDestroy {
     /** True if api call in progress */
-    public isLoading: boolean = true;
+    public isLoading: boolean = false;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     /** Hold voucher data */
@@ -64,7 +64,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         private formBuilder: FormBuilder,
         private changeDetectionRef: ChangeDetectorRef
     ) {
-        
+
     }
 
     /**
@@ -73,12 +73,10 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public ngOnInit(): void {
-
-        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-            if (response[0] && response[1] && response[2] && !this.storeData?.session) {
-                this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
-                
-                if (response[0]?.account) {
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                if (response[0]?.accountUniqueName) {
                     this.getPaymentMethods();
                 }
             }
@@ -158,7 +156,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public initializePayment(paymentRequest: any, type: PAYMENT_METHODS_ENUM): void {
-        if (type ===  PAYMENT_METHODS_ENUM.PAYPAL) {
+        if (type === PAYMENT_METHODS_ENUM.PAYPAL) {
             if (paymentRequest.paymentGatewayType === PAYMENT_METHODS_ENUM.PAYPAL) {
                 this.paypalForm = this.formBuilder.group({
                     businessEmail: [paymentRequest.paymentKey],
