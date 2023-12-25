@@ -11,8 +11,8 @@ const routes: Routes = [
     { path: ":companyDomainUniqueName/invoice", loadChildren: () => import('./invoice/invoice.module').then(module => module.InvoiceModule), canActivate: [NeedsAuthentication] },
     { path: ":companyDomainUniqueName/payment", loadChildren: () => import('./payment/payment.module').then(module => module.PaymentModule), canActivate: [NeedsAuthentication] },
     { path: ":companyDomainUniqueName/payment/preview", loadChildren: () => import('./payment-preview/payment-preview.module').then(module => module.PaymentPdfModule), canActivate: [NeedsAuthentication] },
-    { path: ":companyDomainUniqueName/invoice/preview", loadChildren: () => import('./invoice-preview/invoice-preview.module').then(module => module.InvoicePdfModule) },
-    { path: ":companyDomainUniqueName/invoice-pay", loadChildren: () => import('./invoice-pay/invoice-pay.module').then(module => module.InvoicePayModule), canActivate: [NeedsAuthentication] },
+    { path: ":companyDomainUniqueName/invoice/preview", loadChildren: () => import('./invoice-preview/invoice-preview.module').then(module => module.InvoicePdfModule), canActivate: [NeedsAuthentication] },
+    { path: ":companyDomainUniqueName/invoice-pay/account/:accountUniqueName/voucher/:voucherUniqueName", loadChildren: () => import('./invoice-pay/invoice-pay.module').then(module => module.InvoicePayModule) },
     { path: '', redirectTo: 'page-not-found', pathMatch: 'full' },
     { path: '**', redirectTo: 'page-not-found', pathMatch: 'full' }
 ];

@@ -83,7 +83,7 @@ export class InvoiceService {
     public getVoucherDetails(model: any): Observable<BaseResponse<any, any>> {
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
-        return this.http.post(this.apiUrl + API.GET_VOUCHER_DETAILS?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName))?.replace(':paymentMethod', encodeURIComponent(model.paymentMethod)), [model.voucherUniqueName], args).pipe(
+        return this.http.post(this.apiUrl + API.GET_VOUCHER_DETAILS?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName))?.replace(':paymentMethod', encodeURIComponent(model.paymentMethod)), model.voucherUniqueName, args).pipe(
             map((res) => {
                 let data: BaseResponse<any, any> = res;
                 return data;
@@ -112,6 +112,35 @@ export class InvoiceService {
                 .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
                 .replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName))
                 .replace(':voucherUniqueName', encodeURIComponent(data.voucherUniqueName)),
+            '', args
+        ).pipe(
+            map((res) => {
+                let data: BaseResponse<any, string> = res;
+                data.queryString = { data };
+                return data;
+            }),
+            catchError((e) => this.errorHandler.HandleCatch<any, any>(e))
+        );
+    }
+
+    /**
+     * This will be use for get comments
+     *
+     * @param {*} model
+     * @return {*}  {Observable<BaseResponse<any, any>>}
+     * @memberof InvoiceService
+     */
+    public getPaymentMethods(model: any): Observable<BaseResponse<any, any>> {
+        let data = {
+            companyUniqueName: model.companyUniqueName,
+            accountUniqueName: model.accountUniqueName
+        }
+        let args: any = { headers: {} };
+        args.headers['Session-id'] = model?.sessionId;
+        return this.http.get(
+            this.apiUrl + API.GET_PAYMENT_METHODS
+                .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))
+                .replace(':accountUniqueName', encodeURIComponent(data.accountUniqueName)),
             '', args
         ).pipe(
             map((res) => {

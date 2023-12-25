@@ -517,8 +517,8 @@ button {
 }
 
 /*---- tabs ----*/
-.mat-mdc-tab-labels {
-    border-bottom: 1px solid #cbcfd2;
+.mat-mdc-tab {
+    border-bottom: 1px solid #cbcfd2 !important;
 }
 
 .mat-mdc-tab.mdc-tab--active {
@@ -1060,7 +1060,7 @@ mat-sidenav[style] {
 @media screen and (max-width: 767px) {
     .profile-user {
         position: relative;
-        width: 100% ;
+        width: 100%;
     }
 
     .small-container {
