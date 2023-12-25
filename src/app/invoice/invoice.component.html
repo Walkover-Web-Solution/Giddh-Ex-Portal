@@ -67,11 +67,12 @@
                         [matSortActive]="invoiceListRequest.sortBy"
                     >
                         <ng-container matColumnDef="sno">
-                            <th
-                                mat-header-cell
-                                *matHeaderCellDef
-                            >
+                            <th mat-header-cell *matHeaderCellDef>
                                 <mat-checkbox
+                                    *ngIf="
+                                        selection?.selected?.length ||
+                                        showSelectAll
+                                    "
                                     (change)="
                                         $event ? selectAllVoucher() : null
                                     "
@@ -98,7 +99,7 @@
                                             : null
                                     "
                                     [checked]="selection.isSelected(element)"
-                                    class="pd-r2"
+                                    class="pd-2"
                                 >
                                 </mat-checkbox>
                                 {{ i + 1 }}
@@ -184,8 +185,7 @@
                                         *ngIf="
                                             storeData?.companyDetails
                                                 .razorpayIntegrated &&
-                                            element?.canPay &&
-                                            !selection?.selected?.length
+                                            element?.canPay
                                         "
                                         mat-stroked-button
                                         color="primary"
@@ -212,6 +212,8 @@
                         <tr
                             mat-row
                             *matRowDef="let row; columns: displayedColumns"
+                            (mouseenter)="showSelectAll = true"
+                            (mouseleave)="showSelectAll = false"
                         ></tr>
                     </table>
                     <div class="text-center pd-t1 pd-b1">

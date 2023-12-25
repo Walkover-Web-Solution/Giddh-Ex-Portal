@@ -68,7 +68,22 @@
                             <p class="text-mute">Total Amount</p>
                             <span class="mr-t5 d-block"
                                 >{{ paymentDetails.currency?.symbol
-                                }}{{ paymentDetails.totalAmount }}</span
+                                }}<span
+                                    *ngIf="
+                                        paymentDetails?.paymentGatewayType !==
+                                        'RAZORPAY'
+                                    "
+                                    >{{ paymentDetails.totalAmount }}</span
+                                >
+                                <span
+                                    *ngIf="
+                                        paymentDetails?.paymentGatewayType ===
+                                        'RAZORPAY'
+                                    "
+                                    >{{
+                                        paymentDetails.totalAmount / 100
+                                    }}</span
+                                ></span
                             >
                         </div>
                     </div>

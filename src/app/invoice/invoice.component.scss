@@ -209,6 +209,14 @@
     width: 50px;
 }
 
+.visible-check-box {
+    visibility: visible !important;
+}
+
+.checkbox-left-side-in-table {
+    visibility: hidden;
+}
+
 
 /*---- responsive ----*/
 @media screen and (max-width: 768px) {

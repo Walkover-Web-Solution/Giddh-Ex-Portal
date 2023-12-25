@@ -34,7 +34,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     /** Hold table displayed columns*/
-    public displayedColumns: string[] = ['sno','invoice', 'voucherDate', 'grandTotal', 'status', 'overdue', 'action'];
+    public displayedColumns: string[] = ['sno', 'invoice', 'voucherDate', 'grandTotal', 'status', 'overdue', 'action'];
     /** Hold table datasource */
     public dataSource = new MatTableDataSource<any>();
     /** Hold panel open state*/
@@ -87,6 +87,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public totalRecords: number = 0;
     /** Hold selected voucher event */
     public selection = new SelectionModel<any>(true, []);
+    /** True if we should select all checkbox */
+    public showSelectAll: boolean = false;
 
     constructor(
         public dialog: MatDialog,

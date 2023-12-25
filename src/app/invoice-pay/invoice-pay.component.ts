@@ -45,8 +45,11 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     };
     /** Show/Hide  payment button from can pay */
     public canPayInvoice: boolean;
+    /** Hold paid invoice message */
     public paidInvoiceMessage: any
+    /** Hold active tab */
     public activeTab: any = "";
+    /** Hold decoded voucher uniqueNames  */
     public decodedVoucherUniqueNames: string[] = [];
 
     constructor(
@@ -73,6 +76,12 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         this.getPaymentMethods();
     }
 
+    /**
+     * This will be use for get payment methods
+     *
+     * @private
+     * @memberof InvoicePayComponent
+     */
     private getPaymentMethods(): void {
         this.isLoading = true;
         const accountUniqueName = this.storeData.userDetails?.account.uniqueName;
@@ -192,11 +201,11 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     }
 
     /**
- * Callback for tab change event
- *
- * @param {*} event
- * @memberof InvoicePayComponent
- */
+     * Callback for tab change event
+     *
+     * @param {*} event
+     * @memberof InvoicePayComponent
+     */
     public tabChange(event: any): void {
         if (event?.tab?.textLabel === PAYMENT_METHODS_ENUM.RAZORPAY) {
             this.tabSelected(PAYMENT_METHODS_ENUM.RAZORPAY);
@@ -208,6 +217,12 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * This will be use for tab selected
+     *
+     * @param {(PAYMENT_METHODS_ENUM.RAZORPAY | PAYMENT_METHODS_ENUM.PAYPAL)} tabName
+     * @memberof InvoicePayComponent
+     */
     public tabSelected(tabName: PAYMENT_METHODS_ENUM.RAZORPAY | PAYMENT_METHODS_ENUM.PAYPAL) {
         this.activeTab = tabName;
     }
