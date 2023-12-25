@@ -3,7 +3,7 @@ import { ActivatedRoute } from "@angular/router";
 import { Store } from '@ngrx/store';
 import { ReplaySubject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { setPortalDomain } from "../store/actions/session.action";
+import { setFolderData } from "../store/actions/session.action";
 import { SessionState } from "../store/reducer/session.reducer";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
@@ -35,7 +35,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
             if (params) {
                 this.portalParamsRequest.domain = params.companyDomainUniqueName;
-                this.store.dispatch(setPortalDomain({ domain: this.portalParamsRequest.domain }));
+                this.store.dispatch(setFolderData({ folderName: this.portalParamsRequest.domain, data: { domain: this.portalParamsRequest.domain, sidebarState: true } }));
                 this.url = `/${this.portalParamsRequest.domain}/auth`;
             }
         });
@@ -52,10 +52,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     /**
- *  This will be use for login button script loading
- *
- * @memberof LoginComponent
- */
+     *  This will be use for login button script loading
+     *
+     * @memberof LoginComponent
+     */
     public loginButtonScriptLoaded(): void {
         setTimeout(() => {
             let configuration = {
