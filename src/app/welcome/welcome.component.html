@@ -3,7 +3,7 @@
     <sidebar ></sidebar>
     <div class="common-wrapper">
         <div class="page-wrapper d-flex flex-column h-100" *ngIf="!isLoading">
-            <header (companyData)="(receivedCompanyDetails)"></header>
+            <header></header>
             <div class="container" *ngIf="!isShowAccountDetails">
                 <div class="index-wrapper">
                     <div class="balance-wrap">
@@ -292,7 +292,7 @@
                     </div>
                 </div>
             </div>
-            <footer (companyData)="onCompanyDataReceived($event)"></footer>
+            <footer></footer>
         </div>
     </div>
 </div>

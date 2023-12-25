@@ -6,17 +6,15 @@
 export { reducers, AppState } from './roots';
 import { ActionReducer, MetaReducer } from '@ngrx/store';
 import { localStorageSync } from 'ngrx-store-localstorage';
-import { initialState } from './reducer/session.reducer';
-
 
 export function localStorageSyncReducer(r: ActionReducer<any>): ActionReducer<any> {
-  return localStorageSync({
-    keys: Object.keys(initialState),
-    rehydrate: true,
-    storage: localStorage,
-  })((state, action) => {
-    const nextState = r(state, action);
-    return nextState;
-  });
+    return localStorageSync({
+        keys: ['folderName'],
+        rehydrate: true,
+        storage: localStorage,
+    })((state, action) => {
+        const nextState = r(state, action);
+        return nextState;
+    });
 }
 export const metaReducers: Array<MetaReducer<any, any>> = [localStorageSyncReducer];

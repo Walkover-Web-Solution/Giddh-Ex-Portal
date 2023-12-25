@@ -1,8 +1,9 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from "@angular/core";
-import { ReplaySubject } from "rxjs";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { ReplaySubject, combineLatest } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { CompanyResponse } from "src/app/models/Company";
 import { select, Store } from '@ngrx/store';
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
     selector: "footer",
@@ -10,8 +11,6 @@ import { select, Store } from '@ngrx/store';
     styleUrls: ["footer.component.scss"]
 })
 export class FooterComponent implements OnInit, OnDestroy {
-    /**Instance of company data emit */
-    @Output() companyData: EventEmitter<CompanyResponse> = new EventEmitter<CompanyResponse>();
     /** Hold company response */
     public companyDetails: CompanyResponse;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
@@ -20,7 +19,8 @@ export class FooterComponent implements OnInit, OnDestroy {
     public storeData: any = {};
 
     constructor(
-        private store: Store
+        private store: Store,
+        private route: ActivatedRoute
     ) {
 
     }
@@ -31,16 +31,13 @@ export class FooterComponent implements OnInit, OnDestroy {
      * @memberof FooterComponent
      */
     public ngOnInit(): void {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            if (sessionState.session) {
-                this.storeData = sessionState.session;
-                this.companyData.emit(this.storeData.companyDetails);
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
                 this.companyDetails = this.storeData.companyDetails;
             }
         });
     }
-
-
 
     /**
      * This will be use for component destroy

@@ -3,10 +3,10 @@ import { MatDialog } from "@angular/material/dialog";
 import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { ReplaySubject } from "rxjs";
+import { ReplaySubject, combineLatest } from "rxjs";
 import { ReciptResponse } from "../models/Company";
 import { PaymentService } from "../services/payment.service.";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { takeUntil } from "rxjs/operators";
 import { select, Store } from '@ngrx/store';
 import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
@@ -81,13 +81,10 @@ export class PaymentComponent implements OnInit, OnDestroy {
         private paymentService: PaymentService,
         private router: Router,
         private store: Store,
-        private commonService: CommonService
+        private commonService: CommonService,
+        private route: ActivatedRoute
     ) {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            if (sessionState.session) {
-                this.storeData = sessionState.session;
-            }
-        });
+        
     }
 
     /**
@@ -96,7 +93,12 @@ export class PaymentComponent implements OnInit, OnDestroy {
      * @memberof PaymentComponent
      */
     public ngOnInit(): void {
-        this.getCountPage();
+        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && response[2] && !this.storeData?.session) {
+                this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
+                this.getCountPage();
+            }
+        });
     }
 
     /**
