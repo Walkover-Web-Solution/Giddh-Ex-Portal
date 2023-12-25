@@ -70,8 +70,7 @@
                             <th mat-header-cell *matHeaderCellDef>
                                 <mat-checkbox
                                     *ngIf="
-                                        selection?.selected?.length ||
-                                        showSelectAll
+                                        selection?.selected?.length
                                     "
                                     (change)="
                                         $event ? selectAllVoucher() : null
@@ -92,6 +91,7 @@
                                 *matCellDef="let element; let i = index"
                             >
                                 <mat-checkbox
+                                    *ngIf="element.activeRow || selection?.selected?.length"
                                     (click)="$event.stopPropagation()"
                                     (change)="
                                         $event
@@ -102,7 +102,7 @@
                                     class="pd-2"
                                 >
                                 </mat-checkbox>
-                                {{ i + 1 }}
+                                <ng-container *ngIf="!element.activeRow && !selection?.selected?.length">{{ i + 1 }}</ng-container>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="invoice">
@@ -212,8 +212,8 @@
                         <tr
                             mat-row
                             *matRowDef="let row; columns: displayedColumns"
-                            (mouseenter)="showSelectAll = true"
-                            (mouseleave)="showSelectAll = false"
+                            (mouseenter)="row.activeRow = true"
+                            (mouseleave)="row.activeRow = false"
                         ></tr>
                     </table>
                     <div class="text-center pd-t1 pd-b1">
