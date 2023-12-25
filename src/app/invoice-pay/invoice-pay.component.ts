@@ -138,7 +138,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                         } else {
                             const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
                             this.canPayInvoice = false;
-                            this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + " are already PAID."
+                            this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidVoucherNumbers?.length > 1 ? "are" : "is" + "already PAID."
                         }
                     } else {
                         this.generalService.showSnackbar(voucherDetailsResponse?.message);

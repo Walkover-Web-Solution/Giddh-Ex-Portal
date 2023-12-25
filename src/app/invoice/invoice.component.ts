@@ -409,7 +409,7 @@ public paySelectedVouchers(): void {
                 this.openPayDialog();
             } else {
                 const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.voucherNumber });
-                this.generalService.showSnackbar(paidVoucherNumbers.join(", ") + " are already PAID.");
+                this.generalService.showSnackbar(paidVoucherNumbers.join(", ") + (paidVoucherNumbers?.length > 1 ? " are" : " is") + " already PAID.");
             }
         }
     }
