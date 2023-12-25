@@ -10,7 +10,7 @@ import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
-import { setPortalDomain, setRouterState, setSidebarState } from "../store/actions/session.action";
+import { setFolderData } from "../store/actions/session.action";
 import { BreakpointObserver } from "@angular/cdk/layout";
 declare var initVerification: any;
 @Component({
@@ -79,9 +79,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         private store: Store,
         private changeDetectionRef: ChangeDetectorRef
     ) {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            this.storeData = sessionState.session;
-        });
+
     }
 
     /**
@@ -100,7 +98,12 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             commentText: ['']
         });
 
-        this.getVoucherDetails();
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                this.getVoucherDetails();
+            }
+        });
     }
 
     /**
@@ -114,15 +117,9 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.changeDetectionRef.detectChanges();
         let request;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-                if (params.companyDomainUniqueName) {
-                    this.store.dispatch(setPortalDomain({ domain: params.companyDomainUniqueName }));
-                }
-            });
-
             if (!this.storeData.session?.id) {
                 if (this.isMobileScreen) {
-                    this.store.dispatch(setSidebarState({ sidebarState: false }));
+                    this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: false } }));
                 }
                 this.notUserLoginDetails.token = params.token;
                 this.notUserLoginDetails.voucherUniqueName = params.voucherUniqueName;
@@ -227,7 +224,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             };
             const routerState = (this.route as any)._routerState?.snapshot?.url;
             const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
-            this.store.dispatch(setRouterState({ url: updatedUrl }));
+            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
             this.generalService.loadScript(environment.proxyReferenceId, configuration);
         }, 200)
     }

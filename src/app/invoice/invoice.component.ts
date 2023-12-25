@@ -5,9 +5,9 @@ import { MatTableDataSource } from "@angular/material/table";
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReciptResponse } from "../models/Company";
 import { takeUntil } from "rxjs/operators";
-import { ReplaySubject } from "rxjs";
+import { ReplaySubject, combineLatest } from "rxjs";
 import { saveAs } from 'file-saver';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { InvoiceService } from "../services/invoice.service";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "../services/general.service";
@@ -96,13 +96,11 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         private invoiceService: InvoiceService,
         private commonService: CommonService,
         private router: Router,
-        private store: Store
+        private store: Store,
+        private route: ActivatedRoute
     ) {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            if (sessionState.session) {
-                this.storeData = sessionState.session;
-            }
-        });
+
+
     }
 
     /**
@@ -111,7 +109,12 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @memberof InvoiceComponent
      */
     public ngOnInit(): void {
-        this.getCountPage();
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                this.getCountPage();
+            }
+        });
     }
 
     /**

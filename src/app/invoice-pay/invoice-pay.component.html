@@ -170,7 +170,7 @@
                                 (click)="
                                     initializePayment(
                                         paymentDetails,
-                                        'razorpay'
+                                        paymentMethodEnum.RAZORPAY
                                     )
                                 "
                             >
@@ -186,7 +186,7 @@
                                 color="primary"
                                 class="text-uppercase mr-t15 mr-b2"
                                 (click)="
-                                    initializePayment(paymentDetails, 'paypal')
+                                    initializePayment(paymentDetails, paymentMethodEnum.PAYPAL)
                                 "
                             >
                                 Proceed to payment

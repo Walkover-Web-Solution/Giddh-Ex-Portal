@@ -1,22 +1,20 @@
 import { Injectable } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { select, Store } from '@ngrx/store';
-import { take } from "rxjs/operators";
 import { SnackBarComponent } from "../shared/snackbar/snackbar.component";
 import { environment } from "src/environments/environment";
+import { Router } from "@angular/router";
 declare var initVerification: any;
 
 @Injectable()
 export class GeneralService {
     /** True if script is loaded */
     public scriptLoaded: boolean = false;
-    /** Hold  store data */
-    public storeData: any = {};
 
-    constructor(private snackBar: MatSnackBar, private store: Store) {
-        this.store.pipe(select(state => state), take(1)).subscribe((sessionState) => {
-            this.storeData = sessionState;
-        });
+    constructor(
+        private snackBar: MatSnackBar,
+        private router: Router
+    ) {
+        
     }
 
     /**
@@ -68,13 +66,13 @@ export class GeneralService {
     }
 
     /**
-  * Returns the string initials upto 2 letters/characters
-  *
-  * @param {string} name String whose intials are required
-  * @param {string} [delimiter] Delimiter to break the strings
-  * @return {*} {string} Initials of string
-  * @memberof GeneralService
-  */
+     * Returns the string initials upto 2 letters/characters
+     *
+     * @param {string} name String whose intials are required
+     * @param {string} [delimiter] Delimiter to break the strings
+     * @return {*} {string} Initials of string
+     * @memberof GeneralService
+     */
     public getInitialsFromString(name: string, delimiter?: string): string {
         if (name) {
             let nameArray = name.split(delimiter || " ");
@@ -139,5 +137,16 @@ export class GeneralService {
      */
     public getPaypalIpnUrl(companyUniqueName: string, accountUniqueName: string, paymentId: string): string {
         return environment.apiUrl + 'portal/company/' + companyUniqueName + '/accounts/' + accountUniqueName + '/invoices/' + paymentId + '/paypal/ipn?voucherVersion=2';
+    }
+
+    /**
+     * Returns folder name
+     *
+     * @returns {string}
+     * @memberof GeneralService
+     */
+    public getStoreFolderName(): string {
+        let url = this.router.url?.split("/");
+        return url?.length > 1 ? url[1] : "";
     }
 }
