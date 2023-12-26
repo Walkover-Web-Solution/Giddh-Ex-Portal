@@ -4,9 +4,9 @@ import { PortalErrorHandler } from './catch-manager/catchmanger';
 import { catchError, map } from "rxjs/operators";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
-import { API } from "./apiurls/invoice.api.";
 import { WELCOME_API } from "./apiurls/welcome.api";
 import { environment } from "src/environments/environment";
+import { API } from "./apiurls/invoice.api";
 @Injectable()
 export class InvoiceService {
     private apiUrl: string = '';
@@ -82,8 +82,7 @@ export class InvoiceService {
      */
     public getVoucherDetails(model: any): Observable<BaseResponse<any, any>> {
         let args: any = { headers: {} };
-        args.headers['Session-id'] = model?.sessionId;
-
+        args.headers['Session-id'] = model?.sessionId ?? '';
         if (!model.paymentId) {
             model.paymentId = "";
         }
@@ -141,7 +140,7 @@ export class InvoiceService {
             accountUniqueName: model.accountUniqueName
         }
         let args: any = { headers: {} };
-        args.headers['Session-id'] = model?.sessionId;
+        args.headers['Session-id'] = model?.sessionId ?? '';
         return this.http.get(
             this.apiUrl + API.GET_PAYMENT_METHODS
                 .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))

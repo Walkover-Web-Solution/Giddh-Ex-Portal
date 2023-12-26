@@ -3,24 +3,17 @@
     <div class="w-100">
         <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
         <ng-container *ngIf="!isLoading">
-            <div class="login-section" *ngIf="notUserLoginDetails.show">
-                <div class="login-btn-wrap" [id]="loginId"></div>
-            </div>
             <div class="common-wrapper main-wrapper">
                 <!-- invoice-click -->
                 <div class="invoice-open small-container mr-t15">
                     <div
                         class="back-header d-flex justify-content-between align-items-center"
-                        [ngClass]="{
-                            'mr-b15 position-section': notUserLoginDetails.show
-                        }"
                         *ngIf="paymentDetails?.vouchers?.length"
                     >
                         <button
                             mat-stroked-button
                             color="primary"
                             (click)="backToInvoices()"
-                            *ngIf="!notUserLoginDetails.show"
                         >
                             Back
                         </button>
@@ -49,8 +42,7 @@
                                 color="primary"
                                 (click)="
                                     downloadPdf(
-                                        voucherUniqueName ||
-                                            notUserLoginDetails?.voucherUniqueName,
+                                        voucherUniqueName,
                                         paymentDetails?.vouchers[0]?.number
                                     )
                                 "
@@ -68,10 +60,7 @@
                         *ngIf="!paymentDetails?.vouchers[0]?.canPay"
                         >{{ paymentDetails?.vouchers[0]?.message }}</span
                     >
-                    <div
-                        class="pay-invoice-content mr-t15"
-                        *ngIf="notUserLoginDetails.show"
-                    >
+                    <div class="pay-invoice-content mr-t15">
                         <div
                             class="invoice-content-header d-flex justify-content-between align-items-center"
                         >
@@ -107,9 +96,7 @@
                     </div>
                     <div
                         class="comment-wrapper"
-                        *ngIf="
-                            notUserLoginDetails.show && voucherComments?.length
-                        "
+                        *ngIf="voucherComments?.length"
                     >
                         <h3 class="text-muted">Comments :</h3>
                         <br />
@@ -138,10 +125,7 @@
                             </ul>
                         </ng-container>
                     </div>
-                    <div
-                        class="comment-container"
-                        *ngIf="!notUserLoginDetails.show"
-                    >
+                    <div class="comment-container">
                         <form [formGroup]="commentForm">
                             <mat-form-field
                                 class="w-100 mr-t5 mr-b15"

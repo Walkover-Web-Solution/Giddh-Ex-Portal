@@ -9,6 +9,9 @@ import { select, Store } from '@ngrx/store';
 import { PAYMENT_METHODS_ENUM } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { FormBuilder, UntypedFormGroup } from "@angular/forms";
+import { setFolderData } from "../store/actions/session.action";
+import { BreakpointObserver } from "@angular/cdk/layout";
+import { environment } from "src/environments/environment";
 
 @Component({
     selector: "invoice-pay",
@@ -57,6 +60,12 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public urlParams: any = {};
     /** Holds query parameters */
     public queryParams: any = {};
+    /** True if it is mobile screen */
+    public isMobileScreen: boolean = false;
+    /** Hold proxy button  id */
+    public loginId = environment.proxyReferenceId;
+    /** Hold current url*/
+    public url: string = '';
 
     constructor(
         public dialog: MatDialog,
@@ -66,7 +75,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         private router: Router,
         private store: Store,
         private formBuilder: FormBuilder,
-        private changeDetectionRef: ChangeDetectorRef
+        private changeDetectionRef: ChangeDetectorRef,
+        private breakpointObserver: BreakpointObserver
     ) {
 
     }
@@ -77,17 +87,60 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public ngOnInit(): void {
+        this.breakpointObserver.observe([
+            "(max-width: 576px)",
+        ]).pipe(takeUntil(this.destroyed$)).subscribe(result => {
+            this.isMobileScreen = result?.breakpoints["(max-width: 576px)"];
+        });
+
         combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.queryParams = response[0];
                 this.urlParams = response[1];
-
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
+                if (!this.storeData?.session?.id) {
+                    this.storeData = {
+                        session: {
+                            createAt: null,
+                            expiresAt: null,
+                            id: null
+                        },
+                        domain: this.urlParams.companyDomainUniqueName,
+                        sidebarState: true
+                    }
+                    this.loginButtonScriptLoaded();
+                }
                 if (this.urlParams?.accountUniqueName) {
                     this.getPaymentMethods();
                 }
             }
         });
+    }
+
+    /**
+     *  This will be use for login button script loading
+     *
+     * @memberof InvoicePayComponent
+     */
+    public loginButtonScriptLoaded(): void {
+        this.url = `/${this.storeData.domain}/auth`;
+        setTimeout(() => {
+            let configuration = {
+                referenceId: environment.proxyReferenceId,
+                addInfo: {
+                    redirect_path: this.url
+                },
+                success: (data: any) => {
+                },
+                failure: (error: any) => {
+                    this.generalService.showSnackbar(error?.message);
+                }
+            };
+            const routerState = (this.route as any)._routerState?.snapshot?.url;
+            const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, domain: this.storeData.domain } }));
+            this.generalService.loadScript(environment.proxyReferenceId, configuration);
+        }, 200)
     }
 
     /**
@@ -98,8 +151,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     private getPaymentMethods(): void {
         this.isLoading = true;
-        const accountUniqueName = this.storeData.userDetails?.account.uniqueName;
-        const companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+        const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+        const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
         const request = { accountUniqueName: accountUniqueName, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id };
         this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
             this.isLoading = false;
@@ -127,12 +180,13 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     private getVoucherDetails(paymentType?: string): void {
         this.isLoading = true;
-        
+        this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: !this.isMobileScreen } }));
+
         const voucherUniqueName = this.urlParams.voucherUniqueName || '';
         const voucherUniqueNameArray = voucherUniqueName.split('|');
         if (this.urlParams?.accountUniqueName) {
             const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
-            const companyUniqueName = this.urlParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+            const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
             const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.payment_id };
             this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
                 this.isLoading = false;
@@ -150,10 +204,9 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 } else {
                     this.generalService.showSnackbar(voucherDetailsResponse?.message);
                 }
+                this.changeDetectionRef.detectChanges();
             });
         }
-        this.changeDetectionRef.detectChanges();
-        
     }
 
     /**
@@ -178,7 +231,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     custom: [''],
                     amount: [paymentRequest.totalAmount],
                     currencyCode: [paymentRequest.currency.code],
-                    notifyUrl: [this.generalService.getPaypalIpnUrl(this.storeData.userDetails.companyUniqueName, this.storeData.userDetails?.account.uniqueName, paymentRequest.paymentId)],
+                    notifyUrl: [this.generalService.getPaypalIpnUrl(this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName, this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName, paymentRequest.paymentId)],
                     returnUrl: [returnUrl],
                     cancelReturnUrl: [document.URL]
                 });

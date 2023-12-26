@@ -1,204 +1,220 @@
 <!-- pay-invoices -->
 <div class="d-flex w-100">
     <sidebar></sidebar>
-    <div class="w-100 main-wrapper">
-        <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
-        <ng-container *ngIf="!isLoading && paymentDetails?.vouchers?.length">
-            <div
-                class="inner-header d-flex justify-content-between align-items-center"
-            >
-                <h2 *ngIf="paymentDetails?.vouchers?.length === 1">
-                    Payment for {{ paymentDetails?.vouchers[0]?.number }}
-                </h2>
-                <h2 *ngIf="paymentDetails?.vouchers?.length > 1">
-                    Payment All Invoices
-                </h2>
-                <span class="cp" (click)="backToInvoice()">×</span>
-            </div>
-            <div
-                class="pay-invoice-content mr-t15"
-                *ngIf="paymentDetails?.vouchers?.length === 1"
+    <div class="w-100">
+        <div
+            class="login-section"
+            *ngIf="!storeData?.session?.id"
+        >
+            <div class="login-btn-wrap" [id]="loginId"></div>
+        </div>
+        <div class="w-100 main-wrapper">
+            <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
+            <ng-container
+                *ngIf="!isLoading && paymentDetails?.vouchers?.length"
             >
                 <div
-                    class="invoice-content-header d-flex justify-content-between align-items-center"
+                    class="inner-header d-flex justify-content-between align-items-center"
                 >
-                    <div class="amount-total date-amount">
-                        <img
-                            src="../../assets/images/note.svg"
-                            alt="notebook"
-                        />
-                        <div class="date-border">
-                            <p class="text-mute">
-                                {{ paymentDetails?.vouchers[0]?.number }}
-                            </p>
-                            <span class="mr-t5 d-block">{{
-                                paymentDetails?.vouchers[0]?.dueDate
-                            }}</span>
-                        </div>
-                        <div class="balance-due">
-                            <p class="text-mute balance-txt">Balance Due</p>
-                            <span class="mr-t5 d-block balance-number">
-                                {{ paymentDetails?.currency?.symbol }}
-                                {{ paymentDetails?.vouchers[0]?.amount }}</span
-                            >
-                        </div>
-                    </div>
+                    <h2 *ngIf="paymentDetails?.vouchers?.length === 1">
+                        Payment for {{ paymentDetails?.vouchers[0]?.number }}
+                    </h2>
+                    <h2 *ngIf="paymentDetails?.vouchers?.length > 1">
+                        Payment All Invoices
+                    </h2>
+                    <span class="cp" (click)="backToInvoice()">×</span>
                 </div>
-                <div class="mr-t2">
-                    <span
-                        class="razorpay-message error-message"
-                        *ngIf="!paymentDetails?.vouchers[0].canPay"
-                        >{{ paymentDetails?.vouchers[0].message }}</span
+                <div
+                    class="pay-invoice-content mr-t15"
+                    *ngIf="paymentDetails?.vouchers?.length === 1"
+                >
+                    <div
+                        class="invoice-content-header d-flex justify-content-between align-items-center"
                     >
-                </div>
-            </div>
-            <div
-                class="pay-invoice-content mr-t15 multiple-voucher"
-                *ngIf="paymentDetails?.vouchers?.length > 1"
-            >
-                <div
-                    class="invoice-content-header d-flex justify-content-between align-items-center"
-                >
-                    <div class="amount-total">
-                        <img
-                            src="../../assets/images/note.svg"
-                            alt="notebook"
-                        />
-                        <div>
-                            <p class="text-mute">Total Amount</p>
-                            <span class="mr-t5 d-block"
-                                >{{ paymentDetails?.currency?.symbol
-                                }}<span
-                                    *ngIf="
-                                        paymentDetails?.paymentGatewayType !==
-                                        paymentMethodEnum.RAZORPAY
-                                    "
-                                    >{{ paymentDetails?.totalAmount }}</span
-                                >
-                                <span
-                                    *ngIf="
-                                        paymentDetails?.paymentGatewayType ===
-                                        paymentMethodEnum.RAZORPAY
-                                    "
-                                    >{{
-                                        paymentDetails.totalAmount / 100
+                        <div class="amount-total date-amount">
+                            <img
+                                src="../../assets/images/note.svg"
+                                alt="notebook"
+                            />
+                            <div class="date-border">
+                                <p class="text-mute">
+                                    {{ paymentDetails?.vouchers[0]?.number }}
+                                </p>
+                                <span class="mr-t5 d-block">{{
+                                    paymentDetails?.vouchers[0]?.dueDate
+                                }}</span>
+                            </div>
+                            <div class="balance-due">
+                                <p class="text-mute balance-txt">Balance Due</p>
+                                <span class="mr-t5 d-block balance-number">
+                                    {{ paymentDetails?.currency?.symbol }}
+                                    {{
+                                        paymentDetails?.vouchers[0]?.amount
                                     }}</span
-                                ></span
-                            >
+                                >
+                            </div>
                         </div>
                     </div>
-                    <button
-                        mat-stroked-button
-                        color="primary"
-                        (click)="togglePanel()"
-                        class="multiple-button"
-                    >
-                        For {{ paymentDetails?.vouchers?.length }} invoices
-                    </button>
-                </div>
-                <div class="invoice-content content-wrapper">
-                    <mat-accordion multi>
-                        <mat-expansion-panel
-                            hideToggle
-                            [expanded]="panelOpenState"
+                    <div class="mr-t2">
+                        <span
+                            class="razorpay-message error-message"
+                            *ngIf="!paymentDetails?.vouchers[0].canPay"
+                            >{{ paymentDetails?.vouchers[0].message }}</span
                         >
-                            <div class="inv-header mr-t2">
-                                <p class="text-uppercase">Invoice #</p>
-                                <p class="text-uppercase">Due on</p>
-                                <p class="text-right text-uppercase">
-                                    Balance Due
-                                </p>
-                            </div>
-                            <div
-                                class="inv-body"
-                                *ngFor="let voucher of paymentDetails?.vouchers"
-                            >
-                                <p>{{ voucher?.number }}</p>
-                                <p>{{ voucher?.dueDate }}</p>
-                                <p class="text-right">
-                                    {{ paymentDetails?.currency?.symbol
-                                    }}{{ voucher.amount }}
-                                </p>
-                            </div>
-                            <p class="mr-t1">
-                                If you want to pay only for an individual
-                                invoice, you can do so from the
-                                <a href="javascript:;" (click)="backToInvoice()"
-                                    >list view of invoices.</a
-                                >
-                            </p>
-                            <div class="mr-t2">
-                                <span
-                                    class="razorpay-message error-message"
-                                    *ngIf="!canPayInvoice"
-                                    >{{ paidInvoiceMessage }}</span
+                    </div>
+                </div>
+                <div
+                    class="pay-invoice-content mr-t15 multiple-voucher"
+                    *ngIf="paymentDetails?.vouchers?.length > 1"
+                >
+                    <div
+                        class="invoice-content-header d-flex justify-content-between align-items-center"
+                    >
+                        <div class="amount-total">
+                            <img
+                                src="../../assets/images/note.svg"
+                                alt="notebook"
+                            />
+                            <div>
+                                <p class="text-mute">Total Amount</p>
+                                <span class="mr-t5 d-block"
+                                    >{{ paymentDetails?.currency?.symbol
+                                    }}<span
+                                        *ngIf="
+                                            paymentDetails?.paymentGatewayType !==
+                                            paymentMethodEnum.RAZORPAY
+                                        "
+                                        >{{ paymentDetails?.totalAmount }}</span
+                                    >
+                                    <span
+                                        *ngIf="
+                                            paymentDetails?.paymentGatewayType ===
+                                            paymentMethodEnum.RAZORPAY
+                                        "
+                                        >{{
+                                            paymentDetails.totalAmount / 100
+                                        }}</span
+                                    ></span
                                 >
                             </div>
-                        </mat-expansion-panel>
-                    </mat-accordion>
-                </div>
-            </div>
-            <div
-                class="pay-invoice-content invoice-tab mr-b2 multiple-voucher-content"
-                *ngIf="
-                    canPayInvoice &&
-                    (paymentMethodIntegrated?.razorpay ||
-                        paymentMethodIntegrated?.paypal)
-                "
-            >
-                <div class="invoice-content content-wrapper">
-                    <mat-tab-group
-                        mat-stretch-tabs="false"
-                        animationDuration="0ms"
-                        (selectedTabChange)="tabChange($event)"
-                        [selectedIndex]="
-                            activeTab === paymentMethodEnum.RAZORPAY
-                                ? 0
-                                : activeTab === paymentMethodEnum.PAYPAL
-                                ? 1
-                                : 0
-                        "
-                    >
-                        <mat-tab
-                            [label]="paymentMethodEnum.RAZORPAY"
-                            *ngIf="paymentMethodIntegrated?.razorpay"
+                        </div>
+                        <button
+                            mat-stroked-button
+                            color="primary"
+                            (click)="togglePanel()"
+                            class="multiple-button"
                         >
-                            <button
-                                mat-stroked-button
-                                color="primary"
-                                class="text-uppercase mr-t15 mr-b2"
-                                (click)="
-                                    initializePayment(
-                                        paymentDetails,
-                                        paymentMethodEnum.RAZORPAY
-                                    )
-                                "
+                            For {{ paymentDetails?.vouchers?.length }} invoices
+                        </button>
+                    </div>
+                    <div class="invoice-content content-wrapper">
+                        <mat-accordion multi>
+                            <mat-expansion-panel
+                                hideToggle
+                                [expanded]="panelOpenState"
                             >
-                                Proceed to payment
-                            </button>
-                        </mat-tab>
-                        <mat-tab
-                            [label]="paymentMethodEnum.PAYPAL"
-                            *ngIf="paymentMethodIntegrated?.paypal"
-                        >
-                            <button
-                                mat-stroked-button
-                                color="primary"
-                                class="text-uppercase mr-t15 mr-b2"
-                                (click)="
-                                    initializePayment(
-                                        paymentDetails,
-                                        paymentMethodEnum.PAYPAL
-                                    )
-                                "
-                            >
-                                Proceed to payment
-                            </button>
-                        </mat-tab>
-                    </mat-tab-group>
+                                <div class="inv-header mr-t2">
+                                    <p class="text-uppercase">Invoice #</p>
+                                    <p class="text-uppercase">Due on</p>
+                                    <p class="text-right text-uppercase">
+                                        Balance Due
+                                    </p>
+                                </div>
+                                <div
+                                    class="inv-body"
+                                    *ngFor="
+                                        let voucher of paymentDetails?.vouchers
+                                    "
+                                >
+                                    <p>{{ voucher?.number }}</p>
+                                    <p>{{ voucher?.dueDate }}</p>
+                                    <p class="text-right">
+                                        {{ paymentDetails?.currency?.symbol
+                                        }}{{ voucher.amount }}
+                                    </p>
+                                </div>
+                                <p class="mr-t1">
+                                    If you want to pay only for an individual
+                                    invoice, you can do so from the
+                                    <a
+                                        href="javascript:;"
+                                        (click)="backToInvoice()"
+                                        >list view of invoices.</a
+                                    >
+                                </p>
+                                <div class="mr-t2">
+                                    <span
+                                        class="razorpay-message error-message"
+                                        *ngIf="!canPayInvoice"
+                                        >{{ paidInvoiceMessage }}</span
+                                    >
+                                </div>
+                            </mat-expansion-panel>
+                        </mat-accordion>
+                    </div>
                 </div>
-            </div>
-        </ng-container>
+                <div
+                    class="pay-invoice-content invoice-tab mr-b2 multiple-voucher-content"
+                    *ngIf="
+                        canPayInvoice &&
+                        (paymentMethodIntegrated?.razorpay ||
+                            paymentMethodIntegrated?.paypal)
+                    "
+                >
+                    <div class="invoice-content content-wrapper">
+                        <mat-tab-group
+                            mat-stretch-tabs="false"
+                            animationDuration="0ms"
+                            (selectedTabChange)="tabChange($event)"
+                            [selectedIndex]="
+                                activeTab === paymentMethodEnum.RAZORPAY
+                                    ? 0
+                                    : activeTab === paymentMethodEnum.PAYPAL
+                                    ? 1
+                                    : 0
+                            "
+                        >
+                            <mat-tab
+                                [label]="paymentMethodEnum.RAZORPAY"
+                                *ngIf="paymentMethodIntegrated?.razorpay"
+                            >
+                                <button
+                                    mat-stroked-button
+                                    color="primary"
+                                    class="text-uppercase mr-t15 mr-b2"
+                                    (click)="
+                                        initializePayment(
+                                            paymentDetails,
+                                            paymentMethodEnum.RAZORPAY
+                                        )
+                                    "
+                                >
+                                    Proceed to payment
+                                </button>
+                            </mat-tab>
+                            <mat-tab
+                                [label]="paymentMethodEnum.PAYPAL"
+                                *ngIf="paymentMethodIntegrated?.paypal"
+                            >
+                                <button
+                                    mat-stroked-button
+                                    color="primary"
+                                    class="text-uppercase mr-t15 mr-b2"
+                                    (click)="
+                                        initializePayment(
+                                            paymentDetails,
+                                            paymentMethodEnum.PAYPAL
+                                        )
+                                    "
+                                >
+                                    Proceed to payment
+                                </button>
+                            </mat-tab>
+                        </mat-tab-group>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
     </div>
 </div>
 <ng-container *ngIf="showPaypalForm">

@@ -55,7 +55,7 @@ export class AuthComponent implements OnInit, OnDestroy {
             if (response[0] && response[1] && response[2]) {
                 this.portalParamsRequest.proxyAuthToken = response[0].proxy_auth_token;
                 this.portalParamsRequest.subDomain = response[1].companyDomainUniqueName;
-                this.redirectUrl = response[2]['folderName'][this.portalParamsRequest.subDomain].redirectUrl;
+                this.redirectUrl = response[2]['folderName'][this.portalParamsRequest.subDomain]?.redirectUrl;
                 this.getPortalUrlParams();
             }
         });
