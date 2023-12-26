@@ -4,9 +4,9 @@ import { PortalErrorHandler } from './catch-manager/catchmanger';
 import { catchError, map } from "rxjs/operators";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
-import { API } from "./apiurls/invoice.api.";
 import { WELCOME_API } from "./apiurls/welcome.api";
 import { environment } from "src/environments/environment";
+import { API } from "./apiurls/invoice.api";
 @Injectable()
 export class InvoiceService {
     private apiUrl: string = '';

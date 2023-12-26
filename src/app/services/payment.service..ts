@@ -4,9 +4,9 @@ import { PortalErrorHandler } from './catch-manager/catchmanger';
 import { catchError, map } from "rxjs/operators";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
-import { PAYMENT_API } from "./apiurls/payment.api.";
 import { WELCOME_API } from "./apiurls/welcome.api";
 import { environment } from "src/environments/environment";
+import { PAYMENT_API } from "./apiurls/payment.api";
 
 @Injectable()
 export class PaymentService {

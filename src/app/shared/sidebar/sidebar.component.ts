@@ -176,15 +176,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.accountUrlRequest.accountUniqueName = this.storeData.userDetails.account?.uniqueName;
         this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
         this.accountUrlRequest.sessionId = this.storeData.session?.id;
-        
+
         this.authService.logoutUser(this.accountUrlRequest).pipe().subscribe(response => {
             this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: null, session: null, domain: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
-            this.generalService.showSnackbar('You have successfully logged out.');
+            this.generalService.showSnackbar('You have successfully logged out.', 'success');
             const url = this.portalDomain + '/login';
             this.router.navigate([url]);
         });
     }
-    
+
     /**
      * This listner is used for mouse move events
      *
