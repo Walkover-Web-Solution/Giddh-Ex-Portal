@@ -53,6 +53,10 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public decodedVoucherUniqueNames: string[] = [];
     /** Holds payment methods */
     public paymentMethodEnum: any = PAYMENT_METHODS_ENUM;
+    /** Holds url parameters */
+    public urlParams: any = {};
+    /** Holds query parameters */
+    public queryParams: any = {};
 
     constructor(
         public dialog: MatDialog,
@@ -73,10 +77,13 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public ngOnInit(): void {
-        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
-                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-                if (response[0]?.accountUniqueName) {
+                this.queryParams = response[0];
+                this.urlParams = response[1];
+
+                this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
+                if (this.urlParams?.accountUniqueName) {
                     this.getPaymentMethods();
                 }
             }
@@ -120,33 +127,33 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     private getVoucherDetails(paymentType?: string): void {
         this.isLoading = true;
-        this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            const voucherUniqueName = params.voucherUniqueName || '';
-            const voucherUniqueNameArray = voucherUniqueName.split('|');
-            if (params?.accountUniqueName) {
-                const accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
-                const companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
-                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType };
-                this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
-                    this.isLoading = false;
-                    if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
-                        this.paymentDetails = voucherDetailsResponse.body;
-                        this.tabSelected(voucherDetailsResponse.body?.paymentGatewayType);
-                        let hasPaidVouchers = voucherDetailsResponse.body?.vouchers?.filter(voucher => voucher.status === "PAID");
-                        if (!hasPaidVouchers?.length) {
-                            this.canPayInvoice = true;
-                        } else {
-                            const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
-                            this.canPayInvoice = false;
-                            this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidVoucherNumbers?.length > 1 ? "are" : "is" + "already PAID."
-                        }
+        
+        const voucherUniqueName = this.urlParams.voucherUniqueName || '';
+        const voucherUniqueNameArray = voucherUniqueName.split('|');
+        if (this.urlParams?.accountUniqueName) {
+            const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+            const companyUniqueName = this.urlParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+            const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.payment_id };
+            this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
+                this.isLoading = false;
+                if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
+                    this.paymentDetails = voucherDetailsResponse.body;
+                    this.tabSelected(voucherDetailsResponse.body?.paymentGatewayType);
+                    let hasPaidVouchers = voucherDetailsResponse.body?.vouchers?.filter(voucher => voucher.status === "PAID");
+                    if (!hasPaidVouchers?.length) {
+                        this.canPayInvoice = true;
                     } else {
-                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
+                        this.canPayInvoice = false;
+                        this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidVoucherNumbers?.length > 1 ? "are" : "is" + "already PAID."
                     }
-                });
-            }
-            this.changeDetectionRef.detectChanges();
-        });
+                } else {
+                    this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                }
+            });
+        }
+        this.changeDetectionRef.detectChanges();
+        
     }
 
     /**
@@ -158,6 +165,13 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public initializePayment(paymentRequest: any, type: PAYMENT_METHODS_ENUM): void {
         if (type === PAYMENT_METHODS_ENUM.PAYPAL) {
             if (paymentRequest.paymentGatewayType === PAYMENT_METHODS_ENUM.PAYPAL) {
+                let returnUrl = document.URL;
+                if (returnUrl.indexOf("?") > -1) {
+                    returnUrl = returnUrl + "&payment_id=" + paymentRequest.paymentId;
+                } else {
+                    returnUrl = returnUrl + "?payment_id=" + paymentRequest.paymentId;
+                }
+
                 this.paypalForm = this.formBuilder.group({
                     businessEmail: [paymentRequest.paymentKey],
                     itemName: [paymentRequest.vouchers[0]?.number],
@@ -165,7 +179,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     amount: [paymentRequest.totalAmount],
                     currencyCode: [paymentRequest.currency.code],
                     notifyUrl: [this.generalService.getPaypalIpnUrl(this.storeData.userDetails.companyUniqueName, this.storeData.userDetails?.account.uniqueName, paymentRequest.paymentId)],
-                    returnUrl: [document.URL],
+                    returnUrl: [returnUrl],
                     cancelReturnUrl: [document.URL]
                 });
 
