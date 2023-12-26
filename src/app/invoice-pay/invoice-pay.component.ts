@@ -199,7 +199,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     } else {
                         const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
                         this.canPayInvoice = false;
-                        this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidVoucherNumbers?.length > 1 ? "are" : "is" + "already PAID."
+                        const paidMessage = paidVoucherNumbers?.length > 1 ? "are" : "is" + " already PAID."
+                        this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidMessage;
                     }
                 } else {
                     this.generalService.showSnackbar(voucherDetailsResponse?.message);
@@ -219,10 +220,12 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         if (type === PAYMENT_METHODS_ENUM.PAYPAL) {
             if (paymentRequest.paymentGatewayType === PAYMENT_METHODS_ENUM.PAYPAL) {
                 let returnUrl = document.URL;
-                if (returnUrl.indexOf("?") > -1) {
-                    returnUrl = returnUrl + "&payment_id=" + paymentRequest.paymentId;
-                } else {
-                    returnUrl = returnUrl + "?payment_id=" + paymentRequest.paymentId;
+                if (returnUrl.indexOf("payment_id") === -1) {
+                    if (returnUrl.indexOf("?") > -1) {
+                        returnUrl = returnUrl + "&payment_id=" + paymentRequest.paymentId;
+                    } else {
+                        returnUrl = returnUrl + "?payment_id=" + paymentRequest.paymentId;
+                    }
                 }
 
                 this.paypalForm = this.formBuilder.group({
