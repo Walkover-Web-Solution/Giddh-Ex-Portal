@@ -112,14 +112,15 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 this.notUserLoginDetails.show = true;
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
                 if (!this.storeData?.session) {
-                    this.loginButtonScriptLoaded();
                     this.storeData = {
                         session: {
                             createAt: null,
                             expiresAt: null,
                             id: null
-                        }
+                        },
+                        domain: this.urlParams.companyDomainUniqueName
                     }
+                    this.loginButtonScriptLoaded();
                 }
                 if (this.urlParams?.accountUniqueName) {
                     this.getPaymentMethods();
@@ -149,7 +150,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             };
             const routerState = (this.route as any)._routerState?.snapshot?.url;
             const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
-            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
+            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, domain: this.storeData.domain } }));
             this.generalService.loadScript(environment.proxyReferenceId, configuration);
         }, 200)
     }
@@ -203,7 +204,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             if (this.urlParams?.accountUniqueName) {
                 const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
                 const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
-                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.token };
+                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.paymentId };
                 this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
                     this.isLoading = false;
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
@@ -229,7 +230,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             if (this.urlParams?.accountUniqueName) {
                 const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
                 const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
-                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.token };
+                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.paymentId };
                 this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
                     this.isLoading = false;
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
@@ -250,7 +251,6 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             }
         }
         this.changeDetectionRef.detectChanges();
-
     }
 
     /**
@@ -275,7 +275,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     custom: [''],
                     amount: [paymentRequest.totalAmount],
                     currencyCode: [paymentRequest.currency.code],
-                    notifyUrl: [this.generalService.getPaypalIpnUrl(this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName, this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName, this.queryParams.token ?? paymentRequest.paymentId)],
+                    notifyUrl: [this.generalService.getPaypalIpnUrl(this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName, this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName, paymentRequest.paymentId)],
                     returnUrl: [returnUrl],
                     cancelReturnUrl: [document.URL]
                 });

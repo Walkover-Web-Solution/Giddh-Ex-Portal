@@ -1,5 +1,5 @@
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
-import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
+import { Component, HostListener, Input, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Observable, ReplaySubject, combineLatest } from "rxjs";
@@ -60,7 +60,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         private store: Store,
         private generalService: GeneralService
     ) {
-        this.isMobile$ = this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small]).pipe(map(result => result.matches),shareReplay());
+        this.isMobile$ = this.breakpointObserver.observe([Breakpoints.XSmall, Breakpoints.Small]).pipe(map(result => result.matches), shareReplay());
     }
 
     /**
@@ -69,21 +69,29 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof SidebarComponent
      */
     public ngOnInit(): void {
-        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-            if (response[0] && response[1] && !this.storeData?.session) {
-                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-                this.isExpanded = this.storeData.sidebarState;
-                this.accountUrlRequest.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
-                this.accountUrlRequest.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
-                this.accountUrlRequest.sessionId = this.storeData.session?.id;
+        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session?.id) {
+                this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
+                this.isExpanded = this.storeData?.sidebarState;
                 this.portalDomain = this.storeData?.domain;
+                this.accountUrlRequest.accountUniqueName = this.storeData?.userDetails?.account?.uniqueName;
+                this.accountUrlRequest.companyUniqueName = this.storeData?.userDetails?.companyUniqueName;
+                this.accountUrlRequest.sessionId = this.storeData?.session?.id;
+                if (!this.storeData?.session?.id) {
+                    this.storeData = {
+                        session: {
+                            createAt: null,
+                            expiresAt: null,
+                            id: null
+                        },
+                    }
+                }
                 this.setActiveMenuItem();
                 this.menuItems = [
                     { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + "/welcome" },
                     { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
                     { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
                 ];
-
                 this.getAccountDetails();
                 this.getCompanyDetails();
             }
@@ -106,7 +114,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof SidebarComponent
      */
     public getAccountDetails(): void {
-        if (this.storeData.session?.id) {
+        if (this.storeData?.session?.id) {
             this.isLoading = true;
             this.dashboardService.getAccountDetails(this.accountUrlRequest).pipe(takeUntil(this.destroyed$)).subscribe((accountsResponse: any) => {
                 if (accountsResponse && accountsResponse.status === 'success') {
@@ -130,7 +138,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof SidebarComponent
      */
     public getCompanyDetails(): void {
-        if (this.storeData.session?.id) {
+        if (this.storeData?.session?.id) {
             this.companyDetailsQueryParams.accountUniqueName = this.storeData.userDetails?.account?.uniqueName;
             this.companyDetailsQueryParams.companyUniqueName = this.storeData.userDetails?.companyUniqueName;
             this.companyDetailsQueryParams.sessionId = this.storeData.session.id;
@@ -153,7 +161,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     public toggleMenu(): void {
         this.isExpanded = !this.isExpanded;
-        this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: this.isExpanded } }));
+        this.store.dispatch(setFolderData({ folderName: this.storeData?.domain, data: { sidebarState: this.isExpanded } }));
     }
 
     /**
@@ -178,7 +186,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.accountUrlRequest.sessionId = this.storeData.session?.id;
 
         this.authService.logoutUser(this.accountUrlRequest).pipe().subscribe(response => {
-            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: null, session: null, domain: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
+            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: null, session: null, domain: null, redirectUrl: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
             this.generalService.showSnackbar('You have successfully logged out.', 'success');
             const url = this.portalDomain + '/login';
             this.router.navigate([url]);
