@@ -9,6 +9,9 @@ import { select, Store } from '@ngrx/store';
 import { PAYMENT_METHODS_ENUM } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { FormBuilder, UntypedFormGroup } from "@angular/forms";
+import { setFolderData } from "../store/actions/session.action";
+import { BreakpointObserver } from "@angular/cdk/layout";
+import { environment } from "src/environments/environment";
 
 @Component({
     selector: "invoice-pay",
@@ -53,6 +56,24 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public decodedVoucherUniqueNames: string[] = [];
     /** Holds payment methods */
     public paymentMethodEnum: any = PAYMENT_METHODS_ENUM;
+    /** Holds url parameters */
+    public urlParams: any = {};
+    /** Holds query parameters */
+    public queryParams: any = {};
+    /** Request params for not user login details*/
+    public notUserLoginDetails = {
+        show: false,
+        token: undefined,
+        voucherUniqueName: undefined,
+        accountUniqueName: undefined,
+        companyUniqueName: undefined
+    };
+    /** True if it is mobile screen */
+    public isMobileScreen: boolean = false;
+    /** Hold proxy button  id */
+    public loginId = environment.proxyReferenceId;
+    /** Hold current url*/
+    public url: string = '';
 
     constructor(
         public dialog: MatDialog,
@@ -62,7 +83,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         private router: Router,
         private store: Store,
         private formBuilder: FormBuilder,
-        private changeDetectionRef: ChangeDetectorRef
+        private changeDetectionRef: ChangeDetectorRef,
+        private breakpointObserver: BreakpointObserver
     ) {
 
     }
@@ -73,14 +95,63 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public ngOnInit(): void {
-        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+
+        this.breakpointObserver.observe([
+            "(max-width: 576px)",
+        ]).pipe(takeUntil(this.destroyed$)).subscribe(result => {
+            this.isMobileScreen = result?.breakpoints["(max-width: 576px)"];
+        });
+
+        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
-                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-                if (response[0]?.accountUniqueName) {
+                this.queryParams = response[0];
+                this.urlParams = response[1];
+                this.notUserLoginDetails.voucherUniqueName = this.urlParams.voucherUniqueName;
+                this.notUserLoginDetails.companyUniqueName = this.queryParams.companyUniqueName;
+                this.notUserLoginDetails.accountUniqueName = this.urlParams.accountUniqueName;
+                this.notUserLoginDetails.show = true;
+                this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
+                if (!this.storeData?.session) {
+                    this.loginButtonScriptLoaded();
+                    this.storeData = {
+                        session: {
+                            createAt: null,
+                            expiresAt: null,
+                            id: null
+                        }
+                    }
+                }
+                if (this.urlParams?.accountUniqueName) {
                     this.getPaymentMethods();
                 }
             }
         });
+    }
+
+    /**
+ *  This will be use for login button script loading
+ *
+ * @memberof InvoicePayComponent
+ */
+    public loginButtonScriptLoaded(): void {
+        this.url = `/${this.storeData.domain}/auth`;
+        setTimeout(() => {
+            let configuration = {
+                referenceId: environment.proxyReferenceId,
+                addInfo: {
+                    redirect_path: this.url
+                },
+                success: (data: any) => {
+                },
+                failure: (error: any) => {
+                    this.generalService.showSnackbar(error?.message);
+                }
+            };
+            const routerState = (this.route as any)._routerState?.snapshot?.url;
+            const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
+            this.generalService.loadScript(environment.proxyReferenceId, configuration);
+        }, 200)
     }
 
     /**
@@ -91,8 +162,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     private getPaymentMethods(): void {
         this.isLoading = true;
-        const accountUniqueName = this.storeData.userDetails?.account.uniqueName;
-        const companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+        const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+        const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
         const request = { accountUniqueName: accountUniqueName, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id };
         this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
             this.isLoading = false;
@@ -120,13 +191,19 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     private getVoucherDetails(paymentType?: string): void {
         this.isLoading = true;
-        this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            const voucherUniqueName = params.voucherUniqueName || '';
+        if (!this.storeData.session?.id) {
+            if (this.isMobileScreen) {
+                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: false } }));
+            } else {
+                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: true } }));
+            }
+            this.notUserLoginDetails.show = true;
+            const voucherUniqueName = this.urlParams.voucherUniqueName || '';
             const voucherUniqueNameArray = voucherUniqueName.split('|');
-            if (params?.accountUniqueName) {
-                const accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
-                const companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
-                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType };
+            if (this.urlParams?.accountUniqueName) {
+                const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+                const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.token };
                 this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
                     this.isLoading = false;
                     if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
@@ -145,8 +222,35 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     }
                 });
             }
-            this.changeDetectionRef.detectChanges();
-        });
+        } else {
+            this.notUserLoginDetails.show = false;
+            const voucherUniqueName = this.urlParams.voucherUniqueName || '';
+            const voucherUniqueNameArray = voucherUniqueName.split('|');
+            if (this.urlParams?.accountUniqueName) {
+                const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+                const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.token };
+                this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
+                    this.isLoading = false;
+                    if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
+                        this.paymentDetails = voucherDetailsResponse.body;
+                        this.tabSelected(voucherDetailsResponse.body?.paymentGatewayType);
+                        let hasPaidVouchers = voucherDetailsResponse.body?.vouchers?.filter(voucher => voucher.status === "PAID");
+                        if (!hasPaidVouchers?.length) {
+                            this.canPayInvoice = true;
+                        } else {
+                            const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
+                            this.canPayInvoice = false;
+                            this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidVoucherNumbers?.length > 1 ? "are" : "is" + "already PAID."
+                        }
+                    } else {
+                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                    }
+                });
+            }
+        }
+        this.changeDetectionRef.detectChanges();
+
     }
 
     /**
@@ -158,14 +262,21 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public initializePayment(paymentRequest: any, type: PAYMENT_METHODS_ENUM): void {
         if (type === PAYMENT_METHODS_ENUM.PAYPAL) {
             if (paymentRequest.paymentGatewayType === PAYMENT_METHODS_ENUM.PAYPAL) {
+                let returnUrl = document.URL;
+                if (returnUrl.indexOf("?") > -1) {
+                    returnUrl = returnUrl + "&payment_id=" + paymentRequest.paymentId;
+                } else {
+                    returnUrl = returnUrl + "?payment_id=" + paymentRequest.paymentId;
+                }
+
                 this.paypalForm = this.formBuilder.group({
                     businessEmail: [paymentRequest.paymentKey],
                     itemName: [paymentRequest.vouchers[0]?.number],
                     custom: [''],
                     amount: [paymentRequest.totalAmount],
                     currencyCode: [paymentRequest.currency.code],
-                    notifyUrl: [this.generalService.getPaypalIpnUrl(this.storeData.userDetails.companyUniqueName, this.storeData.userDetails?.account.uniqueName, paymentRequest.paymentId)],
-                    returnUrl: [document.URL],
+                    notifyUrl: [this.generalService.getPaypalIpnUrl(this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName, this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName, this.queryParams.token ?? paymentRequest.paymentId)],
+                    returnUrl: [returnUrl],
                     cancelReturnUrl: [document.URL]
                 });
 

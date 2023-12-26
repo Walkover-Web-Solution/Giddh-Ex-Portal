@@ -109,6 +109,16 @@
     padding: 0;
 }
 
+.login-section {
+    height: 70px;
+    background-color: var(--color-giddh-blue);
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    padding-left: 22px;
+}
+
 /*---- responsive ----*/
 @media screen and (max-width: 768px) {
     .pay-invoice-wrapper {

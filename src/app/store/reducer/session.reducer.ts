@@ -8,7 +8,7 @@ export interface SessionState {
     companyDetails: null,
     portalDetails: null,
     sidebarState: true,
-    url: null
+    redirectUrl: null
 };
 
 export interface folderNametate {

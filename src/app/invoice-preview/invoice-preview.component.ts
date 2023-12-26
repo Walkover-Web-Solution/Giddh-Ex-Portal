@@ -9,9 +9,6 @@ import { FormBuilder, UntypedFormGroup } from "@angular/forms";
 import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT, PAYMENT_METHODS_ENUM } from "../app.constant";
 import { GeneralService } from "../services/general.service";
-import { environment } from "src/environments/environment";
-import { setFolderData } from "../store/actions/session.action";
-import { BreakpointObserver } from "@angular/cdk/layout";
 declare var initVerification: any;
 @Component({
     selector: "invoice-preview",
@@ -53,27 +50,12 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public commentForm: UntypedFormGroup;
     /** Hold  store data */
     public storeData: any = {};
-    /** Request params for not user login details*/
-    public notUserLoginDetails = {
-        show: false,
-        token: undefined,
-        voucherUniqueName: undefined,
-        accountUniqueName: undefined,
-        companyUniqueName: undefined
-    }
-    /** Hold proxy button  id */
-    public loginId = environment.proxyReferenceId;
-    /** Hold current url*/
-    public url: string = '';
-    /** True if it is mobile screen */
-    public isMobileScreen: boolean = false;
     /** Holds payment methods */
     public paymentMethodEnum: any = PAYMENT_METHODS_ENUM;
 
     constructor(
         private generalService: GeneralService,
         private invoiceService: InvoiceService,
-        private breakpointObserver: BreakpointObserver,
         private router: Router,
         private route: ActivatedRoute,
         private domSanitizer: DomSanitizer,
@@ -90,12 +72,6 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @memberof InvoicePreviewComponent
      */
     public ngOnInit(): void {
-        this.breakpointObserver.observe([
-            "(max-width: 576px)",
-        ]).pipe(takeUntil(this.destroyed$)).subscribe(result => {
-            this.isMobileScreen = result?.breakpoints["(max-width: 576px)"];
-        });
-
         this.commentForm = this.formBuilder.group({
             commentText: ['']
         });
@@ -146,116 +122,42 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.changeDetectionRef.detectChanges();
         let request;
         this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (!this.storeData.session?.id) {
-                if (this.isMobileScreen) {
-                    this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: false } }));
+            this.voucherUniqueName = params.voucherUniqueName ?? params.voucher;
+            this.invoiceListRequest.accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+            this.invoiceListRequest.companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+            this.invoiceListRequest.sessionId = this.storeData.session?.id;
+            this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher;
+
+            request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
+
+            combineLatest([
+                this.invoiceService.getVoucherDetails(request),
+                this.invoiceService.getInvoiceComments(request)
+            ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
+                this.isLoading = false;
+
+                if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
+                    this.paymentDetails = voucherDetailsResponse.body;
+                    let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body?.vouchers[0]?.content, 'application/pdf', 512);
+                    URL.revokeObjectURL(this.pdfFileURL);
+                    this.pdfFileURL = URL.createObjectURL(blob);
+                    this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
+                } else {
+                    if (voucherDetailsResponse?.status === 'error') {
+                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                    }
                 }
-                this.notUserLoginDetails.token = params.token;
-                this.notUserLoginDetails.voucherUniqueName = params.voucherUniqueName;
-                this.notUserLoginDetails.companyUniqueName = params.companyUniqueName;
-                this.notUserLoginDetails.accountUniqueName = params.accountUniqueName;
-                this.notUserLoginDetails.show = true;
-
-                this.invoiceListRequest.accountUniqueName = params.accountUniqueName;
-                this.invoiceListRequest.companyUniqueName = params.companyUniqueName;
-                this.invoiceListRequest.uniqueNames = params.voucherUniqueName;
-
-                request = { accountUniqueName: this.notUserLoginDetails.accountUniqueName, voucherUniqueName: [this.notUserLoginDetails.voucherUniqueName], companyUniqueName: this.notUserLoginDetails.companyUniqueName, sessionId: '', paymentMethod: paymentType };
-
-                combineLatest([
-                    this.invoiceService.getVoucherDetails(request),
-                    this.invoiceService.getInvoiceComments(request)
-                ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
-                    this.isLoading = false;
-
-                    this.loginButtonScriptLoaded();
-
-                    if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
-                        this.paymentDetails = voucherDetailsResponse.body;
-                        let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body?.vouchers[0].content, 'application/pdf', 512);
-                        URL.revokeObjectURL(this.pdfFileURL);
-                        this.pdfFileURL = URL.createObjectURL(blob);
-                        this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
-                    } else {
-                        if (voucherDetailsResponse?.status === 'error') {
-                            this.generalService.showSnackbar(voucherDetailsResponse?.message);
-                        }
+                if (commentsResponse && commentsResponse.status === 'success') {
+                    this.voucherComments = commentsResponse.body;
+                } else {
+                    if (commentsResponse?.status === 'error') {
+                        this.generalService.showSnackbar(commentsResponse?.message);
                     }
-                    if (commentsResponse && commentsResponse.status === 'success') {
-                        this.voucherComments = commentsResponse.body;
-                    } else {
-                        if (commentsResponse?.status === 'error') {
-                            this.generalService.showSnackbar(commentsResponse?.message);
-                        }
-                    }
+                }
 
-                    this.changeDetectionRef.detectChanges();
-                });
-            } else {
-                this.notUserLoginDetails.show = false;
-                this.voucherUniqueName = params.voucherUniqueName ?? params.voucher;
-                this.invoiceListRequest.accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
-                this.invoiceListRequest.companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
-                this.invoiceListRequest.sessionId = this.storeData.session?.id;
-                this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher;
-
-                request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
-
-                combineLatest([
-                    this.invoiceService.getVoucherDetails(request),
-                    this.invoiceService.getInvoiceComments(request)
-                ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
-                    this.isLoading = false;
-
-                    if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
-                        this.paymentDetails = voucherDetailsResponse.body;
-                        let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body?.vouchers[0]?.content, 'application/pdf', 512);
-                        URL.revokeObjectURL(this.pdfFileURL);
-                        this.pdfFileURL = URL.createObjectURL(blob);
-                        this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
-                    } else {
-                        if (voucherDetailsResponse?.status === 'error') {
-                            this.generalService.showSnackbar(voucherDetailsResponse?.message);
-                        }
-                    }
-                    if (commentsResponse && commentsResponse.status === 'success') {
-                        this.voucherComments = commentsResponse.body;
-                    } else {
-                        if (commentsResponse?.status === 'error') {
-                            this.generalService.showSnackbar(commentsResponse?.message);
-                        }
-                    }
-
-                    this.changeDetectionRef.detectChanges();
-                });
-            }
+                this.changeDetectionRef.detectChanges();
+            });
         });
-    }
-
-    /**
-     *  This will be use for login button script loading
-     *
-     * @memberof InvoicePreviewComponent
-     */
-    public loginButtonScriptLoaded(): void {
-        this.url = `/${this.storeData.domain}/auth`;
-        setTimeout(() => {
-            let configuration = {
-                referenceId: environment.proxyReferenceId,
-                addInfo: {
-                    redirect_path: this.url
-                },
-                success: (data: any) => {
-                },
-                failure: (error: any) => {
-                    this.generalService.showSnackbar(error?.message);
-                }
-            };
-            const routerState = (this.route as any)._routerState?.snapshot?.url;
-            const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
-            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
-            this.generalService.loadScript(environment.proxyReferenceId, configuration);
-        }, 200)
     }
 
     /**
@@ -265,21 +167,11 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @memberof InvoicePreviewComponent
      */
     public downloadPdf(voucherUniqueName: any, voucherNumber: any): void {
-        let urlRequest;
-        if (this.notUserLoginDetails.show) {
-            urlRequest = {
-                accountUniqueName: this.notUserLoginDetails.accountUniqueName,
-                companyUniqueName: this.notUserLoginDetails.companyUniqueName,
-                voucherUniqueName: voucherUniqueName,
-                sessionId: '',
-            }
-        } else {
-            urlRequest = {
-                accountUniqueName: this.invoiceListRequest.accountUniqueName,
-                companyUniqueName: this.invoiceListRequest.companyUniqueName,
-                sessionId: this.storeData.session.id,
-                voucherUniqueName: voucherUniqueName
-            }
+        let urlRequest = {
+            accountUniqueName: this.invoiceListRequest.accountUniqueName,
+            companyUniqueName: this.invoiceListRequest.companyUniqueName,
+            sessionId: this.storeData.session.id,
+            voucherUniqueName: voucherUniqueName
         }
         this.invoiceService.downloadVoucher(urlRequest)
             .pipe(takeUntil(this.destroyed$))
