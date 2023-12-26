@@ -60,14 +60,6 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public urlParams: any = {};
     /** Holds query parameters */
     public queryParams: any = {};
-    /** Request params for not user login details*/
-    public notUserLoginDetails = {
-        show: false,
-        token: undefined,
-        voucherUniqueName: undefined,
-        accountUniqueName: undefined,
-        companyUniqueName: undefined
-    };
     /** True if it is mobile screen */
     public isMobileScreen: boolean = false;
     /** Hold proxy button  id */
@@ -95,7 +87,6 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public ngOnInit(): void {
-
         this.breakpointObserver.observe([
             "(max-width: 576px)",
         ]).pipe(takeUntil(this.destroyed$)).subscribe(result => {
@@ -106,19 +97,16 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.queryParams = response[0];
                 this.urlParams = response[1];
-                this.notUserLoginDetails.voucherUniqueName = this.urlParams.voucherUniqueName;
-                this.notUserLoginDetails.companyUniqueName = this.queryParams.companyUniqueName;
-                this.notUserLoginDetails.accountUniqueName = this.urlParams.accountUniqueName;
-                this.notUserLoginDetails.show = true;
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
-                if (!this.storeData?.session) {
+                if (!this.storeData?.session?.id) {
                     this.storeData = {
                         session: {
                             createAt: null,
                             expiresAt: null,
                             id: null
                         },
-                        domain: this.urlParams.companyDomainUniqueName
+                        domain: this.urlParams.companyDomainUniqueName,
+                        sidebarState: true
                     }
                     this.loginButtonScriptLoaded();
                 }
@@ -130,10 +118,10 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     }
 
     /**
- *  This will be use for login button script loading
- *
- * @memberof InvoicePayComponent
- */
+     *  This will be use for login button script loading
+     *
+     * @memberof InvoicePayComponent
+     */
     public loginButtonScriptLoaded(): void {
         this.url = `/${this.storeData.domain}/auth`;
         setTimeout(() => {
@@ -192,65 +180,33 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     private getVoucherDetails(paymentType?: string): void {
         this.isLoading = true;
-        if (!this.storeData.session?.id) {
-            if (this.isMobileScreen) {
-                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: false } }));
-            } else {
-                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: true } }));
-            }
-            this.notUserLoginDetails.show = true;
-            const voucherUniqueName = this.urlParams.voucherUniqueName || '';
-            const voucherUniqueNameArray = voucherUniqueName.split('|');
-            if (this.urlParams?.accountUniqueName) {
-                const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
-                const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
-                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.paymentId };
-                this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
-                    this.isLoading = false;
-                    if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
-                        this.paymentDetails = voucherDetailsResponse.body;
-                        this.tabSelected(voucherDetailsResponse.body?.paymentGatewayType);
-                        let hasPaidVouchers = voucherDetailsResponse.body?.vouchers?.filter(voucher => voucher.status === "PAID");
-                        if (!hasPaidVouchers?.length) {
-                            this.canPayInvoice = true;
-                        } else {
-                            const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
-                            this.canPayInvoice = false;
-                            this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidVoucherNumbers?.length > 1 ? "are" : "is" + "already PAID."
-                        }
+        this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { sidebarState: !this.isMobileScreen } }));
+
+        const voucherUniqueName = this.urlParams.voucherUniqueName || '';
+        const voucherUniqueNameArray = voucherUniqueName.split('|');
+        if (this.urlParams?.accountUniqueName) {
+            const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+            const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+            const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.payment_id };
+            this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
+                this.isLoading = false;
+                if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
+                    this.paymentDetails = voucherDetailsResponse.body;
+                    this.tabSelected(voucherDetailsResponse.body?.paymentGatewayType);
+                    let hasPaidVouchers = voucherDetailsResponse.body?.vouchers?.filter(voucher => voucher.status === "PAID");
+                    if (!hasPaidVouchers?.length) {
+                        this.canPayInvoice = true;
                     } else {
-                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                        const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
+                        this.canPayInvoice = false;
+                        this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidVoucherNumbers?.length > 1 ? "are" : "is" + "already PAID."
                     }
-                });
-            }
-        } else {
-            this.notUserLoginDetails.show = false;
-            const voucherUniqueName = this.urlParams.voucherUniqueName || '';
-            const voucherUniqueNameArray = voucherUniqueName.split('|');
-            if (this.urlParams?.accountUniqueName) {
-                const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
-                const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
-                const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.paymentId };
-                this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
-                    this.isLoading = false;
-                    if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
-                        this.paymentDetails = voucherDetailsResponse.body;
-                        this.tabSelected(voucherDetailsResponse.body?.paymentGatewayType);
-                        let hasPaidVouchers = voucherDetailsResponse.body?.vouchers?.filter(voucher => voucher.status === "PAID");
-                        if (!hasPaidVouchers?.length) {
-                            this.canPayInvoice = true;
-                        } else {
-                            const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
-                            this.canPayInvoice = false;
-                            this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidVoucherNumbers?.length > 1 ? "are" : "is" + "already PAID."
-                        }
-                    } else {
-                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
-                    }
-                });
-            }
+                } else {
+                    this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                }
+                this.changeDetectionRef.detectChanges();
+            });
         }
-        this.changeDetectionRef.detectChanges();
     }
 
     /**

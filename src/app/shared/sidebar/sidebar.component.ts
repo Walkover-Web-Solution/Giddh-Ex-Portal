@@ -70,9 +70,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
      */
     public ngOnInit(): void {
         combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-            if (response[0] && response[1] && !this.storeData?.session?.id) {
+            if (response[0] && response[1] && !this.storeData?.session) {
                 this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
-                this.isExpanded = this.storeData?.sidebarState;
                 this.portalDomain = this.storeData?.domain;
                 this.accountUrlRequest.accountUniqueName = this.storeData?.userDetails?.account?.uniqueName;
                 this.accountUrlRequest.companyUniqueName = this.storeData?.userDetails?.companyUniqueName;
@@ -84,6 +83,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
                             expiresAt: null,
                             id: null
                         },
+                        sidebarState: true,
+                        domain: response[1].companyDomainUniqueName,
                     }
                 }
                 this.setActiveMenuItem();
@@ -92,6 +93,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
                     { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
                 ];
+                this.isExpanded = this.storeData?.sidebarState;
                 this.getAccountDetails();
                 this.getCompanyDetails();
             }
