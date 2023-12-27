@@ -192,6 +192,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 this.isLoading = false;
                 if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
                     this.paymentDetails = voucherDetailsResponse.body;
+
                     this.tabSelected(voucherDetailsResponse.body?.paymentGatewayType);
                     let hasPaidVouchers = voucherDetailsResponse.body?.vouchers?.filter(voucher => voucher.status === "PAID");
                     if (!hasPaidVouchers?.length) {
@@ -201,6 +202,12 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                         this.canPayInvoice = false;
                         const paidMessage = paidVoucherNumbers?.length > 1 ? "are" : "is" + " already PAID."
                         this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidMessage;
+                    }
+
+                    if (this.queryParams?.PayerID && this.canPayInvoice) {
+                        this.canPayInvoice = false;
+                        this.paymentDetails.vouchers[0].canPay = false;
+                        this.paymentDetails.vouchers[0].message = "Invoice payment is being processed.";
                     }
                 } else {
                     this.generalService.showSnackbar(voucherDetailsResponse?.message);
