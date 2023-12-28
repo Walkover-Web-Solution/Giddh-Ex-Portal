@@ -211,6 +211,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     }
                 } else {
                     this.generalService.showSnackbar(voucherDetailsResponse?.message);
+                    this.backToInvoice();
                 }
                 this.changeDetectionRef.detectChanges();
             });
@@ -301,7 +302,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @param {(PAYMENT_METHODS_ENUM.RAZORPAY | PAYMENT_METHODS_ENUM.PAYPAL)} tabName
      * @memberof InvoicePayComponent
      */
-    public tabSelected(tabName: PAYMENT_METHODS_ENUM.RAZORPAY | PAYMENT_METHODS_ENUM.PAYPAL) {
+    public tabSelected(tabName: PAYMENT_METHODS_ENUM.RAZORPAY | PAYMENT_METHODS_ENUM.PAYPAL): void {
         this.activeTab = tabName;
     }
 
@@ -327,7 +328,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             let date = dd + "-" + mm + "-" + yyyy;
 
             let payload = {
-                paymentGatewayType: this.paymentMethodIntegrated.paypal ? PAYMENT_METHODS_ENUM.PAYPAL : PAYMENT_METHODS_ENUM.RAZORPAY,
+                paymentGatewayType: PAYMENT_METHODS_ENUM.RAZORPAY,
                 razorPayPaymentId: razorPayResponse.razorpay_payment_id,
                 totalAmount: this.paymentDetails.totalAmount,
                 date: date
@@ -340,7 +341,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             this.invoiceService.payInvoice(payRequest, payload).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
                 if (response && response.status === 'success') {
                     this.generalService.showSnackbar(response?.body, "success");
-                    this.getVoucherDetails();
+                    this.getVoucherDetails(PAYMENT_METHODS_ENUM.RAZORPAY);
                 } else {
                     if (response?.status === 'error') {
                         this.generalService.showSnackbar(response?.message);
