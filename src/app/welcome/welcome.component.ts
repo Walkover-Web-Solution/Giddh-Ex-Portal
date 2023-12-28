@@ -93,6 +93,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public ngOnInit(): void {
+        this.isLoading = true;
         document.querySelector('body')?.classList.add('welcome-main');
 
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
@@ -107,7 +108,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
                 this.lastPaymentRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
                 this.lastPaymentRequest.vendorUniqueName = this.storeData.userDetails.vendorContactUniqueName;
                 this.lastPaymentRequest.sessionId = this.storeData.session.id;
-                this.isLoading = true;
                 const balanceSummary$ = this.dashboardService.getBalanceSummary(this.userBalanceSummary);
                 const accountDetails$ = this.dashboardService.getAccountDetails(this.userBalanceSummary);
                 const accounts$ = this.dashboardService.getAccounts(this.userBalanceSummary);

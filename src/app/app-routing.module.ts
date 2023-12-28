@@ -13,6 +13,7 @@ const routes: Routes = [
     { path: ":companyDomainUniqueName/payment/preview", loadChildren: () => import('./payment-preview/payment-preview.module').then(module => module.PaymentPdfModule), canActivate: [NeedsAuthentication] },
     { path: ":companyDomainUniqueName/invoice/preview", loadChildren: () => import('./invoice-preview/invoice-preview.module').then(module => module.InvoicePdfModule), canActivate: [NeedsAuthentication] },
     { path: ":companyDomainUniqueName/invoice-pay/account/:accountUniqueName/voucher/:voucherUniqueName", loadChildren: () => import('./invoice-pay/invoice-pay.module').then(module => module.InvoicePayModule) },
+    { path: ":companyDomainUniqueName/switch-account", loadChildren: () => import('./switch-account/switch-account.module').then(module => module.SwitchAccountModule), canActivate: [NeedsAuthentication] },
     { path: '', redirectTo: 'page-not-found', pathMatch: 'full' },
     { path: '**', redirectTo: 'page-not-found', pathMatch: 'full' }
 ];
