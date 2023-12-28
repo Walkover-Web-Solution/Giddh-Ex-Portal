@@ -1,0 +1,13 @@
+<ng-container *ngIf="storeData?.portalUsers?.length">
+    <button mat-button [matMenuTriggerFor]="menu">
+        <ng-container *ngIf="!isLoading">Switch Account</ng-container>
+        <ng-container *ngIf="isLoading">
+            <mat-spinner [diameter]="30" *ngIf="isLoading"></mat-spinner>
+        </ng-container>
+    </button>
+    <mat-menu #menu="matMenu">
+        <ng-container *ngFor="let user of storeData?.portalUsers">
+            <button mat-menu-item *ngIf="user?.account?.uniqueName !== storeData?.userDetails?.account?.uniqueName" (click)="onUserSelected(user)">{{ user?.account?.name }}</button>
+        </ng-container>
+    </mat-menu>
+</ng-container>

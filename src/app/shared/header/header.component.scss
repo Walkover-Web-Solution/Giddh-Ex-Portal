@@ -3,7 +3,7 @@
     padding: 20px 30px;
     h2 {
         font-weight: 300;
-        display: flex;
+        display: inline-block;
         column-gap: 20px;
         a {
             img{
@@ -11,4 +11,7 @@
             }
         }
     }
+}
+switch-account {
+    float: right;
 }

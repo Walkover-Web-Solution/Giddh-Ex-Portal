@@ -52,7 +52,7 @@ export class AuthComponent implements OnInit, OnDestroy {
         private store: Store
     ) {
         combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-            if (response[0] && response[1] && response[2]) {
+            if (response[0] && response[1] && response[2] && !this.portalParamsRequest.proxyAuthToken) {
                 this.portalParamsRequest.proxyAuthToken = response[0].proxy_auth_token;
                 this.portalParamsRequest.subDomain = response[1].companyDomainUniqueName;
                 this.redirectUrl = response[2]['folderName'][this.portalParamsRequest.subDomain]?.redirectUrl;
@@ -164,6 +164,7 @@ export class AuthComponent implements OnInit, OnDestroy {
                     if (portal && portal.status === 'success') {
                         this.users = portal.body;
                         if (this.users?.length > 1) {
+                            this.store.dispatch(setFolderData({ folderName: this.portalParamsRequest.subDomain, data: { portalUsers: portal.body, proxyAuthToken: this.portalParamsRequest.proxyAuthToken } }));
                             this.isLoading = false;
                         } else {
                             this.savePortalUserSession = {
