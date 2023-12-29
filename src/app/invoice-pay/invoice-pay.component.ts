@@ -200,14 +200,15 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     } else {
                         const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.number });
                         this.canPayInvoice = false;
-                        const paidMessage = paidVoucherNumbers?.length > 1 ? "are" : "is" + " already PAID."
-                        this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidMessage;
+                        const paidMessage = paidVoucherNumbers?.length > 1 ? " are" : " is";
+                        this.paidInvoiceMessage = paidVoucherNumbers.join(", ") + paidMessage + " already PAID.";
                     }
 
                     if (this.queryParams?.PayerID && this.canPayInvoice) {
                         this.canPayInvoice = false;
                         this.paymentDetails.vouchers[0].canPay = false;
                         this.paymentDetails.vouchers[0].message = "Invoice payment is being processed.";
+                        this.paidInvoiceMessage = "Invoice payment is being processed.";
                     }
                 } else {
                     this.generalService.showSnackbar(voucherDetailsResponse?.message);
