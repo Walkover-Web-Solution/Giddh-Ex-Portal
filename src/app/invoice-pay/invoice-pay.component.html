@@ -219,7 +219,7 @@
 </div>
 <ng-container *ngIf="showPaypalForm">
     <form
-        action="https://www.sandbox.paypal.com/cgi-bin/webscr"
+        [action]="paypalUrl"
         method="post"
         name="paypalForm"
         id="paypalForm"

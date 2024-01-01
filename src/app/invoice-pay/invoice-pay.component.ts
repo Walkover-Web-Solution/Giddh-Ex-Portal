@@ -66,6 +66,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public loginId = environment.proxyReferenceId;
     /** Hold current url*/
     public url: string = '';
+    /** Holds paypal url */
+    public paypalUrl: string = environment.paypalUrl;
 
     constructor(
         public dialog: MatDialog,
