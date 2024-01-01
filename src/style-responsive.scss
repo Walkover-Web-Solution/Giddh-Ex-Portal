@@ -164,6 +164,54 @@
 
 /*---- max-width-576-start ----*/
 @media screen and (max-width: 576px) {
+    .pay-invoice-content {
+        text-align: center;
+    }
+
+    .main-wrapper {
+        .invoice-content-header {
+            display: block;
+            text-align: center;
+        }
+
+        .multiple-button {
+            margin-top: 15px;
+        }
+
+        .inner-header {
+            h2 {
+                font-size: var(--font-size-20) !important;
+            }
+        }
+
+        .amount-total {
+            display: block !important;
+
+            .date-border {
+                margin-top: 10px !important;
+                margin-bottom: 10px !important;
+            }
+
+        }
+    }
+
+    .pay-invoice-content {
+        .proceed-button {
+            .mdc-button__label {
+                font-size: 11px !important;
+            }
+        }
+    }
+
+    .main-wrapper {
+        width: calc(100vw - 60px) !important;
+    }
+
+    .mat-mdc-tab-group {
+        flex-direction: row !important;
+        flex-direction: column !important;
+    }
+
     .pdf-wrapper {
         display: none;
     }

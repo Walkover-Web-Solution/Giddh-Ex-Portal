@@ -1,26 +1,21 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { CompanyResponse } from "src/app/models/Company";
 import { select, Store } from '@ngrx/store';
-import { ActivatedRoute } from "@angular/router";
 
 @Component({
-    selector: "footer",
-    templateUrl: "footer.component.html",
-    styleUrls: ["footer.component.scss"]
+    selector: "switch-user",
+    templateUrl: "./switch-account.component.html"
 })
-export class FooterComponent implements OnInit, OnDestroy {
-    /** Hold company response */
-    public companyDetails: CompanyResponse;
+export class SwitchAccountComponent implements OnInit, OnDestroy {
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-    /** Hold  store data */
-    public storeData: any = {};
 
     constructor(
         private store: Store,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private router: Router
     ) {
 
     }
@@ -28,21 +23,22 @@ export class FooterComponent implements OnInit, OnDestroy {
     /**
      * This will be use for component initialization
      *
-     * @memberof FooterComponent
+     * @memberof SwitchAccountComponent
      */
     public ngOnInit(): void {
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-            if (response[0] && response[1] && !this.storeData?.session) {
-                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-                this.companyDetails = this.storeData.companyDetails;
+            if (response[0] && response[1]) {
+                let storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                let url = '/' + storeData.domain + '/welcome';
+                this.router.navigate([url]);
             }
         });
     }
 
     /**
-     * This will be use for component destroy
+     * This will ve use for component destory
      *
-     * @memberof FooterComponent
+     * @memberof SwitchAccountComponent
      */
     public ngOnDestroy(): void {
         this.destroyed$.next(true);

@@ -5,14 +5,15 @@ import { MatTableDataSource } from "@angular/material/table";
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReciptResponse } from "../models/Company";
 import { takeUntil } from "rxjs/operators";
-import { ReplaySubject } from "rxjs";
+import { ReplaySubject, combineLatest } from "rxjs";
 import { saveAs } from 'file-saver';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { InvoiceService } from "../services/invoice.service";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "../services/general.service";
 import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
 import { CommonService } from "../services/common.service";
+import { SelectionModel } from "@angular/cdk/collections";
 
 @Component({
     selector: "invoice",
@@ -25,9 +26,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     /** Instance of mat sort */
     @ViewChild(MatSort) sort!: MatSort;
     /** Instance of mat pay modal dialog */
-    @ViewChild('paymodal', { static: true }) public paymodal: any;
-    /** Instance of mat pay table modal dialog */
-    @ViewChild('paytablemodal', { static: true }) public paytablemodal: any;
+    @ViewChild('payModal', { static: true }) public payModal: any;
     /** True if api call in progress */
     public isLoading: boolean = false;
     /** True if api call in progress */
@@ -35,7 +34,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     /** Hold table displayed columns*/
-    public displayedColumns: string[] = ['invoice', 'voucherDate', 'grandTotal', 'status', 'overdue', 'action'];
+    public displayedColumns: string[] = ['sno', 'invoice', 'voucherDate', 'grandTotal', 'status', 'overdue', 'action'];
     /** Hold table datasource */
     public dataSource = new MatTableDataSource<any>();
     /** Hold panel open state*/
@@ -86,6 +85,10 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public pageSizeOptions: any[] = PAGE_SIZE_OPTIONS;
     /** Count of total records for pagination */
     public totalRecords: number = 0;
+    /** Hold selected voucher event */
+    public selection = new SelectionModel<any>(true, []);
+    /** True if we should select all checkbox */
+    public showSelectAll: boolean = false;
 
     constructor(
         public dialog: MatDialog,
@@ -93,13 +96,11 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         private invoiceService: InvoiceService,
         private commonService: CommonService,
         private router: Router,
-        private store: Store
+        private store: Store,
+        private route: ActivatedRoute
     ) {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            if (sessionState.session) {
-                this.storeData = sessionState.session;
-            }
-        });
+
+
     }
 
     /**
@@ -108,7 +109,12 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @memberof InvoiceComponent
      */
     public ngOnInit(): void {
-        this.getCountPage();
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                this.getCountPage();
+            }
+        });
     }
 
     /**
@@ -206,15 +212,15 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         }
     }
 
-/**
- * This will be use for get count page
- *
- * @memberof InvoiceComponent
- */
-public getCountPage(): void {
+    /**
+     * This will be use for get count page
+     *
+     * @memberof InvoiceComponent
+     */
+    public getCountPage(): void {
         if (this.storeData) {
             let request = {
-                accountUniqueName : this.storeData.userDetails?.account?.uniqueName,
+                accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
                 companyUniqueName: this.storeData.userDetails?.companyUniqueName,
                 vendorUniqueName: this.storeData.userDetails?.vendorContactUniqueName,
                 sessionId: this.storeData.session?.id,
@@ -237,12 +243,12 @@ public getCountPage(): void {
         }
     }
 
-/**
- * This will be use for set count page
- *
- * @memberof InvoiceComponent
- */
-public setCountPage(): void {
+    /**
+     * This will be use for set count page
+     *
+     * @memberof InvoiceComponent
+     */
+    public setCountPage(): void {
         if (this.storeData) {
             let request = {
                 accountUniqueName: this.storeData.userDetails?.account?.uniqueName,
@@ -272,11 +278,13 @@ public setCountPage(): void {
      * @param {*} item
      * @memberof InvoiceComponent
      */
-    public openPayDialog(item: any): void {
-        this.dialog.open(this.paytablemodal, {
+    public openPayDialog(item?: any): void {
+        this.dialog.open(this.payModal, {
             width: '600px'
         });
-        this.selectedPaymentVoucher = item;
+        if (!this.selection?.selected?.length) {
+            this.selectedPaymentVoucher = item;
+        }
     }
 
     /**
@@ -287,12 +295,18 @@ public setCountPage(): void {
     public voucherPay(): void {
         this.dialog?.closeAll();
         let url = this.storeData.domain + '/invoice-pay';
-        this.router.navigate([url], {
-            queryParams: {
-                account: this.selectedPaymentVoucher.account.uniqueName,
-                voucher: this.selectedPaymentVoucher.uniqueName
-            }
-        });
+        if (this.selection?.selected?.length) {
+            const voucherUniqueNames = this.selection?.selected?.map(voucher => {
+                return voucher.uniqueName;
+            });
+            const accountUniqueName = this.selection?.selected[0].account.uniqueName;
+            const encodedVoucherUniqueNames = voucherUniqueNames.map(encodeURIComponent);
+            url = url + `/account/${accountUniqueName}/voucher/${encodedVoucherUniqueNames.join('|')}`;
+            this.router.navigate([url]);
+        } else {
+            url = url + '/account/' + this.selectedPaymentVoucher.account.uniqueName + '/voucher/' + this.selectedPaymentVoucher.uniqueName;
+            this.router.navigate([url]);
+        }
     }
 
     /**
@@ -355,5 +369,48 @@ public setCountPage(): void {
     public ngOnDestroy(): void {
         this.destroyed$.next(true);
         this.destroyed$.complete();
+    }
+
+    /**
+     * This will be use for is all selected vouchers
+     *
+     * @return {*}
+     * @memberof InvoiceComponent
+     */
+    public isAllSelected(): boolean {
+        const numSelected = this.selection.selected.length;
+        const numRows = this.dataSource.data.length;
+        return numSelected === numRows;
+    }
+
+    /**
+     * This will be use for selecting all voucher
+     *
+     * @return {*}  {void}
+     * @memberof InvoiceComponent
+     */
+    public selectAllVoucher(): void {
+        if (this.isAllSelected()) {
+            this.selection.clear();
+            return;
+        }
+        this.selection.select(...this.dataSource.data);
+    }
+
+/**
+ * This will be use for pay selected voucher
+ *
+ * @memberof InvoiceComponent
+ */
+public paySelectedVouchers(): void {
+        if (this.selection?.selected?.length) {
+            let hasPaidVouchers = this.selection?.selected?.filter(voucher => voucher.balanceStatus === "PAID");
+            if (!hasPaidVouchers?.length) {
+                this.openPayDialog();
+            } else {
+                const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.voucherNumber });
+                this.generalService.showSnackbar(paidVoucherNumbers.join(", ") + (paidVoucherNumbers?.length > 1 ? " are" : " is") + " already PAID.");
+            }
+        }
     }
 }

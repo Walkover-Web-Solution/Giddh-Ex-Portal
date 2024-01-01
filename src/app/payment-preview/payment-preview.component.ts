@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { ReplaySubject } from "rxjs";
+import { ReplaySubject, combineLatest } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { PaymentService } from "../services/payment.service.";
 import { saveAs } from 'file-saver';
@@ -59,11 +59,7 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
         private domSanitizer: DomSanitizer,
         private store: Store
     ) {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            if (sessionState.session) {
-                this.storeData = sessionState.session;
-            }
-        });
+        
     }
 
     /**
@@ -72,13 +68,14 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
      * @memberof PaymentPreviewComponent
      */
     public ngOnInit(): void {
-        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (params) {
-                this.voucherUniqueName = params.voucher;
+        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && response[2] && !this.storeData?.session) {
+                this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
+                this.voucherUniqueName = response[0].voucher;
+
+                this.getPaymentDetails();
             }
         });
-        this.getPaymentDetails();
-
     }
 
     /**

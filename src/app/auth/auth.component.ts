@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ReplaySubject } from 'rxjs';
+import { ReplaySubject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 import { select, Store } from '@ngrx/store';
-import { setSessionToken, setUserDetails } from '../store/actions/session.action';
+import { setFolderData } from '../store/actions/session.action';
 import { FormBuilder, UntypedFormGroup } from '@angular/forms';
 import { GeneralService } from '../services/general.service';
 
@@ -40,8 +40,8 @@ export class AuthComponent implements OnInit, OnDestroy {
     };
     /** This will be use for  company uniqueName*/
     public companyUniqueName: string = '';
-    /** Hold  store data */
-    public storeData: any = {};
+    /** Hold redirect url */
+    public redirectUrl: any = "";
 
     constructor(
         private authService: AuthService,
@@ -51,19 +51,13 @@ export class AuthComponent implements OnInit, OnDestroy {
         private fb: FormBuilder,
         private store: Store
     ) {
-        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (params) {
-                this.portalParamsRequest.proxyAuthToken = params.proxy_auth_token;
+        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && response[2] && !this.portalParamsRequest.proxyAuthToken) {
+                this.portalParamsRequest.proxyAuthToken = response[0].proxy_auth_token;
+                this.portalParamsRequest.subDomain = response[1].companyDomainUniqueName;
+                this.redirectUrl = response[2]['folderName'][this.portalParamsRequest.subDomain]?.redirectUrl;
                 this.getPortalUrlParams();
             }
-        });
-        this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (params) {
-                this.portalParamsRequest.subDomain = params.companyDomainUniqueName;
-            }
-        });
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState: any) => {
-            this.storeData = sessionState.session;
         });
     }
 
@@ -108,14 +102,13 @@ export class AuthComponent implements OnInit, OnDestroy {
         this.authService.savePortalUserSession(this.savePortalUserSession).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
             if (response && response.status === 'success') {
                 this.savePortalUserSession['companyUniqueName'] = response.body.companyUniqueName;
-                this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
-                this.store.dispatch(setSessionToken({ session: response.body.session }));
+                this.store.dispatch(setFolderData({ folderName: this.portalParamsRequest.subDomain, data: { userDetails: this.savePortalUserSession, session: response.body.session } }));
                 let url = '';
-                if (!this.storeData?.url) {
+                if (!this.redirectUrl) {
                     url = '/' + this.portalParamsRequest.subDomain + '/welcome';
                     this.router.navigate([url]);
                 } else {
-                    url = '/' + this.portalParamsRequest.subDomain + this.storeData.url;
+                    url = '/' + this.portalParamsRequest.subDomain + this.redirectUrl;
                     const updatedUrl = url.split('?');
                     if (updatedUrl.length > 1) {
                         const baseUrl = updatedUrl[0];
@@ -160,6 +153,9 @@ export class AuthComponent implements OnInit, OnDestroy {
      * @memberof AuthComponent
      */
     public getPortalUrlParams(): void {
+        if (!this.portalParamsRequest.proxyAuthToken || !this.portalParamsRequest.subDomain) {
+            return;
+        }
         this.isLoading = true;
         this.authService.authenticateProxy(this.portalParamsRequest.proxyAuthToken).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
             if (response && response.status === 'success') {
@@ -168,6 +164,7 @@ export class AuthComponent implements OnInit, OnDestroy {
                     if (portal && portal.status === 'success') {
                         this.users = portal.body;
                         if (this.users?.length > 1) {
+                            this.store.dispatch(setFolderData({ folderName: this.portalParamsRequest.subDomain, data: { portalUsers: portal.body, proxyAuthToken: this.portalParamsRequest.proxyAuthToken } }));
                             this.isLoading = false;
                         } else {
                             this.savePortalUserSession = {
@@ -181,14 +178,13 @@ export class AuthComponent implements OnInit, OnDestroy {
                             };
                             this.companyUniqueName = this.users[0]?.companyUniqueName;
                             this.savePortalUserSession['companyUniqueName'] = this.companyUniqueName;
-                            this.store.dispatch(setUserDetails({ userDetails: this.savePortalUserSession }));
-                            this.store.dispatch(setSessionToken({ session: this.users[0]?.session }));
+                            this.store.dispatch(setFolderData({ folderName: this.portalParamsRequest.subDomain, data: { userDetails: this.savePortalUserSession, session: this.users[0]?.session } }));
                             let url = '';
-                            if (!this.storeData?.url) {
+                            if (!this.redirectUrl) {
                                 url = '/' + this.portalParamsRequest.subDomain + '/welcome';
                                 this.router.navigate([url]);
                             } else {
-                                url = '/' + this.portalParamsRequest.subDomain + this.storeData.url;
+                                url = '/' + this.portalParamsRequest.subDomain + this.redirectUrl;
                                 const updatedUrl = url.split('?');
                                 if (updatedUrl.length > 1) {
                                     const baseUrl = updatedUrl[0];

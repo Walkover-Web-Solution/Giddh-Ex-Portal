@@ -5,9 +5,9 @@ import { takeUntil } from "rxjs/operators";
 import { GeneralService } from "../services/general.service";
 import { CompanyResponse, ReciptResponse } from "../models/Company";
 import { DashboardService } from "../services/dashboard.service.";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { WelcomeService } from "../services/welcome.service";
-import { setPortalUserDetails } from "../store/actions/session.action";
+import { setFolderData } from "../store/actions/session.action";
 
 @Component({
     selector: "welcome",
@@ -81,7 +81,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         private generalService: GeneralService,
         private welcomeService: WelcomeService,
         private store: Store,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ) {
 
     }
@@ -92,39 +93,44 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public ngOnInit(): void {
-        this.store.pipe(select(state => state), takeUntil(this.destroyed$)).subscribe((sessionState) => {
-            this.storeData = sessionState;
-        });
-        document.querySelector('body')?.classList.add('welcome-main');
-        this.userBalanceSummary.accountUniqueName = this.storeData.session.userDetails.account.uniqueName;
-        this.userBalanceSummary.companyUniqueName = this.storeData.session.userDetails.companyUniqueName;
-        this.userBalanceSummary.sessionId = this.storeData.session.session.id;
-        this.lastPaymentRequest.accountUniqueName = this.storeData.session.userDetails.account.uniqueName;
-        this.lastPaymentRequest.companyUniqueName = this.storeData.session.userDetails.companyUniqueName;
-        this.lastPaymentRequest.vendorUniqueName = this.storeData.session.userDetails.vendorContactUniqueName;
-        this.lastPaymentRequest.sessionId = this.storeData.session.session.id;
         this.isLoading = true;
-        const balanceSummary$ = this.dashboardService.getBalanceSummary(this.userBalanceSummary);
-        const accountDetails$ = this.dashboardService.getAccountDetails(this.userBalanceSummary);
-        const accounts$ = this.dashboardService.getAccounts(this.userBalanceSummary);
-        const lastPayment$ = this.welcomeService.getLastPaymentMade(this.lastPaymentRequest);
-        const portalDetails$ = this.welcomeService.getPortalUserDetails(this.lastPaymentRequest);
+        document.querySelector('body')?.classList.add('welcome-main');
 
-        combineLatest([balanceSummary$, accountDetails$, accounts$, lastPayment$, portalDetails$])
-            .pipe(takeUntil(this.destroyed$))
-            .subscribe(
-                ([balanceSummaryResponse, accountDetailsResponse, accountsResponse, lastPaymentResponse, portalUserResponse]) => {
-                    this.handleBalanceSummaryResponse(balanceSummaryResponse);
-                    this.handleAccountDetailsResponse(accountDetailsResponse);
-                    this.handleAccountsResponse(accountsResponse);
-                    this.handleLastPaymentResponse(lastPaymentResponse);
-                    this.handlePortalUserResponse(portalUserResponse);
-                    this.isLoading = false;
-                },
-                (error) => {
-                    this.isLoading = false;
-                }
-            );
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (response[0] && response[1] && !this.storeData?.session) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+
+                this.receivedCompanyDetails = this.storeData.companyDetails;
+                this.userBalanceSummary.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+                this.userBalanceSummary.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+                this.userBalanceSummary.sessionId = this.storeData.session.id;
+                this.lastPaymentRequest.accountUniqueName = this.storeData.userDetails.account.uniqueName;
+                this.lastPaymentRequest.companyUniqueName = this.storeData.userDetails.companyUniqueName;
+                this.lastPaymentRequest.vendorUniqueName = this.storeData.userDetails.vendorContactUniqueName;
+                this.lastPaymentRequest.sessionId = this.storeData.session.id;
+                const balanceSummary$ = this.dashboardService.getBalanceSummary(this.userBalanceSummary);
+                const accountDetails$ = this.dashboardService.getAccountDetails(this.userBalanceSummary);
+                const accounts$ = this.dashboardService.getAccounts(this.userBalanceSummary);
+                const lastPayment$ = this.welcomeService.getLastPaymentMade(this.lastPaymentRequest);
+                const portalDetails$ = this.welcomeService.getPortalUserDetails(this.lastPaymentRequest);
+
+                combineLatest([balanceSummary$, accountDetails$, accounts$, lastPayment$, portalDetails$])
+                    .pipe(takeUntil(this.destroyed$))
+                    .subscribe(
+                        ([balanceSummaryResponse, accountDetailsResponse, accountsResponse, lastPaymentResponse, portalUserResponse]) => {
+                            this.handleBalanceSummaryResponse(balanceSummaryResponse);
+                            this.handleAccountDetailsResponse(accountDetailsResponse);
+                            this.handleAccountsResponse(accountsResponse);
+                            this.handleLastPaymentResponse(lastPaymentResponse);
+                            this.handlePortalUserResponse(portalUserResponse);
+                            this.isLoading = false;
+                        },
+                        (error) => {
+                            this.isLoading = false;
+                        }
+                    );
+            }
+        });
     }
 
     /**
@@ -209,22 +215,12 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      */
     private handlePortalUserResponse(response: any): void {
         if (response && response.status === 'success') {
-            this.store.dispatch(setPortalUserDetails({ portalDetails: response.body }));
+            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { portalDetails: response.body } }));
         } else {
             if (response?.status === 'error') {
                 this.generalService.showSnackbar(response?.message);
             }
         }
-    }
-
-    /**
-     * This will be use for company details
-     *
-     * @param {CompanyResponse} companyDetails
-     * @memberof WelcomeComponent
-     */
-    public onCompanyDataReceived(companyDetails: CompanyResponse): void {
-        this.receivedCompanyDetails = companyDetails;
     }
 
     /**
@@ -234,7 +230,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public receiptPreview(uniqueName: any): void {
-        let url = this.storeData.session.domain + '/payment/preview';
+        let url = this.storeData.domain + '/payment/preview';
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,
@@ -249,7 +245,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
    * @memberof WelcomeComponent
    */
     public invoicePreview(uniqueName: any): void {
-        let url = this.storeData.session.domain + '/invoice/preview';
+        let url = this.storeData.domain + '/invoice/preview';
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,

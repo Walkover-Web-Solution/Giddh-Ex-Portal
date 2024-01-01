@@ -5,10 +5,8 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
-import { EffectsModule } from '@ngrx/effects';
 import { ServiceModule } from './services/service.module';
 import { metaReducers, reducers } from './store';
-import { SessionEffects } from './store/effects/session.effects';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { SharedModule } from './shared/shared.module';
 import { DecoratorsModule } from './decorators/decorators.module';
@@ -34,7 +32,6 @@ import { SnackBarModule } from './shared/snackbar/snackbar.module';
                 strictActionImmutability: true,
             },
         }),
-        EffectsModule.forRoot([SessionEffects]),
         SnackBarModule
     ],
     providers: [
