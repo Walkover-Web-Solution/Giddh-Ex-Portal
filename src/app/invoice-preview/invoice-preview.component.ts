@@ -103,6 +103,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 } else if (response.body?.PAYPAL) {
                     this.getVoucherDetails(this.paymentMethodEnum.PAYPAL);
                 } else {
+                    this.getVoucherDetails();
                     this.generalService.showSnackbar('warning', 'No payment method is integrated');
                 }
             } else {
