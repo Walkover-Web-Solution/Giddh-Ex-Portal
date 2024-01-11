@@ -104,7 +104,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     this.getVoucherDetails(this.paymentMethodEnum.PAYPAL);
                 } else {
                     this.getVoucherDetails();
-                    this.generalService.showSnackbar('warning', 'No payment method is integrated');
+                    this.generalService.showSnackbar('No payment method is integrated', 'warning');
                 }
             } else {
                 this.generalService.showSnackbar(response?.message);
@@ -129,7 +129,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             this.invoiceListRequest.sessionId = this.storeData.session?.id;
             this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher;
 
-            request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
+            request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType ?? 'RAZORPAY' };
 
             combineLatest([
                 this.invoiceService.getVoucherDetails(request),
