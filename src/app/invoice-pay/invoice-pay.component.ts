@@ -164,7 +164,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 } else if (response.body?.PAYPAL) {
                     this.getVoucherDetails(PAYMENT_METHODS_ENUM.PAYPAL);
                 } else {
-                    this.generalService.showSnackbar('warning', 'No payment method is integrated');
+                    this.generalService.showSnackbar('No payment method is integrated', 'warning');
                 }
                 this.paymentMethodIntegrated.razorpay = response.body?.RAZORPAY;
                 this.paymentMethodIntegrated.paypal = response.body?.PAYPAL;
