@@ -112,7 +112,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     }
                     this.loginButtonScriptLoaded();
                 }
-                if (this.urlParams?.accountUniqueName) {
+                if (this.urlParams?.accountUniqueName || this.queryParams?.accountUniqueName) {
                     this.getPaymentMethods();
                 }
             }
@@ -187,8 +187,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         const voucherUniqueName = this.urlParams.voucherUniqueName || '';
         const voucherUniqueNameArray = voucherUniqueName.split('|');
         if (this.urlParams?.accountUniqueName) {
-            const accountUniqueName = this.urlParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
-            const companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+            const accountUniqueName = this.urlParams.accountUniqueName || this.storeData.userDetails?.account.uniqueName;
+            const companyUniqueName = this.queryParams.companyUniqueName || this.storeData.userDetails?.companyUniqueName;
             const request = { accountUniqueName: accountUniqueName, voucherUniqueName: voucherUniqueNameArray, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType, paymentId: this.queryParams?.payment_id };
             this.invoiceService.getVoucherDetails(request).pipe(takeUntil(this.destroyed$)).subscribe(voucherDetailsResponse => {
                 this.isLoading = false;
