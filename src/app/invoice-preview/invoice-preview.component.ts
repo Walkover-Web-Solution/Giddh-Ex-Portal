@@ -116,7 +116,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     /**
  *  This will be use for login button script loading
  *
- * @memberof InvoicePayComponent
+ * @memberof InvoicePreviewComponent
  */
     public loginButtonScriptLoaded(): void {
         this.url = `/${this.storeData.domain}/auth`;
@@ -143,7 +143,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
    * This will be use for get payment methods
    *
    * @private
-   * @memberof InvoicePayComponent
+   * @memberof InvoicePreviewComponent
    */
     private getPaymentMethods(): void {
         this.isLoading = true;
