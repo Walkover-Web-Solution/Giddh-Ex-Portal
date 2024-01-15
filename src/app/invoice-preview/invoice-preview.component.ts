@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { InvoiceService } from "../services/invoice.service";
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { saveAs } from 'file-saver';
@@ -9,6 +9,8 @@ import { FormBuilder, UntypedFormGroup } from "@angular/forms";
 import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT, PAYMENT_METHODS_ENUM } from "../app.constant";
 import { GeneralService } from "../services/general.service";
+import { environment } from "src/environments/environment";
+import { setFolderData } from "../store/actions/session.action";
 declare var initVerification: any;
 @Component({
     selector: "invoice-preview",
@@ -52,6 +54,16 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public storeData: any = {};
     /** Holds payment methods */
     public paymentMethodEnum: any = PAYMENT_METHODS_ENUM;
+    /** Holds url parameters */
+    public urlParams: any = {};
+    /** Holds query parameters */
+    public queryParams: any = {};
+    /** True if it is mobile screen */
+    public isMobileScreen: boolean = false;
+    /** Hold proxy button  id */
+    public loginId = environment.proxyReferenceId;
+    /** Hold current url*/
+    public url: string = '';
 
     constructor(
         private generalService: GeneralService,
@@ -76,12 +88,55 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             commentText: ['']
         });
 
-        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+        combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
-                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-                this.getPaymentMethods();
+                this.queryParams = response[0];
+                this.urlParams = response[1];
+                this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
+                if (!this.storeData?.session?.id) {
+                    this.storeData = {
+                        session: {
+                            createAt: null,
+                            expiresAt: null,
+                            id: null
+                        },
+                        companyDetails: this.queryParams.companyUniqueName,
+                        domain: this.urlParams?.companyDomainUniqueName,
+                        sidebarState: true
+                    }
+                    this.loginButtonScriptLoaded();
+                }
+                if (this.queryParams?.accountUniqueName) {
+                    this.getPaymentMethods();
+                }
             }
         });
+    }
+
+    /**
+ *  This will be use for login button script loading
+ *
+ * @memberof InvoicePayComponent
+ */
+    public loginButtonScriptLoaded(): void {
+        this.url = `/${this.storeData.domain}/auth`;
+        setTimeout(() => {
+            let configuration = {
+                referenceId: environment.proxyReferenceId,
+                addInfo: {
+                    redirect_path: this.url
+                },
+                success: (data: any) => {
+                },
+                failure: (error: any) => {
+                    this.generalService.showSnackbar(error?.message);
+                }
+            };
+            const routerState = (this.route as any)._routerState?.snapshot?.url;
+            const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, domain: this.storeData.domain } }));
+            this.generalService.loadScript(environment.proxyReferenceId, configuration);
+        }, 200)
     }
 
     /**
@@ -92,8 +147,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
    */
     private getPaymentMethods(): void {
         this.isLoading = true;
-        const accountUniqueName = this.storeData.userDetails?.account.uniqueName;
-        const companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+        const accountUniqueName = this.storeData.userDetails?.account.uniqueName ?? this.queryParams?.accountUniqueName;
+        const companyUniqueName = this.storeData.userDetails?.companyUniqueName ?? this.queryParams.companyUniqueName;
         const request = { accountUniqueName: accountUniqueName, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id };
         this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
             this.isLoading = false;
@@ -121,42 +176,40 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.changeDetectionRef.detectChanges();
         let request;
-        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            this.voucherUniqueName = params.voucherUniqueName ?? params.voucher;
-            this.invoiceListRequest.accountUniqueName = params.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
-            this.invoiceListRequest.companyUniqueName = params.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
-            this.invoiceListRequest.sessionId = this.storeData.session?.id;
-            this.invoiceListRequest.uniqueNames = params.voucherUniqueName ?? params.voucher;
+        this.voucherUniqueName = this.queryParams.voucherUniqueName ?? this.queryParams.voucher;
+        this.invoiceListRequest.accountUniqueName = this.queryParams.accountUniqueName ?? this.storeData.userDetails?.account.uniqueName;
+        this.invoiceListRequest.companyUniqueName = this.queryParams.companyUniqueName ?? this.storeData.userDetails?.companyUniqueName;
+        this.invoiceListRequest.sessionId = this.storeData.session?.id;
+        this.invoiceListRequest.uniqueNames = this.queryParams.voucherUniqueName ?? this.queryParams.voucher;
 
-            request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
+        request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: 'RAZORPAY' };
 
-            combineLatest([
-                this.invoiceService.getVoucherDetails(request),
-                this.invoiceService.getInvoiceComments(request)
-            ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
-                this.isLoading = false;
+        combineLatest([
+            this.invoiceService.getVoucherDetails(request),
+            this.invoiceService.getInvoiceComments(request)
+        ]).pipe(takeUntil(this.destroyed$))?.subscribe(([voucherDetailsResponse, commentsResponse]) => {
+            this.isLoading = false;
 
-                if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
-                    this.paymentDetails = voucherDetailsResponse.body;
-                    let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body?.vouchers[0]?.content, 'application/pdf', 512);
-                    URL.revokeObjectURL(this.pdfFileURL);
-                    this.pdfFileURL = URL.createObjectURL(blob);
-                    this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
-                } else {
-                    if (voucherDetailsResponse?.status === 'error') {
-                        this.generalService.showSnackbar(voucherDetailsResponse?.message);
-                    }
+            if (voucherDetailsResponse && voucherDetailsResponse.status === 'success') {
+                this.paymentDetails = voucherDetailsResponse.body;
+                let blob = this.generalService.base64ToBlob(voucherDetailsResponse.body?.vouchers[0]?.content, 'application/pdf', 512);
+                URL.revokeObjectURL(this.pdfFileURL);
+                this.pdfFileURL = URL.createObjectURL(blob);
+                this.sanitizedPdfFileUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.pdfFileURL);
+            } else {
+                if (voucherDetailsResponse?.status === 'error') {
+                    this.generalService.showSnackbar(voucherDetailsResponse?.message);
                 }
-                if (commentsResponse && commentsResponse.status === 'success') {
-                    this.voucherComments = commentsResponse.body;
-                } else {
-                    if (commentsResponse?.status === 'error') {
-                        this.generalService.showSnackbar(commentsResponse?.message);
-                    }
+            }
+            if (commentsResponse && commentsResponse.status === 'success') {
+                this.voucherComments = commentsResponse.body;
+            } else {
+                if (commentsResponse?.status === 'error') {
+                    this.generalService.showSnackbar(commentsResponse?.message);
                 }
+            }
 
-                this.changeDetectionRef.detectChanges();
-            });
+            this.changeDetectionRef.detectChanges();
         });
     }
 
@@ -258,8 +311,22 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @memberof InvoicePreviewComponent
      */
     public redirectToPayNow(details: any): void {
-        let url = '/' + this.storeData.domain + '/invoice-pay/account/' + this.storeData.userDetails?.account?.uniqueName + '/voucher/' + details?.vouchers[0]?.uniqueName;
-        this.router.navigate([url]);
+        let queryParams = {
+            companyUniqueName: this.queryParams.companyUniqueName
+        }
+        let navigationExtras: NavigationExtras = {
+            queryParams: queryParams
+        };
+
+        let url = "";
+        if (!this.storeData.session?.id) {
+            url = '/' + this.storeData.domain + '/invoice-pay/account/' + (this.queryParams?.accountUniqueName) + '/voucher/' + details?.vouchers[0]?.uniqueName;
+            this.router.navigate([url], navigationExtras);
+
+        } else {
+            url = '/' + this.storeData.domain + '/invoice-pay/account/' + (this.storeData.userDetails?.account?.uniqueName) + '/voucher/' + details?.vouchers[0]?.uniqueName;
+            this.router.navigate([url]);
+        }
     }
 
     /**

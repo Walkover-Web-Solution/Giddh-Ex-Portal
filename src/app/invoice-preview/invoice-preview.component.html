@@ -1,6 +1,9 @@
 <div class="d-flex w-100">
     <sidebar></sidebar>
     <div class="w-100">
+        <div class="login-section" *ngIf="!storeData?.session?.id">
+            <div class="login-btn-wrap" [id]="loginId"></div>
+        </div>
         <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
         <ng-container *ngIf="!isLoading">
             <div class="common-wrapper main-wrapper">
