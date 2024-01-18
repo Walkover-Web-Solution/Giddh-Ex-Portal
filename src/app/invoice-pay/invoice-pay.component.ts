@@ -108,7 +108,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                             id: null
                         },
                         domain: this.urlParams.companyDomainUniqueName,
-                        sidebarState: true
+                        sidebarState: true,
+                        redirectUrl: this.storeData.redirectUrl
                     }
                     this.loginButtonScriptLoaded();
                 }
@@ -138,9 +139,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     this.generalService.showSnackbar(error?.message);
                 }
             };
-            const routerState = (this.route as any)._routerState?.snapshot?.url;
-            const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
-            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, domain: this.storeData.domain } }));
+            this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { domain: this.storeData.domain } }));
             this.generalService.loadScript(environment.proxyReferenceId, configuration);
         }, 200)
     }
@@ -344,7 +343,10 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             this.invoiceService.payInvoice(payRequest, payload).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
                 if (response && response.status === 'success') {
                     this.generalService.showSnackbar(response?.body, "success");
-                    this.getVoucherDetails(PAYMENT_METHODS_ENUM.RAZORPAY);
+                        if (this.storeData.redirectUrl) {
+                            let url = '/' + this.storeData.domain + this.storeData.redirectUrl;
+                            this.router.navigateByUrl(url);
+                        }
                 } else {
                     if (response?.status === 'error') {
                         this.generalService.showSnackbar(response?.message);
