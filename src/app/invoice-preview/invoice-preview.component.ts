@@ -109,6 +109,11 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 if (this.queryParams?.accountUniqueName) {
                     this.getPaymentMethods();
                 }
+            } else {
+                this.getPaymentMethods();
+                const routerState = (this.route as any)._routerState?.snapshot?.url;
+                const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
             }
         });
     }
@@ -183,7 +188,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.invoiceListRequest.sessionId = this.storeData.session?.id;
         this.invoiceListRequest.uniqueNames = this.queryParams.voucherUniqueName ?? this.queryParams.voucher;
 
-            request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType ?? 'RAZORPAY' };
+        request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType ?? 'RAZORPAY' };
 
         combineLatest([
             this.invoiceService.getVoucherDetails(request),

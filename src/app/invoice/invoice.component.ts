@@ -14,6 +14,7 @@ import { GeneralService } from "../services/general.service";
 import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
 import { CommonService } from "../services/common.service";
 import { SelectionModel } from "@angular/cdk/collections";
+import { setFolderData } from "../store/actions/session.action";
 
 @Component({
     selector: "invoice",
@@ -110,6 +111,11 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      */
     public ngOnInit(): void {
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
+            if (this.storeData?.session?.id) {
+                const routerState = (this.route as any)._routerState?.snapshot?.url;
+                const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
+            }
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
                 this.getCountPage();
@@ -397,12 +403,12 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.selection.select(...this.dataSource.data);
     }
 
-/**
- * This will be use for pay selected voucher
- *
- * @memberof InvoiceComponent
- */
-public paySelectedVouchers(): void {
+    /**
+     * This will be use for pay selected voucher
+     *
+     * @memberof InvoiceComponent
+     */
+    public paySelectedVouchers(): void {
         if (this.selection?.selected?.length) {
             let hasPaidVouchers = this.selection?.selected?.filter(voucher => voucher.balanceStatus === "PAID");
             if (!hasPaidVouchers?.length) {
