@@ -100,20 +100,22 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                             expiresAt: null,
                             id: null
                         },
-                        companyDetails: this.queryParams.companyUniqueName,
-                        domain: this.urlParams?.companyDomainUniqueName,
-                        sidebarState: true
+                        domain: this.urlParams.companyDomainUniqueName,
+                        sidebarState: true,
+                        redirectUrl: this.storeData.redirectUrl
                     }
                     this.loginButtonScriptLoaded();
                 }
-                if (this.queryParams?.accountUniqueName) {
+                if (this.urlParams?.accountUniqueName || this.queryParams?.accountUniqueName) {
                     this.getPaymentMethods();
                 }
-            } else {
-                this.getPaymentMethods();
                 const routerState = (this.route as any)._routerState?.snapshot?.url;
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
                 this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
+            }
+
+            if (this.queryParams?.voucher) {
+                this.getPaymentMethods();
             }
         });
     }
