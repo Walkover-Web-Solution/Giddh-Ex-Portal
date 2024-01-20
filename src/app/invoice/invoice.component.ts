@@ -90,8 +90,6 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public selection = new SelectionModel<any>(true, []);
     /** True if we should select all checkbox */
     public showSelectAll: boolean = false;
-    /** Hold redirect url */
-    public redirectUrl: any = "";
 
     constructor(
         public dialog: MatDialog,
