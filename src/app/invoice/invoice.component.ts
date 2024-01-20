@@ -4,7 +4,7 @@ import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReciptResponse } from "../models/Company";
-import { takeUntil } from "rxjs/operators";
+import { take, takeUntil } from "rxjs/operators";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { saveAs } from 'file-saver';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -90,6 +90,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public selection = new SelectionModel<any>(true, []);
     /** True if we should select all checkbox */
     public showSelectAll: boolean = false;
+    /** Hold redirect url */
+    public redirectUrl: any = "";
 
     constructor(
         public dialog: MatDialog,
@@ -110,16 +112,15 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @memberof InvoiceComponent
      */
     public ngOnInit(): void {
-        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-            if (this.storeData?.session?.id) {
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(take(1)).subscribe((response) => {
+            if (response[0] && response[1]) {
+                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                this.getCountPage();
                 const routerState = (this.route as any)._routerState?.snapshot?.url;
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
                 this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
             }
-            if (response[0] && response[1] && !this.storeData?.session) {
-                this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-                this.getCountPage();
-            }
+
         });
     }
 
