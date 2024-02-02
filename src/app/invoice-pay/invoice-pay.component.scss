@@ -17,7 +17,8 @@
 
     &.invoice-tab {
         padding: 0 !important;
-        max-width: 850px;
+        max-width: 790px;
+        margin-top: 20px;
     }
 
 }
@@ -104,6 +105,19 @@
     }
 }
 
+.content-wrapper {
+    padding: 0;
+}
+
+.login-section {
+    height: 70px;
+    background-color: var(--color-giddh-blue);
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    padding-left: 22px;
+}
 
 /*---- responsive ----*/
 @media screen and (max-width: 768px) {

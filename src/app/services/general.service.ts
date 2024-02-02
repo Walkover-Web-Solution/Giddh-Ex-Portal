@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { SnackBarComponent } from "../shared/snackbar/snackbar.component";
+import { environment } from "src/environments/environment";
 import { Router } from "@angular/router";
 declare var initVerification: any;
 
@@ -13,7 +14,7 @@ export class GeneralService {
         private snackBar: MatSnackBar,
         private router: Router
     ) {
-        
+
     }
 
     /**
@@ -123,6 +124,19 @@ export class GeneralService {
                 resolve();
             }
         });
+    }
+
+    /**
+     * Returns paypal ipn url
+     *
+     * @param {string} companyUniqueName
+     * @param {string} accountUniqueName
+     * @param {string} paymentId
+     * @returns {string}
+     * @memberof GeneralService
+     */
+    public getPaypalIpnUrl(companyUniqueName: string, accountUniqueName: string, paymentId: string): string {
+        return environment.giddhApiUrl + 'portal/company/' + companyUniqueName + '/accounts/' + accountUniqueName + '/invoices/' + paymentId + '/paypal/ipn?voucherVersion=2';
     }
 
     /**

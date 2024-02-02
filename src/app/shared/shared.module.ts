@@ -20,12 +20,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SwitchAccountComponent } from "./switch-account/switch-account.component";
 
 @NgModule({
     declarations: [
         HeaderComponent,
         SidebarComponent,
-        FooterComponent
+        FooterComponent,
+        SwitchAccountComponent
     ],
     imports: [
         MatSidenavModule,
@@ -72,7 +74,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         MatInputModule,
         ReactiveFormsModule,
         MatIconModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        SwitchAccountComponent
     ]
 })
 export class SharedModule {
