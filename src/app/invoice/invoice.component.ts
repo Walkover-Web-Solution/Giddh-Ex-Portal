@@ -4,7 +4,7 @@ import { MatSort } from "@angular/material/sort";
 import { MatTableDataSource } from "@angular/material/table";
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReciptResponse } from "../models/Company";
-import { takeUntil } from "rxjs/operators";
+import { take, takeUntil } from "rxjs/operators";
 import { ReplaySubject, combineLatest } from "rxjs";
 import { saveAs } from 'file-saver';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,6 +14,7 @@ import { GeneralService } from "../services/general.service";
 import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
 import { CommonService } from "../services/common.service";
 import { SelectionModel } from "@angular/cdk/collections";
+import { setFolderData } from "../store/actions/session.action";
 
 @Component({
     selector: "invoice",
@@ -109,11 +110,15 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @memberof InvoiceComponent
      */
     public ngOnInit(): void {
-        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
-            if (response[0] && response[1] && !this.storeData?.session) {
+        combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(take(1)).subscribe((response) => {
+            if (response[0] && response[1]) {
                 this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
                 this.getCountPage();
+                const routerState = (this.route as any)._routerState?.snapshot?.url;
+                const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
             }
+
         });
     }
 
@@ -397,12 +402,12 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.selection.select(...this.dataSource.data);
     }
 
-/**
- * This will be use for pay selected voucher
- *
- * @memberof InvoiceComponent
- */
-public paySelectedVouchers(): void {
+    /**
+     * This will be use for pay selected voucher
+     *
+     * @memberof InvoiceComponent
+     */
+    public paySelectedVouchers(): void {
         if (this.selection?.selected?.length) {
             let hasPaidVouchers = this.selection?.selected?.filter(voucher => voucher.balanceStatus === "PAID");
             if (!hasPaidVouchers?.length) {

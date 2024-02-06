@@ -44,6 +44,16 @@
     }
 }
 
+.login-section {
+    height: 70px;
+    background-color: var(--color-giddh-blue);
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    padding-left: 22px;
+}
+
 /*---- responsive ----*/
 @media screen and (max-width: 768px) {
     .common-wrapper {
@@ -111,6 +121,7 @@
 
 .media-body {
     flex: 1;
+
     .media-heading {
         white-space: normal;
         word-break: break-all;
