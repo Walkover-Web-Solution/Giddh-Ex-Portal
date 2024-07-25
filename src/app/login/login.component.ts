@@ -47,6 +47,7 @@ export class LoginComponent implements OnInit, OnDestroy {
      * @memberof LoginComponent
      */
     public ngOnInit(): void {
+        localStorage.clear();
         document.querySelector('body').classList.add('login-body');
         this.loginButtonScriptLoaded();
     }
