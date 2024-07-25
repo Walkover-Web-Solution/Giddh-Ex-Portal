@@ -32,6 +32,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         private store: Store<SessionState>,
         private generalService: GeneralService
     ) {
+        localStorage.removeItem("folderName");
         this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
             if (params) {
                 this.portalParamsRequest.domain = params.companyDomainUniqueName;
