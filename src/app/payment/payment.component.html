@@ -78,7 +78,7 @@
                                 class="text-right"
                             >
                                 {{ element?.accountCurrencySymbol }}
-                                {{ element?.grandTotal?.amountForAccount }}
+                                {{ element?.grandTotal?.amountForAccount | number: '1.0-0' }}
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="mode">
@@ -117,7 +117,7 @@
                                 {{ element?.accountCurrencySymbol }}
                                 {{
                                     element?.balanceDue?.amountForAccount
-                                        ? element?.balanceDue?.amountForAccount
+                                        ? (element?.balanceDue?.amountForAccount | number: '1.0-0')
                                         : 0
                                 }}
                             </td>
