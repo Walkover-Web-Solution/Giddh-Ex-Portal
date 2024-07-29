@@ -152,8 +152,8 @@
                                 *matCellDef="let element"
                                 class="text-right"
                             >
-                                {{ element?.account?.currency?.symbol
-                                }}{{ element?.grandTotal?.amountForAccount }}
+                                {{ element?.account?.currency?.symbol }}
+                                {{ element?.grandTotal?.amountForAccount | number: '1.0-0' }}
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="status">

@@ -35,7 +35,7 @@
                                                         ?.symbol
                                                 }}
                                                 {{
-                                                    balanceSummary?.balancePayable
+                                                    balanceSummary?.balancePayable | number: '1.0-0'
                                                 }}
                                                 <br />
                                                 Number of Invoices :
@@ -70,7 +70,7 @@
                                                 balanceSummary?.currency?.symbol
                                             }}
                                                <span class="line orange"></span>
-                                            {{ balanceSummary?.balancePayable }}
+                                            {{ balanceSummary?.balancePayable | number: '1.0-0' }}
                                         </span>
                                     </div>
                                     <div class="d-flex mobile-pay mr-b15">
@@ -101,7 +101,7 @@
                                                 ?.accountCurrencySymbol
                                         }}{{
                                             voucherData?.items[0]?.grandTotal
-                                                ?.amountForAccount
+                                                ?.amountForAccount | number: '1.0-0'
                                         }}</span
                                     >
                                     <span
