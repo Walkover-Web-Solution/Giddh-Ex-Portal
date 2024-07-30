@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { Store } from '@ngrx/store';
 import { ReplaySubject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
@@ -29,6 +29,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
+        private router: Router,
         private store: Store<SessionState>,
         private generalService: GeneralService
     ) {
@@ -36,7 +37,14 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
             if (params) {
                 this.portalParamsRequest.domain = params.companyDomainUniqueName;
-                this.store.dispatch(setFolderData({ folderName: this.portalParamsRequest.domain, data: { domain: this.portalParamsRequest.domain, sidebarState: true } }));
+                this.store.dispatch(setFolderData({
+                    folderName: this.portalParamsRequest.domain,
+                    data: {
+                        domain: this.portalParamsRequest.domain,
+                        sidebarState: true
+                    },
+                    reset: true
+                }));
                 this.url = `/${this.portalParamsRequest.domain}/auth`;
             }
         });
