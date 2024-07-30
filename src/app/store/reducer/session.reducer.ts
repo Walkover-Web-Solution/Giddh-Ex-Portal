@@ -19,10 +19,21 @@ export const initialState: folderNametate = {};
 
 export const sessionReducer = createReducer(
     initialState,
-    on(setFolderData, (state, { folderName, data }) => ({
-        ...state, [folderName]: {
-            ...state[folderName],
-            ...data
+    on(setFolderData, (state, { folderName, data, reset }) => {
+        if (reset) {
+            return {
+                [folderName]: {
+                    ...data
+                }
+            };
+        } else {
+            return {
+                ...state,
+                [folderName]: {
+                    ...state[folderName],
+                    ...data
+                }
+            };
         }
-    }))
+    })
 );

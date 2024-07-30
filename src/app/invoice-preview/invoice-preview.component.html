@@ -89,8 +89,8 @@
                                     <span class="mr-t5 d-block balance-number">
                                         {{ paymentDetails?.currency?.symbol }}
                                         {{
-                                            paymentDetails?.totalAmount / 100
-                                                | number
+                                            (paymentDetails?.totalAmount / 100)
+                                                | number: '1.0-0'
                                         }}</span
                                     >
                                 </div>

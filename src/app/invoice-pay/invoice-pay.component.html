@@ -49,7 +49,7 @@
                                 <span class="mr-t5 d-block balance-number">
                                     {{ paymentDetails?.currency?.symbol }}
                                     {{
-                                        paymentDetails?.vouchers[0]?.amount
+                                        paymentDetails?.vouchers[0]?.amount | number: '1.0-0'
                                     }}</span
                                 >
                             </div>
@@ -84,7 +84,7 @@
                                             paymentDetails?.paymentGatewayType !==
                                             paymentMethodEnum.RAZORPAY
                                         "
-                                        >{{ paymentDetails?.totalAmount }}</span
+                                        >{{ paymentDetails?.totalAmount | number: '1.0-0' }}</span
                                     >
                                     <span
                                         *ngIf="
@@ -92,7 +92,7 @@
                                             paymentMethodEnum.RAZORPAY
                                         "
                                         >{{
-                                            paymentDetails.totalAmount / 100
+                                            (paymentDetails.totalAmount / 100) | number: '1.0-0'
                                         }}</span
                                     ></span
                                 >
@@ -130,7 +130,7 @@
                                     <p>{{ voucher?.dueDate }}</p>
                                     <p class="text-right">
                                         {{ paymentDetails?.currency?.symbol
-                                        }}{{ voucher.amount }}
+                                        }}{{ voucher.amount | number: '1.0-0' }}
                                     </p>
                                 </div>
                                 <p class="mr-t1">
