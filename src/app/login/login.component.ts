@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import { Store } from '@ngrx/store';
 import { ReplaySubject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
@@ -29,7 +29,6 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
         private store: Store<SessionState>,
         private generalService: GeneralService
     ) {
