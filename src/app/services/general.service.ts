@@ -14,7 +14,7 @@ export class GeneralService {
         private snackBar: MatSnackBar,
         private router: Router
     ) {
-        
+
     }
 
     /**
