@@ -33,13 +33,9 @@ export class LoginComponent implements OnInit, OnDestroy {
         private store: Store<SessionState>,
         private generalService: GeneralService
     ) {
-        const localStorageData = JSON.parse(localStorage.getItem('folderName'));
+        localStorage.removeItem("folderName");
         this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            if (params && params.companyDomainUniqueName !== "page-not-found") {
-                if (localStorageData[params.companyDomainUniqueName] && localStorageData[params.companyDomainUniqueName].session?.id) {
-                    this.router.navigate([`/${params.companyDomainUniqueName}/welcome`]);
-                    return;
-                }
+            if (params) {
                 this.portalParamsRequest.domain = params.companyDomainUniqueName;
                 this.store.dispatch(setFolderData({
                     folderName: this.portalParamsRequest.domain,
