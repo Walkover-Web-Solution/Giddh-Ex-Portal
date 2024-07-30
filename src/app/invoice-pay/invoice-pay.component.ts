@@ -80,7 +80,6 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         private changeDetectionRef: ChangeDetectorRef,
         private breakpointObserver: BreakpointObserver
     ) {
-
     }
 
     /**
