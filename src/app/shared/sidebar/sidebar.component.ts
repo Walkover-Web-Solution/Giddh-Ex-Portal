@@ -1,5 +1,5 @@
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
-import { Component, HostListener, Input, OnDestroy, OnInit } from "@angular/core";
+import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Observable, ReplaySubject, combineLatest } from "rxjs";
@@ -188,6 +188,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.accountUrlRequest.sessionId = this.storeData.session?.id;
 
         this.authService.logoutUser(this.accountUrlRequest).pipe().subscribe(response => {
+            localStorage.removeItem('country-region');
             this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: null, session: null, domain: null, redirectUrl: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
             this.generalService.showSnackbar('You have successfully logged out.', 'success');
             const url = this.portalDomain + '/login';
