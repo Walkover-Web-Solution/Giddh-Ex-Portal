@@ -5,16 +5,16 @@ import { catchError, map } from "rxjs/operators";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
 import { WELCOME_API } from "./apiurls/welcome.api";
-import { environment } from "src/environments/environment";
 import { PAYMENT_API } from "./apiurls/payment.api";
+import { ApiService } from "./api.service";
 
 @Injectable()
 export class PaymentService {
 
     private apiUrl: string = '';
 
-    constructor(private errorHandler: PortalErrorHandler, private http: HttpWrapperService) {
-        this.apiUrl = environment.apiUrl;
+    constructor(private errorHandler: PortalErrorHandler, private http: HttpWrapperService, private apiService: ApiService) {
+        this.apiUrl = this.apiService.getApiUrl();
     }
 
     /**

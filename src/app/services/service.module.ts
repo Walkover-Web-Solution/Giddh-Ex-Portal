@@ -12,6 +12,7 @@ import { InvoiceService } from "./invoice.service";
 import { PaymentService } from "./payment.service.";
 import { WelcomeService } from "./welcome.service";
 import { CommonService } from "./common.service";
+import { ApiService } from "./api.service";
 
 /**
  * Do not specify providers for modules that might be imported by a lazy loaded module.
@@ -34,7 +35,8 @@ export class ServiceModule {
                 InvoiceService,
                 PaymentService,
                 WelcomeService,
-                CommonService
+                CommonService,
+                ApiService
             ]
         };
     }

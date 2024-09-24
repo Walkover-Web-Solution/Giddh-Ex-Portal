@@ -7,6 +7,7 @@ import { setFolderData } from "../store/actions/session.action";
 import { SessionState } from "../store/reducer/session.reducer";
 import { GeneralService } from "../services/general.service";
 import { environment } from "src/environments/environment";
+import { ApiService } from "../services/api.service";
 
 declare var initVerification: any;
 
@@ -25,13 +26,23 @@ export class LoginComponent implements OnInit, OnDestroy {
     /** Hold current url*/
     public url: string = '';
     /** Hold proxy button  id */
-    public loginId = environment.proxyReferenceId;
+    public loginId: string;
 
     constructor(
         private route: ActivatedRoute,
         private store: Store<SessionState>,
-        private generalService: GeneralService
+        private generalService: GeneralService,
+        private apiService: ApiService
     ) {
+
+        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
+            let region = params?.region ? params.region?.toLowerCase() : null;
+            if (region) {
+                localStorage.setItem('country-region', region);
+                this.apiService.setApiUrl(region);
+            }
+            this.loginId = localStorage.getItem('country-region') === 'uk' ? environment.ukProxyReferenceId : environment.proxyReferenceId;
+        });
         localStorage.removeItem("folderName");
         this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
             if (params) {
@@ -65,9 +76,10 @@ export class LoginComponent implements OnInit, OnDestroy {
      * @memberof LoginComponent
      */
     public loginButtonScriptLoaded(): void {
+        let proxyReferenceId = localStorage.getItem('country-region') === 'uk' ? environment.ukProxyReferenceId : environment.proxyReferenceId;
         setTimeout(() => {
             let configuration = {
-                referenceId: environment.proxyReferenceId,
+                referenceId: proxyReferenceId,
                 addInfo: {
                     redirect_path: this.url
                 },
@@ -77,7 +89,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                     this.generalService.showSnackbar(error?.message);
                 }
             };
-            this.generalService.loadScript(environment.proxyReferenceId, configuration);
+            this.generalService.loadScript(proxyReferenceId, configuration);
         }, 200)
     }
 

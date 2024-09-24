@@ -6,13 +6,14 @@ import { API } from "./apiurls/auth.api";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
 import { environment } from "src/environments/environment";
+import { ApiService } from "./api.service";
 
 @Injectable()
 export class AuthService {
     private apiUrl: string = '';
     private proxyUrl: string = '';
-    constructor(private errorHandler: PortalErrorHandler, private http: HttpWrapperService) {
-        this.apiUrl = environment.apiUrl;
+    constructor(private errorHandler: PortalErrorHandler, private http: HttpWrapperService, private apiService: ApiService) {
+        this.apiUrl = this.apiService.getApiUrl();
         this.proxyUrl = environment.proxyUrl;
     }
 
