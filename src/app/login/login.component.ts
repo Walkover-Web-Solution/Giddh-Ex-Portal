@@ -35,14 +35,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         private apiService: ApiService
     ) {
 
-        this.route.queryParams.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
-            let region = params?.region ? params.region?.toLowerCase() : null;
-            if (region) {
-                localStorage.setItem('country-region', region);
-                this.apiService.setApiUrl(region);
-            }
-            this.loginId = localStorage.getItem('country-region') === 'uk' ? environment.ukProxyReferenceId : environment.proxyReferenceId;
-        });
         localStorage.removeItem("folderName");
         this.route.params.pipe(takeUntil(this.destroyed$)).subscribe((params: any) => {
             if (params) {
@@ -55,7 +47,11 @@ export class LoginComponent implements OnInit, OnDestroy {
                     },
                     reset: true
                 }));
-                this.url = `/${this.portalParamsRequest.domain}/auth`;
+                const region = params?.region?.toLowerCase() ?? localStorage.getItem('country-region') ?? 'in';
+                localStorage.setItem('country-region', region);
+                this.loginId = region === 'uk' ? environment.ukProxyReferenceId : environment.proxyReferenceId;
+                this.apiService.setApiUrl(region);
+                this.url = `/${this.portalParamsRequest.domain}/${region}/auth`;
             }
         });
     }

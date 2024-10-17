@@ -51,7 +51,8 @@ export class PortalErrorHandler {
                 if (data) {
                     if (data?.code === 'SESSION_EXPIRED_OR_INVALID' || data?.code === 'INVALID_SESSION_ID') {
                         const folderName = this.generalService.getStoreFolderName();
-                        const url = folderName + '/login';
+                        const region = localStorage.getItem('country-region') || '';
+                        const url = folderName + `/login/${region}/`;
                         this.router.navigate([url]);
                         this.store.dispatch(setFolderData({ folderName: folderName, data: { userDetails: null, session: null, domain: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
                     }

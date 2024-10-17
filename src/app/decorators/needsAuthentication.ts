@@ -23,7 +23,8 @@ export class NeedsAuthentication {
         return this.store.pipe(select(state => state), map(response => {
             let storeData = response['folderName'][next?.url[0]?.path];
             if (!storeData?.session) {
-                let url = next?.url[0]?.path + '/login';
+                const region = localStorage.getItem('country-region') || '';
+                const url = next?.url[0]?.path + `/login/${region}/`;
                 this.router.navigate([url]);
             }
         }));

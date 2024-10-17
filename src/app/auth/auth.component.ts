@@ -153,6 +153,7 @@ export class AuthComponent implements OnInit, OnDestroy {
      * @memberof AuthComponent
      */
     public getPortalUrlParams(): void {
+        let region = localStorage.getItem('country-region') || '';
         if (!this.portalParamsRequest.proxyAuthToken || !this.portalParamsRequest.subDomain) {
             return;
         }
@@ -197,16 +198,17 @@ export class AuthComponent implements OnInit, OnDestroy {
                         if (portal?.status === 'error') {
                             this.generalService.showSnackbar(portal?.message);
                             this.isLoading = false;
-                            let url = '/' + this.portalParamsRequest.subDomain + '/login'
+                            const url = this.portalParamsRequest.subDomain + `/login/${region}/`;
                             this.router.navigate([url]);
                         }
                     }
                 });
             } else {
+
                 if (response?.status === 'error') {
                     this.generalService.showSnackbar(response?.data?.message);
                     this.isLoading = false;
-                    let url = '/' + this.portalParamsRequest.subDomain + '/login'
+                    const url = '/' + this.portalParamsRequest.subDomain + `/login/${region}/`;
                     this.router.navigate([url]);
                 }
             }
