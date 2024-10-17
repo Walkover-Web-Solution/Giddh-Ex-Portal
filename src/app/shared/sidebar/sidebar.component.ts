@@ -191,7 +191,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
             localStorage.removeItem('country-region');
             this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: null, session: null, domain: null, redirectUrl: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
             this.generalService.showSnackbar('You have successfully logged out.', 'success');
-            const url = this.portalDomain + '/login';
+            const region = localStorage.getItem('country-region') || '';
+
+            const url = this.portalDomain + `/login/${region}/`;
             this.router.navigate([url]);
         });
     }
