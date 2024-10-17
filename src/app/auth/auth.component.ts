@@ -198,7 +198,7 @@ export class AuthComponent implements OnInit, OnDestroy {
                         if (portal?.status === 'error') {
                             this.generalService.showSnackbar(portal?.message);
                             this.isLoading = false;
-                            const url = this.portalParamsRequest.subDomain + `/login/${region}/`;
+                            const url = '/' + this.portalParamsRequest.subDomain + `/login/${region}/`;
                             this.router.navigate([url]);
                         }
                     }
