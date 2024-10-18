@@ -43,7 +43,8 @@ export class LoginComponent implements OnInit, OnDestroy {
                     folderName: this.portalParamsRequest.domain,
                     data: {
                         domain: this.portalParamsRequest.domain,
-                        sidebarState: true
+                        sidebarState: true,
+                        region: params?.region?.toLowerCase() ?? localStorage.getItem('country-region') ?? 'in'
                     },
                     reset: true
                 }));

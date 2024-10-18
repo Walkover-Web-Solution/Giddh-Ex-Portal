@@ -64,6 +64,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public loginId = environment.proxyReferenceId;
     /** Hold current url*/
     public url: string = '';
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private generalService: GeneralService,
@@ -93,6 +95,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.queryParams = response[0];
                 this.urlParams = response[1];
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
+                this.region = this.storeData?.region;
                 if (!this.storeData?.session?.id) {
                     this.storeData = {
                         session: {
@@ -255,7 +258,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @memberof InvoicePreviewComponent
      */
     public backToInvoices(): void {
-        let url = this.storeData.domain + '/invoice';
+        let url = `${this.storeData.domain}/${this.region}/invoice`;
         this.router.navigate([url]);
     }
 
@@ -328,11 +331,11 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
 
         let url = "";
         if (!this.storeData.session?.id) {
-            url = '/' + this.storeData.domain + '/invoice-pay/account/' + (this.queryParams?.accountUniqueName) + '/voucher/' + details?.vouchers[0]?.uniqueName;
+            url = '/' + this.storeData.domain + `/${this.region}` + '/invoice-pay/account/' + (this.queryParams?.accountUniqueName) + '/voucher/' + details?.vouchers[0]?.uniqueName;
             this.router.navigate([url], navigationExtras);
 
         } else {
-            url = '/' + this.storeData.domain + '/invoice-pay/account/' + (this.storeData.userDetails?.account?.uniqueName) + '/voucher/' + details?.vouchers[0]?.uniqueName;
+            url = '/' + this.storeData.domain + `/${this.region}` + '/invoice-pay/account/' + (this.storeData.userDetails?.account?.uniqueName) + '/voucher/' + details?.vouchers[0]?.uniqueName;
             this.router.navigate([url]);
         }
     }

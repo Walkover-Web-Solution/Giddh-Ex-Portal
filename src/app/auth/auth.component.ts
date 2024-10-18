@@ -42,6 +42,8 @@ export class AuthComponent implements OnInit, OnDestroy {
     public companyUniqueName: string = '';
     /** Hold redirect url */
     public redirectUrl: any = "";
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private authService: AuthService,
@@ -55,6 +57,7 @@ export class AuthComponent implements OnInit, OnDestroy {
             if (response[0] && response[1] && response[2] && !this.portalParamsRequest.proxyAuthToken) {
                 this.portalParamsRequest.proxyAuthToken = response[0].proxy_auth_token;
                 this.portalParamsRequest.subDomain = response[1].companyDomainUniqueName;
+                this.region = response[2]['folderName'][this.portalParamsRequest.subDomain]?.region;
                 this.redirectUrl = response[2]['folderName'][this.portalParamsRequest.subDomain]?.redirectUrl;
                 this.getPortalUrlParams();
             }
@@ -105,10 +108,10 @@ export class AuthComponent implements OnInit, OnDestroy {
                 this.store.dispatch(setFolderData({ folderName: this.portalParamsRequest.subDomain, data: { userDetails: this.savePortalUserSession, session: response.body.session } }));
                 let url = '';
                 if (!this.redirectUrl) {
-                    url = '/' + this.portalParamsRequest.subDomain + '/welcome';
+                    url = '/' + this.portalParamsRequest.subDomain + `/${this.region}/welcome`;
                     this.router.navigate([url]);
                 } else {
-                    url = '/' + this.portalParamsRequest.subDomain + this.redirectUrl;
+                    url = `/${this.portalParamsRequest.subDomain}/${this.region}/${this.redirectUrl}`;
                     const updatedUrl = url.split('?');
                     if (updatedUrl.length > 1) {
                         const baseUrl = updatedUrl[0];
@@ -153,7 +156,6 @@ export class AuthComponent implements OnInit, OnDestroy {
      * @memberof AuthComponent
      */
     public getPortalUrlParams(): void {
-        let region = localStorage.getItem('country-region') || '';
         if (!this.portalParamsRequest.proxyAuthToken || !this.portalParamsRequest.subDomain) {
             return;
         }
@@ -182,10 +184,10 @@ export class AuthComponent implements OnInit, OnDestroy {
                             this.store.dispatch(setFolderData({ folderName: this.portalParamsRequest.subDomain, data: { userDetails: this.savePortalUserSession, session: this.users[0]?.session } }));
                             let url = '';
                             if (!this.redirectUrl) {
-                                url = '/' + this.portalParamsRequest.subDomain + '/welcome';
+                                url = '/' + this.portalParamsRequest.subDomain + `/${this.region}/welcome`;
                                 this.router.navigate([url]);
                             } else {
-                                url = '/' + this.portalParamsRequest.subDomain + this.redirectUrl;
+                                url = `/${this.portalParamsRequest.subDomain}/${this.region}this.redirectUrl`;
                                 const updatedUrl = url.split('?');
                                 if (updatedUrl.length > 1) {
                                     const baseUrl = updatedUrl[0];
@@ -198,7 +200,7 @@ export class AuthComponent implements OnInit, OnDestroy {
                         if (portal?.status === 'error') {
                             this.generalService.showSnackbar(portal?.message);
                             this.isLoading = false;
-                            const url = '/' + this.portalParamsRequest.subDomain + `/login/${region}/`;
+                            const url = '/' + this.portalParamsRequest.subDomain + `/${this.region}/login/`;
                             this.router.navigate([url]);
                         }
                     }
@@ -208,7 +210,7 @@ export class AuthComponent implements OnInit, OnDestroy {
                 if (response?.status === 'error') {
                     this.generalService.showSnackbar(response?.data?.message);
                     this.isLoading = false;
-                    const url = '/' + this.portalParamsRequest.subDomain + `/login/${region}/`;
+                    const url = '/' + this.portalParamsRequest.subDomain + `/${this.region}/login/`;
                     this.router.navigate([url]);
                 }
             }

@@ -48,6 +48,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
         accountUniqueName: undefined,
         sessionId: undefined,
     };
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private router: Router,
@@ -72,6 +74,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
+                this.region = this.storeData?.region;
                 this.portalDomain = this.storeData?.domain;
                 this.accountUrlRequest.accountUniqueName = this.storeData?.userDetails?.account?.uniqueName;
                 this.accountUrlRequest.companyUniqueName = this.storeData?.userDetails?.companyUniqueName;
@@ -89,9 +92,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 }
                 this.setActiveMenuItem();
                 this.menuItems = [
-                    { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + "/welcome" },
-                    { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
-                    { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
+                    { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + `/${this.region}/welcome` },
+                    {
+                        icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + `/${this.region}/invoice`
+                    },
+                    {
+                        icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + `/${this.region}/payment`
+                    }
                 ];
                 this.isExpanded = this.storeData?.sidebarState;
                 this.getAccountDetails();
@@ -191,9 +198,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
             localStorage.removeItem('country-region');
             this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: null, session: null, domain: null, redirectUrl: null, companyDetails: null, sidebarState: false, portalDetails: null } }));
             this.generalService.showSnackbar('You have successfully logged out.', 'success');
-            const region = localStorage.getItem('country-region') || '';
-
-            const url = this.portalDomain + `/login/${region}/`;
+            const url = `${this.portalDomain}/${this.region}/login/`;
             this.router.navigate([url]);
         });
     }
