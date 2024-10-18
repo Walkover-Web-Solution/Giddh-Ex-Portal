@@ -187,7 +187,6 @@ export class AuthComponent implements OnInit, OnDestroy {
                                 url = '/' + this.portalParamsRequest.subDomain + `/${this.region}/welcome`;
                                 this.router.navigate([url]);
                             } else {
-                                url = '/' + this.portalParamsRequest.subDomain + this.redirectUrl;
                                 url = `/${this.portalParamsRequest.subDomain}/${this.region}this.redirectUrl`;
                                 const updatedUrl = url.split('?');
                                 if (updatedUrl.length > 1) {

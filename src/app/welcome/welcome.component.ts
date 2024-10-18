@@ -232,8 +232,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public receiptPreview(uniqueName: any): void {
-        const region = localStorage.getItem('country-region') || 'in';
-        let url = `${this.storeData.domain}/${region}/payment/preview`;
+        let url = `${this.storeData.domain}/${this.region}/payment/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,
