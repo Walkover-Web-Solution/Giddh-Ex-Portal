@@ -19,6 +19,8 @@ export class SwitchAccountComponent implements OnInit, OnDestroy {
     public storeData: any = {};
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private store: Store,
@@ -39,6 +41,7 @@ export class SwitchAccountComponent implements OnInit, OnDestroy {
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1]) {
                 this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                this.region = this.storeData?.region;
             }
         });
     }
@@ -76,7 +79,7 @@ export class SwitchAccountComponent implements OnInit, OnDestroy {
                 this.isLoading = false;
                 savePortalUserSession['companyUniqueName'] = response.body.companyUniqueName;
                 this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { userDetails: savePortalUserSession, session: response.body.session } }));
-                let url = '/' + this.storeData.domain + '/switch-account';
+                let url = `/${this.storeData.domain}/${this.region}/switch-account`;
                 this.router.navigate([url]);
             } else {
                 this.isLoading = false;

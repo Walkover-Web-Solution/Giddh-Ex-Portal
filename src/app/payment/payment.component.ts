@@ -74,6 +74,8 @@ export class PaymentComponent implements OnInit, OnDestroy {
     public pageSizeOptions: any[] = PAGE_SIZE_OPTIONS;
     /** Count of total records for pagination */
     public totalRecords: number = 0;
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         public dialog: MatDialog,
@@ -96,6 +98,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
         combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && response[2] && !this.storeData?.session) {
                 this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
+                this.region = this.storeData?.region;
                 this.getCountPage();
             }
         });
@@ -256,7 +259,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
      * @memberof PaymentComponent
      */
     public paymentPreview(invoice: any): void {
-        let url = this.storeData.domain + '/payment/preview';
+        let url = `${this.storeData.domain}/${this.region}/payment/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: invoice?.uniqueName,

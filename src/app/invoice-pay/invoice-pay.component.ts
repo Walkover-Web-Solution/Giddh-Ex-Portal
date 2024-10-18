@@ -68,6 +68,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public url: string = '';
     /** Holds paypal url */
     public paypalUrl: string = environment.paypalUrl;
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         public dialog: MatDialog,
@@ -99,6 +101,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 this.queryParams = response[0];
                 this.urlParams = response[1];
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
+                this.region = this.storeData?.region;
                 if (!this.storeData?.session?.id) {
                     this.storeData = {
                         session: {
@@ -343,7 +346,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 if (response && response.status === 'success') {
                     this.generalService.showSnackbar(response?.body, "success");
                         if (this.storeData.redirectUrl) {
-                            let url = '/' + this.storeData.domain + this.storeData.redirectUrl;
+                            let url = `/${this.storeData.domain}/${this.region}${this.storeData.redirectUrl}`;
                             this.router.navigateByUrl(url);
                         }
                 } else {
@@ -361,7 +364,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public backToInvoice(): void {
-        let url = this.storeData.domain + '/invoice';
+        let url = `${this.storeData.domain}/${this.region}/invoice`;
         this.router.navigate([url]);
     }
 

@@ -75,6 +75,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     public isShowAccountDetails: boolean = false;
     /** Hold  store data */
     public storeData: any = {};
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private dashboardService: DashboardService,
@@ -99,7 +101,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-
+                this.region = this.storeData?.region;
                 this.receivedCompanyDetails = this.storeData.companyDetails;
                 this.userBalanceSummary.accountUniqueName = this.storeData.userDetails.account.uniqueName;
                 this.userBalanceSummary.companyUniqueName = this.storeData.userDetails.companyUniqueName;
@@ -230,7 +232,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public receiptPreview(uniqueName: any): void {
-        let url = this.storeData.domain + '/payment/preview';
+        let url = `${this.storeData.domain}/${this.region}/payment/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,
@@ -245,7 +247,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
    * @memberof WelcomeComponent
    */
     public invoicePreview(uniqueName: any): void {
-        let url = this.storeData.domain + '/invoice/preview';
+        let url = `${this.storeData.domain}/${this.region}/invoice/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,

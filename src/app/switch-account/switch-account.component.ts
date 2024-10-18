@@ -11,6 +11,8 @@ import { select, Store } from '@ngrx/store';
 export class SwitchAccountComponent implements OnInit, OnDestroy {
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private store: Store,
@@ -29,7 +31,8 @@ export class SwitchAccountComponent implements OnInit, OnDestroy {
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1]) {
                 let storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-                let url = '/' + storeData.domain + '/welcome';
+                this.region = storeData?.region;
+                let url = `/${storeData.domain}/${this.region}/welcome`;
                 this.router.navigate([url]);
             }
         });

@@ -2,6 +2,7 @@ import { createReducer, on } from '@ngrx/store';
 import { setFolderData } from '../actions/session.action';
 
 export interface SessionState {
+    region: string;
     session: null,
     domain: null,
     userDetails: null,
