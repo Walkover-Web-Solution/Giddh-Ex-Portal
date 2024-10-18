@@ -90,6 +90,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public selection = new SelectionModel<any>(true, []);
     /** True if we should select all checkbox */
     public showSelectAll: boolean = false;
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         public dialog: MatDialog,
@@ -113,6 +115,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(take(1)).subscribe((response) => {
             if (response[0] && response[1]) {
                 this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
+                this.region = this.storeData?.region;
                 this.getCountPage();
                 const routerState = (this.route as any)._routerState?.snapshot?.url;
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
@@ -299,7 +302,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      */
     public voucherPay(): void {
         this.dialog?.closeAll();
-        let url = this.storeData.domain + '/invoice-pay';
+        let url = `${this.storeData.domain}/${this.region}/invoice-pay`;
         if (this.selection?.selected?.length) {
             const voucherUniqueNames = this.selection?.selected?.map(voucher => {
                 return voucher.uniqueName;
@@ -358,7 +361,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
      * @memberof InvoiceComponent
      */
     public invoicePreview(invoice: any): void {
-        let url = this.storeData.domain + '/invoice/preview';
+        let url = `${this.storeData.domain}/${this.region}/invoice/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: invoice?.uniqueName,

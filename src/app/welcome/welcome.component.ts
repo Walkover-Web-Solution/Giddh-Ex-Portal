@@ -95,14 +95,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public ngOnInit(): void {
-        this.region = localStorage.getItem('country-region') || '';
         this.isLoading = true;
         document.querySelector('body')?.classList.add('welcome-main');
 
         combineLatest([this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.storeData = response[1]['folderName'][response[0].companyDomainUniqueName];
-
+                this.region = this.storeData?.region;
                 this.receivedCompanyDetails = this.storeData.companyDetails;
                 this.userBalanceSummary.accountUniqueName = this.storeData.userDetails.account.uniqueName;
                 this.userBalanceSummary.companyUniqueName = this.storeData.userDetails.companyUniqueName;
@@ -233,8 +232,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public receiptPreview(uniqueName: any): void {
-        const region = localStorage.getItem('country-region') || '';
-        let url = this.storeData.domain + `${region}/payment/preview`;
+        const region = localStorage.getItem('country-region') || 'in';
+        let url = `${this.storeData.domain}/${region}/payment/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,
@@ -249,7 +248,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
    * @memberof WelcomeComponent
    */
     public invoicePreview(uniqueName: any): void {
-        let url = this.storeData.domain + `${this.region}+ '/invoice/preview`;
+        let url = `${this.storeData.domain}/${this.region}/invoice/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,

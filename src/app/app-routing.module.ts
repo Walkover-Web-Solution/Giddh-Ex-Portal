@@ -4,7 +4,7 @@ import { NeedsAuthentication } from './decorators/needsAuthentication';
 
 const routes: Routes = [
     { path: "page-not-found", loadChildren: () => import('./page-not-found/page-not-found.module').then(module => module.PageNotFoundModule) },
-    { path: ":companyDomainUniqueName/login/:region", loadChildren: () => import('./login/login.module').then(module => module.LoginModule) },
+    { path: ":companyDomainUniqueName/:region/login", loadChildren: () => import('./login/login.module').then(module => module.LoginModule) },
     { path: ":companyDomainUniqueName/:region/auth", loadChildren: () => import('./auth/auth.module').then(module => module.AuthModule) },
     { path: ":companyDomainUniqueName/:region/welcome", loadChildren: () => import('./welcome/welcome.module').then(module => module.WelcomeModule), canActivate: [NeedsAuthentication] },
     { path: ":companyDomainUniqueName/:region/invoice", loadChildren: () => import('./invoice/invoice.module').then(module => module.InvoiceModule), canActivate: [NeedsAuthentication] },

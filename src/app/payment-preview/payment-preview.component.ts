@@ -50,6 +50,8 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
     }
     /** Hold  store data */
     public storeData: any = {};
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private generalService: GeneralService,
@@ -71,6 +73,7 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
         combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && response[2] && !this.storeData?.session) {
                 this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
+                this.region = this.storeData?.region;
                 this.voucherUniqueName = response[0].voucher;
 
                 this.getPaymentDetails();
@@ -170,7 +173,7 @@ export class PaymentPreviewComponent implements OnInit, OnDestroy {
      * @memberof PaymentPreviewComponent
      */
     public backToInvoices(): void {
-        let url = this.storeData.domain + '/payment';
+        let url = `${this.storeData.domain}/${this.region}/payment`;
         this.router.navigate([url]);
     }
 
