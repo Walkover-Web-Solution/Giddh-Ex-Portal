@@ -48,6 +48,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
         accountUniqueName: undefined,
         sessionId: undefined,
     };
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private router: Router,
@@ -69,6 +71,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
      * @memberof SidebarComponent
      */
     public ngOnInit(): void {
+        this.region = localStorage.getItem('country-region') || '';
         combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
@@ -89,9 +92,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 }
                 this.setActiveMenuItem();
                 this.menuItems = [
-                    { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + "/welcome" },
-                    { icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + "/invoice" },
-                    { icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + "/payment" }
+                    { icon: "home.svg", label: "Home", url: '/' + this.portalDomain + `/${this.region}/welcome` },
+                    {
+                        icon: "invoice.svg", label: "Invoices", url: '/' + this.portalDomain + `/${this.region}/invoice`
+                    },
+                    {
+                        icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + `/${this.region}/payment`
+                    }
                 ];
                 this.isExpanded = this.storeData?.sidebarState;
                 this.getAccountDetails();

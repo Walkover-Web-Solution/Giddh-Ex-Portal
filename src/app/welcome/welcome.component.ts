@@ -75,6 +75,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     public isShowAccountDetails: boolean = false;
     /** Hold  store data */
     public storeData: any = {};
+    /** Hold region */
+    public region: string = "";
 
     constructor(
         private dashboardService: DashboardService,
@@ -93,6 +95,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public ngOnInit(): void {
+        this.region = localStorage.getItem('country-region') || '';
         this.isLoading = true;
         document.querySelector('body')?.classList.add('welcome-main');
 
@@ -230,7 +233,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
      * @memberof WelcomeComponent
      */
     public receiptPreview(uniqueName: any): void {
-        let url = this.storeData.domain + '/payment/preview';
+        const region = localStorage.getItem('country-region') || '';
+        let url = this.storeData.domain + `${region}/payment/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,
@@ -245,7 +249,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
    * @memberof WelcomeComponent
    */
     public invoicePreview(uniqueName: any): void {
-        let url = this.storeData.domain + '/invoice/preview';
+        let url = this.storeData.domain + `${this.region}+ '/invoice/preview`;
         this.router.navigate([url], {
             queryParams: {
                 voucher: uniqueName,
