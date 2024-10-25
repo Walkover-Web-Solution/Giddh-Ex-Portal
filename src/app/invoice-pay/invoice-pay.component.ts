@@ -128,7 +128,8 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public loginButtonScriptLoaded(): void {
-        this.url = `/${this.storeData.domain}/auth`;
+        console.log(this.storeData);
+        this.url = `/${this.storeData.domain}${this.storeData?.region}/auth`;
         setTimeout(() => {
             let configuration = {
                 referenceId: environment.proxyReferenceId,
@@ -346,7 +347,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 if (response && response.status === 'success') {
                     this.generalService.showSnackbar(response?.body, "success");
                         if (this.storeData.redirectUrl) {
-                            let url = `/${this.storeData.domain}/${this.region}${this.storeData.redirectUrl}`;
+                            let url = `/${this.storeData.domain}/${this.region}/${this.storeData.redirectUrl}`;
                             this.router.navigateByUrl(url);
                         }
                 } else {
