@@ -95,7 +95,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.queryParams = response[0];
                 this.urlParams = response[1];
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
-                this.region = this.storeData?.region;
+                this.region = this.storeData?.region ?? response[1]?.region ;
                 if (!this.storeData?.session?.id) {
                     this.storeData = {
                         session: {
@@ -105,7 +105,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                         },
                         domain: this.urlParams.companyDomainUniqueName,
                         sidebarState: true,
-                        redirectUrl: this.storeData?.redirectUrl
+                        redirectUrl: this.storeData?.redirectUrl,
+                        region: response[1]?.region
                     }
                     this.loginButtonScriptLoaded();
                 }
@@ -114,7 +115,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 }
                 const routerState = (this.route as any)._routerState?.snapshot?.url;
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
-                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
+                this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, region: response[1]?.region } }));
             }
 
             if (this.queryParams?.voucher) {
@@ -129,7 +130,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
  * @memberof InvoicePreviewComponent
  */
     public loginButtonScriptLoaded(): void {
-        this.url = `/${this.storeData.domain}/auth`;
+        this.url = `/${this.storeData.domain}/${this.region}/auth`;
         setTimeout(() => {
             let configuration = {
                 referenceId: environment.proxyReferenceId,
