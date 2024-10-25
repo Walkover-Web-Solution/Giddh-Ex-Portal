@@ -128,8 +128,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public loginButtonScriptLoaded(): void {
-        console.log(this.storeData);
-        this.url = `/${this.storeData.domain}${this.storeData?.region}/auth`;
+        this.url = `/${this.storeData.domain}/${this.storeData?.region}/auth`;
         setTimeout(() => {
             let configuration = {
                 referenceId: environment.proxyReferenceId,
