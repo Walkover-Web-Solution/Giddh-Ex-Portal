@@ -101,7 +101,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 this.queryParams = response[0];
                 this.urlParams = response[1];
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
-                this.region = this.storeData?.region;
+                this.region = this.storeData?.region ?? response[1]?.region;
                 if (!this.storeData?.session?.id) {
                     this.storeData = {
                         session: {
