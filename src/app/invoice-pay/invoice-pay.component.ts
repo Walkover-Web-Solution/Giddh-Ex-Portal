@@ -101,7 +101,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 this.queryParams = response[0];
                 this.urlParams = response[1];
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
-                this.region = this.storeData?.region;
+                this.region = this.storeData?.region ?? response[1]?.region;
                 if (!this.storeData?.session?.id) {
                     this.storeData = {
                         session: {
@@ -128,7 +128,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @memberof InvoicePayComponent
      */
     public loginButtonScriptLoaded(): void {
-        this.url = `/${this.storeData.domain}/auth`;
+        this.url = `/${this.storeData.domain}/${this.storeData?.region}/auth`;
         setTimeout(() => {
             let configuration = {
                 referenceId: environment.proxyReferenceId,
@@ -346,7 +346,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 if (response && response.status === 'success') {
                     this.generalService.showSnackbar(response?.body, "success");
                         if (this.storeData.redirectUrl) {
-                            let url = `/${this.storeData.domain}/${this.region}${this.storeData.redirectUrl}`;
+                            let url = `/${this.storeData.domain}${this.storeData.redirectUrl}`;
                             this.router.navigateByUrl(url);
                         }
                 } else {
