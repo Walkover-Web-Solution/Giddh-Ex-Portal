@@ -92,6 +92,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public showSelectAll: boolean = false;
     /** Hold region */
     public region: string = "";
+    /** Hold pay now button according to payment methods*/
+    public showPayNowButton: boolean = false;
 
     constructor(
         public dialog: MatDialog,
@@ -121,7 +123,29 @@ export class InvoiceComponent implements OnInit, OnDestroy {
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
                 this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
             }
+        });
+    }
 
+    /**
+    * This will be use for get payment methods
+    *
+    * @private
+    * @memberof InvoiceComponent
+    */
+    private getPaymentMethods(): void {
+        this.isLoading = true;
+        const accountUniqueName = this.storeData.userDetails?.account.uniqueName;
+        const companyUniqueName = this.storeData.userDetails?.companyUniqueName;
+        const request = { accountUniqueName: accountUniqueName, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id };
+        this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
+            this.isLoading = false;
+            if (response && response.status === 'success') {
+                if (response.body?.RAZORPAY || response.body?.PAYPAL) {
+                    this.showPayNowButton = true;
+                }
+            } else {
+                this.generalService.showSnackbar(response?.message);
+            }
         });
     }
 
@@ -241,9 +265,11 @@ export class InvoiceComponent implements OnInit, OnDestroy {
                 if (response && response.status === 'success') {
                     this.invoiceListRequest.count = response.body?.countOfRecords || PAGINATION_LIMIT;
                     this.getInvoiceList(true, false);
+                    this.getPaymentMethods();
                 } else {
                     if (response?.status === 'error') {
                         this.getInvoiceList(true, false);
+                        this.getPaymentMethods();
                         this.generalService.showSnackbar(response?.message);
                     }
                 }
