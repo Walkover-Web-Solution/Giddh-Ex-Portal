@@ -117,11 +117,10 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
                 this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, region: response[1]?.region } }));
             }
-
-            if (this.queryParams?.voucher) {
-                this.getPaymentMethods();
-            }
         });
+        if (this.queryParams.voucher) {
+            this.getPaymentMethods();
+        }
     }
 
     /**
