@@ -127,11 +127,11 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     }
 
     /**
-* This will be use for get payment methods
-*
-* @private
-* @memberof InvoiceComponent
-*/
+    * This will be use for get payment methods
+    *
+    * @private
+    * @memberof InvoiceComponent
+    */
     private getPaymentMethods(): void {
         this.isLoading = true;
         const accountUniqueName = this.storeData.userDetails?.account.uniqueName;
@@ -140,7 +140,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
             this.isLoading = false;
             if (response && response.status === 'success') {
-                if (response.body?.RAZORPAY || response.body?.RAZORPAY) {
+                if (response.body?.RAZORPAY || response.body?.PAYPAL) {
                     this.showPayNowButton = true;
                 }
             } else {
