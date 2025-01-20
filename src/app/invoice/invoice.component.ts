@@ -92,7 +92,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public showSelectAll: boolean = false;
     /** Hold region */
     public region: string = "";
-    /** Hold pay now button according to payment methods*/
+    /** Hold pay now button according to payment methods */
     public showPayNowButton: boolean = false;
 
     constructor(
@@ -136,7 +136,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const accountUniqueName = this.storeData.userDetails?.account.uniqueName;
         const companyUniqueName = this.storeData.userDetails?.companyUniqueName;
-        const request = { accountUniqueName: accountUniqueName, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id };
+        const request = { accountUniqueName, companyUniqueName, sessionId: this.storeData.session?.id };
         this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
             this.isLoading = false;
             if (response && response.status === 'success') {
