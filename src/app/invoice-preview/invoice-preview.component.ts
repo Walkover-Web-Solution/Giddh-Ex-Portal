@@ -95,7 +95,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.queryParams = response[0];
                 this.urlParams = response[1];
                 this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
-                this.region = this.storeData?.region ?? response[1]?.region ;
+                this.region = this.storeData?.region ?? response[1]?.region;
                 if (!this.storeData?.session?.id) {
                     this.storeData = {
                         session: {
@@ -117,11 +117,10 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
                 this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, region: response[1]?.region } }));
             }
-
-            if (this.queryParams?.voucher) {
-                this.getPaymentMethods();
-            }
         });
+        if (this.queryParams.voucher) {
+            this.getPaymentMethods();
+        }
     }
 
     /**
@@ -160,7 +159,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const accountUniqueName = this.storeData.userDetails?.account.uniqueName ?? this.queryParams?.accountUniqueName;
         const companyUniqueName = this.storeData.userDetails?.companyUniqueName ?? this.queryParams.companyUniqueName;
-        const request = { accountUniqueName: accountUniqueName, companyUniqueName: companyUniqueName, sessionId: this.storeData.session?.id };
+        const request = { accountUniqueName, companyUniqueName, sessionId: this.storeData.session?.id };
         this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
             this.isLoading = false;
             if (response && response.status === 'success') {
