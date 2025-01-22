@@ -185,6 +185,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public onSortBySelected(): void {
         this.invoiceListRequest.sortBy = this.selectedOption;
         this.showClearFilter = true;
+        this.selection.clear();
         this.getInvoiceList(false, true);
     }
 
@@ -196,6 +197,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public onStatusSelected(): void {
         this.invoiceListRequest.balanceStatus[0] = this.selectedStatusValue;
         this.showClearFilter = true;
+        this.selection.clear();
         this.getInvoiceList(false, true);
     }
 
@@ -377,6 +379,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.selectedStatusValue = '';
         this.selectedOption = 'grandTotal';
         this.showClearFilter = false;
+        this.selection.clear();
         this.getInvoiceList(false, true);
     }
 
