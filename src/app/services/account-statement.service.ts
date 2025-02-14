@@ -30,9 +30,10 @@ export class AccountStatementService {
             this.apiUrl + API.GET_ACCOUNT_STATEMENT
                 .replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))
                 .replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName))
-                .replace(':count', encodeURIComponent(2))
-                .replace(':from', encodeURIComponent('01-04-2022'))
-                .replace(':to', encodeURIComponent('23-02-2025'))
+                .replace(':count', encodeURIComponent(model.count))
+                .replace(':page', encodeURIComponent(model.page))
+                .replace(':from', encodeURIComponent(model.from))
+                .replace(':to', encodeURIComponent(model.to))
                 .replace(':sort', encodeURIComponent(model.sort)),
             '', args
         ).pipe(

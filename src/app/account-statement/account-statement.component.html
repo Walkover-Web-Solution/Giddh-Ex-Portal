@@ -4,42 +4,13 @@
     <div class="common-wrapper" *ngIf="totalRecords !== null">
         <header [heading]="'Account Statement'"></header>
         <div class="inner-content main-wrapper">
-            <!-- <div class="d-flex column-gap10 res-field">
-                <mat-form-field appearance="outline">
-                    <mat-label>Sort By</mat-label>
-                    <mat-select
-                        [(value)]="selectedOption"
-                        (selectionChange)="onSortBySelected()"
-                    >
-                        <mat-option
-                            *ngFor="let sortByOption of sortByOptions"
-                            [value]="sortByOption.value"
-                            >{{ sortByOption.label }}</mat-option
-                        >
-                    </mat-select>
-                </mat-form-field>
-                <button
-                    *ngIf="showClearFilter"
-                    mat-stroked-button
-                    color="primary"
-                    (click)="resetFilter()"
-                    class="clear-button"
-                >
-                    Clear
-                </button>
-            </div> -->
-            <mat-form-field>
-                <mat-label>Enter a date range</mat-label>
-                <mat-date-range-input [formGroup]="range" [rangePicker]="picker" (click)="picker.open()">
-                  <input matStartDate formControlName="start" placeholder="Start date" readonly (dateChange)="this.showErrorMessage = false">
-                  <input matEndDate formControlName="end" placeholder="End date" readonly (dateChange)="this.showErrorMessage = false">
-                </mat-date-range-input>
-                <mat-hint>DD/MM/YYYY – DD/MM/YYYY</mat-hint>
-                <mat-date-range-picker #picker (closed)="onDatePickerClose()"></mat-date-range-picker>
-            </mat-form-field>
-            <p class="danger" *ngIf="showErrorMessage">
-                Please enter a valid date*
-            </p> 
+            <giddh-datepicker 
+                *ngIf="startDate && endDate"
+                [startDate]="startDate"
+                [endDate]="endDate"
+                (onDatePickerIsClose)="startDate = $event.startDate; endDate = $event.endDate; getAccountStatementList()"
+            >
+            </giddh-datepicker>
             <div class="invoice-table mr-t15">
                 <div class="table-responsive">
                     <table
@@ -153,7 +124,7 @@
                     <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
                     <div class="text-center pd-t1 pd-b1" *ngIf="!isLoading && !accountListData?.length">
                         <p class="no-data">
-                            No Data Found.
+                            No Account Statement Data Found.
                         </p>
                     </div>
                     <mat-paginator

@@ -17,6 +17,9 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatNativeDateModule } from "@angular/material/core";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatSortModule } from "@angular/material/sort";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { GiddhDatepickerModule } from "../shared/date-picker/giddh-datepicker.module";
 
 @NgModule({
     declarations: [
@@ -38,7 +41,10 @@ import { MatSortModule } from "@angular/material/sort";
         MatNativeDateModule,
         MatAutocompleteModule,
         MatPaginatorModule,
-        MatSortModule
+        MatSortModule,
+        MatFormFieldModule,
+        MatInputModule,
+        GiddhDatepickerModule
     ]
 })
 export class AccountStatementModule {
