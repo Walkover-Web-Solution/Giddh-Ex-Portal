@@ -17,7 +17,7 @@ export class AccountStatementService {
     }
 
     /**
-    *
+    * Get Account Statement List API
     *
     * @param {*} model
     * @return {*}  {Observable<BaseResponse<any, any>>}

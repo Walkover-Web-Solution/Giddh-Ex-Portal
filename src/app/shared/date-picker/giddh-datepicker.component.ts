@@ -23,11 +23,6 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
     /** Form group for handling date range */
     public range: FormGroup;
 
-    /**
-     * Constructor to initialize dependencies
-     * @param {DateAdapter<any>} adapter - Date adapter for locale settings
-     * @param {FormBuilder} fb - FormBuilder instance for creating form group
-     */
     constructor(
         private adapter: DateAdapter<any>,
         private fb: FormBuilder
@@ -40,7 +35,9 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
 
     /**
      * Initializes the component and sets the locale for the date adapter
+     * 
      * @returns {void}
+     * @memberof GiddhDatepickerComponent
      */
     public ngOnInit(): void {
         this.adapter.setLocale('fr');
@@ -49,7 +46,9 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
 
     /**
      * Handles date picker close event and emits selected date range
+     * 
      * @returns {void}
+     * @memberof GiddhDatepickerComponent
      */
     public onDatePickerClose(): void {
         let endDate: string = this.range.value.end;
@@ -62,7 +61,9 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
 
     /**
      * Releases the memory and cleans up subscriptions
+     * 
      * @returns {void}
+     * @memberof GiddhDatepickerComponent
      */
     public ngOnDestroy(): void {
         this.destroyed$.next(true);

@@ -1,19 +1,15 @@
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSort } from "@angular/material/sort";
-import { MatTableDataSource } from "@angular/material/table";
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReplaySubject, combineLatest } from "rxjs";
 import { ReciptResponse } from "../models/Company";
-import { PaymentService } from "../services/payment.service.";
-import { ActivatedRoute, Router } from "@angular/router";
+import { ActivatedRoute } from "@angular/router";
 import { takeUntil } from "rxjs/operators";
 import { select, Store } from '@ngrx/store';
-import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
+import { PAGE_SIZE_OPTIONS } from "../app.constant";
 import { GeneralService } from "../services/general.service";
-import { CommonService } from "../services/common.service";
 import { AccountStatementService } from "../services/account-statement.service";
-import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 import * as dayjs from 'dayjs';
 import { GIDDH_DATE_FORMAT } from "../shared/defaultDateFormat";
 
@@ -77,7 +73,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     /**
      * This will be use for component initialization
      *
-     * @memberof PaymentComponent
+     * @memberof AccountStatementComponent
      */
     public ngOnInit(): void {
         combineLatest([this.route.queryParams, this.route.params, this.store.pipe(select(state => state))]).pipe(takeUntil(this.destroyed$)).subscribe((response) => {
@@ -92,9 +88,9 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
      * This will be use for hanldle page changes
      *
      * @param {PageEvent} event
-     * @memberof PaymentComponent
+     * @memberof AccountStatementComponent
      */
-    public handlePageChange(event: PageEvent) {
+    public handlePageChange(event: PageEvent): void {
         this.pageIndex = event.pageIndex;
         this.accountListRequest.count = event.pageSize;
         this.accountListRequest.page = event.pageIndex + 1;
@@ -104,7 +100,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     /**
      * This will be use for get count page
      *
-     * @memberof PaymentComponent
+     * @memberof AccountStatementComponent
      */
     public setDefaultParam(): void {
         if (this.storeData) {
@@ -122,7 +118,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     /**
      * This will be use for get payment list
      *
-     * @memberof PaymentComponent
+     * @memberof AccountStatementComponent
      */
     public getAccountStatementList(): void {
         this.isLoading = true;
@@ -147,7 +143,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
      * This will be use for sort table  data
      *
      * @param {*} event
-     * @memberof PaymentComponent
+     * @memberof AccountStatementComponent
      */
     public sortData(event: any): void {
         this.accountListRequest.sort = event?.direction ? event?.direction : 'asc';
@@ -158,7 +154,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     /**
      * This will be use for component destroy
      *
-     * @memberof PaymentComponent
+     * @memberof AccountStatementComponent
      */
     public ngOnDestroy(): void {
         this.destroyed$.next(true);
