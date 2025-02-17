@@ -126,7 +126,6 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
         this.accountStatementService.getAccountStatementList(this.accountListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
             this.isLoading = false;
             if (response && response.status === 'success') {
-                console.log(response.body.transactionDetailList);
                 this.accountListData = response.body.transactionDetailList;
                 this.totalRecords = response.body.totalItems;
             } else {
