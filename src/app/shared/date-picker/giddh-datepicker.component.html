@@ -1,5 +1,5 @@
 <mat-form-field [appearance]="'outline'">
-    <mat-date-range-input [formGroup]="range" [rangePicker]="picker" (click)="picker.open()">
+    <mat-date-range-input [formGroup]="dateRange" [rangePicker]="picker" (click)="picker?.open()">
         <input matStartDate formControlName="start" placeholder="Start date" readonly
             (dateChange)="showErrorMessage = false">
         <input matEndDate formControlName="end" placeholder="End date" readonly
@@ -7,6 +7,6 @@
     </mat-date-range-input>
     <mat-date-range-picker #picker (closed)="onDatePickerClose()"></mat-date-range-picker>
 </mat-form-field>
-<p class="danger" *ngIf="showErrorMessage">
-    Please enter a valid date*
+<p class="text-danger" *ngIf="showErrorMessage">
+    Please enter a valid date
 </p>

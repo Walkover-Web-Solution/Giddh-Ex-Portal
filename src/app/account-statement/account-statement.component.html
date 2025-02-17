@@ -16,7 +16,6 @@
                     <table
                         mat-table
                         [dataSource]="accountListData"
-                        class="mat-elevation-z8"
                         matSort
                         (matSortChange)="sortData($event)"
                         [matSortDirection]="accountListRequest.sort"
@@ -124,7 +123,7 @@
                     <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
                     <div class="text-center pd-t1 pd-b1" *ngIf="!isLoading && !accountListData?.length">
                         <p class="no-data">
-                            No Account Statement Data Found.
+                            No account statements found for the given criteria.
                         </p>
                     </div>
                     <mat-paginator

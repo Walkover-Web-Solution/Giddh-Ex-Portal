@@ -9,7 +9,6 @@ import { API } from "./apiurls/account-statement.api";
 
 @Injectable()
 export class AccountStatementService {
-
     private apiUrl: string = '';
 
     constructor(private errorHandler: PortalErrorHandler, private http: HttpWrapperService, private apiService: ApiService) {

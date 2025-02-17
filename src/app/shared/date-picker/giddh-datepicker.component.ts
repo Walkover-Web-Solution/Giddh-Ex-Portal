@@ -20,14 +20,14 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
     @Output() public onDatePickerIsClose: EventEmitter<{ startDate: string, endDate: string }> = new EventEmitter();
     /** Subject to release subscriptions */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-    /** Form group for handling date range */
-    public range: FormGroup;
+    /** Form group for handling date dateRange */
+    public dateRange: FormGroup;
 
     constructor(
         private adapter: DateAdapter<any>,
-        private fb: FormBuilder
+        private formBuilder: FormBuilder
     ) {
-        this.range = this.fb.group({
+        this.dateRange = this.formBuilder.group({
             start: [''],
             end: ['']
         });
@@ -41,18 +41,18 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
      */
     public ngOnInit(): void {
         this.adapter.setLocale('fr');
-        this.range.patchValue({ start: this.startDate, end: this.endDate });
+        this.dateRange.patchValue({ start: this.startDate, end: this.endDate });
     }
 
     /**
-     * Handles date picker close event and emits selected date range
+     * Handles date picker close event and emits selected date dateRange
      * 
      * @returns {void}
      * @memberof GiddhDatepickerComponent
      */
     public onDatePickerClose(): void {
-        let endDate: string = this.range.value.end;
-        let startDate: string = this.range.value.start;
+        let endDate: string = this.dateRange.value.end;
+        let startDate: string = this.dateRange.value.start;
         this.showErrorMessage = !startDate || !endDate;
         if (!this.showErrorMessage && !(startDate === this.startDate && endDate === this.endDate)) {
             this.onDatePickerIsClose.emit({startDate, endDate });

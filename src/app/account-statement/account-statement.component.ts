@@ -20,7 +20,7 @@ import { GIDDH_DATE_FORMAT } from "../shared/defaultDateFormat";
     providers: [AccountStatementService]
 })
 export class AccountStatementComponent implements OnInit, OnDestroy {
-    /** Instance of mat paginator*/
+    /** Instance of mat paginator */
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     /** Instance of mat sort */
     @ViewChild(MatSort) sort!: MatSort;
@@ -28,17 +28,13 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     public isLoading: boolean = false;
     /** Observable to unsubscribe all the store listeners to avoid memory leaks */
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-    /** Hold table displayed columns*/
+    /** Hold table displayed columns */
     public displayedColumns: string[] = ['Date', 'Transactions', 'Details', 'Amount', 'Payments', 'Balance'];
     /** Hold panel open state*/
     public panelOpenState: boolean = true;
-    /** Hold table sort selected option*/
-    public selectedOption: string = 'grandTotal';
     /** Hold invoice response table data */
     public accountListData: any[] = [];
-    /** Hold voucher data */
-    public voucherData: ReciptResponse;
-    /** Hold invocie url request */
+    /** Hold account url request */
     public accountListRequest: any = {
         companyUniqueName: '',
         accountUniqueName: '',
@@ -48,15 +44,17 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
         sortBy: 'Date',
         sort: 'asc',
     }
-    /** Hold table page index number*/
+    /** Hold table page index number */
     public pageIndex: number = 0;
     /** Hold  store data */
     public storeData: any = {};
     /** Holds page size options */
     public pageSizeOptions: any[] = PAGE_SIZE_OPTIONS;
     /** Count of total records for pagination */
-    public totalRecords: number = null;
+    public totalRecords: number | null = null;
+    /** Set sefault end date */
     public endDate: any = new Date();
+    /** Set sefault start date */
     public startDate: any = new Date(this.endDate);
 
 
