@@ -1,7 +1,7 @@
 <mat-spinner [diameter]="60" *ngIf="totalRecords === null"></mat-spinner>
 <div class="d-flex w-100">
     <sidebar></sidebar>
-    <div class="common-wrapper" *ngIf="totalRecords !== null">
+    <div class="common-wrapper" *ngIf="totalRecords !== null && responseAccountList">
         <header [heading]="'Account Statement'"></header>
         <div class="container w-100">
             <table class="w-100">
@@ -10,44 +10,47 @@
                         <h1>{{ responseAccountList.accountName }}</h1>
                     </td>
                     <td width="30%">
-                        <address class="pull-right">
+                        <address class="pull-right" *ngIf="responseAccountList.accountName">
                             <h2 class="font-size-30">{{ responseAccountList.accountName }}</h2>
-                            <p>Torstraße 61</p>
-                            <p>Berlin 10119 - Germany</p>
-                            <p>VAT: DE815382679</p>
-                            <p>Geschäftsführer: Gerrit Rode</p>
-                            <p>Amtsgericht Berlin-Charlottenburg - HRB 144188 B</p>
+                            <p *ngIf="responseAccountList.accountAddress.email">{{ responseAccountList.accountAddress.email }}</p>
+                            <p *ngIf="responseAccountList.accountAddress.address">{{ responseAccountList.accountAddress.address }}</p>
+                            <p *ngIf="responseAccountList.accountAddress.taxNumber">{{ responseAccountList.accountAddress.taxType}}: {{ responseAccountList.accountAddress.taxNumber }}</p>
+                            <p *ngIf="responseAccountList.accountAddress.mobileNo">{{ responseAccountList.accountAddress.mobileNo }}</p>
+                            <p *ngIf="responseAccountList.accountAddress.pinCode">{{ responseAccountList.accountAddress.pinCode }}</p>
+                            <p *ngIf="responseAccountList.accountAddress.stateName"> {{ responseAccountList.accountAddress.stateName }}</p>
+                            <p *ngIf="responseAccountList.accountAddress.countryName"> {{ responseAccountList.accountAddress.countryName }}</p>
                         </address>
                     </td>
                 </tr>
                 <tr>
                     <td width="70%">
-                        <address>
+                        <address *ngIf="responseAccountList.companyGstAddress">
                             <p class="font-size-20">An</p>
                             <h2 class="font-size-30">{{ responseAccountList.companyName }}</h2>
-                            <p>405 Capt CS Naidyu Arcade</p>
-                            <p>Old Palasia, Indore, MP</p>
-                            <p>452018</p>
-                            <p>India</p>
+                            <p *ngIf="responseAccountList?.companyGstAddress.email">{{ responseAccountList.companyGstAddress.email }}</p>
+                            <p *ngIf="responseAccountList?.companyGstAddress.address">{{ responseAccountList.companyGstAddress.address }}</p>
+                            <p *ngIf="responseAccountList?.companyGstAddress.taxNumber">{{ responseAccountList.companyGstAddress.taxType}}: {{ responseAccountList.companyGstAddress.taxNumber }}</p>
+                            <p *ngIf="responseAccountList?.companyGstAddress.mobileNo">{{ responseAccountList.companyGstAddress.mobileNo }}</p>
+                            <p *ngIf="responseAccountList?.companyGstAddress.pinCode">{{ responseAccountList.companyGstAddress.pinCode }}</p>
+                            <p *ngIf="responseAccountList?.companyGstAddress.stateName"> {{ responseAccountList.companyGstAddress.stateName }}</p>
+                            <p *ngIf="responseAccountList?.companyGstAddress.countryName"> {{ responseAccountList.companyGstAddress.countryName }}</p>
                         </address>
                     </td>
                     <td width="30%"></td>
                 </tr>
                 <tr>
-                    <td width="70%">
-                        <h2>Your VAT ID:</h2>
-                    </td>
+                    <td width="70%"></td>
                     <td width="30%">
                         <h2 class="font-size-30 text-right">Statement of Accounts</h2>
                         <hr class="full-width mr-t1 mr-b1">
-                        <p class="text-right text-grey font-size-18">{{ responseAccountList.fromDate }} To {{ responseAccountList.toDate }}</p>
+                        <p class="text-right text-grey font-size-18">{{ responseAccountList.fromDate }} <span> To </span>  {{ responseAccountList.toDate }}</p>
                         <hr class="full-width mr-t1">
                     </td>
                 </tr>
                 <tr>
                     <td width="70%"></td>
                     <td width="30%" class="pr-0">
-                        <table class="w-100">
+                        <table class="w-100" *ngIf="responseAccountList.accountSummary && responseAccountList.accountAddress">
                             <thead>
                                 <tr>
                                     <th colspan="2" class="bg-grey font-size-16 text-grey">Account Summary</th>
@@ -56,15 +59,15 @@
                             <tbody>
                                 <tr>
                                     <td class="font-size-16 text-grey">Opening Balance</td>
-                                    <td class="text-right">{{ responseAccountList.accountSummary.openingBalance.amount }}</td>
+                                    <td class="text-right">{{ responseAccountList.accountAddress.currency?.symbol }} {{ responseAccountList.accountSummary.openingBalance?.amount }}</td>
                                 </tr>
                                 <tr>
                                     <td class="font-size-16 text-grey">Invoiced Amount</td>
-                                    <td class="text-right">{{ responseAccountList.accountSummary.debitTotal }}</td>
+                                    <td class="text-right">{{ responseAccountList.accountAddress.currency?.symbol }} {{ responseAccountList.accountSummary.debitTotal }}</td>
                                 </tr>
                                 <tr>
                                     <td class="font-size-16 text-grey">Amount Paid</td>
-                                    <td class="text-right">{{ responseAccountList.accountSummary.creditTotal }}</td>
+                                    <td class="text-right">{{ responseAccountList.accountAddress.currency?.symbol }} {{ responseAccountList.accountSummary.creditTotal }}</td>
                                 </tr>
                             </tbody>
                             <tfoot>
@@ -73,7 +76,7 @@
                                 </tr>
                                 <tr>
                                     <td class="font-size-16 text-grey">Balance Due</td>
-                                    <td class="text-right">{{ responseAccountList.accountSummary.closingBalance.type === 'CREDIT' ? '-' : '' }} {{ responseAccountList.accountSummary.closingBalance.amount }}</td>
+                                    <td class="text-right">{{ responseAccountList.accountSummary.closingBalance.type === 'CREDIT' ? '-' : '' }} {{ responseAccountList.accountAddress.currency.symbol }} {{ responseAccountList.accountSummary.closingBalance.amount }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -152,10 +155,16 @@
                                 No account statements found for the given criteria.
                             </p>
                         </div>
-                        <mat-paginator *ngIf="!isLoading && totalRecords > pageSizeOptions[0]"
-                            (page)="handlePageChange($event)" [length]="totalRecords" [pageSize]="accountListRequest.count"
-                            [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [hidePageSize]="false"
-                            [pageIndex]="pageIndex">
+                        <mat-paginator 
+                            *ngIf="!isLoading && totalRecords > pageSizeOptions[0]"
+                            (page)="handlePageChange($event)" 
+                            [length]="totalRecords" 
+                            [pageSize]="accountListRequest.count"
+                            [showFirstLastButtons]="true" 
+                            [pageSizeOptions]="pageSizeOptions" 
+                            [hidePageSize]="false"
+                            [pageIndex]="pageIndex"                 
+                        >
                         </mat-paginator>
                     </div>
                 </div>

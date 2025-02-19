@@ -3,10 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-    production: false,
-    apiUrl: "https://routes.msg91.com/api/proxy/117230/24yrfox2/",
+    production: true,
+    apiUrl: "https://routes.msg91.com/api/proxy/117230/24lvqun1/",
     proxyUrl: "https://routes.msg91.com/",
-    proxyReferenceId: "117230e170290843965805217bfd25",
+    proxyReferenceId: "117230p1697093599652797df30cea",
     giddhApiUrl: "https://api.giddh.com/",
     paypalUrl: "https://www.paypal.com/cgi-bin/webscr",
     ukApiUrl: "https://routes.msg91.com/api/proxy/117230/34ytsup2/",
