@@ -142,7 +142,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     /**
      * This will be use for sort table  data
      *
-     * @param {*} event
+     * @param {any} event
      * @memberof AccountStatementComponent
      */
     public sortData(event: any): void {
