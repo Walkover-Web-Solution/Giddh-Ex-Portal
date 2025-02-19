@@ -3,142 +3,164 @@
     <sidebar></sidebar>
     <div class="common-wrapper" *ngIf="totalRecords !== null">
         <header [heading]="'Account Statement'"></header>
-        <div class="inner-content main-wrapper">
-            <giddh-datepicker 
-                *ngIf="startDate && endDate"
-                [startDate]="startDate"
-                [endDate]="endDate"
-                (onDatePickerIsClose)="startDate = $event.startDate; endDate = $event.endDate; getAccountStatementList()"
-            >
-            </giddh-datepicker>
-            <div class="invoice-table mr-t15">
-                <div class="table-responsive">
-                    <table
-                        mat-table
-                        [dataSource]="accountListData"
-                        matSort
-                        (matSortChange)="sortData($event)"
-                        [matSortDirection]="accountListRequest.sort"
-                        [matSortActive]="accountListRequest.sortBy"
-                    >
-                        <ng-container matColumnDef="Date">
-                            <th 
-                                mat-header-cell 
-                                *matHeaderCellDef 
-                                mat-sort-header
-                            >
-                                Date
-                            </th>
-                            <td mat-cell *matCellDef="let element">
-                                {{ element.date ?? '-' }}
-                            </td>
-                        </ng-container>
-                        <ng-container matColumnDef="Transactions">
-                            <th
-                                mat-header-cell
-                                *matHeaderCellDef
-                            >
-                                Transactions
-                            </th>
-                            <td 
-                                mat-cell 
-                                *matCellDef="let element"
-                            >
-                                {{ element?.voucherType ?? '-' }}
-                            </td>
-                        </ng-container>
-                        <ng-container matColumnDef="Details">
-                            <th
-                                mat-header-cell
-                                *matHeaderCellDef
-                            >
-                                Details
-                            </th>
-                            <td
-                                mat-cell
-                                *matCellDef="let element"
-                            >
-                                {{ element?.voucherNumber ?? '-' }}
-                            </td>
-                        </ng-container>
-                        <ng-container matColumnDef="Amount">
-                            <th
-                                mat-header-cell
-                                *matHeaderCellDef
-                            >
-                                Amount
-                            </th>
-                            <td
-                                mat-cell
-                                *matCellDef="let element"
-                            >
-                                <span
-                                    >{{
+        <div class="container w-100">
+            <table class="w-100">
+                <tr>
+                    <td width="70%" class="center-vertical-text">
+                        <h1>{{ responseAccountList.accountName }}</h1>
+                    </td>
+                    <td width="30%">
+                        <address class="pull-right">
+                            <h2 class="font-size-30">{{ responseAccountList.accountName }}</h2>
+                            <p>Torstraße 61</p>
+                            <p>Berlin 10119 - Germany</p>
+                            <p>VAT: DE815382679</p>
+                            <p>Geschäftsführer: Gerrit Rode</p>
+                            <p>Amtsgericht Berlin-Charlottenburg - HRB 144188 B</p>
+                        </address>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="70%">
+                        <address>
+                            <p class="font-size-20">An</p>
+                            <h2 class="font-size-30">{{ responseAccountList.companyName }}</h2>
+                            <p>405 Capt CS Naidyu Arcade</p>
+                            <p>Old Palasia, Indore, MP</p>
+                            <p>452018</p>
+                            <p>India</p>
+                        </address>
+                    </td>
+                    <td width="30%"></td>
+                </tr>
+                <tr>
+                    <td width="70%">
+                        <h2>Your VAT ID:</h2>
+                    </td>
+                    <td width="30%">
+                        <h2 class="font-size-30 text-right">Statement of Accounts</h2>
+                        <hr class="full-width mr-t1 mr-b1">
+                        <p class="text-right text-grey font-size-18">{{ responseAccountList.fromDate }} To {{ responseAccountList.toDate }}</p>
+                        <hr class="full-width mr-t1">
+                    </td>
+                </tr>
+                <tr>
+                    <td width="70%"></td>
+                    <td width="30%" class="pr-0">
+                        <table class="w-100">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="bg-grey font-size-16 text-grey">Account Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-size-16 text-grey">Opening Balance</td>
+                                    <td class="text-right">{{ responseAccountList.accountSummary.openingBalance.amount }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-size-16 text-grey">Invoiced Amount</td>
+                                    <td class="text-right">{{ responseAccountList.accountSummary.debitTotal }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-size-16 text-grey">Amount Paid</td>
+                                    <td class="text-right">{{ responseAccountList.accountSummary.creditTotal }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2"><hr class="full-width"></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-size-16 text-grey">Balance Due</td>
+                                    <td class="text-right">{{ responseAccountList.accountSummary.closingBalance.type === 'CREDIT' ? '-' : '' }} {{ responseAccountList.accountSummary.closingBalance.amount }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <div class="inner-content">
+                <giddh-datepicker *ngIf="startDate && endDate" [startDate]="startDate" [endDate]="endDate"
+                    (onDatePickerIsClose)="startDate = $event.startDate; endDate = $event.endDate; getAccountStatementList()">
+                </giddh-datepicker>
+                <div class="invoice-table mr-t15">
+                    <div class="table-responsive position-relative">
+                        <table mat-table [dataSource]="accountListData" matSort (matSortChange)="sortData($event)"
+                            [matSortDirection]="accountListRequest.sort" [matSortActive]="accountListRequest.sortBy" [ngClass]="{'account-table' : isLoading}">
+                            <ng-container matColumnDef="Date">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-black text-white border-right black-and-white-table font-size-16">
+                                    Date
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{ 'bg-grey' : i%2}">
+                                    {{ element.date ?? '-' }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Transactions">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white border-right font-size-16">
+                                    Transactions
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{ 'bg-grey' : i%2}">
+                                    {{ element?.voucherType ?? '-' }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Details">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white border-right font-size-16">
+                                    Details
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{ 'bg-grey' : i%2}" class="details-column">
+                                    {{ element?.voucherNumber ?? '-' }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Amount">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white border-right sort-header-right text-right font-size-16">
+                                    Amount
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{ 'bg-grey' : i%2}" class="sort-header-right text-right">
+                                    <span>{{
                                         element?.voucherAmount.type === 'DEBIT' ? element?.voucherAmount?.amount : '-'
+                                        }}
+                                    </span>
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Payments">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white border-right sort-header-right text-right font-size-16">
+                                    Payments
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{ 'bg-grey' : i%2}" class="sort-header-right text-right">
+                                    {{
+                                    element?.voucherAmount.type != 'DEBIT' ? element?.voucherAmount?.amount : '-'
                                     }}
-                                </span>
-                            </td>
-                        </ng-container>
-                        <ng-container matColumnDef="Payments">
-                            <th
-                                mat-header-cell
-                                *matHeaderCellDef
-                            >
-                                Payments
-                            </th>
-                            <td
-                                mat-cell
-                                *matCellDef="let element"
-                            >
-                            {{
-                                element?.voucherAmount.type != 'DEBIT' ? element?.voucherAmount?.amount : '-'
-                            }}
-                            </td>
-                        </ng-container>
-                        <ng-container matColumnDef="Balance">
-                            <th
-                                mat-header-cell
-                                *matHeaderCellDef
-                            >
-                                Balance
-                            </th>
-                            <td
-                                mat-cell
-                                *matCellDef="let element"
-                            >
-                            {{
-                                element?.closingBalance.amount ?? '-'
-                            }}
-                            </td>
-                        </ng-container>
-                        <tr
-                            mat-header-row
-                            *matHeaderRowDef="displayedColumns"
-                        ></tr>
-                        <tr
-                            mat-row
-                            *matRowDef="let row; columns: displayedColumns"
-                        ></tr>
-                    </table>
-                    <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
-                    <div class="text-center pd-t1 pd-b1" *ngIf="!isLoading && !accountListData?.length">
-                        <p class="no-data">
-                            No account statements found for the given criteria.
-                        </p>
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Balance">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16">
+                                    Balance
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{ 'bg-grey' : i%2}" class="sort-header-right text-right">
+                                    {{
+                                    element?.closingBalance.amount ?? '-'
+                                    }}
+                                </td>
+                            </ng-container>
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+                        </table>
+                        <div class="text-center pd-t1 pd-b1">
+                            <mat-spinner *ngIf="isLoading" class="spinner-container" [diameter]="60"></mat-spinner>
+                            <p class="no-data font-size-16" *ngIf="!isLoading && !accountListData?.length">
+                                No account statements found for the given criteria.
+                            </p>
+                        </div>
+                        <mat-paginator *ngIf="!isLoading && totalRecords > pageSizeOptions[0]"
+                            (page)="handlePageChange($event)" [length]="totalRecords" [pageSize]="accountListRequest.count"
+                            [showFirstLastButtons]="true" [pageSizeOptions]="pageSizeOptions" [hidePageSize]="false"
+                            [pageIndex]="pageIndex">
+                        </mat-paginator>
                     </div>
-                    <mat-paginator
-                        *ngIf="!isLoading && totalRecords > pageSizeOptions[0]"
-                        (page)="handlePageChange($event)"
-                        [length]="totalRecords"
-                        [pageSize]="accountListRequest.count"
-                        [showFirstLastButtons]="true"
-                        [pageSizeOptions]="pageSizeOptions"
-                        [hidePageSize]="false"
-                        [pageIndex]="pageIndex"
-                    >
-                    </mat-paginator>
                 </div>
             </div>
         </div>
+
     </div>
 </div>

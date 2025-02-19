@@ -32,8 +32,10 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     public displayedColumns: string[] = ['Date', 'Transactions', 'Details', 'Amount', 'Payments', 'Balance'];
     /** Hold panel open state*/
     public panelOpenState: boolean = true;
-    /** Hold invoice response table data */
+    /** Hold account response table data */
     public accountListData: any[] = [];
+    /** Hold account response */
+    public responseAccountList: any = {};
     /** Hold account url request */
     public accountListRequest: any = {
         companyUniqueName: '',
@@ -122,11 +124,12 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.accountListData = [];
         this.accountListRequest.from = dayjs(this.startDate).format(GIDDH_DATE_FORMAT);
-        this.accountListRequest.to = dayjs(this.endDate).format(GIDDH_DATE_FORMAT)
+        this.accountListRequest.to = dayjs(this.endDate).format(GIDDH_DATE_FORMAT);
         this.accountStatementService.getAccountStatementList(this.accountListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
             this.isLoading = false;
             if (response && response.status === 'success') {
                 this.accountListData = response.body.transactionDetailList;
+                this.responseAccountList = response.body;
                 this.totalRecords = response.body.totalItems;
             } else {
                 if (response?.status === 'error') {
