@@ -1,6 +1,6 @@
 .account-statement {
     max-width: 1200px;
-    padding: 1.25rem;  
+    padding: 20px;
     border-radius: 8px;
     margin-top: 0;
 
@@ -11,22 +11,21 @@
 
     td,
     th {
-        padding: 0.5rem;
+        padding: 8px;
         text-align: left;
     }
 
     .address-block {
         font-style: normal;
-        font-size: 1.125rem; 
         line-height: 1.5;
+
+        p {
+            color: #564c4c;
+            opacity: 0.8;
+        }
     }
 
-    .address-block p {
-        color: #564c4c;
-        opacity: 0.8;
-    }
 
-    
     .spinner-container {
         position: absolute;
         top: 50%;

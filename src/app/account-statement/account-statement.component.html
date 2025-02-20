@@ -10,7 +10,7 @@
                         <h2 class="font-size-30">{{ responseAccountList.accountName }}</h2>
                     </td>
                     <td width="30%">
-                        <address class="address-block text-right" *ngIf="responseAccountList.accountName">
+                        <address class="address-block font-size-18 text-right" *ngIf="responseAccountList.accountName">
                             <h2 class="font-size-30">{{ responseAccountList.accountName }}</h2>
                             <ng-container *ngIf="responseAccountList.accountAddress">
                                 <p *ngIf="responseAccountList.accountAddress.email">{{ responseAccountList.accountAddress.email }}</p>
@@ -28,7 +28,7 @@
                 </tr>
                 <tr>
                     <td width="70%">
-                        <address class="address-block" *ngIf="responseAccountList.companyName">
+                        <address class="address-block font-size-18" *ngIf="responseAccountList.companyName">
                             <p class="font-size-20">An</p>
                             <h2 class="font-size-30">{{ responseAccountList.companyName }}</h2>
                             <ng-container *ngIf="responseAccountList.companyGstAddress">
