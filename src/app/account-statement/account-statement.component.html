@@ -3,14 +3,14 @@
     <sidebar></sidebar>
     <div class="common-wrapper" *ngIf="totalRecords !== null && responseAccountList">
         <header [heading]="'Account Statement'"></header>
-        <div class="container w-100">
+        <div class="account-statement">
             <table class="w-100">
                 <tr>
-                    <td width="70%" class="center-vertical-text">
-                        <h1>{{ responseAccountList.accountName }}</h1>
+                    <td width="70%">
+                        <h2 class="font-size-30">{{ responseAccountList.accountName }}</h2>
                     </td>
                     <td width="30%">
-                        <address class="pull-right" *ngIf="responseAccountList.accountName">
+                        <address class="address-block text-right" *ngIf="responseAccountList.accountName">
                             <h2 class="font-size-30">{{ responseAccountList.accountName }}</h2>
                             <ng-container *ngIf="responseAccountList.accountAddress">
                                 <p *ngIf="responseAccountList.accountAddress.email">{{ responseAccountList.accountAddress.email }}</p>
@@ -28,7 +28,7 @@
                 </tr>
                 <tr>
                     <td width="70%">
-                        <address *ngIf="responseAccountList.companyName">
+                        <address class="address-block" *ngIf="responseAccountList.companyName">
                             <p class="font-size-20">An</p>
                             <h2 class="font-size-30">{{ responseAccountList.companyName }}</h2>
                             <ng-container *ngIf="responseAccountList.companyGstAddress">
@@ -50,11 +50,11 @@
                     <td width="70%"></td>
                     <td width="30%">
                         <h2 class="font-size-30 text-right">Statement of Accounts</h2>
-                        <hr class="full-width mr-t1 mr-b1">
+                        <hr class="bordered mr-t1 mr-b1">
                         <p class="text-right text-grey font-size-18">
                             {{ responseAccountList.fromDate }} <span> To </span> {{ responseAccountList.toDate }}
                         </p>
-                        <hr class="full-width mr-t1">
+                        <hr class="bordered mr-t1">
                     </td>
                 </tr>
                 <tr>
@@ -88,7 +88,7 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="2"><hr class="full-width"></td>
+                                    <td colspan="2"><hr class="bordered"></td>
                                 </tr>
                                 <tr>
                                     <td class="font-size-16 text-grey">Balance Due</td>
