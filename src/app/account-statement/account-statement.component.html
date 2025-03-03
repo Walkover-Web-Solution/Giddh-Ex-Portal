@@ -70,19 +70,19 @@
                                 <tr>
                                     <td class="font-size-16 text-grey">Opening Balance</td>
                                     <td class="text-right">
-                                        {{ responseAccountList.accountAddress.currency?.symbol }} {{ responseAccountList.accountSummary.openingBalance?.amount }}
+                                        {{ responseAccountList.accountAddress.currency?.symbol ?? '' }} {{ responseAccountList.accountSummary.openingBalance?.amount }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="font-size-16 text-grey">Invoiced Amount</td>
                                     <td class="text-right">
-                                        {{ responseAccountList.accountAddress.currency?.symbol }} {{ responseAccountList.accountSummary.debitTotal }}
+                                        {{ responseAccountList.accountAddress.currency?.symbol ?? '' }} {{ responseAccountList.accountSummary.debitTotal }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="font-size-16 text-grey">Amount Paid</td>
                                     <td class="text-right">
-                                        {{ responseAccountList.accountAddress.currency?.symbol }} {{ responseAccountList.accountSummary.creditTotal }}
+                                        {{ responseAccountList.accountAddress.currency?.symbol ?? '' }} {{ responseAccountList.accountSummary.creditTotal }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -93,9 +93,12 @@
                                 <tr>
                                     <td class="font-size-16 text-grey">Balance Due</td>
                                     <td class="text-right">
-                                        {{ responseAccountList.accountSummary.closingBalance.type === 'CREDIT' ? '-' : '' }} 
-                                        {{ responseAccountList.accountAddress.currency.symbol }} 
-                                        {{ responseAccountList.accountSummary.closingBalance.amount }}
+                                        {{ responseAccountList.accountSummary.closingBalance?.amount >= 0
+                                            ? (responseAccountList.accountSummary.closingBalance?.type === 'CREDIT' ? '-' : '') +
+                                              (responseAccountList.accountAddress.currency?.symbol ?? '') +
+                                              responseAccountList.accountSummary.closingBalance.amount
+                                            : ''
+                                        }}
                                     </td>
                                 </tr>
                             </tfoot>
@@ -140,9 +143,7 @@
                                     Amount
                                 </th>
                                 <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-grey' : i%2}" class="sort-header-right text-right">
-                                    <span>{{
-                                        element?.voucherAmount.type === 'DEBIT' ? element?.voucherAmount?.amount : '-'
-                                        }}
+                                    <span>{{ element?.voucherAmount.type === 'DEBIT' ? element?.voucherAmount?.amount : '-' }}
                                     </span>
                                 </td>
                             </ng-container>
@@ -151,9 +152,7 @@
                                     Payments
                                 </th>
                                 <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-grey' : i%2}" class="sort-header-right text-right">
-                                    {{
-                                    element?.voucherAmount.type != 'DEBIT' ? element?.voucherAmount?.amount : '-'
-                                    }}
+                                    {{ element?.voucherAmount.type != 'DEBIT' ? element?.voucherAmount?.amount : '-' }}
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="Balance">
@@ -161,9 +160,7 @@
                                     Balance
                                 </th>
                                 <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-grey' : i%2}" class="sort-header-right text-right">
-                                    {{
-                                    element?.closingBalance.amount ?? '-'
-                                    }}
+                                    {{ element.closingBalance?.amount >= 0 ? (element.closingBalance?.type === 'CREDIT' ? '-' : '') + element.closingBalance.amount : '' }}
                                 </td>
                             </ng-container>
                             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
