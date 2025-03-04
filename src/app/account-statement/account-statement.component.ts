@@ -68,6 +68,15 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute
     ) {
         this.startDate.setDate(this.endDate.getDate() - 30);
+        if (!localStorage.getItem('universalSelectedDate')) {
+            const dates = JSON.stringify([dayjs(this.startDate).toISOString(), dayjs(this.endDate).toISOString()]);
+            localStorage.setItem('universalSelectedDate', dates);
+        } else {
+            const storedDates = localStorage.getItem('universalSelectedDate');
+            const [startDate, endDate] = JSON.parse(storedDates);
+            this.startDate = startDate;
+            this.endDate = endDate;
+        }
     }
 
     /**
