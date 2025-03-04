@@ -40,7 +40,7 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
      * @memberof GiddhDatepickerComponent
      */
     public ngOnInit(): void {
-        this.adapter.setLocale('fr');
+        this.adapter.setLocale('en');
         if (!localStorage.getItem('universalSelectedDate')) {
             const dates = JSON.stringify([new Date(this.startDate).toISOString(), new Date(this.endDate).toISOString()]);
             localStorage.setItem('universalSelectedDate', dates);
