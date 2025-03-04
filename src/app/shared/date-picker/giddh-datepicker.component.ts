@@ -41,6 +41,15 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
      */
     public ngOnInit(): void {
         this.adapter.setLocale('fr');
+        if (!localStorage.getItem('universalSelectedDate')) {
+            const dates = JSON.stringify([new Date(this.startDate).toISOString(), new Date(this.endDate).toISOString()]);
+            localStorage.setItem('universalSelectedDate', dates);
+        } else {
+            const storedDates = localStorage.getItem('universalSelectedDate');
+            const [startDate, endDate] = JSON.parse(storedDates);
+            this.startDate = startDate;
+            this.endDate = endDate;
+        }
         this.dateRange.patchValue({ start: this.startDate, end: this.endDate });
     }
 
@@ -51,13 +60,19 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
      * @memberof GiddhDatepickerComponent
      */
     public onDatePickerClose(): void {
-        let endDate: string = this.dateRange.value.end;
-        let startDate: string = this.dateRange.value.start;
+        const endDate = this.dateRange.get('end')?.value;
+        const startDate = this.dateRange.get('start')?.value;
         this.showErrorMessage = !startDate || !endDate;
-        if (!this.showErrorMessage && !(startDate === this.startDate && endDate === this.endDate)) {
-            this.onDatePickerIsClose.emit({startDate, endDate });
+
+        if (!this.showErrorMessage && (startDate !== this.startDate || endDate !== this.endDate)) {
+            this.startDate = startDate;
+            this.endDate = endDate;
+            const dates = JSON.stringify([new Date(startDate).toISOString(), new Date(endDate).toISOString()]);
+            localStorage.setItem('universalSelectedDate', dates);
+            this.onDatePickerIsClose.emit({ startDate, endDate });
         }
     }
+
 
     /**
      * Releases the memory and cleans up subscriptions
