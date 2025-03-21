@@ -1136,8 +1136,16 @@ mat-sidenav[style] {
     color: #564c4ccc !important;
 }
 
+.light-grey {
+    color: rgb(86 76 76 / 68%) !important;
+}
+
 .bg-grey {
     background-color: #E9E9E9 !important;
+}
+
+.bg-light-grey {
+    background-color: #e9e9e957 !important;
 }
 
 .text-white {
@@ -1148,16 +1156,22 @@ mat-sidenav[style] {
     background: #2c2c2c !important;
 }
 
+.p-0 {
+    padding: 0px !important;
+}
+
 .pr-0 {
     padding-right: 0 !important;
 }
 
+.pl-0 {
+    padding-left: 0 !important;
+}
+.pl-50{
+    padding-left: 50px !important
+}
 .text-right {
     text-align: right !important;
-}
-
-.border-right {
-    border-right: 1px solid #7c7c7c !important;
 }
 
 .bordered {
