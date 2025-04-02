@@ -5,9 +5,8 @@
         <div class="account-statement">
             <table class="w-100">
                 <tr>
-                    <td width="65%">
+                    <td width="65%" class="vertical-align-top">
                         <address class="address-block font-size-18" *ngIf="responseAccountList.accountName">
-                            <p class="font-size-20 an-text">An</p>
                             <h2 class="font-size-20">{{ responseAccountList.accountName }}</h2>
                             <ng-container *ngIf="responseAccountList.accountAddress">
                                 <p *ngIf="responseAccountList.accountAddress.email">{{ responseAccountList.accountAddress.email }}</p>
@@ -22,7 +21,7 @@
                             </ng-container>
                         </address>
                     </td>
-                    <td width="35%">
+                    <td width="35%" class="vertical-align-top">
                         <address class="address-block font-size-18 text-right" *ngIf="responseAccountList.companyName">
                             <h2 class="font-size-20">{{ responseAccountList.companyName }}</h2>
                             <ng-container *ngIf="responseAccountList.companyGstAddress">
@@ -51,7 +50,7 @@
                                 <h2 class="font-size-30 text-right">Statement of Accounts</h2>
                                 <hr class="bordered m-0">
                                 <p class="text-right text-grey font-size-18 line-height">
-                                    {{ responseAccountList.fromDate }} <span> To </span> {{ responseAccountList.toDate }}
+                                    {{ responseAccountList.fromDate }} <span>  -  </span> {{ responseAccountList.toDate }}
                                 </p>
                                 <hr class="bordered m-0">
                             </div>
