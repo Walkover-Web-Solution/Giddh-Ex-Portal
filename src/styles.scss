@@ -1004,61 +1004,76 @@ mat-sidenav[style] {
 .success {
     color: var(--color-green);
 }
+
 .mat-mdc-snack-bar-container {
-    .mdc-snackbar__surface{
+    .mdc-snackbar__surface {
         color: var(--color-white) !important;
         font-size: var(--font-size-15);
     }
 }
+
 .mat-mdc-snack-bar-container.error {
-    .mdc-snackbar__surface{
+    .mdc-snackbar__surface {
         background-color: var(--color-red-toast) !important;
     }
 }
+
 .mat-mdc-snack-bar-container.success {
-    .mdc-snackbar__surface{
+    .mdc-snackbar__surface {
         background-color: var(--color-green-toast) !important;
     }
 }
+
 .mat-mdc-snack-bar-container.warning {
-    .mdc-snackbar__surface{
+    .mdc-snackbar__surface {
         background-color: var(--color-warning-toast) !important;
     }
 }
+
 .mat-mdc-snack-bar-container.info {
-    .mdc-snackbar__surface{
+    .mdc-snackbar__surface {
         background-color: var(--color-info-toast) !important;
     }
 }
+
 .mat-mdc-snack-bar-container {
-    .mat-mdc-snack-bar-label{
+    .mat-mdc-snack-bar-label {
         padding: 0px !important;
     }
+
     padding: 0px !important;
+
     &.error {
         .snack-container {
             background-image: url("/assets/images/failure.svg");
             background-position-y: center;
         }
     }
+
     &.success {
         .snack-container {
             background-image: url("/assets/images/success.svg");
             background-position-y: center;
         }
     }
+
     &.warning {
         .snack-container {
             background-image: url("/assets/images/exclamation-white.svg");
             background-position-y: center;
         }
     }
+
     &.info {
         .snack-container {
             background-image: url("/assets/images/info-white.svg");
             background-position-y: center;
         }
     }
+}
+
+.vertical-align-top {
+    vertical-align: top;
 }
 
 @media screen and (max-width: 767px) {
@@ -1136,8 +1151,16 @@ mat-sidenav[style] {
     color: #564c4ccc !important;
 }
 
+.light-grey {
+    color: rgb(86 76 76 / 68%) !important;
+}
+
 .bg-grey {
     background-color: #E9E9E9 !important;
+}
+
+.bg-light-grey {
+    background-color: #e9e9e957 !important;
 }
 
 .text-white {
@@ -1148,16 +1171,28 @@ mat-sidenav[style] {
     background: #2c2c2c !important;
 }
 
+.p-0 {
+    padding: 0px !important;
+}
+
 .pr-0 {
     padding-right: 0 !important;
 }
 
-.text-right {
-    text-align: right !important;
+.pl-0 {
+    padding-left: 0 !important;
 }
 
-.border-right {
-    border-right: 1px solid #7c7c7c !important;
+.pl-50 {
+    padding-left: 50px !important;
+}
+
+.mr-r20 {
+    margin-left: 20px !important;
+}
+
+.text-right {
+    text-align: right !important;
 }
 
 .bordered {
