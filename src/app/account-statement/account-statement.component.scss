@@ -1,11 +1,7 @@
 .account-statement {
     max-width: 1200px;
-    padding: 20px;
-    border-radius: 8px;
-    margin-top: 15px;
 
     table {
-        width: 100%;
         border-collapse: collapse;
     }
 
@@ -20,12 +16,8 @@
         line-height: 1.5;
 
         p {
-            color: #564c4c;
+            color: var(--color-text-gray);
             opacity: 0.8;
-        }
-        .an-text {
-            font-weight: 500;
-            color: #000;
         }
     }
 
@@ -34,7 +26,6 @@
     }
 
     .spinner-container {
-        position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
@@ -45,25 +36,10 @@
     }
 
     .details-column {
-        width: 22rem;
-        max-width: 22rem;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        white-space: normal;
-        word-break: break-word;
+        width: 352px;
+        max-width: 352px;
     }
     
-    .fw-9 {
-        font-weight: 900;
-    }
-
-    .border-grey {
-        border: 1px solid #e9e9e957 !important;
-    }
-
-    .line-height {
-        line-height: 22px;
-    }
 
     .mat-mdc-header-row {
         height: auto;

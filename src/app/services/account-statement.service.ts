@@ -5,7 +5,7 @@ import { catchError, map } from "rxjs/operators";
 import { BaseResponse } from "../models/BaseResponse";
 import { Observable } from "rxjs";
 import { ApiService } from "./api.service";
-import { API } from "./apiurls/account-statement.api";
+import { ACCOUNT_STATEMENT_API } from "./apiurls/account-statement.api";
 
 @Injectable()
 export class AccountStatementService {
@@ -26,7 +26,7 @@ export class AccountStatementService {
         let args: any = { headers: {} };
         args.headers['Session-id'] = model?.sessionId;
         return this.http.get(
-            this.apiUrl + API.GET_ACCOUNT_STATEMENT
+            this.apiUrl + ACCOUNT_STATEMENT_API.GET
                 .replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))
                 .replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName))
                 .replace(':count', encodeURIComponent(model.count))

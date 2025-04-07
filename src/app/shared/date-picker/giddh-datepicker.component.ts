@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { DateAdapter } from "@angular/material/core";
-import { FormBuilder, FormGroup } from "@angular/forms";
+import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { ReplaySubject } from "rxjs";
 import * as dayjs from 'dayjs';
 
@@ -28,8 +28,8 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
         private formBuilder: FormBuilder
     ) {
         this.dateRange = this.formBuilder.group({
-            start: [''],
-            end: ['']
+            start: ['', Validators.required],
+            end: ['', Validators.required]
         });
     }
 
@@ -72,7 +72,6 @@ export class GiddhDatepickerComponent implements OnInit, OnDestroy {
             this.onDatePickerIsClose.emit({ startDate, endDate });
         }
     }
-
 
     /**
      * Releases the memory and cleans up subscriptions
