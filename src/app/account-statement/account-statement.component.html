@@ -2,7 +2,7 @@
 <div class="d-flex w-100">
     <sidebar></sidebar>
     <div class="common-wrapper" *ngIf="totalRecords !== null && responseAccountList">
-        <div class="account-statement">
+        <div class="account-statement p-20 mr-t20">
             <table class="w-100">
                 <tr>
                     <td width="65%" class="vertical-align-top">
@@ -49,7 +49,7 @@
                             <div>
                                 <h2 class="font-size-30 text-right">Statement of Accounts</h2>
                                 <hr class="bordered m-0">
-                                <p class="text-right text-grey font-size-18 line-height">
+                                <p class="text-right text-grey font-size-18 line-height-22">
                                     {{ responseAccountList.fromDate }} <span>  -  </span> {{ responseAccountList.toDate }}
                                 </p>
                                 <hr class="bordered m-0">
@@ -92,7 +92,7 @@
                                 </tr>
                                 <tr>
                                     <td class="font-size-16 text-grey">Balance Due</td>
-                                    <td class="text-right">
+                                    <td class="p-0 text-right">
                                         {{ responseAccountList.accountSummary.closingBalance?.amount >= 0
                                             ? (responseAccountList.accountSummary.closingBalance?.type === 'CREDIT' ? '-' : '') +
                                               (responseAccountList.accountAddress.currency?.symbol ?? '') +
@@ -115,7 +115,7 @@
                         <table mat-table [dataSource]="accountListData" matSort (matSortChange)="sortData($event)"
                             [matSortDirection]="accountListRequest.sort" [matSortActive]="accountListRequest.sortBy" [ngClass]="{'account-table' : isLoading}">
                             <ng-container matColumnDef="Date">
-                                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-black text-white black-and-white-table font-size-16 fw-9">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-black text-white black-and-white-table font-size-16 fw-900">
                                     Date
                                 </th>
                                 <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}">
@@ -123,7 +123,7 @@
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="Transactions">
-                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white font-size-16 fw-9">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white font-size-16 fw-900">
                                     Transactions
                                 </th>
                                 <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}">
@@ -131,15 +131,15 @@
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="Details">
-                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white font-size-16 fw-9">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white font-size-16 fw-900">
                                     Details
                                 </th>
-                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="details-column">
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="details-column word-break">
                                     {{ element?.voucherNumber ?? '-' }}
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="Amount">
-                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-9">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-900">
                                     Amount
                                 </th>
                                 <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="sort-header-right text-right">
@@ -148,7 +148,7 @@
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="Payments">
-                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-9">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-900">
                                     Payments
                                 </th>
                                 <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="sort-header-right text-right">
@@ -156,7 +156,7 @@
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="Balance">
-                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-9">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-900">
                                     Balance
                                 </th>
                                 <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="sort-header-right text-right">
@@ -167,23 +167,21 @@
                             <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
                         </table>
                         <hr class="border-grey" />
-                        <ng-container class="text-right">
-                            <table class="d-flex justify-content-end">
-                                <tr>
-                                    <td class="font-size-16 fw-9">Balance Due</td>
-                                    <td class="text-right">
-                                        {{ responseAccountList.accountSummary.closingBalance?.amount >= 0
-                                            ? (responseAccountList.accountSummary.closingBalance?.type === 'CREDIT' ? '-' : '') +
-                                              (responseAccountList.accountAddress.currency?.symbol ?? '') +
-                                              responseAccountList.accountSummary.closingBalance.amount
-                                            : ''
-                                        }}
-                                    </td>
-                                </tr>
-                            </table>
-                        </ng-container>
+                        <table class="d-flex justify-content-end">
+                            <tr>
+                                <td class="font-size-16 fw-900">Balance Due</td>
+                                <td>
+                                    {{ responseAccountList.accountSummary.closingBalance?.amount >= 0
+                                        ? (responseAccountList.accountSummary.closingBalance?.type === 'CREDIT' ? '-' : '') +
+                                            (responseAccountList.accountAddress.currency?.symbol ?? '') +
+                                            responseAccountList.accountSummary.closingBalance.amount
+                                        : ''
+                                    }}
+                                </td>
+                            </tr>
+                        </table>
                         <div class="text-center pd-t1 pd-b1">
-                            <mat-spinner *ngIf="isLoading" class="spinner-container" [diameter]="60"></mat-spinner>
+                            <mat-spinner *ngIf="isLoading" class="spinner-container position-absolute" [diameter]="60"></mat-spinner>
                             <p class="no-data font-size-16" *ngIf="!isLoading && !accountListData?.length">
                                 No account statements found for the given criteria.
                             </p>

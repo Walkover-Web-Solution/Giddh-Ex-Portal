@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSort } from "@angular/material/sort";
+import { MatSort, Sort } from "@angular/material/sort";
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ReplaySubject, combineLatest } from "rxjs";
 import { ReciptResponse } from "../models/Company";
@@ -51,7 +51,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     /** Hold  store data */
     public storeData: any = {};
     /** Holds page size options */
-    public pageSizeOptions: any[] = PAGE_SIZE_OPTIONS;
+    public pageSizeOptions: number[] = PAGE_SIZE_OPTIONS;
     /** Count of total records for pagination */
     public totalRecords: number | null = null;
     /** Set sefault end date */
@@ -68,15 +68,6 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute
     ) {
         this.startDate.setDate(this.endDate.getDate() - 30);
-        if (!localStorage.getItem('universalSelectedDate')) {
-            const dates = JSON.stringify([dayjs(this.startDate).toISOString(), dayjs(this.endDate).toISOString()]);
-            localStorage.setItem('universalSelectedDate', dates);
-        } else {
-            const storedDates = localStorage.getItem('universalSelectedDate');
-            const [startDate, endDate] = JSON.parse(storedDates);
-            this.startDate = startDate;
-            this.endDate = endDate;
-        }
     }
 
     /**
@@ -140,10 +131,8 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
                 this.accountListData = response.body.transactionDetailList;
                 this.responseAccountList = response.body;
                 this.totalRecords = response.body.totalItems;
-            } else {
-                if (response?.status === 'error') {
-                    this.generalService.showSnackbar(response?.message);
-                }
+            } else if (response?.status === 'error') {
+                this.generalService.showSnackbar(response?.message);
             }
         });
     }
@@ -154,7 +143,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
      * @param {any} event
      * @memberof AccountStatementComponent
      */
-    public sortData(event: any): void {
+    public sortData(event: Sort): void {
         this.accountListRequest.sort = event?.direction ? event?.direction : 'asc';
         this.accountListRequest.sortBy = event?.active;
         this.getAccountStatementList();
