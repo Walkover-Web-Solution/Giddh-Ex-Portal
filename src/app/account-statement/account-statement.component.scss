@@ -1,0 +1,47 @@
+.account-statement {
+    max-width: 1200px;
+
+    table {
+        border-collapse: collapse;
+    }
+
+    td,
+    th {
+        padding: 8px;
+        text-align: left;
+    }
+
+    .address-block {
+        font-style: normal;
+        line-height: 1.5;
+
+        p {
+            color: var(--color-text-gray);
+            opacity: 0.8;
+        }
+    }
+
+    .account-Summary {
+        font-weight: bolder;
+    }
+
+    .spinner-container {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .account-table {
+        min-height: 180px;
+    }
+
+    .details-column {
+        width: 352px;
+        max-width: 352px;
+    }
+    
+
+    .mat-mdc-header-row {
+        height: auto;
+    }
+}

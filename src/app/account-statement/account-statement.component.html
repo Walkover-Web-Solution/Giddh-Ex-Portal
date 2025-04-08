@@ -1,0 +1,205 @@
+<mat-spinner [diameter]="60" *ngIf="totalRecords === null"></mat-spinner>
+<div class="d-flex w-100">
+    <sidebar></sidebar>
+    <div class="common-wrapper" *ngIf="totalRecords !== null && responseAccountList">
+        <div class="account-statement p-20 mr-t20">
+            <table class="w-100">
+                <tr>
+                    <td width="65%" class="vertical-align-top">
+                        <address class="address-block font-size-18" *ngIf="responseAccountList.accountName">
+                            <h2 class="font-size-20">{{ responseAccountList.accountName }}</h2>
+                            <ng-container *ngIf="responseAccountList.accountAddress">
+                                <p *ngIf="responseAccountList.accountAddress.email">{{ responseAccountList.accountAddress.email }}</p>
+                                <p *ngIf="responseAccountList.accountAddress.address">{{ responseAccountList.accountAddress.address }}</p>
+                                <p *ngIf="responseAccountList.accountAddress.taxNumber">
+                                    {{ responseAccountList.accountAddress.taxType }}: {{ responseAccountList.accountAddress.taxNumber }}
+                                </p>
+                                <p *ngIf="responseAccountList.accountAddress.mobileNo">{{ responseAccountList.accountAddress.mobileNo }}</p>
+                                <p *ngIf="responseAccountList.accountAddress.pinCode">{{ responseAccountList.accountAddress.pinCode }}</p>
+                                <p *ngIf="responseAccountList.accountAddress.stateName">{{ responseAccountList.accountAddress.stateName }}</p>
+                                <p *ngIf="responseAccountList.accountAddress.countryName">{{ responseAccountList.accountAddress.countryName }}</p>
+                            </ng-container>
+                        </address>
+                    </td>
+                    <td width="35%" class="vertical-align-top">
+                        <address class="address-block font-size-18 text-right" *ngIf="responseAccountList.companyName">
+                            <h2 class="font-size-20">{{ responseAccountList.companyName }}</h2>
+                            <ng-container *ngIf="responseAccountList.companyGstAddress">
+                                <p *ngIf="responseAccountList.companyGstAddress.email">{{ responseAccountList.companyGstAddress.email }}</p>
+                                <p *ngIf="responseAccountList.companyGstAddress.address">{{ responseAccountList.companyGstAddress.address }}</p>
+                                <p *ngIf="responseAccountList.companyGstAddress.taxNumber">
+                                    {{ responseAccountList.companyGstAddress.taxType }}: {{ responseAccountList.companyGstAddress.taxNumber }}
+                                </p>
+                                <p *ngIf="responseAccountList.companyGstAddress.mobileNo">{{ responseAccountList.companyGstAddress.mobileNo }}</p>
+                                <p *ngIf="responseAccountList.companyGstAddress.pinCode">{{ responseAccountList.companyGstAddress.pinCode }}</p>
+                                <p *ngIf="responseAccountList.companyGstAddress.stateName">{{ responseAccountList.companyGstAddress.stateName }}</p>
+                                <p *ngIf="responseAccountList.companyGstAddress.countryName">{{ responseAccountList.companyGstAddress.countryName }}</p>
+                            </ng-container>
+                        </address>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="65%"></td>
+                    <td width="35%"></td>
+                </tr>
+                <tr>
+                    <td width="65%"></td>
+                    <td width="35%">
+                        <div class="d-flex justify-content-end">
+                            <div>
+                                <h2 class="font-size-30 text-right">Statement of Accounts</h2>
+                                <hr class="bordered m-0">
+                                <p class="text-right text-grey font-size-18 line-height-22">
+                                    {{ responseAccountList.fromDate }} <span>  -  </span> {{ responseAccountList.toDate }}
+                                </p>
+                                <hr class="bordered m-0">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="65%"></td>
+                    <td width="35%">
+                        <table class="w-100" *ngIf="responseAccountList.accountSummary && responseAccountList.accountAddress">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="bg-grey font-size-16 text-grey account-Summary">Account Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-size-16 light-grey">Opening Balance</td>
+                                    <td class="text-right pr-0">
+                                        {{ responseAccountList.accountAddress.currency?.symbol ?? '' }} {{ responseAccountList.accountSummary.openingBalance?.amount }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-size-16 light-grey">Invoiced Amount</td>
+                                    <td class="text-right pr-0">
+                                        {{ responseAccountList.accountAddress.currency?.symbol ?? '' }} {{ responseAccountList.accountSummary.debitTotal }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-size-16 light-grey">Amount Paid</td>
+                                    <td class="text-right pr-0">
+                                        {{ responseAccountList.accountAddress.currency?.symbol ?? '' }} {{ responseAccountList.accountSummary.creditTotal }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" class="p-0"><hr class="bordered"></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-size-16 text-grey">Balance Due</td>
+                                    <td class="p-0 text-right">
+                                        {{ responseAccountList.accountSummary.closingBalance?.amount >= 0
+                                            ? (responseAccountList.accountSummary.closingBalance?.type === 'CREDIT' ? '-' : '') +
+                                              (responseAccountList.accountAddress.currency?.symbol ?? '') +
+                                              responseAccountList.accountSummary.closingBalance.amount
+                                            : ''
+                                        }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <div class="inner-content">
+                <giddh-datepicker *ngIf="startDate && endDate" [startDate]="startDate" [endDate]="endDate"
+                    (onDatePickerIsClose)="startDate = $event.startDate; endDate = $event.endDate; getAccountStatementList()">
+                </giddh-datepicker>
+                <div class="invoice-table mr-t15">
+                    <div class="table-responsive position-relative">
+                        <table mat-table [dataSource]="accountListData" matSort (matSortChange)="sortData($event)"
+                            [matSortDirection]="accountListRequest.sort" [matSortActive]="accountListRequest.sortBy" [ngClass]="{'account-table' : isLoading}">
+                            <ng-container matColumnDef="Date">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-black text-white black-and-white-table font-size-16 fw-900">
+                                    Date
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}">
+                                    {{ element.date ?? '-' }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Transactions">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white font-size-16 fw-900">
+                                    Transactions
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}">
+                                    {{ element?.voucherType ?? '-' }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Details">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white font-size-16 fw-900">
+                                    Details
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="details-column word-break">
+                                    {{ element?.voucherNumber ?? '-' }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Amount">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-900">
+                                    Amount
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="sort-header-right text-right">
+                                    <span>{{ element?.voucherAmount.type === 'DEBIT' ? element?.voucherAmount?.amount : '-' }}
+                                    </span>
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Payments">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-900">
+                                    Payments
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="sort-header-right text-right">
+                                    {{ element?.voucherAmount.type != 'DEBIT' ? element?.voucherAmount?.amount : '-' }}
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="Balance">
+                                <th mat-header-cell *matHeaderCellDef class="bg-black text-white sort-header-right text-right font-size-16 fw-900">
+                                    Balance
+                                </th>
+                                <td mat-cell *matCellDef="let element let i = index" [ngClass]="{'bg-light-grey' : i%2}" class="sort-header-right text-right">
+                                    {{ element.closingBalance?.amount >= 0 ? (element.closingBalance?.type === 'CREDIT' ? '-' : '') + element.closingBalance.amount : '' }}
+                                </td>
+                            </ng-container>
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+                        </table>
+                        <hr class="border-grey" />
+                        <table class="d-flex justify-content-end">
+                            <tr>
+                                <td class="font-size-16 fw-900">Balance Due</td>
+                                <td>
+                                    {{ responseAccountList.accountSummary.closingBalance?.amount >= 0
+                                        ? (responseAccountList.accountSummary.closingBalance?.type === 'CREDIT' ? '-' : '') +
+                                            (responseAccountList.accountAddress.currency?.symbol ?? '') +
+                                            responseAccountList.accountSummary.closingBalance.amount
+                                        : ''
+                                    }}
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="text-center pd-t1 pd-b1">
+                            <mat-spinner *ngIf="isLoading" class="spinner-container position-absolute" [diameter]="60"></mat-spinner>
+                            <p class="no-data font-size-16" *ngIf="!isLoading && !accountListData?.length">
+                                No account statements found for the given criteria.
+                            </p>
+                        </div>
+                        <mat-paginator 
+                            *ngIf="!isLoading && totalRecords > pageSizeOptions[0]"
+                            (page)="handlePageChange($event)" 
+                            [length]="totalRecords" 
+                            [pageSize]="accountListRequest.count"
+                            [showFirstLastButtons]="true" 
+                            [pageSizeOptions]="pageSizeOptions" 
+                            [hidePageSize]="false"
+                            [pageIndex]="pageIndex"                 
+                        >
+                        </mat-paginator>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

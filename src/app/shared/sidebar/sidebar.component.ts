@@ -98,6 +98,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
                     },
                     {
                         icon: "payment.svg", label: "Payments Made", url: '/' + this.portalDomain + `/${this.region}/payment`
+                    },
+                    {
+                        icon: "account.png", label: "Account Statement", url: `/${this.portalDomain}/${this.region}/account-statement`
                     }
                 ];
                 this.isExpanded = this.storeData?.sidebarState;
