@@ -1,0 +1,65 @@
+/*---- dialog ----*/
+
+.common-dialog {
+    .mat-mdc-dialog-content {
+        .alert-wrapper {
+            background-color: var(--color-bg-warning);
+            padding: 15px 10px;
+
+            img {
+                width: 12px;
+            }
+
+            p,
+            ul li {
+                color: var(--color-black);
+                font-size: var(--font-size-12);
+            }
+
+            ul {
+                li {
+                    list-style-type: disc;
+                }
+            }
+        }
+
+        .mat-expansion-panel-header {
+            height: 40px !important;
+
+            .mat-expansion-panel-body {
+                .mat-mdc-table {
+                    .mat-mdc-header-row {
+                        .mat-mdc-header-cell {
+                            height: 40px !important;
+                        }
+                    }
+                }
+            }
+        }
+
+        /*---- pay-table ----*/
+        .danger-wrap {
+            align-items: end;
+
+            img {
+                width: 30px;
+            }
+
+            p {
+                color: var(--color-black);
+            }
+        }
+    }
+
+    .forward-wrapper {
+        p {
+            color: var(--color-black);
+        }
+    }
+}
+
+
+.clear-button {
+    height: 48px;
+    width: 100px;
+}

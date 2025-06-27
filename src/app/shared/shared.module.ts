@@ -21,6 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SwitchAccountComponent } from "./switch-account/switch-account.component";
+import { GiddhPayNowModule } from "./pay-now/pay-now.module";
 
 @NgModule({
     declarations: [
@@ -51,6 +52,7 @@ import { SwitchAccountComponent } from "./switch-account/switch-account.componen
         MatInputModule,
         ReactiveFormsModule,
         MatIconModule,
+        GiddhPayNowModule,
         MatProgressSpinnerModule
     ],
     exports: [
@@ -75,7 +77,8 @@ import { SwitchAccountComponent } from "./switch-account/switch-account.componen
         ReactiveFormsModule,
         MatIconModule,
         MatProgressSpinnerModule,
-        SwitchAccountComponent
+        SwitchAccountComponent,
+        GiddhPayNowModule
     ]
 })
 export class SharedModule {

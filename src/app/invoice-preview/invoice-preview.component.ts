@@ -66,6 +66,8 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public url: string = '';
     /** Hold region */
     public region: string = "";
+    public invoicePreview: boolean = true;
+    public paymentMethods: any[] = [];
 
     constructor(
         private generalService: GeneralService,
@@ -163,10 +165,13 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
             this.isLoading = false;
             if (response && response.status === 'success') {
+                this.paymentMethods = response.body;
                 if (response.body?.RAZORPAY) {
                     this.getVoucherDetails(this.paymentMethodEnum.RAZORPAY);
                 } else if (response.body?.PAYPAL) {
                     this.getVoucherDetails(this.paymentMethodEnum.PAYPAL);
+                } else if (response.body?.PAYU) {
+                    this.getVoucherDetails(this.paymentMethodEnum.PAYU);
                 } else {
                     this.getVoucherDetails();
                     this.generalService.showSnackbar('No payment method is integrated', 'warning');
@@ -312,31 +317,6 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                     }
                 }
             });
-        }
-    }
-
-    /**
-     * This will be use for redirecting to pay now
-     *
-     * @param {*} details
-     * @memberof InvoicePreviewComponent
-     */
-    public redirectToPayNow(details: any): void {
-        let queryParams = {
-            companyUniqueName: this.queryParams.companyUniqueName
-        }
-        let navigationExtras: NavigationExtras = {
-            queryParams: queryParams
-        };
-
-        let url = "";
-        if (!this.storeData.session?.id) {
-            url = '/' + this.storeData.domain + `/${this.region}` + '/invoice-pay/account/' + (this.queryParams?.accountUniqueName) + '/voucher/' + details?.vouchers[0]?.uniqueName;
-            this.router.navigate([url], navigationExtras);
-
-        } else {
-            url = '/' + this.storeData.domain + `/${this.region}` + '/invoice-pay/account/' + (this.storeData.userDetails?.account?.uniqueName) + '/voucher/' + details?.vouchers[0]?.uniqueName;
-            this.router.navigate([url]);
         }
     }
 

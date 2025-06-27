@@ -2,19 +2,17 @@
 <div class="d-flex w-100">
     <sidebar></sidebar>
     <div class="w-100">
-        <div
-            class="login-section"
-            *ngIf="!storeData?.session?.id"
-        >
+        <div class="login-section" *ngIf="!storeData?.session?.id">
             <div class="login-btn-wrap" [id]="loginId"></div>
         </div>
+
         <div class="w-100 main-wrapper">
             <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
             <ng-container
                 *ngIf="!isLoading && paymentDetails?.vouchers?.length"
             >
                 <div
-                    class="inner-header d-flex justify-content-between align-items-center"
+                    class="inner-header d-fl x justify-content-between align-items-center"
                 >
                     <h2 *ngIf="paymentDetails?.vouchers?.length === 1">
                         Payment for {{ paymentDetails?.vouchers[0]?.number }}
@@ -22,7 +20,9 @@
                     <h2 *ngIf="paymentDetails?.vouchers?.length > 1">
                         Payment All Invoices
                     </h2>
-                    <span class="cursor-pointer" (click)="backToInvoice()">×</span>
+                    <span class="cursor-pointer" (click)="backToInvoice()"
+                        >×</span
+                    >
                 </div>
                 <div
                     class="pay-invoice-content mr-t15"
@@ -49,7 +49,8 @@
                                 <span class="mr-t5 d-block balance-number">
                                     {{ paymentDetails?.currency?.symbol }}
                                     {{
-                                        paymentDetails?.vouchers[0]?.amount | number: '1.0-0'
+                                        paymentDetails?.vouchers[0]?.amount
+                                            | number : "1.0-0"
                                     }}</span
                                 >
                             </div>
@@ -78,23 +79,11 @@
                             <div>
                                 <p class="text-mute">Total Amount</p>
                                 <span class="mr-t5 d-block"
-                                    >{{ paymentDetails?.currency?.symbol
-                                    }}<span
-                                        *ngIf="
-                                            paymentDetails?.paymentGatewayType !==
-                                            paymentMethodEnum.RAZORPAY
-                                        "
-                                        >{{ paymentDetails?.totalAmount | number: '1.0-0' }}</span
-                                    >
-                                    <span
-                                        *ngIf="
-                                            paymentDetails?.paymentGatewayType ===
-                                            paymentMethodEnum.RAZORPAY
-                                        "
-                                        >{{
-                                            (paymentDetails.totalAmount / 100) | number: '1.0-0'
-                                        }}</span
-                                    ></span
+                                    >{{ paymentDetails?.currency?.symbol }}
+                                    <span>{{
+                                        paymentDetails?.totalAmount
+                                            | number : "1.0-0"
+                                    }}</span></span
                                 >
                             </div>
                         </div>
@@ -130,7 +119,9 @@
                                     <p>{{ voucher?.dueDate }}</p>
                                     <p class="text-right">
                                         {{ paymentDetails?.currency?.symbol
-                                        }}{{ voucher.amount | number: '1.0-0' }}
+                                        }}{{
+                                            voucher.amount | number : "1.0-0"
+                                        }}
                                     </p>
                                 </div>
                                 <p class="mr-t1">
@@ -153,93 +144,48 @@
                         </mat-accordion>
                     </div>
                 </div>
+
                 <div
                     class="pay-invoice-content invoice-tab mr-b2 multiple-voucher-content"
-                    *ngIf="
-                        canPayInvoice &&
-                        (paymentMethodIntegrated?.razorpay ||
-                            paymentMethodIntegrated?.paypal)
-                    "
+                    *ngIf="canPayInvoice"
                 >
                     <div class="invoice-content content-wrapper">
-                        <mat-tab-group
-                            mat-stretch-tabs="false"
-                            animationDuration="0ms"
-                            (selectedTabChange)="tabChange($event)"
-                            [selectedIndex]="
-                                activeTab === paymentMethodEnum.RAZORPAY
-                                    ? 0
-                                    : activeTab === paymentMethodEnum.PAYPAL
-                                    ? 1
-                                    : 0
-                            "
-                        >
-                            <mat-tab
-                                [label]="paymentMethodEnum.RAZORPAY"
-                                *ngIf="paymentMethodIntegrated?.razorpay"
+                        <div class="d-flex column-gap15 mr-l15">
+                            <div
+                                *ngFor="let option of paymentOptions"
+                                class="mr-t15 mr-b15"
                             >
-                                <button
-                                    mat-stroked-button
-                                    color="primary"
-                                    class="text-uppercase mr-t15 mr-b2 mr-t0"
-                                    (click)="
-                                        initializePayment(
-                                            paymentDetails,
-                                            paymentMethodEnum.RAZORPAY
-                                        )
-                                    "
-                                >
-                                    Proceed to payment
-                                </button>
-                            </mat-tab>
-                            <mat-tab
-                                [label]="paymentMethodEnum.PAYPAL"
-                                *ngIf="paymentMethodIntegrated?.paypal"
-                            >
-                                <button
-                                    mat-stroked-button
-                                    color="primary"
-                                    class="text-uppercase mr-t15 mr-b2 mr-t0"
-                                    (click)="
-                                        initializePayment(
-                                            paymentDetails,
-                                            paymentMethodEnum.PAYPAL
-                                        )
-                                    "
-                                >
-                                    Proceed to payment
-                                </button>
-                            </mat-tab>
-                        </mat-tab-group>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        [formControl]="paymentMethodValue"
+                                        [value]="option.value"
+                                    />
+                                    <!-- <img
+                                            [src]="option.image"
+                                            alt="{{ option.label }}"
+                                            width="100px"
+                                            height="50px"
+                                        /> -->
+                                    {{ option.label }}
+                                </label>
+                            </div>
+                        </div>
+                        <pay-now
+                            [buttonText]="'Proceed to Payment'"
+                            [paymentMethodValue]="paymentMethodValue?.value"
+                            [customClass]="'mr-b15 mr-l15'"
+                            [storeData]="storeData"
+                            [paymentMethods]="paymentMethods"
+                            [region]="region"
+                            [urlParams]="urlParams"
+                            [invoicePay]="true"
+                            [paymentDetails]="paymentDetails"
+                        ></pay-now>
                     </div>
                 </div>
             </ng-container>
         </div>
     </div>
 </div>
-<ng-container *ngIf="showPaypalForm">
-    <form
-        [action]="paypalUrl"
-        method="post"
-        name="paypalForm"
-        id="paypalForm"
-        [formGroup]="paypalForm"
-    >
-        <input type="hidden" name="business" formControlName="businessEmail" />
-        <input type="hidden" name="cmd" value="_xclick" />
-        <input type="hidden" name="custom" formControlName="custom" />
-        <input type="hidden" name="amount" formControlName="amount" />
-        <input
-            type="hidden"
-            name="currency_code"
-            formControlName="currencyCode"
-        />
-        <input type="hidden" name="notify_url" formControlName="notifyUrl" />
-        <input type="hidden" name="return" formControlName="returnUrl" />
-        <input
-            type="hidden"
-            name="cancel_return"
-            formControlName="cancelReturnUrl"
-        />
-    </form>
-</ng-container>
+

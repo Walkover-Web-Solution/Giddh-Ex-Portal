@@ -26,8 +26,6 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     /** Instance of mat sort */
     @ViewChild(MatSort) sort!: MatSort;
-    /** Instance of mat pay modal dialog */
-    @ViewChild('payModal', { static: true }) public payModal: any;
     /** True if api call in progress */
     public isLoading: boolean = false;
     /** True if api call in progress */
@@ -94,6 +92,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public region: string = "";
     /** Hold pay now button according to payment methods */
     public showPayNowButton: boolean = false;
+    public paymentMethods: any[] = [];
 
     constructor(
         public dialog: MatDialog,
@@ -140,7 +139,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.invoiceService.getPaymentMethods(request).pipe(takeUntil(this.destroyed$)).subscribe(response => {
             this.isLoading = false;
             if (response && response.status === 'success') {
-                if (response.body?.RAZORPAY || response.body?.PAYPAL) {
+                this.paymentMethods = response.body;
+                if (response.body?.RAZORPAY || response.body?.PAYPAL || response.body?.PAYU) {
                     this.showPayNowButton = true;
                 }
             } else {
@@ -307,44 +307,6 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         }
     }
 
-
-    /**
-     * This will be use for open pay dialog confirmation
-     *
-     * @param {*} item
-     * @memberof InvoiceComponent
-     */
-    public openPayDialog(item?: any): void {
-        this.dialog.open(this.payModal, {
-            width: '600px'
-        });
-        if (!this.selection?.selected?.length) {
-            this.selectedPaymentVoucher = item;
-        }
-    }
-
-    /**
-     * This will be use for pay voucher
-     *
-     * @memberof InvoiceComponent
-     */
-    public voucherPay(): void {
-        this.dialog?.closeAll();
-        let url = `${this.storeData.domain}/${this.region}/invoice-pay`;
-        if (this.selection?.selected?.length) {
-            const voucherUniqueNames = this.selection?.selected?.map(voucher => {
-                return voucher.uniqueName;
-            });
-            const accountUniqueName = this.selection?.selected[0].account.uniqueName;
-            const encodedVoucherUniqueNames = voucherUniqueNames.map(encodeURIComponent);
-            url = url + `/account/${accountUniqueName}/voucher/${encodedVoucherUniqueNames.join('|')}`;
-            this.router.navigate([url]);
-        } else {
-            url = url + '/account/' + this.selectedPaymentVoucher.account.uniqueName + '/voucher/' + this.selectedPaymentVoucher.uniqueName;
-            this.router.navigate([url]);
-        }
-    }
-
     /**
      * This will be use for sort table  data
      *
@@ -434,20 +396,4 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         this.selection.select(...this.dataSource.data);
     }
 
-    /**
-     * This will be use for pay selected voucher
-     *
-     * @memberof InvoiceComponent
-     */
-    public paySelectedVouchers(): void {
-        if (this.selection?.selected?.length) {
-            let hasPaidVouchers = this.selection?.selected?.filter(voucher => voucher.balanceStatus === "PAID");
-            if (!hasPaidVouchers?.length) {
-                this.openPayDialog();
-            } else {
-                const paidVoucherNumbers = hasPaidVouchers?.map(voucher => { return voucher?.voucherNumber });
-                this.generalService.showSnackbar(paidVoucherNumbers.join(", ") + (paidVoucherNumbers?.length > 1 ? " are" : " is") + " already PAID.");
-            }
-        }
-    }
 }

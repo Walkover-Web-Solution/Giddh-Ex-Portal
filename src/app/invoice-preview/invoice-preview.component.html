@@ -21,14 +21,17 @@
                             Back
                         </button>
                         <div class="d-flex column-gap10 back-header-mobile">
-                            <button
-                                mat-stroked-button
-                                color="primary"
-                                *ngIf="paymentDetails?.vouchers[0]?.canPay"
-                                (click)="redirectToPayNow(paymentDetails)"
-                            >
-                                Pay Now
-                            </button>
+                            <ng-container  *ngIf="paymentDetails?.vouchers[0]?.canPay">
+                                <pay-now
+                                    [buttonText]="'Pay Now'" 
+                                    [queryParams]="queryParams"
+                                    [paymentDetails]="paymentDetails"
+                                    [invoicePreview]="invoicePreview"
+                                    [paymentMethods]="paymentMethods"
+                                    [storeData]="storeData"
+                                    [region]="region"
+                                ></pay-now>
+                            </ng-container>
                             <button
                                 mat-stroked-button
                                 color="primary"
