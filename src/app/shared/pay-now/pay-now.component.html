@@ -1,0 +1,152 @@
+<button
+    mat-stroked-button
+    color="primary"
+    class="pay-now-button"
+    [ngClass]="customClass"
+    (click)="
+        invoicePreview
+            ? redirectToPayNow(paymentDetails)
+            : selection?.selected?.length
+            ? paySelectedVouchers()
+            : openPayDialog(voucher)
+    "
+>
+    {{ buttonText }}
+</button>
+<ng-template #payModal>
+    <div class="common-dialog">
+        <mat-dialog-content>
+            <div class="d-flex column-gap15 danger-wrap">
+                <img
+                    src="../../assets/images/warning.svg"
+                    alt="warning"
+                    class="mr-t5"
+                />
+                <p>Are you sure you want to proceed?</p>
+            </div>
+            <div class="d-flex column-gap5 footer-btn">
+                <button
+                    mat-stroked-button
+                    color="primary"
+                    (click)="voucherPay()"
+                >
+                    Yes, Proceed
+                </button>
+                <button mat-stroked-button mat-dialog-close>Cancel</button>
+            </div>
+        </mat-dialog-content>
+    </div>
+</ng-template>
+
+<ng-container *ngIf="showPaypalForm">
+    <form
+        [action]="paypalUrl"
+        method="post"
+        name="paypalForm"
+        id="paypalForm"
+        [formGroup]="paypalForm"
+    >
+        <input type="hidden" name="business" formControlName="businessEmail" />
+        <input type="hidden" name="cmd" value="_xclick" />
+        <input type="hidden" name="custom" formControlName="custom" />
+        <input type="hidden" name="amount" formControlName="amount" />
+        <input
+            type="hidden"
+            name="currency_code"
+            formControlName="currencyCode"
+        />
+        <input type="hidden" name="notify_url" formControlName="notifyUrl" />
+        <input type="hidden" name="return" formControlName="returnUrl" />
+        <input
+            type="hidden"
+            name="cancel_return"
+            formControlName="cancelReturnUrl"
+        />
+    </form>
+</ng-container>
+
+<ng-template #payuModal>
+    <div class="common-dialog">
+        <div class="modal-header d-flex align-items-center">
+            <h2>Payu Details</h2>
+            <button aria-hidden="true" class="close" mat-dialog-close>×</button>
+        </div>
+        <mat-dialog-content>
+            <form [formGroup]="payuForm">
+                <div>
+                    <mat-form-field appearance="outline" class="w-100 mr-t15">
+                        <mat-label>Name</mat-label>
+                        <input matInput type="text" formControlName="name" />
+                        <mat-error
+                            *ngIf="
+                                isFormSubmitted &&
+                                payuForm.get('name').hasError('required')
+                            "
+                        >
+                            Name is required.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div>
+                    <mat-form-field appearance="outline" class="w-100 mr-t15">
+                        <mat-label>Email</mat-label>
+                        <input matInput type="email" formControlName="email" />
+                        <mat-error
+                            *ngIf="
+                                isFormSubmitted &&
+                                payuForm.get('email').hasError('required')
+                            "
+                        >
+                            Email is required.
+                        </mat-error>
+                        <mat-error
+                            *ngIf="
+                                isFormSubmitted &&
+                                payuForm.get('email').hasError('email')
+                            "
+                        >
+                            Enter a valid email.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div>
+                    <mat-form-field appearance="outline" class="w-100 mr-t15">
+                        <mat-label>Contact Number</mat-label>
+                        <input
+                            matInput
+                            type="text"
+                            formControlName="contactNo"
+                            maxlength="10"
+                        />
+                        <mat-error
+                            *ngIf="
+                                isFormSubmitted &&
+                                payuForm.get('contactNo').hasError('required')
+                            "
+                        >
+                            Contact number is required.
+                        </mat-error>
+                        <mat-error
+                            *ngIf="
+                                isFormSubmitted &&
+                                payuForm.get('contactNo').hasError('pattern')
+                            "
+                        >
+                            Enter a valid 10-digit contact number.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <mat-dialog-actions align="end">
+                    <button
+                        mat-stroked-button
+                        color="primary"
+                        class="text-uppercase mr-t15 mr-b2 mr-t0"
+                        (click)="submitPayuForm()"
+                    >
+                        Save
+                    </button>
+                </mat-dialog-actions>
+            </form>
+        </mat-dialog-content>
+    </div>
+</ng-template>
