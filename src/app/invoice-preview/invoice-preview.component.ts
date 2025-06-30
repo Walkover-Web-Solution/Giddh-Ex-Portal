@@ -5,7 +5,7 @@ import { ReplaySubject, combineLatest } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { saveAs } from 'file-saver';
 import { DomSanitizer } from "@angular/platform-browser";
-import { FormBuilder, UntypedFormGroup } from "@angular/forms";
+import { FormBuilder, FormControl, UntypedFormGroup } from "@angular/forms";
 import { select, Store } from '@ngrx/store';
 import { PAGINATION_LIMIT, PAYMENT_METHODS_ENUM } from "../app.constant";
 import { GeneralService } from "../services/general.service";
@@ -66,8 +66,14 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
     public url: string = '';
     /** Hold region */
     public region: string = "";
+    /** Holds invoice preview */
     public invoicePreview: boolean = true;
+    /** Holds payment methods */
     public paymentMethods: any[] = [];
+    /** Holds return url for invoice preview */
+    public returnInvoicePreview: string = '';
+    /** Holds payment method value */
+    public paymentMethodValue: FormControl = new FormControl('');
 
     constructor(
         private generalService: GeneralService,
@@ -117,12 +123,23 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 }
                 const routerState = (this.route as any)._routerState?.snapshot?.url;
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+                this.returnInvoicePreview = updatedUrl;
                 this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, region: response[1]?.region } }));
             }
         });
         if (this.queryParams.voucher) {
             this.getPaymentMethods();
         }
+    }
+
+    /**
+     * This will be use for invoice preview success
+     *
+     * @memberof InvoicePreviewComponent
+     */
+    public onInvoicePreviewSuccess(): void {
+        this.invoicePreview = false;
+        this.getVoucherDetails();
     }
 
     /**
@@ -168,10 +185,13 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.paymentMethods = response.body;
                 if (response.body?.RAZORPAY) {
                     this.getVoucherDetails(this.paymentMethodEnum.RAZORPAY);
+                    this.paymentMethodValue.setValue('RAZORPAY');
                 } else if (response.body?.PAYPAL) {
                     this.getVoucherDetails(this.paymentMethodEnum.PAYPAL);
+                    this.paymentMethodValue.setValue('PAYPAL');
                 } else if (response.body?.PAYU) {
                     this.getVoucherDetails(this.paymentMethodEnum.PAYU);
+                    this.paymentMethodValue.setValue('PAYU');
                 } else {
                     this.getVoucherDetails();
                     this.generalService.showSnackbar('No payment method is integrated', 'warning');
@@ -319,7 +339,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             });
         }
     }
-
+    
     /**
      * This will be use for component destroyed
      *

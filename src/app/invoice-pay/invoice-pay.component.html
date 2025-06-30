@@ -179,8 +179,10 @@
                             [paymentMethods]="paymentMethods"
                             [region]="region"
                             [urlParams]="urlParams"
-                            [invoicePay]="true"
                             [paymentDetails]="paymentDetails"
+                            [invoicePay]="true"
+                            (invoicePaySuccess)="onInvoicePaySuccess()"
+                            [returnInvoicePay]="returnInvoicePay"
                         ></pay-now>
                     </div>
                 </div>

@@ -50,8 +50,11 @@
                         [selection]="selection"
                         [storeData]="storeData"
                         [region]="region"
-                        [selectedPaymentVoucher]="selectedPaymentVoucher"
                         [paymentMethods]="paymentMethods"
+                        [paymentMethodValue]="paymentMethodValue?.value"
+                        [invoiceGetAll]="true"
+                        (invoiceGetAllSuccess)="onInvoiceGetAllSuccess()"
+                        [returnInvoiceGetAll]="returnInvoiceGetAll"
                     ></pay-now>
                 </ng-container>
             </div>
@@ -205,11 +208,12 @@
                                             [selection]="selection"
                                             [storeData]="storeData"
                                             [region]="region"
-                                            [selectedPaymentVoucher]="
-                                                selectedPaymentVoucher
-                                            "
                                             [voucher]="element"
                                             [paymentMethods]="paymentMethods"
+                                            [paymentMethodValue]="paymentMethodValue?.value"
+                                            [invoiceGetAll]="true"
+                                            (invoiceGetAllSuccess)="onInvoiceGetAllSuccess()"
+                                            [returnInvoiceGetAll]="returnInvoiceGetAll"
                                         ></pay-now>
                                     </ng-container>
                                     <button

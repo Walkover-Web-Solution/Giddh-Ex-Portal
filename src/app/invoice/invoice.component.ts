@@ -15,6 +15,7 @@ import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
 import { CommonService } from "../services/common.service";
 import { SelectionModel } from "@angular/cdk/collections";
 import { setFolderData } from "../store/actions/session.action";
+import { FormControl } from "@angular/forms";
 
 @Component({
     selector: "invoice",
@@ -92,7 +93,16 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public region: string = "";
     /** Hold pay now button according to payment methods */
     public showPayNowButton: boolean = false;
+    /** Hold payment methods */
     public paymentMethods: any[] = [];
+    /** Holds payment method value */
+    public paymentMethodValue: FormControl = new FormControl('');
+    /** Holds invoice get all */
+    public invoiceGetAll: boolean = false;
+    /** Holds return invoice get all */
+    public returnInvoiceGetAll: string = '';
+    /** Hold selected voucher */
+    public selectedVoucher: any;
 
     constructor(
         public dialog: MatDialog,
@@ -103,8 +113,16 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         private store: Store,
         private route: ActivatedRoute
     ) {
+    }
 
-
+    /**
+     * This will be use for invoice get all success
+     *
+     * @memberof InvoiceComponent
+     */
+    public onInvoiceGetAllSuccess(): void {
+        this.invoiceGetAll = false;
+        this.resetFilter();
     }
 
     /**
@@ -120,6 +138,7 @@ export class InvoiceComponent implements OnInit, OnDestroy {
                 this.getCountPage();
                 const routerState = (this.route as any)._routerState?.snapshot?.url;
                 const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+                this.returnInvoiceGetAll = updatedUrl;
                 this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl } }));
             }
         });
@@ -142,6 +161,15 @@ export class InvoiceComponent implements OnInit, OnDestroy {
                 this.paymentMethods = response.body;
                 if (response.body?.RAZORPAY || response.body?.PAYPAL || response.body?.PAYU) {
                     this.showPayNowButton = true;
+                    if (response.body?.RAZORPAY) {
+                        this.paymentMethodValue.setValue('RAZORPAY');
+                    } else if (response.body?.PAYPAL) {
+                        this.paymentMethodValue.setValue('PAYPAL');
+                    } else if (response.body?.PAYU) {
+                        this.paymentMethodValue.setValue('PAYU');
+                    }
+                } else {
+                    this.generalService.showSnackbar('No payment method is integrated', 'warning');
                 }
             } else {
                 this.generalService.showSnackbar(response?.message);
@@ -395,5 +423,4 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         }
         this.selection.select(...this.dataSource.data);
     }
-
 }

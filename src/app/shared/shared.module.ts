@@ -21,7 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SwitchAccountComponent } from "./switch-account/switch-account.component";
-import { GiddhPayNowModule } from "./pay-now/pay-now.module";
+import { GiddhPayNowComponent } from "./pay-now/pay-now.component";
 
 @NgModule({
     declarations: [
@@ -52,7 +52,7 @@ import { GiddhPayNowModule } from "./pay-now/pay-now.module";
         MatInputModule,
         ReactiveFormsModule,
         MatIconModule,
-        GiddhPayNowModule,
+        GiddhPayNowComponent,
         MatProgressSpinnerModule
     ],
     exports: [
@@ -78,7 +78,7 @@ import { GiddhPayNowModule } from "./pay-now/pay-now.module";
         MatIconModule,
         MatProgressSpinnerModule,
         SwitchAccountComponent,
-        GiddhPayNowModule
+        GiddhPayNowComponent
     ]
 })
 export class SharedModule {

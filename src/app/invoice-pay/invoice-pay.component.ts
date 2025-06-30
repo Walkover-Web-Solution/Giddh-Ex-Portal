@@ -61,8 +61,12 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
         { label: "Paypal", value: "PAYPAL", image: "https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-large.png" },
         { label: "PayU", value: "PAYU", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/PayU.svg/320px-PayU.svg.png" }
     ];
+    /** Holds payment method value */
     public paymentMethodValue: FormControl = new FormControl('');
+    /** Holds payment methods */
     public paymentMethods: any[] = [];
+    /** Holds return invoice pay */
+    public returnInvoicePay: string = '';
 
     constructor(
         public dialog: MatDialog,
@@ -111,6 +115,9 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 if (this.urlParams?.accountUniqueName || this.queryParams?.accountUniqueName) {
                     this.getPaymentMethods();
                 }
+                const routerState = (this.route as any)._routerState?.snapshot?.url;
+                const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
+                this.returnInvoicePay = updatedUrl;
             }
         });
     }
@@ -154,7 +161,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             this.isLoading = false;
             if (response && response.status === 'success') {
                 this.paymentMethods = response.body;
-                this.paymentOptions= this.paymentOptions.filter(option => this.paymentMethods[option.value]);
+                this.paymentOptions = this.paymentOptions.filter(option => this.paymentMethods[option.value]);
                 if (response.body?.RAZORPAY || response.body?.PAYPAL || response.body?.PAYU) {
                     if (response.body?.RAZORPAY) {
                         this.paymentMethodValue.setValue('RAZORPAY');
@@ -229,41 +236,6 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     }
 
 
-
-    /**
-     * Callback for tab change event
-     *
-     * @param {*} event
-     * @memberof InvoicePayComponent
-     */
-    // public tabChange(event: any): void {
-    //     if (event?.tab?.textLabel === PAYMENT_METHODS_ENUM.RAZORPAY) {
-    //         this.tabSelected(PAYMENT_METHODS_ENUM.RAZORPAY);
-    //         // this.getVoucherDetails(PAYMENT_METHODS_ENUM.RAZORPAY, true, event?.tab?.textLabel);    
-    //     }
-    //     if (event?.tab?.textLabel === PAYMENT_METHODS_ENUM.PAYPAL) {
-    //         this.tabSelected(PAYMENT_METHODS_ENUM.PAYPAL);
-    //         // this.getVoucherDetails(PAYMENT_METHODS_ENUM.PAYPAL, true, event?.tab?.textLabel);
-    //     }
-    //     if (event?.tab?.textLabel === PAYMENT_METHODS_ENUM.PAYU) {
-    //         this.tabSelected(PAYMENT_METHODS_ENUM.PAYU);
-    //         // this.getVoucherDetails(PAYMENT_METHODS_ENUM.PAYU, true, event?.tab?.textLabel);
-    //     }
-    // }
-
-    /**
-     * This will be use for tab selected
-     *
-     * @param {(PAYMENT_METHODS_ENUM.RAZORPAY | PAYMENT_METHODS_ENUM.PAYPAL | PAYMENT_METHODS_ENUM.PAYU)} tabName
-     * @memberof InvoicePayComponent
-     */
-    // public tabSelected(tabName: PAYMENT_METHODS_ENUM.RAZORPAY | PAYMENT_METHODS_ENUM.PAYPAL | PAYMENT_METHODS_ENUM.PAYU): void {
-    //     this.activeTab = tabName;
-    // }
-
-
-
-
     /**
      * This will be use for component destroy
      *
@@ -281,5 +253,14 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      */
     public togglePanel(): void {
         this.panelOpenState = !this.panelOpenState;
+    }
+
+    /**
+     * This will be use for get voucher details
+     *
+     * @memberof InvoicePayComponent
+     */
+    public onInvoicePaySuccess(): void {
+        this.getVoucherDetails();
     }
 }

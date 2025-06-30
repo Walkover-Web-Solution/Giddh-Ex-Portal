@@ -26,10 +26,13 @@
                                     [buttonText]="'Pay Now'" 
                                     [queryParams]="queryParams"
                                     [paymentDetails]="paymentDetails"
-                                    [invoicePreview]="invoicePreview"
                                     [paymentMethods]="paymentMethods"
                                     [storeData]="storeData"
                                     [region]="region"
+                                    [paymentMethodValue]="paymentMethodValue?.value"
+                                    [invoicePreview]="invoicePreview"
+                                    (invoicePreviewSuccess)="onInvoicePreviewSuccess()"
+                                    [returnInvoicePreview]="returnInvoicePreview"
                                 ></pay-now>
                             </ng-container>
                             <button
