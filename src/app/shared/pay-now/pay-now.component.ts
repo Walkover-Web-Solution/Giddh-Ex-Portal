@@ -3,7 +3,6 @@ import {
     Component,
     Input,
     OnDestroy,
-    OnInit,
     ViewChild,
     Output,
     EventEmitter
@@ -39,31 +38,19 @@ import { takeUntil } from "rxjs/operators";
     templateUrl: "./pay-now.component.html",
     styleUrls: ["./pay-now.component.scss"],
 })
-export class GiddhPayNowComponent implements OnInit, OnDestroy {
-    /** Output event for InvoiceComponent */
-    @Output() payNowInvoice: EventEmitter<any> = new EventEmitter<any>();
-    /** Output event for InvoicePayComponent */
-    @Output() payNowInvoicePay: EventEmitter<any> = new EventEmitter<any>();
+export class GiddhPayNowComponent implements OnDestroy {
     /** This will use for mat pay modal dialog */
     @ViewChild("payModal", { static: true }) public payModal: any;
     /** This will use for mat payu modal dialog */
     @ViewChild("payuModal", { static: true }) public payuModal: any;
-    /** This will use for destroyed$ subject */
-    public destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-    /** This will use for show/hide paypal form */
-    public showPaypalForm: boolean = false;
-    /** This will use for paypal url */
-    public paypalUrl: string = environment.paypalUrl;
-    /** This will use for razorpay instance */
-    public razorpay: any;
-    /** This will use for paypal form instance */
-    public paypalForm: FormGroup;
-    /** This will use for payment methods */
-    public paymentMethodEnum: any = PAYMENT_METHODS_ENUM;
-    /** This will use for open window */
-    private openedWindow: Window | null = null;
-    /** This will use for form submitted state */
-    public isFormSubmitted: boolean = false;
+    /** Output event for InvoiceComponent */
+    @Output() payNowInvoice: EventEmitter<any> = new EventEmitter<any>();
+    /** Output event for InvoicePayComponent */
+    @Output() payNowInvoicePay: EventEmitter<any> = new EventEmitter<any>();
+    /** This will use for emit success event */
+    @Output() invoicePreviewSuccess: EventEmitter<any> = new EventEmitter<any>();
+    /** This will use for emit success event */
+    @Output() invoicePaySuccess: EventEmitter<any> = new EventEmitter<any>();
     /** This will use for selection model */
     @Input() selection: SelectionModel<any> = new SelectionModel<any>(
         false,
@@ -93,6 +80,34 @@ export class GiddhPayNowComponent implements OnInit, OnDestroy {
     @Input() paymentMethodValue: any;
     /** This will use for url params */
     @Input() urlParams: any = {};
+    /** This will use for invoice pay */
+    @Input() public invoicePay: boolean = false;
+    /** This will use for emit success event */
+    @Output() invoiceGetAllSuccess: EventEmitter<any> = new EventEmitter<any>();
+    /** This will use for get all */
+    @Input() invoiceGetAll: boolean = false;
+    /** This will use for return invoice get all */
+    @Input() returnInvoiceGetAll: string = '';
+    /** This will use for return invoice preview */
+    @Input() returnInvoicePreview: string = '';
+    /** This will use for return invoice pay */
+    @Input() returnInvoicePay: string = '';
+    /** This will use for destroyed$ subject */
+    public destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
+    /** This will use for show/hide paypal form */
+    public showPaypalForm: boolean = false;
+    /** This will use for paypal url */
+    public paypalUrl: string = environment.paypalUrl;
+    /** This will use for razorpay instance */
+    public razorpay: any;
+    /** This will use for paypal form instance */
+    public paypalForm: FormGroup;
+    /** This will use for payment methods */
+    public paymentMethodEnum: any = PAYMENT_METHODS_ENUM;
+    /** This will use for open window */
+    private openedWindow: Window | null = null;
+    /** This will use for form submitted state */
+    public isFormSubmitted: boolean = false;
     /** Hold payu form */
     public payuForm: FormGroup;
     /** Instance of modal */
@@ -103,22 +118,6 @@ export class GiddhPayNowComponent implements OnInit, OnDestroy {
     public canPayInvoice: boolean = false;
     /** This will use for paid invoice message */
     public paidInvoiceMessage: string = "";
-    /** This will use for invoice pay */
-    @Input() public invoicePay: boolean = false;
-    /** This will use for emit success event */
-    @Output() invoiceGetAllSuccess: EventEmitter<any> = new EventEmitter<any>();
-    /** This will use for get all */
-    @Input() invoiceGetAll: boolean = false;
-    /** This will use for return invoice get all */
-    @Input() returnInvoiceGetAll: string = '';
-    /** This will use for emit success event */
-    @Output() invoicePreviewSuccess: EventEmitter<any> = new EventEmitter<any>();
-    /** This will use for return invoice preview */
-    @Input() returnInvoicePreview: string = '';
-    /** This will use for emit success event */
-    @Output() invoicePaySuccess: EventEmitter<any> = new EventEmitter<any>();
-    /** This will use for return invoice pay */
-    @Input() returnInvoicePay: string = '';
 
     constructor(
         private generalService: GeneralService,
@@ -160,38 +159,38 @@ export class GiddhPayNowComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Angular lifecycle method: Initializes the component.
-     * @returns void
-     * @memberof GiddhPayNowComponent
-     */
-    public ngOnInit(): void {
-    }
-
-    /**
      * Opens the payment dialog for the selected item or voucher.
      * @param item The item or voucher to be paid
      * @memberof GiddhPayNowComponent
      */
-    public openPayDialog(item?: any): void {
+    public openPayDialog(): void {
         if (this.invoicePay) {
             if (this.paymentMethodValue === PAYMENT_METHODS_ENUM.PAYU) {
-                if (
-                    this.storeData?.portalDetails?.name &&
-                    this.storeData?.portalDetails?.email &&
-                    this.storeData?.portalDetails?.contactNo
-                ) {
-                    this.getVoucherDetails(this.paymentMethodValue);
-                } else {
-                    this.initPayuForm(this.storeData);
-                    this.payuDialogRef = this.dialog.open(this.payuModal, {
-                        width: "600px",
-                    });
-                }
+                this.payuCheck();
             } else {
                 this.voucherPay();
             }
         } else {
             this.confirmationDialogRef = this.dialog.open(this.payModal, {
+                width: "600px",
+            });
+        }
+    }
+
+    /**
+     * Checks if PayU details are available and opens the PayU dialog.
+     * @memberof GiddhPayNowComponent
+     */
+    public payuCheck(): void {
+        this.initPayuForm(this.storeData);
+        if (
+            this.storeData?.portalDetails?.name &&
+            this.storeData?.portalDetails?.email &&
+            this.storeData?.portalDetails?.contactNo
+        ) {
+            this.getVoucherDetails(this.paymentMethodValue);
+        } else {
+            this.payuDialogRef = this.dialog.open(this.payuModal, {
                 width: "600px",
             });
         }
@@ -255,18 +254,7 @@ export class GiddhPayNowComponent implements OnInit, OnDestroy {
                 }
             } else {
                 if (this.paymentMethodValue === PAYMENT_METHODS_ENUM.PAYU) {
-                    if (
-                        this.storeData?.portalDetails?.name &&
-                        this.storeData?.portalDetails?.email &&
-                        this.storeData?.portalDetails?.contactNo
-                    ) {
-                        this.getVoucherDetails(this.paymentMethodValue);
-                    } else {
-                        this.initPayuForm(this.storeData);
-                        this.payuDialogRef = this.dialog.open(this.payuModal, {
-                            width: "600px",
-                        });
-                    }
+                    this.payuCheck();
                 } else {
                     this.getVoucherDetails(this.paymentMethodValue);
                 }
@@ -328,18 +316,7 @@ export class GiddhPayNowComponent implements OnInit, OnDestroy {
             }
         } else {
             if (this.paymentMethodValue === PAYMENT_METHODS_ENUM.PAYU) {
-                if (
-                    this.storeData?.portalDetails?.name &&
-                    this.storeData?.portalDetails?.email &&
-                    this.storeData?.portalDetails?.contactNo
-                ) {
-                    this.getVoucherDetails(this.paymentMethodValue);
-                } else {
-                    this.initPayuForm(this.storeData);
-                    this.payuDialogRef = this.dialog.open(this.payuModal, {
-                        width: "600px",
-                    });
-                }
+                this.payuCheck();
             } else {
                 this.getVoucherDetails(this.paymentMethodValue);
             }

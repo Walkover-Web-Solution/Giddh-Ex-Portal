@@ -8,7 +8,7 @@
             ? redirectToPayNow(paymentDetails)
             : selection?.selected?.length
             ? paySelectedVouchers()
-            : openPayDialog(voucher)
+            : openPayDialog()
     "
 >
     {{ buttonText }}
@@ -136,14 +136,14 @@
                         </mat-error>
                     </mat-form-field>
                 </div>
-                <mat-dialog-actions align="end">
+                <mat-dialog-actions align="end" class="pd-r0">
                     <button
                         mat-stroked-button
                         color="primary"
-                        class="text-uppercase mr-t15 mr-b2 mr-t0"
+                        class="text-uppercase mr-t15"
                         (click)="submitPayuForm()"
                     >
-                        Save
+                    Proceed to Payment
                     </button>
                 </mat-dialog-actions>
             </form>

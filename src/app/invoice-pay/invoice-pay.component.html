@@ -12,7 +12,7 @@
                 *ngIf="!isLoading && paymentDetails?.vouchers?.length"
             >
                 <div
-                    class="inner-header d-fl x justify-content-between align-items-center"
+                    class="inner-header d-flex justify-content-between align-items-center"
                 >
                     <h2 *ngIf="paymentDetails?.vouchers?.length === 1">
                         Payment for {{ paymentDetails?.vouchers[0]?.number }}
@@ -20,7 +20,7 @@
                     <h2 *ngIf="paymentDetails?.vouchers?.length > 1">
                         Payment All Invoices
                     </h2>
-                    <span class="cursor-pointer" (click)="backToInvoice()"
+                    <span class="cursor-pointer cross-icon" (click)="backToInvoice()"
                         >×</span
                     >
                 </div>
