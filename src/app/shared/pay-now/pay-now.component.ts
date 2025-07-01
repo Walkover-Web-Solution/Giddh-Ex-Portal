@@ -38,7 +38,7 @@ import { takeUntil } from "rxjs/operators";
     templateUrl: "./pay-now.component.html",
     styleUrls: ["./pay-now.component.scss"],
 })
-export class GiddhPayNowComponent implements OnDestroy {
+export class GiddhPayNowComponent implements     OnDestroy {
     /** This will use for mat pay modal dialog */
     @ViewChild("payModal", { static: true }) public payModal: any;
     /** This will use for mat payu modal dialog */
@@ -397,7 +397,10 @@ export class GiddhPayNowComponent implements OnDestroy {
     private getVoucherDetails(paymentType: string): void {
         let voucherUniqueName;
         let voucherUniqueNameArray;
-        if (this.queryParams.voucher || this.urlParams.voucherUniqueName) {
+        if (this.queryParams.token) {
+            voucherUniqueName = this.queryParams.voucherUniqueName;
+            voucherUniqueNameArray = [voucherUniqueName];
+        } else if (this.queryParams.voucher || this.urlParams.voucherUniqueName) {
             voucherUniqueName = this.queryParams.voucher || this.urlParams.voucherUniqueName || "";
             voucherUniqueNameArray = voucherUniqueName.split("|");
         } else if (!this.voucher) {
@@ -427,7 +430,7 @@ export class GiddhPayNowComponent implements OnDestroy {
             };
         }
         const accountUniqueName =
-            this.urlParams.accountUniqueName ||
+            this.urlParams.accountUniqueName ||this.queryParams.accountUniqueName ||
             this.storeData.userDetails?.account.uniqueName;
         const companyUniqueName =
             this.queryParams.companyUniqueName ||
