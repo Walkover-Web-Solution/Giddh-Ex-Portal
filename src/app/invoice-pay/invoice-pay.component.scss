@@ -8,6 +8,9 @@
 }
 
 /*---- pay-invoices ----*/
+.font-sm {
+    font-size: 13px;
+}
 
 .pay-invoice-content {
     max-width: 790px;
@@ -121,6 +124,12 @@
 
 .cross-icon {
     font-size: 28px;
+}
+
+
+.payment-gateway-images {
+    right: -65px;
+    top: 25px;
 }
 
 /*---- responsive ----*/

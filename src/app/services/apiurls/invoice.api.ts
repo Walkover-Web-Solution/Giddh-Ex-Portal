@@ -7,4 +7,5 @@ export const API = {
     PAY_VOUCHER: 'portal/company/:companyUniqueName/accounts/:accountUniqueName/invoices/:paymentId/pay?voucherVersion=2',
     GET_VOUCHER_LIST: COMMON_URL_PORTAL + ':accountUniqueName/voucher/:voucherUniqueName?voucherVersion=2',
     GET_PAYMENT_METHODS: COMMON_URL_PORTAL + ':accountUniqueName/payment-methods?voucherVersion=2',
+    PAYMENT_METHOD_LIST :COMMON_URL_PORTAL + ':accountUniqueName/payment-method'
 }
