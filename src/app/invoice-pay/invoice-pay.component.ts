@@ -18,7 +18,7 @@ import { environment } from "src/environments/environment";
 @Component({
     selector: "invoice-pay",
     templateUrl: "invoice-pay.component.html",
-    styleUrls: ["invoice-pay.component.scss"],
+    styleUrls: ["invoice-pay.component.scss"]
 })
 export class InvoicePayComponent implements OnInit, OnDestroy {
     /** True if api call in progress */
@@ -113,11 +113,11 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                             session: {
                                 createAt: null,
                                 expiresAt: null,
-                                id: null,
+                                id: null
                             },
                             domain: this.urlParams.companyDomainUniqueName,
                             sidebarState: true,
-                            redirectUrl: this.storeData.redirectUrl,
+                            redirectUrl: this.storeData.redirectUrl
                         };
                         this.loginButtonScriptLoaded();
                     }
@@ -176,7 +176,14 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             });
     }
 
-    getImageForType(type: string): string {
+    /**
+     *This will be use for get payment method image
+     *
+     * @param {string} type
+     * @return {*}  {string}
+     * @memberof InvoicePayComponent
+     */
+    public getImageForType(type: string): string {
         const images = {
             cashcard: 'assets/images/cashcard.svg',
             netbanking: 'assets/images/netbanking.svg',
@@ -210,7 +217,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
             this.store.dispatch(
                 setFolderData({
                     folderName: this.storeData.domain,
-                    data: { domain: this.storeData.domain },
+                    data: { domain: this.storeData.domain }
                 })
             );
             this.generalService.loadScript(
