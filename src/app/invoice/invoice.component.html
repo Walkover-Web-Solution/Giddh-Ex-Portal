@@ -45,6 +45,7 @@
                 <ng-container
                     *ngIf="showPayNowButton && selection?.selected?.length"
                 >
+                <div class="pay-now-button-table position-relative">
                     <pay-now
                         [buttonText]="'Pay Now'" 
                         [selection]="selection"
@@ -56,6 +57,7 @@
                         (invoiceGetAllSuccess)="onInvoiceGetAllSuccess()"
                         [returnInvoiceGetAll]="returnInvoiceGetAll"
                     ></pay-now>
+                    </div>
                 </ng-container>
             </div>
             <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
@@ -171,9 +173,11 @@
                                 <div
                                     class="d-flex justify-content-between column-gap10"
                                 >
-                                    <span class="color-overdue">{{
-                                        element?.balanceStatus
-                                    }}</span>
+                                    <span class="color-overdue">
+                                        {{
+                                            element?.paymentInfo?.paymentStatus === 'PENDING' ? 'PENDING' : element?.balanceStatus
+                                        }}
+                                    </span>
                                 </div>
                             </td>
                         </ng-container>
@@ -200,9 +204,10 @@
                                 <div class="d-flex column-gap10">
                                     <ng-container
                                         *ngIf="
-                                            showPayNowButton && element?.canPay
+                                            showPayNowButton && element?.canPay && element?.paymentInfo?.paymentStatus !== 'PENDING'
                                         "
                                     >
+                                    <div class="pay-now-button-table position-relative">
                                         <pay-now
                                             [buttonText]="'Pay Now'" 
                                             [selection]="selection"
@@ -215,6 +220,7 @@
                                             (invoiceGetAllSuccess)="onInvoiceGetAllSuccess()"
                                             [returnInvoiceGetAll]="returnInvoiceGetAll"
                                         ></pay-now>
+                                    </div>
                                     </ng-container>
                                     <button
                                         mat-stroked-button

@@ -103,6 +103,8 @@ export class InvoiceComponent implements OnInit, OnDestroy {
     public returnInvoiceGetAll: string = '';
     /** Hold selected voucher */
     public selectedVoucher: any;
+    /** To show pending status */
+    public isStatusPending: boolean = false;
 
     constructor(
         public dialog: MatDialog,
@@ -113,6 +115,20 @@ export class InvoiceComponent implements OnInit, OnDestroy {
         private store: Store,
         private route: ActivatedRoute
     ) {
+    }
+
+    /**
+     * This will be use for toggle selection
+     *
+     * @param {any} event
+     * @param {any} element
+     * @memberof InvoiceComponent
+     */
+    public toggleSelection(event: any, element: any): void {
+        if (event) {
+            this.selection.toggle(element);
+            this.isStatusPending = element?.paymentInfo?.paymentStatus === 'PENDING';
+        }
     }
 
     /**

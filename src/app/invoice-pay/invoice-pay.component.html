@@ -155,7 +155,9 @@
                         <div class="mr-l15">
                             <div
                                 *ngFor="let gateway of mappedPaymentMethodsFlat"
-                                [ngClass]="{ 'mr-t10 mr-b10': gateway.value !== 'PAYPAL' }"
+                                [ngClass]="{
+                                    'mr-t10 mr-b10': gateway.value !== paymentMethodEnum.PAYPAL
+                                }"
                             >
                                 <div class="d-flex align-items-center pd-t5">
                                     <label>
@@ -178,7 +180,11 @@
                                                     title="{{ method.label }}"
                                                     width="40px"
                                                     class="mr-r5 object-fit-contain image-class"
-                                                    [ngClass]="{ 'width-paypal': method.label === 'PAYPAL' }"
+                                                    [ngClass]="{
+                                                        'width-paypal':
+                                                            method.label ===
+                                                            paymentMethodEnum.PAYPAL
+                                                    }"
                                                 />
                                             </span>
                                         </ng-container>
@@ -187,11 +193,11 @@
                                         >
                                             <ng-container
                                                 *ngIf="
-                                                    gateway.value === 'PAYPAL'
+                                                    gateway.value === paymentMethodEnum.PAYPAL
                                                 "
                                             ></ng-container>
                                             <ng-container
-                                                *ngIf="gateway.value === 'PAYU'"
+                                                *ngIf="gateway.value === paymentMethodEnum.PAYU"
                                             >
                                                 <img
                                                     src="assets/images/payu.svg"
@@ -204,7 +210,7 @@
                                             </ng-container>
                                             <ng-container
                                                 *ngIf="
-                                                    gateway.value === 'RAZORPAY'
+                                                    gateway.value === paymentMethodEnum.RAZORPAY
                                                 "
                                             >
                                                 <img
@@ -219,23 +225,32 @@
                                         </div>
                                     </div>
                                 </div>
-                                <mat-divider class="mr-b5" [ngClass]="{ 'mr-t5': gateway.value !== 'PAYPAL' }"></mat-divider>
+                                <mat-divider
+                                    class="mr-b5"
+                                    [ngClass]="{
+                                        'mr-t5': gateway.value !== paymentMethodEnum.PAYPAL
+                                    }"
+                                ></mat-divider>
                             </div>
                         </div>
-                        <pay-now
-                            [buttonText]="'Proceed to Payment'"
-                            [paymentMethodValue]="paymentMethodValue?.value"
-                            [customClass]="'mr-b2 mr-l15 mr-t2 custom-button'"
-                            [storeData]="storeData"
-                            [paymentMethods]="paymentMethods"
-                            [region]="region"
-                            [urlParams]="urlParams"
-                            [queryParams]="queryParams"
-                            [paymentDetails]="paymentDetails"
-                            [invoicePay]="true"
-                            (invoicePaySuccess)="onInvoicePaySuccess()"
-                            [returnInvoicePay]="returnInvoicePay"
-                        ></pay-now>
+                        <div class="pay-now-button-wrapper position-relative">
+                            <pay-now
+                                [buttonText]="'Proceed to Payment'"
+                                [paymentMethodValue]="paymentMethodValue?.value"
+                                [customClass]="
+                                    'mr-b2 mr-l15 mr-t2 custom-button'
+                                "
+                                [storeData]="storeData"
+                                [paymentMethods]="paymentMethods"
+                                [region]="region"
+                                [urlParams]="urlParams"
+                                [queryParams]="queryParams"
+                                [paymentDetails]="paymentDetails"
+                                [invoicePay]="true"
+                                (invoicePaySuccess)="onInvoicePaySuccess()"
+                                [returnInvoicePay]="returnInvoicePay"
+                            ></pay-now>
+                        </div>
                     </div>
                 </div>
             </ng-container>

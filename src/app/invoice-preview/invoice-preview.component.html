@@ -22,6 +22,7 @@
                         </button>
                         <div class="d-flex column-gap10 back-header-mobile">
                             <ng-container  *ngIf="paymentDetails?.vouchers[0]?.canPay">
+                                <div class="pay-now-button-table position-relative">
                                 <pay-now
                                     [buttonText]="'Pay Now'" 
                                     [queryParams]="queryParams"
@@ -34,6 +35,7 @@
                                     (invoicePreviewSuccess)="onInvoicePreviewSuccess()"
                                     [returnInvoicePreview]="returnInvoicePreview"
                                 ></pay-now>
+                                </div>
                             </ng-container>
                             <button
                                 mat-stroked-button
@@ -95,8 +97,8 @@
                                     <span class="mr-t5 d-block balance-number">
                                         {{ paymentDetails?.currency?.symbol }}
                                         {{
-                                            (paymentDetails?.totalAmount / 100)
-                                                | number: '1.0-0'
+                                            paymentDetails?.vouchers[0]?.amount
+                                                | number : "1.0-0"
                                         }}</span
                                     >
                                 </div>
