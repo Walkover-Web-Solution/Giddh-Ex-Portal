@@ -65,6 +65,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     public returnInvoicePay: string = "";
     /** Holds mapped payment methods */
     public mappedPaymentMethodsFlat: any[] = [];
+    
 
     constructor(
         public dialog: MatDialog,
@@ -257,11 +258,11 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                         response.body?.PAYU
                     ) {
                         if (response.body?.RAZORPAY) {
-                            this.paymentMethodValue.setValue("RAZORPAY");
+                            this.paymentMethodValue.setValue(this.paymentMethodEnum.RAZORPAY);
                         } else if (response.body?.PAYPAL) {
-                            this.paymentMethodValue.setValue("PAYPAL");
+                            this.paymentMethodValue.setValue(this.paymentMethodEnum.PAYPAL);
                         } else if (response.body?.PAYU) {
-                            this.paymentMethodValue.setValue("PAYU");
+                            this.paymentMethodValue.setValue(this.paymentMethodEnum.PAYU);
                         }
                         this.getVoucherDetails();
                     } else {
@@ -282,7 +283,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
      * @private
      * @memberof InvoicePayComponent
      */
-    private getVoucherDetails(paymentType?: string): void {
+    private getVoucherDetails(): void {
         this.isLoading = true;
         this.store.dispatch(
             setFolderData({

@@ -156,7 +156,7 @@
                             <div
                                 *ngFor="let gateway of mappedPaymentMethodsFlat"
                                 [ngClass]="{
-                                    'mr-t10 mr-b10': gateway.value !== 'PAYPAL'
+                                    'mr-t10 mr-b10': gateway.value !== paymentMethodEnum.PAYPAL
                                 }"
                             >
                                 <div class="d-flex align-items-center pd-t5">
@@ -183,7 +183,7 @@
                                                     [ngClass]="{
                                                         'width-paypal':
                                                             method.label ===
-                                                            'PAYPAL'
+                                                            paymentMethodEnum.PAYPAL
                                                     }"
                                                 />
                                             </span>
@@ -193,11 +193,11 @@
                                         >
                                             <ng-container
                                                 *ngIf="
-                                                    gateway.value === 'PAYPAL'
+                                                    gateway.value === paymentMethodEnum.PAYPAL
                                                 "
                                             ></ng-container>
                                             <ng-container
-                                                *ngIf="gateway.value === 'PAYU'"
+                                                *ngIf="gateway.value === paymentMethodEnum.PAYU"
                                             >
                                                 <img
                                                     src="assets/images/payu.svg"
@@ -210,7 +210,7 @@
                                             </ng-container>
                                             <ng-container
                                                 *ngIf="
-                                                    gateway.value === 'RAZORPAY'
+                                                    gateway.value === paymentMethodEnum.RAZORPAY
                                                 "
                                             >
                                                 <img
@@ -228,7 +228,7 @@
                                 <mat-divider
                                     class="mr-b5"
                                     [ngClass]="{
-                                        'mr-t5': gateway.value !== 'PAYPAL'
+                                        'mr-t5': gateway.value !== paymentMethodEnum.PAYPAL
                                     }"
                                 ></mat-divider>
                             </div>

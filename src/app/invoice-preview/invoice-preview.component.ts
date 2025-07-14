@@ -185,13 +185,13 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
                 this.paymentMethods = response.body;
                 if (response.body?.RAZORPAY) {
                     this.getVoucherDetails();
-                    this.paymentMethodValue.setValue('RAZORPAY');
+                    this.paymentMethodValue.setValue(this.paymentMethodEnum.RAZORPAY);
                 } else if (response.body?.PAYPAL) {
                     this.getVoucherDetails();
-                    this.paymentMethodValue.setValue('PAYPAL');
+                    this.paymentMethodValue.setValue(this.paymentMethodEnum.PAYPAL);
                 } else if (response.body?.PAYU) {
                     this.getVoucherDetails();
-                    this.paymentMethodValue.setValue('PAYU');
+                    this.paymentMethodValue.setValue(this.paymentMethodEnum.PAYU);
                 } else {
                     this.getVoucherDetails();
                     this.generalService.showSnackbar('No payment method is integrated', 'warning');
