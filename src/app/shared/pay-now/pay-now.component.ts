@@ -23,7 +23,7 @@ import { PAYMENT_METHODS_ENUM } from "src/app/app.constant";
 import { environment } from "src/environments/environment";
 import { InvoiceService } from "src/app/services/invoice.service";
 import { takeUntil } from "rxjs/operators";
-
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 @Component({
     selector: "pay-now",
     standalone: true,
@@ -33,14 +33,13 @@ import { takeUntil } from "rxjs/operators";
         MatButtonModule,
         ReactiveFormsModule,
         MatFormFieldModule,
-        MatInputModule
+        MatInputModule,
+        MatProgressSpinnerModule
     ],
     templateUrl: "./pay-now.component.html",
     styleUrls: ["./pay-now.component.scss"],
 })
-export class GiddhPayNowComponent implements     OnDestroy {
-    /** This will use for mat pay modal dialog */
-    @ViewChild("payModal", { static: true }) public payModal: any;
+export class GiddhPayNowComponent implements OnDestroy {
     /** This will use for mat payu modal dialog */
     @ViewChild("payuModal", { static: true }) public payuModal: any;
     /** Output event for InvoiceComponent */
@@ -118,6 +117,8 @@ export class GiddhPayNowComponent implements     OnDestroy {
     public canPayInvoice: boolean = false;
     /** This will use for paid invoice message */
     public paidInvoiceMessage: string = "";
+    /** This will use for voucher details loading state */
+    public isVoucherDetailsLoading: boolean = false;
 
     constructor(
         private generalService: GeneralService,
@@ -164,16 +165,10 @@ export class GiddhPayNowComponent implements     OnDestroy {
      * @memberof GiddhPayNowComponent
      */
     public openPayDialog(): void {
-        if (this.invoicePay) {
-            if (this.paymentMethodValue === PAYMENT_METHODS_ENUM.PAYU) {
-                this.payuCheck();
-            } else {
-                this.voucherPay();
-            }
+        if (this.paymentMethodValue === PAYMENT_METHODS_ENUM.PAYU) {
+            this.payuCheck();
         } else {
-            this.confirmationDialogRef = this.dialog.open(this.payModal, {
-                width: "600px",
-            });
+            this.voucherPay();
         }
     }
 
@@ -201,22 +196,52 @@ export class GiddhPayNowComponent implements     OnDestroy {
      * @memberof GiddhPayNowComponent
      */
     public paySelectedVouchers(): void {
-        if (this.selection?.selected?.length) {
-            let hasPaidVouchers = this.selection?.selected?.filter(
-                (voucher) => voucher.balanceStatus === "PAID"
-            );
-            if (!hasPaidVouchers?.length) {
-                this.openPayDialog();
-            } else {
-                const paidVoucherNumbers = hasPaidVouchers?.map((voucher) => {
-                    return voucher?.voucherNumber;
-                });
-                this.generalService.showSnackbar(
-                    paidVoucherNumbers.join(", ") +
-                    (paidVoucherNumbers?.length > 1 ? " are" : " is") +
-                    " already PAID."
-                );
+        if (!this.selection?.selected?.length) {
+            return;
+        }
+    
+        const paidVoucherNumbers: string[] = [];
+        const pendingVoucherNumbers: string[] = [];
+        const unpaidVoucherNumbers: string[] = [];
+    
+        for (const voucher of this.selection.selected) {
+            if (voucher?.balanceStatus === "PAID") {
+                paidVoucherNumbers.push(voucher?.voucherNumber);
+            } else if (voucher?.paymentInfo?.paymentStatus === "PENDING") {
+                pendingVoucherNumbers.push(voucher?.voucherNumber);
+            } else if (voucher?.balanceStatus === "UNPAID" && voucher?.paymentInfo?.paymentStatus !== "PENDING") {
+                unpaidVoucherNumbers.push(voucher?.voucherNumber);
             }
+        }
+    
+        // No paid or pending vouchers, proceed to pay
+        if (!paidVoucherNumbers.length && !pendingVoucherNumbers.length) {
+            this.openPayDialog();
+            return;
+        }
+    
+        // Helper to format message for each status
+        const formatStatusMsg = (voucherNumbers: string[], status: string) => {
+            if (!voucherNumbers.length) return '';
+            const isPlural = voucherNumbers.length > 1;
+            return `${voucherNumbers.join(', ')} ${isPlural ? 'are' : 'is'} ${status}`;
+        };
+    
+        // Build the combined message
+        const messages = [];
+        if (paidVoucherNumbers.length) {
+            messages.push(formatStatusMsg(paidVoucherNumbers, ' already PAID'));
+        }
+        if (pendingVoucherNumbers.length) {
+            messages.push(formatStatusMsg(pendingVoucherNumbers, 'PENDING'));
+        }
+        if (unpaidVoucherNumbers.length) {
+            messages.push(formatStatusMsg(unpaidVoucherNumbers, 'UNPAID'));
+        }
+    
+        // Show the combined message (separated by commas)
+        if (messages.length) {
+            this.generalService.showSnackbar(messages.join(' , '));
         }
     }
 
@@ -387,6 +412,9 @@ export class GiddhPayNowComponent implements     OnDestroy {
         } else if (type === PAYMENT_METHODS_ENUM.PAYU) {
             this.openPayUPayment(this.paymentDetails?.htmlString);
         }
+        setTimeout(() => {
+            this.isVoucherDetailsLoading = false;
+        }, 300);
     }
 
     /**
@@ -395,9 +423,10 @@ export class GiddhPayNowComponent implements     OnDestroy {
      * @memberof GiddhPayNowComponent
      */
     private getVoucherDetails(paymentType: string): void {
+        this.isVoucherDetailsLoading = true;
         let voucherUniqueName;
         let voucherUniqueNameArray;
-        if (this.queryParams.token) {
+        if (this.queryParams.source) {
             voucherUniqueName = this.queryParams.voucherUniqueName;
             voucherUniqueNameArray = [voucherUniqueName];
         } else if (this.queryParams.voucher || this.urlParams.voucherUniqueName) {
@@ -430,7 +459,7 @@ export class GiddhPayNowComponent implements     OnDestroy {
             };
         }
         const accountUniqueName =
-            this.urlParams.accountUniqueName ||this.queryParams.accountUniqueName ||
+            this.urlParams.accountUniqueName || this.queryParams.accountUniqueName ||
             this.storeData.userDetails?.account.uniqueName;
         const companyUniqueName =
             this.queryParams.companyUniqueName ||
@@ -490,6 +519,7 @@ export class GiddhPayNowComponent implements     OnDestroy {
                     this.generalService.showSnackbar(
                         voucherDetailsResponse?.message
                     );
+                    this.isVoucherDetailsLoading = false;
                 }
                 this.changeDetectionRef.detectChanges();
             });

@@ -184,13 +184,13 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
             if (response && response.status === 'success') {
                 this.paymentMethods = response.body;
                 if (response.body?.RAZORPAY) {
-                    this.getVoucherDetails(this.paymentMethodEnum.RAZORPAY);
+                    this.getVoucherDetails();
                     this.paymentMethodValue.setValue('RAZORPAY');
                 } else if (response.body?.PAYPAL) {
-                    this.getVoucherDetails(this.paymentMethodEnum.PAYPAL);
+                    this.getVoucherDetails();
                     this.paymentMethodValue.setValue('PAYPAL');
                 } else if (response.body?.PAYU) {
-                    this.getVoucherDetails(this.paymentMethodEnum.PAYU);
+                    this.getVoucherDetails();
                     this.paymentMethodValue.setValue('PAYU');
                 } else {
                     this.getVoucherDetails();
@@ -208,7 +208,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
      * @public
      * @memberof InvoicePreviewComponent
      */
-    public getVoucherDetails(paymentType?: string): void {
+    public getVoucherDetails(): void {
         this.isLoading = true;
         this.changeDetectionRef.detectChanges();
         let request;
@@ -218,7 +218,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         this.invoiceListRequest.sessionId = this.storeData.session?.id;
         this.invoiceListRequest.uniqueNames = this.queryParams.voucherUniqueName ?? this.queryParams.voucher;
 
-        request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id, paymentMethod: paymentType ?? 'RAZORPAY' };
+        request = { accountUniqueName: this.invoiceListRequest.accountUniqueName, voucherUniqueName: [this.invoiceListRequest.uniqueNames], companyUniqueName: this.invoiceListRequest.companyUniqueName, sessionId: this.storeData.session?.id};
 
         combineLatest([
             this.invoiceService.getVoucherDetails(request),

@@ -27,8 +27,6 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
     private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
     /** Hold voucher data */
     public voucherData: ReciptResponse;
-    /** Hold payment id */
-    public paymentId: string = "";
     /** Hold payment details*/
     public paymentDetails: any;
     /** Hold  store data */
@@ -307,8 +305,6 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 voucherUniqueName: voucherUniqueNameArray,
                 companyUniqueName: companyUniqueName,
                 sessionId: this.storeData.session?.id,
-                paymentMethod: paymentType,
-                paymentId: this.queryParams?.payment_id,
             };
             this.invoiceService
                 .getVoucherDetails(request)
