@@ -209,9 +209,7 @@ export class GiddhPayNowComponent implements OnDestroy {
                 paidVoucherNumbers.push(voucher?.voucherNumber);
             } else if (voucher?.paymentInfo?.paymentStatus === "PENDING") {
                 pendingVoucherNumbers.push(voucher?.voucherNumber);
-            } else if (voucher?.balanceStatus === "UNPAID" && voucher?.paymentInfo?.paymentStatus !== "PENDING") {
-                unpaidVoucherNumbers.push(voucher?.voucherNumber);
-            }
+            } 
         }
     
         // No paid or pending vouchers, proceed to pay
@@ -234,9 +232,6 @@ export class GiddhPayNowComponent implements OnDestroy {
         }
         if (pendingVoucherNumbers.length) {
             messages.push(formatStatusMsg(pendingVoucherNumbers, 'PENDING'));
-        }
-        if (unpaidVoucherNumbers.length) {
-            messages.push(formatStatusMsg(unpaidVoucherNumbers, 'UNPAID'));
         }
     
         // Show the combined message (separated by commas)
