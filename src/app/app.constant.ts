@@ -6,5 +6,6 @@ export const PAGE_SIZE_OPTIONS = [
 ];
 export enum PAYMENT_METHODS_ENUM {
     RAZORPAY = 'RAZORPAY',
-    PAYPAL = 'PAYPAL'
+    PAYPAL = 'PAYPAL',
+    PAYU = 'PAYU'
 }

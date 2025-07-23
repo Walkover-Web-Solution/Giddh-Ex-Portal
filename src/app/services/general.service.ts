@@ -149,4 +149,26 @@ export class GeneralService {
         let url = this.router.url?.split("/");
         return url?.length > 1 ? url[1] : "";
     }
+
+    /**
+     * Open window in center
+     *
+     * @param {string} url
+     * @param {string} title
+     * @param {number} width
+     * @param {number} height
+     * @return {*}  {(Window | null)}
+     * @memberof GeneralService
+     */
+    public openCenteredWindow(url: string, title: string, width: number, height: number): Window | null {
+        const left = (window.screen.width / 2) - (width / 2);
+        const top = (window.screen.height / 2) - (height / 2);
+
+        // Open the window and return the reference
+        return window.open(
+            url,
+            title,
+            `popup,width=${width},height=${height},top=${top},left=${left}`
+        );
+    }
 }
