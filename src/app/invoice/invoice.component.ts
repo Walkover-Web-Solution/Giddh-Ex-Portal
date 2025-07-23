@@ -11,7 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InvoiceService } from "../services/invoice.service";
 import { select, Store } from '@ngrx/store';
 import { GeneralService } from "../services/general.service";
-import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT } from "../app.constant";
+import { PAGE_SIZE_OPTIONS, PAGINATION_LIMIT, PAYMENT_METHODS_ENUM } from "../app.constant";
 import { CommonService } from "../services/common.service";
 import { SelectionModel } from "@angular/cdk/collections";
 import { setFolderData } from "../store/actions/session.action";
@@ -178,11 +178,11 @@ export class InvoiceComponent implements OnInit, OnDestroy {
                 if (response.body?.RAZORPAY || response.body?.PAYPAL || response.body?.PAYU) {
                     this.showPayNowButton = true;
                     if (response.body?.RAZORPAY) {
-                        this.paymentMethodValue.setValue('RAZORPAY');
+                        this.paymentMethodValue.setValue(PAYMENT_METHODS_ENUM.RAZORPAY);
                     } else if (response.body?.PAYPAL) {
-                        this.paymentMethodValue.setValue('PAYPAL');
+                        this.paymentMethodValue.setValue(PAYMENT_METHODS_ENUM.PAYPAL);
                     } else if (response.body?.PAYU) {
-                        this.paymentMethodValue.setValue('PAYU');
+                        this.paymentMethodValue.setValue(PAYMENT_METHODS_ENUM.PAYU);
                     }
                 } else {
                     this.generalService.showSnackbar('No payment method is integrated', 'warning');
