@@ -809,6 +809,42 @@ mat-sidenav[style] {
     vertical-align: top;
 }
 
+.object-fit-contain {
+    object-fit: contain;
+}
+
+.invoice-pay {
+    .mat-divider {
+        width: 150px;
+        margin-left: 50px;
+    }
+    .width-paypal {
+        width: 80px;
+    }
+    .image-class {
+        padding: 4px;
+    }
+    .custom-button {
+        background-color: var(--color-giddh-blue);
+        width: 174px;
+        height: 43px;
+        font-size: 13px;
+        .mdc-button__label {
+            color: var(--color-white);;
+        }
+    }
+}
+
+.pay-now-button-wrapper {
+    height: 100px;
+    width: 200px;
+}
+
+.pay-now-button-table {
+    width: 97px;
+    height: 36px;
+}
+
 @media screen and (max-width: 767px) {
     .profile-user {
         position: relative;

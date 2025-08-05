@@ -42,15 +42,23 @@
                         Clear
                     </button>
                 </div>
-                <button
-                    mat-stroked-button
-                    color="primary"
-                    class="clear-button"
+                <ng-container
                     *ngIf="showPayNowButton && selection?.selected?.length"
-                    (click)="paySelectedVouchers()"
                 >
-                    Pay Now
-                </button>
+                    <div class="pay-now-button-table position-relative">
+                        <pay-now
+                            [buttonText]="'Pay Now'"
+                            [selection]="selection"
+                            [storeData]="storeData"
+                            [region]="region"
+                            [paymentMethods]="paymentMethods"
+                            [paymentMethodValue]="paymentMethodValue?.value"
+                            [invoiceGetAll]="true"
+                            (invoiceGetAllSuccess)="onInvoiceGetAllSuccess()"
+                            [returnInvoiceGetAll]="returnInvoiceGetAll"
+                        ></pay-now>
+                    </div>
+                </ng-container>
             </div>
             <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
             <div class="invoice-table mr-t15" *ngIf="!isLoading">
@@ -153,7 +161,10 @@
                                 class="text-right"
                             >
                                 {{ element?.account?.currency?.symbol }}
-                                {{ element?.grandTotal?.amountForAccount | number: '1.0-0' }}
+                                {{
+                                    element?.grandTotal?.amountForAccount
+                                        | number : "1.0-0"
+                                }}
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="status">
@@ -162,9 +173,14 @@
                                 <div
                                     class="d-flex justify-content-between column-gap10"
                                 >
-                                    <span class="color-overdue">{{
-                                        element?.balanceStatus
-                                    }}</span>
+                                    <span class="color-overdue">
+                                        {{
+                                            element?.paymentInfo
+                                                ?.paymentStatus === "PENDING"
+                                                ? "PENDING"
+                                                : element?.balanceStatus
+                                        }}
+                                    </span>
                                 </div>
                             </td>
                         </ng-container>
@@ -189,19 +205,39 @@
                             <th mat-header-cell *matHeaderCellDef>Action</th>
                             <td mat-cell *matCellDef="let element">
                                 <div class="d-flex column-gap10">
-                                    <button
+                                    <ng-container
                                         *ngIf="
-                                            storeData?.companyDetails
-                                                ?.razorpayIntegrated &&
-                                            element?.canPay
+                                            showPayNowButton &&
+                                            element?.canPay &&
+                                            element?.paymentInfo
+                                                ?.paymentStatus !== 'PENDING'
                                         "
-                                        mat-stroked-button
-                                        color="primary"
-                                        class="pay-now-button"
-                                        (click)="openPayDialog(element)"
                                     >
-                                        Pay Now
-                                    </button>
+                                        <div
+                                            class="pay-now-button-table position-relative"
+                                        >
+                                            <pay-now
+                                                [buttonText]="'Pay Now'"
+                                                [selection]="selection"
+                                                [storeData]="storeData"
+                                                [region]="region"
+                                                [voucher]="element"
+                                                [paymentMethods]="
+                                                    paymentMethods
+                                                "
+                                                [paymentMethodValue]="
+                                                    paymentMethodValue?.value
+                                                "
+                                                [invoiceGetAll]="true"
+                                                (invoiceGetAllSuccess)="
+                                                    onInvoiceGetAllSuccess()
+                                                "
+                                                [returnInvoiceGetAll]="
+                                                    returnInvoiceGetAll
+                                                "
+                                            ></pay-now>
+                                        </div>
+                                    </ng-container>
                                     <button
                                         mat-stroked-button
                                         color="primary"
@@ -245,28 +281,3 @@
         </div>
     </div>
 </div>
-<!-- onclick table-paynow -->
-<ng-template #payModal>
-    <div class="common-dialog">
-        <mat-dialog-content>
-            <div class="d-flex column-gap15 danger-wrap">
-                <img
-                    src="../../assets/images/warning.svg"
-                    alt="warning"
-                    class="mr-t5"
-                />
-                <p>Are you sure you want to proceed?</p>
-            </div>
-            <div class="d-flex column-gap5 footer-btn">
-                <button
-                    mat-stroked-button
-                    color="primary"
-                    (click)="voucherPay()"
-                >
-                    Yes, Proceed
-                </button>
-                <button mat-stroked-button mat-dialog-close>Cancel</button>
-            </div>
-        </mat-dialog-content>
-    </div>
-</ng-template>

@@ -21,14 +21,22 @@
                             Back
                         </button>
                         <div class="d-flex column-gap10 back-header-mobile">
-                            <button
-                                mat-stroked-button
-                                color="primary"
-                                *ngIf="paymentDetails?.vouchers[0]?.canPay"
-                                (click)="redirectToPayNow(paymentDetails)"
-                            >
-                                Pay Now
-                            </button>
+                            <ng-container  *ngIf="paymentDetails?.vouchers[0]?.canPay">
+                                <div class="pay-now-button-table position-relative">
+                                <pay-now
+                                    [buttonText]="'Pay Now'" 
+                                    [queryParams]="queryParams"
+                                    [paymentDetails]="paymentDetails"
+                                    [paymentMethods]="paymentMethods"
+                                    [storeData]="storeData"
+                                    [region]="region"
+                                    [paymentMethodValue]="paymentMethodValue?.value"
+                                    [invoicePreview]="invoicePreview"
+                                    (invoicePreviewSuccess)="onInvoicePreviewSuccess()"
+                                    [returnInvoicePreview]="returnInvoicePreview"
+                                ></pay-now>
+                                </div>
+                            </ng-container>
                             <button
                                 mat-stroked-button
                                 color="primary"
@@ -89,8 +97,8 @@
                                     <span class="mr-t5 d-block balance-number">
                                         {{ paymentDetails?.currency?.symbol }}
                                         {{
-                                            (paymentDetails?.totalAmount / 100)
-                                                | number: '1.0-0'
+                                            paymentDetails?.vouchers[0]?.amount
+                                                | number : "1.0-0"
                                         }}</span
                                     >
                                 </div>
