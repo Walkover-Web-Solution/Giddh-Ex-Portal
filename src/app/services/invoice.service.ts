@@ -62,7 +62,9 @@ export class InvoiceService {
     public downloadVoucher(model: any): Observable<BaseResponse<any, any>> {
         let voucherUniqueName = [model.voucherUniqueName];
         let args: any = { headers: {} };
-        args.headers['Session-id'] = model?.sessionId;
+        if(model.sessionId) {
+            args.headers['Session-id'] = model?.sessionId;
+        }
         return this.http.post(this.apiUrl + API.DOWNLOAD_VOUCHER?.replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))?.replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName)), voucherUniqueName, args).pipe(
             map((res) => {
                 let data: BaseResponse<any, any> = res;

@@ -259,7 +259,7 @@ export class InvoicePreviewComponent implements OnInit, OnDestroy {
         let urlRequest = {
             accountUniqueName: this.invoiceListRequest.accountUniqueName,
             companyUniqueName: this.invoiceListRequest.companyUniqueName,
-            sessionId: this.storeData.session.id,
+            sessionId: this.storeData.session?.id ?? '',
             voucherUniqueName: voucherUniqueName
         }
         this.invoiceService.downloadVoucher(urlRequest)
