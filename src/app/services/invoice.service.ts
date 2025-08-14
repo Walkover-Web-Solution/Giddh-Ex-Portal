@@ -112,7 +112,9 @@ export class InvoiceService {
             voucherUniqueName: model.voucherUniqueName
         }
         let args: any = { headers: {} };
-        args.headers['Session-id'] = model?.sessionId;
+        if (model?.sessionId) {
+            args.headers['Session-id'] = model?.sessionId;
+        }
         return this.http.get(
             this.apiUrl + API.GET_COMMENTS
                 .replace(':companyUniqueName', encodeURIComponent(data.companyUniqueName))

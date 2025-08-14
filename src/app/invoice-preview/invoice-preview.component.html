@@ -107,7 +107,7 @@
                     </div>
                     <div
                         class="comment-wrapper"
-                        *ngIf="voucherComments?.length"
+                        *ngIf="voucherComments?.length && !storeData.session?.id"
                     >
                         <h3 class="text-muted">Comments :</h3>
                         <br />
@@ -136,7 +136,7 @@
                             </ul>
                         </ng-container>
                     </div>
-                    <div class="comment-container">
+                    <div class="comment-container" *ngIf="storeData.session?.id">
                         <form [formGroup]="commentForm">
                             <mat-form-field
                                 class="w-100 mr-t5 mr-b15"
@@ -160,7 +160,7 @@
                             </button>
                         </form>
 
-                        <!-- <ng-container *ngIf="voucherComments?.length ">
+                        <ng-container *ngIf="voucherComments?.length">
                             <div
                                 class="list-unstyled d-none d-md-block mr-t15"
                                 *ngFor="let comment of voucherComments"
@@ -185,7 +185,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </ng-container> -->
+                        </ng-container>
                     </div>
                     <div class="pdf-wrapper mr-b50" *ngIf="sanitizedPdfFileUrl">
                         <iframe
