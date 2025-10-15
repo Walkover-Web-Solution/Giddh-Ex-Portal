@@ -116,7 +116,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                             },
                             domain: this.urlParams.companyDomainUniqueName,
                             sidebarState: true,
-                            redirectUrl: this.storeData.redirectUrl
+                            redirectUrl: this.storeData?.redirectUrl
                         };
                         this.loginButtonScriptLoaded();
                     }
