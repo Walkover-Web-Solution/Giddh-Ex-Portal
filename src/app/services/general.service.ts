@@ -66,6 +66,49 @@ export class GeneralService {
     }
 
     /**
+     * This will be use for download file from base64
+     *
+     * @param {string} base64 Base64 string
+     * @param {string} type File type
+     * @param {string} name File name
+     * @memberof GeneralService
+     */
+    public downloadFileFromBase64(base64: string, type: string, name?: string): void {
+        const typeMap: any = {
+            xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            pdf: 'application/pdf',
+            csv: 'text/csv',
+            zip: 'application/zip',
+            png: 'image/png',
+            jpg: 'image/jpeg',
+            jpeg: 'image/jpeg',
+            txt: 'text/plain'
+        };
+        const extMap: any = {
+            xlsx: 'xlsx',
+            pdf: 'pdf',
+            csv: 'csv',
+            zip: 'zip',
+            png: 'png',
+            jpg: 'jpg',
+            jpeg: 'jpeg',
+            txt: 'txt'
+        };
+        const mime = typeMap[type] || 'application/octet-stream';
+        const ext = extMap[type] || '';
+        const fileName = name && name.trim() ? name : (ext ? `download.${ext}` : 'download');
+        const blob = this.base64ToBlob(base64, mime, 512);
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    /**
      * Returns the string initials upto 2 letters/characters
      *
      * @param {string} name String whose intials are required

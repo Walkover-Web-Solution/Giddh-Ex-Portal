@@ -150,6 +150,36 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     }
 
     /**
+     * This will be use for download account statement list
+     *
+     * @memberof AccountStatementComponent
+     */
+    public downloadAccountStatementList(): void {
+        this.accountListRequest.from = dayjs(this.startDate).format(GIDDH_DATE_FORMAT);
+        this.accountListRequest.to = dayjs(this.endDate).format(GIDDH_DATE_FORMAT);
+        this.accountStatementService.downloadAccountStatementList(this.accountListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
+            if (response && response.status === 'success') {
+                const base64Data: string | undefined = typeof response?.body === 'string'
+                    ? response.body
+                    : (response?.body?.data as string | undefined);
+                const fileName: string = (response?.body?.name as string);
+
+                if (base64Data) {
+                    try {
+                        this.generalService.downloadFileFromBase64(base64Data, response?.body?.type, fileName);
+                    } catch (e) {
+                        this.generalService.showSnackbar('Failed to download file.');
+                    }
+                } else {
+                    this.generalService.showSnackbar('No file content found to download.');
+                }
+            } else if (response?.status === 'error') {
+                this.generalService.showSnackbar(response?.message);
+            }
+        });
+    }
+
+    /**
      * This will be use for component destroy
      *
      * @memberof AccountStatementComponent
