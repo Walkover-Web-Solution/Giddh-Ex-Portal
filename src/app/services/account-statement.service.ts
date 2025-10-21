@@ -44,4 +44,35 @@ export class AccountStatementService {
             catchError((e) => this.errorHandler.HandleCatch<any, any>(e))
         );
     }
+
+    /**
+    * Download Account Statement List API
+    *
+    * @param {*} model
+    * @return {*}  {Observable<BaseResponse<any, any>>}
+    * @memberof AccountStatementService
+    */
+    public downloadAccountStatementList(model: any): Observable<BaseResponse<any, any>> {
+        let args: any = { headers: {} };
+        args.headers['Session-id'] = model?.sessionId;
+        return this.http.get(
+            this.apiUrl + ACCOUNT_STATEMENT_API.DOWNLOAD_STATEMENT
+                .replace(':companyUniqueName', encodeURIComponent(model.companyUniqueName))
+                .replace(':accountUniqueName', encodeURIComponent(model.accountUniqueName))
+                .replace(':count', encodeURIComponent(model.count))
+                .replace(':page', encodeURIComponent(model.page))
+                .replace(':from', encodeURIComponent(model.from))
+                .replace(':to', encodeURIComponent(model.to))
+                .replace(':sort', encodeURIComponent(model.sort)),
+            '', args
+        ).pipe(
+            map((res) => {
+                let data: BaseResponse<any, string> = res;
+                data.queryString = { data };
+                return data;
+            }),
+            catchError((e) => this.errorHandler.HandleCatch<any, any>(e))
+        );
+    }
+
 }
