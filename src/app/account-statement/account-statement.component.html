@@ -111,7 +111,7 @@
                     <giddh-datepicker *ngIf="startDate && endDate" [startDate]="startDate" [endDate]="endDate"
                         (onDatePickerIsClose)="startDate = $event.startDate; endDate = $event.endDate; getAccountStatementList()">
                     </giddh-datepicker>
-                    <button  mat-stroked-button color="primary" (click)="downloadAccountStatementList()">Download</button>
+                    <button  mat-stroked-button color="primary" (click)="downloadAccountStatementList()">Export</button>
                 </div>
                 <div class="invoice-table mr-t15">
                     <div class="table-responsive position-relative">
