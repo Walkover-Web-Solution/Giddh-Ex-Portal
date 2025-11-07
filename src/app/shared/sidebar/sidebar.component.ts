@@ -75,7 +75,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
             if (response[0] && response[1] && !this.storeData?.session) {
                 this.storeData = response[2]['folderName'][response[1].companyDomainUniqueName];
                 this.region = this.storeData?.region;
-                this.portalDomain = this.storeData?.domain;
+                this.portalDomain = this.storeData?.domain ?? response[1].companyDomainUniqueName;
                 this.accountUrlRequest.accountUniqueName = this.storeData?.userDetails?.account?.uniqueName;
                 this.accountUrlRequest.companyUniqueName = this.storeData?.userDetails?.companyUniqueName;
                 this.accountUrlRequest.sessionId = this.storeData?.session?.id;

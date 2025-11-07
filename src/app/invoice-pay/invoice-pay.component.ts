@@ -102,22 +102,20 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 if (response[0] && response[1] && !this.storeData?.session) {
                     this.queryParams = response[0];
                     this.urlParams = response[1];
-                    this.storeData =
-                        response[2]["folderName"][
-                        this.urlParams?.companyDomainUniqueName
-                        ];
+                    this.storeData = response[2]['folderName'][this.urlParams?.companyDomainUniqueName];
                     this.region = this.storeData?.region ?? response[1]?.region;
                     if (!this.storeData?.session?.id) {
-                        this.storeData = {
-                            session: {
-                                createAt: null,
-                                expiresAt: null,
-                                id: null
-                            },
-                            domain: this.urlParams.companyDomainUniqueName,
-                            sidebarState: true,
-                            redirectUrl: this.storeData?.redirectUrl
-                        };
+                    this.storeData = {
+                        session: {
+                            createAt: null,
+                            expiresAt: null,
+                            id: null
+                        },
+                        domain: this.urlParams.companyDomainUniqueName,
+                        sidebarState: true,
+                        redirectUrl: this.storeData?.redirectUrl,
+                        region: response[1]?.region
+                    }
                         this.loginButtonScriptLoaded();
                     }
                     if (
@@ -134,6 +132,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                         ""
                     );
                     this.returnInvoicePay = updatedUrl;
+                    this.store.dispatch(setFolderData({ folderName: this.storeData.domain, data: { redirectUrl: updatedUrl, region: response[1]?.region } }));
                 }
             });
     }
@@ -213,10 +212,12 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                     this.generalService.showSnackbar(error?.message);
                 },
             };
+            const routerState = (this.route as any)._routerState?.snapshot?.url;
+            const updatedUrl = routerState.replace('/' + this.storeData.domain, '');
             this.store.dispatch(
                 setFolderData({
                     folderName: this.storeData.domain,
-                    data: { domain: this.storeData.domain }
+                    data: { domain: this.storeData.domain, redirectUrl: updatedUrl }
                 })
             );
             this.generalService.loadScript(
