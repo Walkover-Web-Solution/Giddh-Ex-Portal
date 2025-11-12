@@ -207,6 +207,7 @@ export class InvoicePayComponent implements OnInit, OnDestroy {
                 addInfo: {
                     redirect_path: this.url,
                 },
+                theme: 'light', // light or dark
                 success: (data: any) => { },
                 failure: (error: any) => {
                     this.generalService.showSnackbar(error?.message);
