@@ -2,7 +2,7 @@
     <sidebar></sidebar>
     <div class="w-100">
         <div class="login-section" *ngIf="!storeData?.session?.id">
-            <div class="login-btn-wrap d-flex" [id]="loginId"></div>
+            <div class="login-btn-wrap d-flex text-white" [id]="loginId"></div>
         </div>
         <mat-spinner [diameter]="60" *ngIf="isLoading"></mat-spinner>
         <ng-container *ngIf="!isLoading">
