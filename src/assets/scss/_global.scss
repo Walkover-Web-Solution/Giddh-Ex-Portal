@@ -845,6 +845,14 @@ mat-sidenav[style] {
     height: 36px;
 }
 
+.login-btn-wrap {
+    &.text-white {
+        p {
+            color: var(--color-white) !important;
+        }
+    }
+}
+
 @media screen and (max-width: 767px) {
     .profile-user {
         position: relative;
