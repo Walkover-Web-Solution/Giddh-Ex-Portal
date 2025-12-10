@@ -403,17 +403,20 @@ var app = new Vue({
         },
 getApi: function () {
     var apiBaseUrl = '';
-    var region = this.getParameterByName('region'); // Get the region from URL query params
+    var apiDomain = this.getParameterByName('apiDomain');
+    var region = this.getParameterByName('region');
 
-    // Check if region is present and set the apiBaseUrl accordingly
-    if (region) {
+    // First priority: Use apiDomain from URL parameter
+    if (apiDomain) {
+        apiBaseUrl = apiDomain.endsWith('/') ? apiDomain : apiDomain + '/';
+    } else if (region) {
         apiBaseUrl = 'https://gbapi.giddh.com/';
     } else {
-        const whiteLabelData = JSON.parse(localStorage.getItem('whiteLabel'));
+        const whiteLabelData = JSON.parse(localStorage.getItem('whiteLabel') || 'null');
         if (whiteLabelData) {
-       apiBaseUrl = `${whiteLabelData?.body?.giddhWhiteLabel?.apiDomain}/`;
+            apiBaseUrl = `${whiteLabelData?.body?.giddhWhiteLabel?.apiDomain}/`;
         } else {
-             // Original logic based on hostname
+            // Original logic based on hostname
             switch (window.location.hostname) {
                 case 'localhost':
                 case 'test.giddh.com':
