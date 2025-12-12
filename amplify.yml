@@ -1,0 +1,38 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build-prod
+  artifacts:
+    baseDirectory: dist/giddh-portal
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+  customHeaders:
+    - pattern: '/magic.html'
+      headers:
+        - key: 'Cache-Control'
+          value: 'no-cache'
+    - pattern: '/ankit.html'
+      headers:
+        - key: 'Cache-Control'
+          value: 'no-cache'
+redirects:
+  - source: '/magic.html'
+    target: '/magic.html'
+    status: '200'
+  - source: '/ankit.html'
+    target: '/ankit.html'
+    status: '200'
+  - source: '/magic'
+    target: '/magic.html'
+    status: '200'
+  - source: '/<*>'
+    target: '/index.html'
+    status: '200'
