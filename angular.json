@@ -30,7 +30,9 @@
                             "src/favicon.ico", 
                             "src/assets",
                             "src/meta/magic.html",
-                            "src/meta/ankit.html"
+                            "src/meta/ankit.html",
+                            "src/magic.html",
+                            "src/ankit.html"
                         ],
                         "styles": [
                             "@angular/material/prebuilt-themes/indigo-pink.css",
@@ -122,7 +124,9 @@
                             "src/favicon.ico", 
                             "src/assets",
                             "src/meta/magic.html",
-                            "src/meta/ankit.html"
+                            "src/meta/ankit.html",
+                            "src/magic.html",
+                            "src/ankit.html"
                         ],
                         "styles": [
                             "@angular/material/prebuilt-themes/indigo-pink.css",
