@@ -28,12 +28,10 @@
                         "inlineStyleLanguage": "scss",
                         "assets": [
                             "src/favicon.ico", 
-                            "src/assets", 
-                            "src/meta", 
-                            "src/magic.html",
+                            "src/assets",
                             {
-                                "glob": "_redirects",
-                                "input": "src/",
+                                "glob": "**/*",
+                                "input": "src/meta/",
                                 "output": "/"
                             }
                         ],
@@ -125,12 +123,10 @@
                         "inlineStyleLanguage": "scss",
                         "assets": [
                             "src/favicon.ico", 
-                            "src/assets", 
-                            "src/meta", 
-                            "src/magic.html",
+                            "src/assets",
                             {
-                                "glob": "_redirects",
-                                "input": "src/",
+                                "glob": "**/*",
+                                "input": "src/meta/",
                                 "output": "/"
                             }
                         ],

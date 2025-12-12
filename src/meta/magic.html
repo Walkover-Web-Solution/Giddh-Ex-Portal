@@ -4,12 +4,12 @@
 <head>
     <title>Giddh ~ Accounting at its Rough! Bookkeeping and Accounting Software</title>
     <!-- Bootstrap CSS from local vendors -->
-    <link rel="stylesheet" type="text/css" href="assets/magic-link/style/vendors/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/magic-link/style/vendors/daterangepicker.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/magic-link/style/vendors/v-toaster.css">
-    <link rel="stylesheet" type="text/css" href="assets/magic-link/style/magic.css">
+    <link rel="stylesheet" type="text/css" href="../assets/magic-link/style/vendors/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/magic-link/style/vendors/daterangepicker.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/magic-link/style/vendors/v-toaster.css">
+    <link rel="stylesheet" type="text/css" href="../assets/magic-link/style/magic.css">
     <!-- Font Awesome for icons from local vendors -->
-    <link rel="stylesheet" type="text/css" href="assets/magic-link/style/vendors/font-awesome.css">
+    <link rel="stylesheet" type="text/css" href="../assets/magic-link/style/vendors/font-awesome.css">
 </head>
 
 <body>
@@ -176,7 +176,7 @@
                                                                                         v-tooltip="'Download file: '+ledger.attachedFileName"
                                                                                         v-on:click="downloadAttachedFile(ledger, ledger.attachedFileUniqueName,ledger.attachedFileName)"
                                                                                         container="body">
-                                                                                        <img src="assets/magic-link/images/attachment.png"
+                                                                                        <img src="../assets/magic-link/images/attachment.png"
                                                                                             width="15">
                                                                                     </span>
                                                                                 </template>
@@ -187,7 +187,7 @@
                                                                                         v-tooltip="'Download '+((ledger.voucherGeneratedType === 'sales') ? 'Invoice' : 'Voucher')+' : '+ledger.voucherNumber"
                                                                                         v-on:click="downloadInvoice(ledger)"
                                                                                         container="body">
-                                                                                        <img src="assets/magic-link/images/download.png"
+                                                                                        <img src="../assets/magic-link/images/download.png"
                                                                                             width="15">
                                                                                     </span>
                                                                                 </template>
@@ -293,7 +293,7 @@
                                                                                         v-tooltip="'Download file: '+ledger.attachedFileName"
                                                                                         v-on:click="downloadAttachedFile(ledger, ledger.attachedFileUniqueName,ledger.attachedFileName)"
                                                                                         container="body">
-                                                                                        <img src="assets/magic-link/images/attachment.png"
+                                                                                        <img src="../assets/magic-link/images/attachment.png"
                                                                                             width="15">
                                                                                     </span>
                                                                                 </template>
@@ -304,7 +304,7 @@
                                                                                         v-tooltip="'Download '+((ledger.voucherGeneratedType === 'sales') ? 'Invoice' : 'Voucher')+' : '+ledger.voucherNumber"
                                                                                         v-on:click="downloadInvoice(ledger)"
                                                                                         container="body">
-                                                                                        <img src="assets/magic-link/images/download.png"
+                                                                                        <img src="../assets/magic-link/images/download.png"
                                                                                             width="15">
                                                                                     </span>
                                                                                 </template>
@@ -511,20 +511,23 @@
                                                     <li id="media_image-6" class="widget widget-media-image">
                                                         <a href="https://play.google.com/store/apps/details?id=com.app.Giddh"
                                                             target="_blank"><img width="1" height="1"
-                                                                src="assets/magic-link/images/android-icon.svg"
+                                                                src="../assets/magic-link/images/android-icon.svg"
                                                                 class="image wp-image-156  attachment-medium size-medium"
-                                                                alt=""></a>
-                                                    </li>
-                                                    <li id="media_image-7" class="widget widget-media-image">
-                                                        <a href="https://itunes.apple.com/in/app/giddh-tb/id999743672?mt=8"
-                                                            target="_blank"><img width="1" height="1"
-                                                                src="assets/magic-link/images/ios-icon.svg"
-                                                                class="image wp-image-157  attachment-medium size-medium"
-                                                                alt=""></a>
-                                                    </li>
-                                                </ul>
-                                            </div>
 
+<div >
+<ul class="list-style-ul menu-item" id="menu-primary-menu">
+<li><a target="_blank"
+href="https://giddh.com/privacy-policy/">Privacy Policy</a>
+</li>
+<li><a target="_blank" href="https://www.walkover.in/career/">Work
+With Us</a></li>
+<li><a target="_blank"
+href="https://giddh.com/affiliate/">Affilliate With Us</a>
+</li>
+<li><a target="_blank" href="https://giddh.com/help">Help</a></li>
+<li><a target="_blank" href="https://giddh.com/blog/">Blog</a></li>
+</ul>
+</div>
                                             <div >
                                                 <ul class="list-style-ul menu-item" id="menu-primary-menu">
                                                     <li><a target="_blank"
@@ -612,7 +615,7 @@
         var folderPath = '';
 
         var jquery = document.createElement('script');
-        jquery.src = 'assets/magic-link/js/vendors/jquery.min.js';
+        jquery.src = '../assets/magic-link/js/vendors/jquery.min.js';
         document.head.appendChild(jquery);
 
         jquery.onload = function () {
@@ -620,21 +623,21 @@
             var toaster = $("<link />", {
                 rel: "stylesheet",
                 type: "text/css",
-                href: 'assets/magic-link/style/vendors/v-toaster.css'
+                href: '../assets/magic-link/style/vendors/v-toaster.css'
             });
             $('head').append(toaster);
 
             var awesome = $("<link />", {
                 rel: "stylesheet",
                 type: "text/css",
-                href: 'assets/magic-link/style/vendors/font-awesome.css'
+                href: '../assets/magic-link/style/vendors/font-awesome.css'
             });
             $('head').append(awesome);
 
             var daterangepicker = $("<link />", {
                 rel: "stylesheet",
                 type: "text/css",
-                href: 'assets/magic-link/style/vendors/daterangepicker.min.css'
+                href: '../assets/magic-link/style/vendors/daterangepicker.min.css'
             });
             $('head').append(daterangepicker);
 
@@ -646,43 +649,43 @@
             // $('head').append(style1);
 
             var moment = document.createElement('script');
-            moment.src = 'assets/magic-link/js/vendors/moment.min.js';
+            moment.src = '../assets/magic-link/js/vendors/moment.min.js';
             document.head.appendChild(moment);
 
             moment.onload = function () {
                 var daterangepicker = document.createElement('script');
-                daterangepicker.src = 'assets/magic-link/js/vendors/daterangepicker.min.js';
+                daterangepicker.src = '../assets/magic-link/js/vendors/daterangepicker.min.js';
                 document.head.appendChild(daterangepicker);
 
                 var vue = document.createElement('script');
-                vue.src = 'assets/magic-link/js/vendors/vue.min.js';
+                vue.src = '../assets/magic-link/js/vendors/vue.min.js';
                 document.head.appendChild(vue);
 
                 vue.onload = function () {
 
                     var popper = document.createElement('script');
-                    popper.src = 'assets/magic-link/js/vendors/popper.min.js';
+                    popper.src = '../assets/magic-link/js/vendors/popper.min.js';
                     document.head.appendChild(popper);
 
                     var bootstrap = document.createElement('script');
-                    bootstrap.src = 'assets/magic-link/js/vendors/bootstrap.min.js';
+                    bootstrap.src = '../assets/magic-link/js/vendors/bootstrap.min.js';
                     document.head.appendChild(bootstrap);
 
                     var FileSaver = document.createElement('script');
-                    FileSaver.src = 'assets/magic-link/js/vendors/FileSaver.min.js';
+                    FileSaver.src = '../assets/magic-link/js/vendors/FileSaver.min.js';
                     document.head.appendChild(FileSaver);
 
                     var toaster = document.createElement('script');
-                    toaster.src = 'assets/magic-link/js/vendors/v-toaster.js';
+                    toaster.src = '../assets/magic-link/js/vendors/v-toaster.js';
                     document.head.appendChild(toaster);
 
                     var axios = document.createElement('script');
-                    axios.src = 'assets/magic-link/js/vendors/axios.min.js';
+                    axios.src = '../assets/magic-link/js/vendors/axios.min.js';
                     document.head.appendChild(axios);
 
                     axios.onload = function () {
                         var magic = document.createElement('script');
-                        magic.src = 'assets/magic-link/js/magic-link-script.js?v=' + new Date().getTime();
+                        magic.src = '../assets/magic-link/js/magic-link-script.js?v=' + new Date().getTime();
                         document.head.appendChild(magic);
                     }
                 }
