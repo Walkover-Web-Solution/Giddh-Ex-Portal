@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import "@/styles/main.scss";
 import { ReduxProvider } from "@/providers/ReduxProvider";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Giddh Portal",
@@ -14,7 +12,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
+        <Script
+          src="https://proxy.msg91.com/assets/proxy-auth/proxy-auth.js"
+          strategy="afterInteractive"
+        />
         <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
