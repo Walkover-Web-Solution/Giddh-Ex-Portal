@@ -2,11 +2,21 @@
 
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
+import { useAppDispatch } from "@/store/hooks";
+import { setCompanyData } from "@/store/slices/companySlice";
 
 export default function LoginPage() {
   const params = useParams();
+  const dispatch = useAppDispatch();
   const company = params?.company as string;
   const country = params?.country as string;
+
+  useEffect(() => {
+    if (company && country) {
+      console.log("Storing to Redux:", { companyName: company, country });
+      dispatch(setCompanyData({ companyName: company, country }));
+    }
+  }, [company, country, dispatch]);
 
   useEffect(() => {
     const script = document.createElement("script");
