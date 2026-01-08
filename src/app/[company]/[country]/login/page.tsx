@@ -13,8 +13,17 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (company && country) {
+      console.log("=== LOGIN PAGE ===");
       console.log("Storing to Redux:", { companyName: company, country });
       dispatch(setCompanyData({ companyName: company, country }));
+
+      sessionStorage.setItem("companyName", company);
+      sessionStorage.setItem("country", country);
+
+      setTimeout(() => {
+        console.log("Checking localStorage after dispatch:");
+        console.log("persist:companies =", localStorage.getItem("persist:companies"));
+      }, 1000);
     }
   }, [company, country, dispatch]);
 

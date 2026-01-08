@@ -12,11 +12,34 @@ export default function Auth() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("proxy_auth_token");
+  const companyParam = searchParams.get("company");
+  const countryParam = searchParams.get("country");
   const allCompanies = useAppSelector(selectAllCompanies);
-  const companyName = Object.values(allCompanies)[0]?.companyName;
-  const country = Object.values(allCompanies)[0]?.country;
+
+  const companyName =
+    companyParam ||
+    Object.values(allCompanies)[0]?.companyName ||
+    (typeof window !== "undefined" ? sessionStorage.getItem("companyName") : null);
+
+  const country =
+    countryParam ||
+    Object.values(allCompanies)[0]?.country ||
+    (typeof window !== "undefined" ? sessionStorage.getItem("country") : null);
+
   const [error, setError] = useState<string | null>(null);
   const hasCalledRef = useRef(false);
+
+  useEffect(() => {
+    console.log("=== AUTH PAGE ===");
+    console.log("URL companyParam:", companyParam);
+    console.log("URL countryParam:", countryParam);
+    console.log("Redux allCompanies:", allCompanies);
+    console.log("sessionStorage companyName:", sessionStorage.getItem("companyName"));
+    console.log("sessionStorage country:", sessionStorage.getItem("country"));
+    console.log("localStorage persist:companies:", localStorage.getItem("persist:companies"));
+    console.log("Final companyName:", companyName);
+    console.log("Final country:", country);
+  }, [companyParam, countryParam, allCompanies, companyName, country]);
 
   useEffect(() => {
     const authenticateUser = async () => {
