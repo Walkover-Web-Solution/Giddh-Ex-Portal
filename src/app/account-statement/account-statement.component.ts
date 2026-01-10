@@ -7,7 +7,7 @@ import { ReciptResponse } from "../models/Company";
 import { ActivatedRoute } from "@angular/router";
 import { takeUntil } from "rxjs/operators";
 import { select, Store } from '@ngrx/store';
-import { PAGE_SIZE_OPTIONS } from "../app.constant";
+import { FileType, PAGE_SIZE_OPTIONS } from "../app.constant";
 import { GeneralService } from "../services/general.service";
 import { AccountStatementService } from "../services/account-statement.service";
 import * as dayjs from 'dayjs';
@@ -45,6 +45,7 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
         count: '',
         sortBy: 'Date',
         sort: 'asc',
+        fileType: FileType.XLSX
     }
     /** Hold table page index number */
     public pageIndex: number = 0;
@@ -58,6 +59,8 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     public endDate: any = new Date();
     /** Set sefault start date */
     public startDate: any = new Date(this.endDate);
+    /** Hold file type */
+    public fileType: typeof FileType = FileType;
 
 
     constructor(
@@ -152,11 +155,17 @@ export class AccountStatementComponent implements OnInit, OnDestroy {
     /**
      * This will be use for download account statement list
      *
+     * @param {FileType} fileType
      * @memberof AccountStatementComponent
      */
-    public downloadAccountStatementList(): void {
+    public downloadAccountStatementList(fileType: FileType): void {
         this.accountListRequest.from = dayjs(this.startDate).format(GIDDH_DATE_FORMAT);
         this.accountListRequest.to = dayjs(this.endDate).format(GIDDH_DATE_FORMAT);
+        if (fileType === FileType.PDF) {
+            this.accountListRequest.fileType = FileType.PDF;
+        } else {
+            this.accountListRequest.fileType = FileType.XLSX;
+        }
         this.accountStatementService.downloadAccountStatementList(this.accountListRequest).pipe(takeUntil(this.destroyed$)).subscribe((response: any) => {
             if (response && response.status === 'success') {
                 const base64Data: string | undefined = typeof response?.body === 'string'

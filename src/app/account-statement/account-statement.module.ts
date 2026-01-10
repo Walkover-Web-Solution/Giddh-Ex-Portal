@@ -19,6 +19,7 @@ import { MatSortModule } from "@angular/material/sort";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { GiddhDatepickerModule } from "../shared/date-picker/giddh-datepicker.module";
+import { MatMenuModule } from "@angular/material/menu";
 
 @NgModule({
     declarations: [
@@ -43,7 +44,8 @@ import { GiddhDatepickerModule } from "../shared/date-picker/giddh-datepicker.mo
         MatSortModule,
         MatFormFieldModule,
         MatInputModule,
-        GiddhDatepickerModule
+        GiddhDatepickerModule,
+        MatMenuModule
     ]
 })
 export class AccountStatementModule {
