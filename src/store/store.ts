@@ -1,5 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from "redux-persist";
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import counterReducer from "./slices/counterSlice";
 import userReducer from "./slices/userSlice";
@@ -8,6 +17,7 @@ import companyReducer from "./slices/companySlice";
 const companyPersistConfig = {
   key: "companies",
   storage,
+  whitelist: ["companies"],
 };
 
 const persistedCompanyReducer = persistReducer(companyPersistConfig, companyReducer);
@@ -21,7 +31,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),
 });

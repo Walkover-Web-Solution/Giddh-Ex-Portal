@@ -1,9 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useParams } from "next/navigation";
-import { Home, FileText, CreditCard, FileSpreadsheet } from "lucide-react";
+import { usePathname, useParams, useRouter } from "next/navigation";
+import { Home, FileText, CreditCard, FileSpreadsheet, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  clearCompanyData,
+  logoutCompany,
+  selectCompanyUniqueName,
+} from "@/store/slices/companySlice";
 
 const navigationItems = [
   { name: "Home", path: "welcome", icon: Home },
@@ -15,8 +21,31 @@ const navigationItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const params = useParams();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const company = params?.company as string;
   const country = params?.country as string;
+  const companyUniqueName = useAppSelector(selectCompanyUniqueName(company));
+
+  const handleLogout = () => {
+    console.log("Logout clicked", { company, companyUniqueName });
+
+    if (company) {
+      if (companyUniqueName) {
+        logoutCompany(companyUniqueName);
+      }
+
+      dispatch(clearCompanyData(company));
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("userData");
+
+      router.push(`/${company}/${country}/login`);
+    } else {
+      console.error("Cannot logout: company not found");
+    }
+  };
 
   return (
     <aside className="fixed left-0 top-0 flex h-screen w-64 flex-col border-r bg-white">
@@ -47,7 +76,11 @@ export function Sidebar() {
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-900 text-sm font-semibold text-white">
             SJ
           </div>
-          <button className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <LogOut className="h-4 w-4" />
             Logout
           </button>
         </div>

@@ -44,7 +44,7 @@ export default function WelcomePage() {
 
         <div className="flex-1 p-6">
           <div className="mx-auto max-w-5xl space-y-6">
-            <BalanceSummaryCard currency="INR - ₹" balancePayable={94270} numberOfInvoices={7} />
+            <BalanceSummaryCard uniqueName="sheba" />
 
             <LastPaymentCard
               amount={1000}

@@ -5,11 +5,13 @@ import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { useAppSelector } from "@/store/hooks";
-import { selectAllCompanies } from "@/store/slices/companySlice";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { selectAllCompanies, setUserData } from "@/store/slices/companySlice";
+import { setSessionCookie } from "@/utils/cookies";
 
 export default function Auth() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const token = searchParams.get("proxy_auth_token");
   const companyParam = searchParams.get("company");
@@ -67,15 +69,33 @@ export default function Auth() {
 
             if (sessionResponse.status === "success") {
               const fullUserData = {
-                ...userData,
-                session: sessionResponse.body.session,
-                companyUniqueName: sessionResponse.body.companyUniqueName,
+                email,
+                account: userData.account,
+                vendorContactUniqueName: userData.vendorContactUniqueName,
               };
+
+              const companyUniqueName = sessionResponse.body.companyUniqueName;
+              const sessionId = sessionResponse.body.session.id;
+
+              setSessionCookie(companyUniqueName, sessionId);
+
+              dispatch(
+                setUserData({
+                  companyName,
+                  userData: fullUserData,
+                  companyUniqueName,
+                })
+              );
 
               localStorage.setItem("token", token);
               localStorage.setItem("userEmail", email);
-              localStorage.setItem("userData", JSON.stringify(fullUserData));
-              localStorage.setItem("sessionId", sessionResponse.body.session.id);
+              localStorage.setItem(
+                "userData",
+                JSON.stringify({
+                  ...fullUserData,
+                  companyUniqueName,
+                })
+              );
 
               router.push(`/${companyName}/${country}/welcome`);
             } else {
