@@ -9,3 +9,8 @@ export enum PAYMENT_METHODS_ENUM {
     PAYPAL = 'PAYPAL',
     PAYU = 'PAYU'
 }
+/** Enum for file type */
+export enum FileType {
+    PDF = 'pdf',
+    XLSX = 'xlsx'
+}

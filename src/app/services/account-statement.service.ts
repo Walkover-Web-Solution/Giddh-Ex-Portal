@@ -63,7 +63,8 @@ export class AccountStatementService {
                 .replace(':page', encodeURIComponent(model.page))
                 .replace(':from', encodeURIComponent(model.from))
                 .replace(':to', encodeURIComponent(model.to))
-                .replace(':sort', encodeURIComponent(model.sort)),
+                .replace(':sort', encodeURIComponent(model.sort))
+                .replace(':fileType', encodeURIComponent(model.fileType)),
             '', args
         ).pipe(
             map((res) => {
