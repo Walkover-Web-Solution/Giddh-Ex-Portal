@@ -4,10 +4,21 @@ import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
 import { DataTable } from "@/components/DataTable";
 import { Pagination } from "@/components/Pagination";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  fetchAllPayments,
+  selectAllPayments,
+  selectAllPaymentsLoading,
+  selectAllPaymentsError,
+  selectCompanyUniqueName,
+  selectAccountUniqueName,
+} from "@/store/slices/companySlice";
+import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 
 interface Payment {
-  id: number;
+  id: string;
   paymentId: string;
   date: string;
   amount: string;
@@ -15,21 +26,53 @@ interface Payment {
   unusedAmount: string;
 }
 
-const paymentsData: Payment[] = [
-  {
-    id: 1,
-    paymentId: "RCPT-241024-1",
-    date: "24-10-24",
-    amount: "₹ 1,000",
-    paymentAccount: "CASH",
-    unusedAmount: "₹ -",
-  },
-];
-
 export default function PaymentsPage() {
+  const params = useParams();
+  const dispatch = useAppDispatch();
   const [sortFilter, setSortFilter] = useState("Amount");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const companyName = params?.company as string;
+  const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
+  const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
+
+  const allPayments = useAppSelector(selectAllPayments(companyName));
+  const loading = useAppSelector(selectAllPaymentsLoading(companyName));
+  const error = useAppSelector(selectAllPaymentsError(companyName));
+
+  useEffect(() => {
+    if (allPayments && allPayments.length > 0) return;
+
+    let companyUniqueName = companyUniqueNameFromRedux;
+    let accountUniqueName = accountUniqueNameFromRedux;
+
+    if (!companyUniqueName && typeof window !== "undefined") {
+      const userData = localStorage.getItem("userData");
+      if (userData) {
+        try {
+          const parsedData = JSON.parse(userData);
+          companyUniqueName = parsedData.companyUniqueName;
+          accountUniqueName = parsedData.account?.uniqueName;
+        } catch (e) {
+          console.error("Error parsing userData:", e);
+        }
+      }
+    }
+
+    if (companyName && companyUniqueName && accountUniqueName) {
+      dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }));
+    }
+  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, allPayments]);
+
+  const paymentsData: Payment[] = (allPayments || []).map((payment) => ({
+    id: payment.uniqueName,
+    paymentId: payment.voucherNumber,
+    date: payment.voucherDate,
+    amount: `${payment.companyCurrencySymbol || "₹"} ${(payment.grandTotal?.amountForAccount || 0).toLocaleString()}`,
+    paymentAccount: payment.account?.name || "N/A",
+    unusedAmount: "₹ -",
+  }));
 
   const columns = [
     { header: "Payment#", accessor: "paymentId" as keyof Payment },
@@ -71,7 +114,15 @@ export default function PaymentsPage() {
               </div>
             </div>
 
-            <DataTable columns={columns} data={paymentsData} keyExtractor={(row) => row.id} />
+            {loading ? (
+              <TableSkeleton rows={10} />
+            ) : error ? (
+              <div className="py-12 text-center text-red-500">{error}</div>
+            ) : paymentsData.length === 0 ? (
+              <div className="py-12 text-center text-gray-500">No payments found</div>
+            ) : (
+              <DataTable columns={columns} data={paymentsData} keyExtractor={(row) => row.id} />
+            )}
 
             <Pagination
               currentPage={currentPage}

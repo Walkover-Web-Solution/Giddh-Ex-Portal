@@ -1,13 +1,30 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useAppSelector } from "@/store/hooks";
+import {
+  selectUserDetails,
+  selectUserDetailsLoading,
+  selectUserDetailsError,
+} from "@/store/slices/companySlice";
+import { UserDetailsSkeleton } from "@/components/skeletons/UserDetailsSkeleton";
 
-interface UserDetailsCardProps {
-  name: string;
-  contactPersons: number;
-}
+export function UserDetailsCard() {
+  const params = useParams();
 
-export function UserDetailsCard({ name, contactPersons }: UserDetailsCardProps) {
+  const companyName = params?.company as string;
+
+  const data = useAppSelector(selectUserDetails(companyName));
+  const loading = useAppSelector(selectUserDetailsLoading(companyName));
+  const error = useAppSelector(selectUserDetailsError(companyName));
+
+  if (loading) {
+    return <UserDetailsSkeleton />;
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -17,13 +34,19 @@ export function UserDetailsCard({ name, contactPersons }: UserDetailsCardProps) 
         </Link>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          <div className="text-base font-semibold">{name}</div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Users className="h-4 w-4" />
-            <span>{contactPersons} Contact Persons</span>
+        {error ? (
+          <div className="py-4 text-center text-sm text-red-500">{error}</div>
+        ) : data ? (
+          <div className="space-y-3">
+            <div className="text-base font-semibold">{data.name || "N/A"}</div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Users className="h-4 w-4" />
+              <span>{data.addresses?.length || 0} Contact Persons</span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="py-4 text-center text-sm text-gray-500">No user details available</div>
+        )}
       </CardContent>
     </Card>
   );

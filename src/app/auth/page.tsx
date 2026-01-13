@@ -6,7 +6,7 @@ import { savePortalSession } from "@/utils/proxy/saveSession";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { selectAllCompanies, setUserData } from "@/store/slices/companySlice";
+import { selectAllCompanies, setUserData, setAccount } from "@/store/slices/companySlice";
 import { setSessionCookie } from "@/utils/cookies";
 
 export default function Auth() {
@@ -84,6 +84,13 @@ export default function Auth() {
                   companyName,
                   userData: fullUserData,
                   companyUniqueName,
+                })
+              );
+
+              dispatch(
+                setAccount({
+                  companyName,
+                  accountUniqueName: userData.account.uniqueName,
                 })
               );
 

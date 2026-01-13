@@ -1,37 +1,27 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect } from "react";
 import { useParams } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppSelector } from "@/store/hooks";
 import {
-  fetchBalanceSummary,
   selectBalanceSummary,
   selectBalanceSummaryLoading,
   selectBalanceSummaryError,
-  selectCompanyUniqueName,
 } from "@/store/slices/companySlice";
+import { BalanceSummarySkeleton } from "@/components/skeletons/BalanceSummarySkeleton";
 
-interface BalanceSummaryCardProps {
-  uniqueName: string;
-}
-
-export function BalanceSummaryCard({ uniqueName }: BalanceSummaryCardProps) {
+export function BalanceSummaryCard() {
   const params = useParams();
-  const dispatch = useAppDispatch();
 
   const companyName = params?.company as string;
-  const companyUniqueName = useAppSelector(selectCompanyUniqueName(companyName));
 
   const data = useAppSelector(selectBalanceSummary(companyName));
   const loading = useAppSelector(selectBalanceSummaryLoading(companyName));
   const error = useAppSelector(selectBalanceSummaryError(companyName));
 
-  useEffect(() => {
-    if (companyName && companyUniqueName) {
-      dispatch(fetchBalanceSummary({ companyName, companyUniqueName, uniqueName }));
-    }
-  }, [dispatch, companyName, companyUniqueName, uniqueName]);
+  if (loading) {
+    return <BalanceSummarySkeleton />;
+  }
 
   return (
     <Card>
@@ -39,9 +29,7 @@ export function BalanceSummaryCard({ uniqueName }: BalanceSummaryCardProps) {
         <CardTitle className="text-lg font-semibold">Balance Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        {loading ? (
-          <div className="py-4 text-center text-sm text-gray-500">Loading...</div>
-        ) : error ? (
+        {error ? (
           <div className="py-4 text-center text-sm text-red-500">{error}</div>
         ) : (
           <>

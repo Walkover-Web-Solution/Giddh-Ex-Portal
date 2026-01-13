@@ -1,6 +1,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
 import type { RootState } from "../store";
+import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
+import getAccountsList, { Account } from "@/utils/getAccountsList";
+import getLastPayment, { PaymentVoucher } from "@/utils/getLastPayment";
+import getCompanyDetails, { UserCompanyData } from "@/utils/getCompanyDetails";
 
 interface Currency {
   code: string;
@@ -19,6 +23,30 @@ interface BalanceSummaryState {
   error: string | null;
 }
 
+interface AccountDetailsState {
+  data: AccountDetailsResponse["body"] | null;
+  loading: boolean;
+  error: string | null;
+}
+
+interface AccountsListState {
+  data: Account[] | null;
+  loading: boolean;
+  error: string | null;
+}
+
+interface AllPaymentsState {
+  data: PaymentVoucher[] | null;
+  loading: boolean;
+  error: string | null;
+}
+
+interface UserDetailsState {
+  data: AccountDetailsResponse["body"] | null;
+  loading: boolean;
+  error: string | null;
+}
+
 interface UserAccount {
   name: string;
   uniqueName: string;
@@ -30,12 +58,22 @@ interface UserData {
   vendorContactUniqueName: string;
 }
 
+interface AccountInfo {
+  uniqueName: string;
+}
+
 interface CompanyInfo {
   companyName: string;
   country: string;
   companyUniqueName?: string;
-  user?: UserData;
+  user?: UserCompanyData;
+  userData?: UserData;
+  account?: AccountInfo;
   balanceSummary?: BalanceSummaryState;
+  accountDetails?: AccountDetailsState;
+  accountsList?: AccountsListState;
+  allPayments?: AllPaymentsState;
+  userDetails?: UserDetailsState;
 }
 
 interface CompanyState {
@@ -64,6 +102,127 @@ export const fetchBalanceSummary = createAsyncThunk(
       }
     );
     return { companyName, data: response.data.body };
+  },
+  {
+    condition: ({ companyName }, { getState }) => {
+      const state = getState() as RootState;
+      const existingData = state.companies[companyName]?.balanceSummary?.data;
+      return !existingData;
+    },
+  }
+);
+
+export const fetchAccountDetails = createAsyncThunk(
+  "companies/fetchAccountDetails",
+  async ({
+    companyName,
+    companyUniqueName,
+    accountUniqueName,
+  }: {
+    companyName: string;
+    companyUniqueName: string;
+    accountUniqueName: string;
+  }) => {
+    const response = await getAccountDetails(companyUniqueName, accountUniqueName);
+    return { companyName, data: response.body };
+  },
+  {
+    condition: ({ companyName }, { getState }) => {
+      const state = getState() as RootState;
+      const existingData = state.companies[companyName]?.accountDetails?.data;
+      return !existingData;
+    },
+  }
+);
+
+export const fetchAccountsList = createAsyncThunk(
+  "companies/fetchAccountsList",
+  async ({
+    companyName,
+    companyUniqueName,
+    accountUniqueName,
+  }: {
+    companyName: string;
+    companyUniqueName: string;
+    accountUniqueName: string;
+  }) => {
+    const response = await getAccountsList(companyUniqueName, accountUniqueName);
+    return { companyName, data: response.body };
+  }
+);
+
+export const fetchAllPayments = createAsyncThunk(
+  "companies/fetchAllPayments",
+  async ({
+    companyName,
+    companyUniqueName,
+    accountUniqueName,
+  }: {
+    companyName: string;
+    companyUniqueName: string;
+    accountUniqueName: string;
+  }) => {
+    const response = await getLastPayment({
+      companyUniqueName,
+      accountUniqueName,
+      type: "receipt",
+      page: 1,
+      count: 100,
+    });
+    return { companyName, data: response.body.items || [] };
+  },
+  {
+    condition: ({ companyName }, { getState }) => {
+      const state = getState() as RootState;
+      const existingData = state.companies[companyName]?.allPayments?.data;
+      return !existingData || existingData.length === 0;
+    },
+  }
+);
+
+export const fetchUserDetails = createAsyncThunk(
+  "companies/fetchUserDetails",
+  async ({
+    companyName,
+    companyUniqueName,
+    accountUniqueName,
+  }: {
+    companyName: string;
+    companyUniqueName: string;
+    accountUniqueName: string;
+  }) => {
+    const response = await getAccountDetails(companyUniqueName, accountUniqueName);
+    return { companyName, data: response.body };
+  },
+  {
+    condition: ({ companyName }, { getState }) => {
+      const state = getState() as RootState;
+      const existingData = state.companies[companyName]?.userDetails?.data;
+      return !existingData;
+    },
+  }
+);
+
+export const fetchCompanyDetails = createAsyncThunk(
+  "companies/fetchCompanyDetails",
+  async ({
+    companyName,
+    companyUniqueName,
+    accountUniqueName,
+  }: {
+    companyName: string;
+    companyUniqueName: string;
+    accountUniqueName: string;
+  }) => {
+    const response = await getCompanyDetails(companyUniqueName, accountUniqueName);
+    return { companyName, data: response.body[0] };
+  },
+  {
+    condition: ({ companyName }, { getState }) => {
+      const state = getState() as RootState;
+      const existingData = state.companies[companyName]?.user;
+      return !existingData;
+    },
   }
 );
 
@@ -97,15 +256,39 @@ export const companySlice = createSlice({
     ) => {
       const { companyName, userData, companyUniqueName } = action.payload;
       if (state[companyName]) {
-        state[companyName].user = userData;
+        state[companyName].userData = userData;
         state[companyName].companyUniqueName = companyUniqueName;
       } else {
         state[companyName] = {
           companyName,
           country: "",
           companyUniqueName,
-          user: userData,
+          userData: userData,
         };
+      }
+    },
+    setUser: (
+      state,
+      action: PayloadAction<{
+        companyName: string;
+        user: UserCompanyData;
+      }>
+    ) => {
+      const { companyName, user } = action.payload;
+      if (state[companyName]) {
+        state[companyName].user = user;
+      }
+    },
+    setAccount: (
+      state,
+      action: PayloadAction<{
+        companyName: string;
+        accountUniqueName: string;
+      }>
+    ) => {
+      const { companyName, accountUniqueName } = action.payload;
+      if (state[companyName]) {
+        state[companyName].account = { uniqueName: accountUniqueName };
       }
     },
     clearCompanyData: (state, action: PayloadAction<string>) => {
@@ -125,6 +308,7 @@ export const companySlice = createSlice({
     clearUserData: (state, action: PayloadAction<string>) => {
       const companyName = action.payload;
       if (state[companyName]) {
+        state[companyName].userData = undefined;
         state[companyName].user = undefined;
       }
     },
@@ -166,6 +350,132 @@ export const companySlice = createSlice({
             error: action.error.message || "Failed to fetch balance summary",
           };
         }
+      })
+      .addCase(fetchAccountDetails.pending, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].accountDetails = {
+            data: state[companyName].accountDetails?.data || null,
+            loading: true,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchAccountDetails.fulfilled, (state, action) => {
+        const { companyName, data } = action.payload;
+        if (state[companyName]) {
+          state[companyName].accountDetails = {
+            data,
+            loading: false,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchAccountDetails.rejected, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].accountDetails = {
+            data: state[companyName].accountDetails?.data || null,
+            loading: false,
+            error: action.error.message || "Failed to fetch account details",
+          };
+        }
+      })
+      .addCase(fetchAccountsList.pending, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].accountsList = {
+            data: state[companyName].accountsList?.data || null,
+            loading: true,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchAccountsList.fulfilled, (state, action) => {
+        const { companyName, data } = action.payload;
+        if (state[companyName]) {
+          state[companyName].accountsList = {
+            data,
+            loading: false,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchAccountsList.rejected, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].accountsList = {
+            data: state[companyName].accountsList?.data || null,
+            loading: false,
+            error: action.error.message || "Failed to fetch accounts list",
+          };
+        }
+      })
+      .addCase(fetchAllPayments.pending, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].allPayments = {
+            data: state[companyName].allPayments?.data || null,
+            loading: true,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchAllPayments.fulfilled, (state, action) => {
+        const { companyName, data } = action.payload;
+        if (state[companyName]) {
+          state[companyName].allPayments = {
+            data,
+            loading: false,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchAllPayments.rejected, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].allPayments = {
+            data: state[companyName].allPayments?.data || null,
+            loading: false,
+            error: action.error.message || "Failed to fetch all payments",
+          };
+        }
+      })
+      .addCase(fetchUserDetails.pending, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].userDetails = {
+            data: state[companyName].userDetails?.data || null,
+            loading: true,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchUserDetails.fulfilled, (state, action) => {
+        const { companyName, data } = action.payload;
+        if (state[companyName]) {
+          state[companyName].userDetails = {
+            data,
+            loading: false,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchUserDetails.rejected, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].userDetails = {
+            data: state[companyName].userDetails?.data || null,
+            loading: false,
+            error: action.error.message || "Failed to fetch user details",
+          };
+        }
+      })
+      .addCase(fetchCompanyDetails.fulfilled, (state, action) => {
+        const { companyName, data } = action.payload;
+        if (state[companyName]) {
+          state[companyName].user = data;
+        }
       });
   },
 });
@@ -173,6 +483,8 @@ export const companySlice = createSlice({
 export const {
   setCompanyData,
   setUserData,
+  setUser,
+  setAccount,
   clearCompanyData,
   clearAllCompanies,
   clearBalanceSummary,
@@ -192,13 +504,47 @@ export const selectBalanceSummaryLoading = (companyName: string) => (state: Root
 export const selectBalanceSummaryError = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.balanceSummary?.error || null;
 
-export const selectUserData = (companyName: string) => (state: RootState) =>
+export const selectUser = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.user || null;
+export const selectUserData = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.userData || null;
 export const selectUserEmail = (companyName: string) => (state: RootState) =>
-  state.companies[companyName]?.user?.email || null;
+  state.companies[companyName]?.userData?.email || null;
 export const selectUserAccount = (companyName: string) => (state: RootState) =>
-  state.companies[companyName]?.user?.account || null;
+  state.companies[companyName]?.userData?.account || null;
+export const selectAccount = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.account || null;
+export const selectAccountUniqueName = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.account?.uniqueName || null;
 export const selectCompanyUniqueName = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.companyUniqueName || null;
+
+export const selectAccountDetails = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.accountDetails?.data || null;
+export const selectAccountDetailsLoading = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.accountDetails?.loading || false;
+export const selectAccountDetailsError = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.accountDetails?.error || null;
+
+export const selectAccountsList = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.accountsList?.data || null;
+export const selectAccountsListLoading = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.accountsList?.loading || false;
+export const selectAccountsListError = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.accountsList?.error || null;
+
+export const selectAllPayments = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allPayments?.data || null;
+export const selectAllPaymentsLoading = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allPayments?.loading || false;
+export const selectAllPaymentsError = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allPayments?.error || null;
+
+export const selectUserDetails = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.userDetails?.data || null;
+export const selectUserDetailsLoading = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.userDetails?.loading || false;
+export const selectUserDetailsError = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.userDetails?.error || null;
 
 export default companySlice.reducer;
