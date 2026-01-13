@@ -191,7 +191,6 @@ export default function AccountStatementPage() {
                     <h2 className="mb-1 font-bold text-black">{accountName}</h2>
                     {accountAddress && (
                       <>
-                        <p>{accountAddress.address}</p>
                         <p>{accountAddress.countryName}</p>
                         <p>Email : {accountAddress.email}</p>
                         <p>Mobile No.: {accountAddress.mobileNo}</p>
