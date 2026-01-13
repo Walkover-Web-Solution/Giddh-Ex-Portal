@@ -1,49 +1,93 @@
 # API Architecture & Data Flow
 
+## 🎯 API Separation Strategy
+
+APIs are separated into two categories:
+
+### **Global APIs** (Called on every page load/refresh)
+
+These APIs fetch data used across multiple pages and are called in the layout component:
+
+- ✅ `fetchCompanyDetails` - Company/user info (used in Sidebar, multiple pages)
+- ✅ `fetchUserDetails` - User account details (used in UserDetailsCard, Sidebar)
+- ✅ `fetchAccountDetails` - Account information (used across components)
+
+**Location**: `src/app/[company]/[country]/layout.tsx`
+
+### **Page-Specific APIs** (Called only on specific pages)
+
+These APIs fetch data used only on individual pages:
+
+- ✅ `fetchBalanceSummary` - Balance Summary (Welcome page only)
+- ✅ `fetchAllPayments` - Payment list (Welcome & Payments pages)
+- ✅ `fetchAllInvoices` - Invoice list (Invoices page only)
+- ✅ `fetchAccountsList` - Contacts list (future use)
+
 ## 📋 API Requirements Per Page
 
 ### **Welcome Page** (`/[company]/[country]/welcome`)
 
-Fetches ALL APIs on mount/refresh:
+**Global APIs** (called by layout):
 
-- ✅ `fetchBalanceSummary` - Balance Summary Card
-- ✅ `fetchAllPayments` - Last Payment Card (shows first payment from array)
+- ✅ `fetchCompanyDetails` - Company/user info
 - ✅ `fetchUserDetails` - User Details Card
 - ✅ `fetchAccountDetails` - Account details
-- ✅ `fetchCompanyDetails` - Company/user info
+
+**Page-Specific APIs** (called by page):
+
+- ✅ `fetchBalanceSummary` - Balance Summary Card
+- ✅ `fetchAllPayments` - Last Payment Card
 
 ### **Payments Made Page** (`/[company]/[country]/payments`)
 
-- ✅ Uses `allPayments` from Redux (already fetched on Welcome page)
-- ✅ No API calls - displays data from Redux
-- ✅ Shows all payments in table format
+**Global APIs** (called by layout):
+
+- ✅ `fetchCompanyDetails` - Company/user info
+- ✅ `fetchUserDetails` - User details
+- ✅ `fetchAccountDetails` - Account details
+
+**Page-Specific APIs** (called by page):
+
+- ✅ `fetchAllPayments` - Shows all payments in table format
 
 ### **Invoices Page** (`/[company]/[country]/invoices`)
 
-- ✅ Uses `allPayments` from Redux (already fetched on Welcome page)
-- ✅ No API calls - displays data from Redux
+**Global APIs** (called by layout):
+
+- ✅ `fetchCompanyDetails` - Company/user info
+- ✅ `fetchUserDetails` - User details
+- ✅ `fetchAccountDetails` - Account details
+
+**Page-Specific APIs** (called by page):
+
+- ✅ `fetchAllInvoices` - Shows all sales invoices in table format with status and overdue calculation
 
 ## 🔄 Data Flow
 
 ### On Page Load/Refresh:
 
-1. **Welcome page** fetches all required APIs
-2. Data is stored in Redux under `companies[companyName]`
-3. Child components display data from Redux
+1. **Layout component** (`layout.tsx`) fetches all global APIs
+2. **Page component** fetches page-specific APIs
+3. Data is stored in Redux under `companies[companyName]`
+4. Child components display data from Redux
 
-### On Tab Switch:
+### On Tab Switch/Navigation:
 
-1. **No API calls** are made
-2. Components read existing data from Redux
-3. Instant display with no loading time
+1. **Layout component** checks if global data exists (via condition in thunks)
+2. If data exists, no API calls are made
+3. **Page component** fetches only its page-specific APIs
+4. Components read existing data from Redux
+5. Fast display with minimal loading time
 
 ### Benefits:
 
-- ✅ APIs called only once on initial load
-- ✅ No redundant network requests
-- ✅ Fast navigation between tabs
+- ✅ Global APIs called once and cached in Redux
+- ✅ Page-specific APIs called only when needed
+- ✅ No redundant network requests for global data
+- ✅ Fast navigation between pages
 - ✅ Centralized data management
 - ✅ Fresh data on page refresh
+- ✅ Better separation of concerns
 
 ## 🎨 Skeleton Loaders
 

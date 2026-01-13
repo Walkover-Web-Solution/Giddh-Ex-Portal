@@ -3,6 +3,7 @@ import { apiClient } from "@/lib/apiClient";
 export interface Account {
   name: string;
   uniqueName: string;
+  email?: string;
 }
 
 export interface AccountsListResponse {

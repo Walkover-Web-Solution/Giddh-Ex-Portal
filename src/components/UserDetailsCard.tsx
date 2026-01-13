@@ -16,6 +16,7 @@ export function UserDetailsCard() {
   const params = useParams();
 
   const companyName = params?.company as string;
+  const country = params?.country as string;
 
   const data = useAppSelector(selectUserDetails(companyName));
   const loading = useAppSelector(selectUserDetailsLoading(companyName));
@@ -29,7 +30,10 @@ export function UserDetailsCard() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">My Details</CardTitle>
-        <Link href="/details" className="text-sm text-blue-600 hover:underline">
+        <Link
+          href={`/${companyName}/${country}/details`}
+          className="text-sm text-blue-600 hover:underline"
+        >
           View More
         </Link>
       </CardHeader>
@@ -39,9 +43,10 @@ export function UserDetailsCard() {
         ) : data ? (
           <div className="space-y-3">
             <div className="text-base font-semibold">{data.name || "N/A"}</div>
+            <div className="text-sm text-gray-600">{data.email || "N/A"}</div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Users className="h-4 w-4" />
-              <span>{data.addresses?.length || 0} Contact Persons</span>
+              <span>{data.contacts?.length || 0} Contact Persons</span>
             </div>
           </div>
         ) : (
