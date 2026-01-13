@@ -3,7 +3,7 @@
 import { DataTable } from "@/components/DataTable";
 import { Pagination } from "@/components/Pagination";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchAllPayments,
@@ -26,12 +26,14 @@ interface Payment {
 
 export default function PaymentsPage() {
   const params = useParams();
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const [sortFilter, setSortFilter] = useState("Amount");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const companyName = params?.company as string;
+  const country = params?.country as string;
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
 
@@ -61,6 +63,10 @@ export default function PaymentsPage() {
     }
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
+  const handlePaymentClick = (voucherUniqueName: string) => {
+    router.push(`/${companyName}/${country}/payment/preview?voucher=${voucherUniqueName}`);
+  };
+
   const paymentsData: Payment[] = (allPayments || []).map((payment) => ({
     id: payment.uniqueName,
     paymentId: payment.voucherNumber,
@@ -71,7 +77,17 @@ export default function PaymentsPage() {
   }));
 
   const columns = [
-    { header: "Payment#", accessor: "paymentId" as keyof Payment },
+    {
+      header: "Payment#",
+      accessor: (row: Payment) => (
+        <button
+          onClick={() => handlePaymentClick(row.id)}
+          className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+        >
+          {row.paymentId}
+        </button>
+      ),
+    },
     { header: "Date", accessor: "date" as keyof Payment },
     { header: "Amount ₹", accessor: "amount" as keyof Payment },
     { header: "Payment Account", accessor: "paymentAccount" as keyof Payment },
