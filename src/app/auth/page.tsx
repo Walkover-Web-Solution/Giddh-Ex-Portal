@@ -57,8 +57,22 @@ export default function Auth() {
 
           const verifyResponse = await verifyPortalUser(email, companyName, token);
 
-          if (verifyResponse.status === "success" && verifyResponse.body[0]) {
-            const userData = verifyResponse.body[0];
+          if (verifyResponse.status === "success" && verifyResponse.body?.length > 0) {
+            const accounts = verifyResponse.body;
+
+            // If multiple accounts, redirect to account selection page
+            if (accounts.length > 1) {
+              // Store accounts and token in sessionStorage for account selection page
+              sessionStorage.setItem("pendingAccounts", JSON.stringify(accounts));
+              sessionStorage.setItem("pendingToken", token);
+              sessionStorage.setItem("pendingEmail", email);
+
+              router.push(`/${companyName}/${country}/auth`);
+              return;
+            }
+
+            // Single account - proceed with normal flow
+            const userData = accounts[0];
 
             const sessionResponse = await savePortalSession(
               userData.account,

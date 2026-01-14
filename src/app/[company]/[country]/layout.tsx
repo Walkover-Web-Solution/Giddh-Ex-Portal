@@ -18,8 +18,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
   const pathname = usePathname();
   const isLoginPage = pathname?.includes("/login");
+  const isAuthPage = pathname?.includes("/auth");
 
-  if (isLoginPage) {
+  if (isLoginPage || isAuthPage) {
     return <>{children}</>;
   }
 
