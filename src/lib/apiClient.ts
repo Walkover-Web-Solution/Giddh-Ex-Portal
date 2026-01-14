@@ -19,26 +19,21 @@ class ApiClient {
     this.instance.interceptors.request.use(
       (config) => {
         if (typeof window !== "undefined") {
-          const userData = localStorage.getItem("userData");
-          let companyUniqueName = "";
-          let country = "";
+          // Extract company name from URL path (e.g., /PiyusssshhCompany/in/welcome)
+          const pathParts = window.location.pathname.split("/").filter(Boolean);
+          const companyName = pathParts[0]; // First part of path is company name
 
-          if (userData) {
-            try {
-              const parsedData = JSON.parse(userData);
-              companyUniqueName = parsedData.companyUniqueName;
-            } catch (e) {
-              console.error("Error parsing userData:", e);
-            }
-          }
+          let country = "";
 
           const storedCountry = sessionStorage.getItem("country");
           if (storedCountry) {
             country = storedCountry;
           }
 
-          if (companyUniqueName) {
-            const sessionId = getSessionCookie(companyUniqueName);
+          // Get session token using companyName-session format
+          if (companyName) {
+            const sessionId =
+              localStorage.getItem(`${companyName}-session`) || getSessionCookie(companyName);
             if (sessionId) {
               config.headers["Session-Id"] = sessionId;
             }
@@ -61,8 +56,14 @@ class ApiClient {
     this.instance.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
-          console.error("Unauthorized - Session may have expired");
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          console.error("Unauthorized - Session expired");
+
+          // Emit custom event for session expiry
+          if (typeof window !== "undefined") {
+            const event = new CustomEvent("session-expired");
+            window.dispatchEvent(event);
+          }
         }
         return Promise.reject(error);
       }

@@ -13,6 +13,7 @@ import {
   selectAllInvoicesError,
   selectCompanyUniqueName,
   selectAccountUniqueName,
+  selectIsInvoicesDataStale,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import downloadInvoice, { downloadBase64AsPDF } from "@/utils/downloadInvoice";
@@ -44,6 +45,7 @@ export default function InvoicesPage() {
   const allInvoices = useAppSelector(selectAllInvoices(companyName));
   const loading = useAppSelector(selectAllInvoicesLoading(companyName));
   const error = useAppSelector(selectAllInvoicesError(companyName));
+  const isDataStale = useAppSelector(selectIsInvoicesDataStale(companyName));
 
   useEffect(() => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -62,10 +64,11 @@ export default function InvoicesPage() {
       }
     }
 
-    if (companyName && companyUniqueName && accountUniqueName) {
+    // Only fetch if data is stale or doesn't exist
+    if (companyName && companyUniqueName && accountUniqueName && isDataStale) {
       dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName }));
     }
-  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
 
   const calculateOverdue = (dueDate: string): string => {
     if (!dueDate) return "";

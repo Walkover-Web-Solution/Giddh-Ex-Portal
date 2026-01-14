@@ -22,36 +22,42 @@ interface BalanceSummaryState {
   data: BalanceSummaryData | null;
   loading: boolean;
   error: string | null;
+  lastFetchTimestamp?: number;
 }
 
 interface AccountDetailsState {
   data: AccountDetailsResponse["body"] | null;
   loading: boolean;
   error: string | null;
+  lastFetchTimestamp?: number;
 }
 
 interface AccountsListState {
   data: Account[] | null;
   loading: boolean;
   error: string | null;
+  lastFetchTimestamp?: number;
 }
 
 interface AllPaymentsState {
   data: PaymentVoucher[] | null;
   loading: boolean;
   error: string | null;
+  lastFetchTimestamp?: number;
 }
 
 interface AllInvoicesState {
   data: InvoiceVoucher[] | null;
   loading: boolean;
   error: string | null;
+  lastFetchTimestamp?: number;
 }
 
 interface UserDetailsState {
   data: (AccountDetailsResponse["body"] & { contacts?: Account[] }) | null;
   loading: boolean;
   error: string | null;
+  lastFetchTimestamp?: number;
 }
 
 interface UserAccount {
@@ -396,6 +402,7 @@ export const companySlice = createSlice({
             data,
             loading: false,
             error: null,
+            lastFetchTimestamp: Date.now(),
           };
         }
       })
@@ -426,6 +433,7 @@ export const companySlice = createSlice({
             data,
             loading: false,
             error: null,
+            lastFetchTimestamp: Date.now(),
           };
         }
       })
@@ -456,6 +464,7 @@ export const companySlice = createSlice({
             data,
             loading: false,
             error: null,
+            lastFetchTimestamp: Date.now(),
           };
         }
       })
@@ -486,6 +495,7 @@ export const companySlice = createSlice({
             data,
             loading: false,
             error: null,
+            lastFetchTimestamp: Date.now(),
           };
         }
       })
@@ -516,6 +526,7 @@ export const companySlice = createSlice({
             data,
             loading: false,
             error: null,
+            lastFetchTimestamp: Date.now(),
           };
         }
       })
@@ -552,6 +563,7 @@ export const companySlice = createSlice({
             data,
             loading: false,
             error: null,
+            lastFetchTimestamp: Date.now(),
           };
         }
       })
@@ -647,5 +659,38 @@ export const selectUserDetailsLoading = (companyName: string) => (state: RootSta
   state.companies[companyName]?.userDetails?.loading || false;
 export const selectUserDetailsError = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.userDetails?.error || null;
+
+// Data freshness selectors (5 minutes TTL)
+const DATA_FRESHNESS_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+export const selectIsInvoicesDataStale = (companyName: string) => (state: RootState) => {
+  const lastFetch = state.companies[companyName]?.allInvoices?.lastFetchTimestamp;
+  if (!lastFetch) return true;
+  return Date.now() - lastFetch > DATA_FRESHNESS_TTL;
+};
+
+export const selectIsPaymentsDataStale = (companyName: string) => (state: RootState) => {
+  const lastFetch = state.companies[companyName]?.allPayments?.lastFetchTimestamp;
+  if (!lastFetch) return true;
+  return Date.now() - lastFetch > DATA_FRESHNESS_TTL;
+};
+
+export const selectIsBalanceSummaryStale = (companyName: string) => (state: RootState) => {
+  const lastFetch = state.companies[companyName]?.balanceSummary?.lastFetchTimestamp;
+  if (!lastFetch) return true;
+  return Date.now() - lastFetch > DATA_FRESHNESS_TTL;
+};
+
+export const selectIsAccountDetailsStale = (companyName: string) => (state: RootState) => {
+  const lastFetch = state.companies[companyName]?.accountDetails?.lastFetchTimestamp;
+  if (!lastFetch) return true;
+  return Date.now() - lastFetch > DATA_FRESHNESS_TTL;
+};
+
+export const selectIsUserDetailsStale = (companyName: string) => (state: RootState) => {
+  const lastFetch = state.companies[companyName]?.userDetails?.lastFetchTimestamp;
+  if (!lastFetch) return true;
+  return Date.now() - lastFetch > DATA_FRESHNESS_TTL;
+};
 
 export default companySlice.reducer;

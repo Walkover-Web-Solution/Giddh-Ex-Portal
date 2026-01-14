@@ -12,6 +12,7 @@ import {
   selectAllPaymentsError,
   selectCompanyUniqueName,
   selectAccountUniqueName,
+  selectIsPaymentsDataStale,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 
@@ -40,6 +41,7 @@ export default function PaymentsPage() {
   const allPayments = useAppSelector(selectAllPayments(companyName));
   const loading = useAppSelector(selectAllPaymentsLoading(companyName));
   const error = useAppSelector(selectAllPaymentsError(companyName));
+  const isDataStale = useAppSelector(selectIsPaymentsDataStale(companyName));
 
   useEffect(() => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -58,10 +60,11 @@ export default function PaymentsPage() {
       }
     }
 
-    if (companyName && companyUniqueName && accountUniqueName) {
+    // Only fetch if data is stale or doesn't exist
+    if (companyName && companyUniqueName && accountUniqueName && isDataStale) {
       dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }));
     }
-  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
 
   const handlePaymentClick = (voucherUniqueName: string) => {
     router.push(`/${companyName}/${country}/payment/preview?voucher=${voucherUniqueName}`);

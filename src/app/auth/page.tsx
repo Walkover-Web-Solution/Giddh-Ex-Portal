@@ -77,7 +77,9 @@ export default function Auth() {
               const companyUniqueName = sessionResponse.body.companyUniqueName;
               const sessionId = sessionResponse.body.session.id;
 
-              setSessionCookie(companyUniqueName, sessionId);
+              // Store session with companyName-session format
+              localStorage.setItem(`${companyName}-session`, sessionId);
+              setSessionCookie(companyName, sessionId);
 
               dispatch(
                 setUserData({
@@ -94,7 +96,6 @@ export default function Auth() {
                 })
               );
 
-              localStorage.setItem("token", token);
               localStorage.setItem("userEmail", email);
               localStorage.setItem(
                 "userData",
