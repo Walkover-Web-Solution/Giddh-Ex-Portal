@@ -30,10 +30,9 @@ class ApiClient {
             country = storedCountry;
           }
 
-          // Get session token using companyName-session format
+          // Get session token from cookie only (companyName-session format)
           if (companyName) {
-            const sessionId =
-              localStorage.getItem(`${companyName}-session`) || getSessionCookie(companyName);
+            const sessionId = getSessionCookie(companyName);
             if (sessionId) {
               config.headers["Session-Id"] = sessionId;
             }

@@ -59,13 +59,11 @@ export function Sidebar() {
     console.log("Logout clicked", { company, companyUniqueName });
 
     if (company) {
-      if (companyUniqueName) {
-        logoutCompany(companyUniqueName);
-      }
+      // Delete session cookie using company name from URL (e.g., PiyusssshhCompany)
+      logoutCompany(company);
 
       dispatch(clearCompanyData(company));
 
-      localStorage.removeItem("token");
       localStorage.removeItem("userEmail");
       localStorage.removeItem("userData");
 

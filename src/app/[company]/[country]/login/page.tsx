@@ -1,12 +1,14 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { setCompanyData } from "@/store/slices/companySlice";
+import { getSessionCookie } from "@/utils/cookies";
 
 export default function LoginPage() {
   const params = useParams();
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const company = params?.company as string;
   const country = params?.country as string;
@@ -26,6 +28,19 @@ export default function LoginPage() {
       }, 1000);
     }
   }, [company, country, dispatch]);
+
+  // Check if session exists for this company and redirect to welcome
+  useEffect(() => {
+    if (company && country) {
+      // Check for session in cookie only
+      const sessionId = getSessionCookie(company);
+
+      if (sessionId) {
+        console.log(`Session found for ${company}, redirecting to welcome page`);
+        router.push(`/${company}/${country}/welcome`);
+      }
+    }
+  }, [company, country, router]);
 
   useEffect(() => {
     const script = document.createElement("script");

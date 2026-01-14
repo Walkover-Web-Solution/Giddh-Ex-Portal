@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
+import { deleteSessionCookie } from "@/utils/cookies";
 
 interface SessionExpiredModalProps {
   isOpen: boolean;
@@ -14,19 +15,16 @@ export default function SessionExpiredModal({ isOpen, onClose }: SessionExpiredM
   if (!isOpen) return null;
 
   const handleRelogin = () => {
-    // Clear session data
+    // Clear session cookie for this specific company only
     if (typeof window !== "undefined") {
       // Extract company name from URL
       const pathParts = window.location.pathname.split("/").filter(Boolean);
       const companyName = pathParts[0];
 
-      // Clear company-specific session
+      // Delete only this company's session cookie
       if (companyName) {
-        localStorage.removeItem(`${companyName}-session`);
+        deleteSessionCookie(companyName);
       }
-
-      localStorage.removeItem("userData");
-      localStorage.removeItem("userEmail");
     }
 
     // Redirect to login page

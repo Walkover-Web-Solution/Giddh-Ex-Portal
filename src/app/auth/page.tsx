@@ -77,8 +77,7 @@ export default function Auth() {
               const companyUniqueName = sessionResponse.body.companyUniqueName;
               const sessionId = sessionResponse.body.session.id;
 
-              // Store session with companyName-session format
-              localStorage.setItem(`${companyName}-session`, sessionId);
+              // Store session only in cookie with companyName-session format
               setSessionCookie(companyName, sessionId);
 
               dispatch(

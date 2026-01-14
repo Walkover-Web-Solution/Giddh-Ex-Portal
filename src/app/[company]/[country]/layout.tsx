@@ -12,6 +12,7 @@ import {
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
+import SessionGuard from "@/components/SessionGuard";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
@@ -77,8 +78,10 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
   return (
-    <SidebarProvider>
-      <LayoutContent>{children}</LayoutContent>
-    </SidebarProvider>
+    <SessionGuard>
+      <SidebarProvider>
+        <LayoutContent>{children}</LayoutContent>
+      </SidebarProvider>
+    </SessionGuard>
   );
 }
