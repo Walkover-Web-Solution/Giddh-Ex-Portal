@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { setCompanyData } from "@/store/slices/companySlice";
 import { getSessionCookie } from "@/utils/cookies";
+import { sessionManager } from "@/utils/sessionManager";
 
 export default function LoginPage() {
   const params = useParams();
@@ -15,28 +16,15 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (company && country) {
-      console.log("=== LOGIN PAGE ===");
-      console.log("Storing to Redux:", { companyName: company, country });
       dispatch(setCompanyData({ companyName: company, country }));
-
-      sessionStorage.setItem("companyName", company);
-      sessionStorage.setItem("country", country);
-
-      setTimeout(() => {
-        console.log("Checking localStorage after dispatch:");
-        console.log("persist:companies =", localStorage.getItem("persist:companies"));
-      }, 1000);
+      sessionManager.setCompanyData(company, country);
     }
   }, [company, country, dispatch]);
 
-  // Check if session exists for this company and redirect to welcome
   useEffect(() => {
     if (company && country) {
-      // Check for session in cookie only
       const sessionId = getSessionCookie(company);
-
       if (sessionId) {
-        console.log(`Session found for ${company}, redirecting to welcome page`);
         router.push(`/${company}/${country}/welcome`);
       }
     }

@@ -1,0 +1,5 @@
+export const TIMING = {
+  REDIRECT_DELAY: 100,
+  DEBUG_LOG_DELAY: 1000,
+  SESSION_CHECK_INTERVAL: 300000,
+} as const;

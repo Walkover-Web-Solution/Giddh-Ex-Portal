@@ -9,6 +9,7 @@ import {
   selectBalanceSummaryError,
 } from "@/store/slices/companySlice";
 import { BalanceSummarySkeleton } from "@/components/skeletons/BalanceSummarySkeleton";
+import { formatCurrencyAmount, getCurrencyDisplay } from "@/utils/currency";
 
 export function BalanceSummaryCard() {
   const params = useParams();
@@ -38,12 +39,10 @@ export function BalanceSummaryCard() {
               <span className="text-sm font-medium text-orange-500">Balance Payable</span>
             </div>
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-base font-semibold">
-                {data?.currency?.code || "INR"} - {data?.currency?.symbol || "₹"}
-              </span>
+              <span className="text-base font-semibold">{getCurrencyDisplay(data?.currency)}</span>
               <div className="text-right">
                 <div className="text-xl font-bold">
-                  {data?.currency?.symbol || "₹"} {(data?.balancePayable || 0).toLocaleString()}
+                  {formatCurrencyAmount(data?.balancePayable, data?.currency, { decimals: 0 })}
                 </div>
                 <div className="text-xs text-gray-500">
                   Number of Invoices: {data?.noOfInvoices || 0}

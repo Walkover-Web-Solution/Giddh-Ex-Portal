@@ -2,7 +2,7 @@
 
 import { DataTable } from "@/components/DataTable";
 import { Pagination } from "@/components/Pagination";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -13,8 +13,11 @@ import {
   selectCompanyUniqueName,
   selectAccountUniqueName,
   selectIsPaymentsDataStale,
+  selectBalanceSummary,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
+import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/utils/currency";
+import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 
 interface Payment {
   id: string;
@@ -42,25 +45,14 @@ export default function PaymentsPage() {
   const loading = useAppSelector(selectAllPaymentsLoading(companyName));
   const error = useAppSelector(selectAllPaymentsError(companyName));
   const isDataStale = useAppSelector(selectIsPaymentsDataStale(companyName));
+  const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
   useEffect(() => {
-    let companyUniqueName = companyUniqueNameFromRedux;
-    let accountUniqueName = accountUniqueNameFromRedux;
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
 
-    if (!companyUniqueName && typeof window !== "undefined") {
-      const userData = localStorage.getItem("userData");
-      if (userData) {
-        try {
-          const parsedData = JSON.parse(userData);
-          companyUniqueName = parsedData.companyUniqueName;
-          accountUniqueName = parsedData.account?.uniqueName;
-        } catch (e) {
-          console.error("Error parsing userData:", e);
-        }
-      }
-    }
-
-    // Only fetch if data is stale or doesn't exist
     if (companyName && companyUniqueName && accountUniqueName && isDataStale) {
       dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }));
     }
@@ -70,32 +62,65 @@ export default function PaymentsPage() {
     router.push(`/${companyName}/${country}/payment/preview?voucher=${voucherUniqueName}`);
   };
 
-  const paymentsData: Payment[] = (allPayments || []).map((payment) => ({
-    id: payment.uniqueName,
-    paymentId: payment.voucherNumber,
-    date: payment.voucherDate,
-    amount: `${payment.companyCurrencySymbol || "₹"} ${(payment.grandTotal?.amountForAccount || 0).toLocaleString()}`,
-    paymentAccount: payment.account?.name || "N/A",
-    unusedAmount: "₹ -",
-  }));
+  const currency = balanceSummary?.currency || DEFAULT_CURRENCY;
 
-  const columns = [
-    {
-      header: "Payment#",
-      accessor: (row: Payment) => (
-        <button
-          onClick={() => handlePaymentClick(row.id)}
-          className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
-        >
-          {row.paymentId}
-        </button>
-      ),
-    },
-    { header: "Date", accessor: "date" as keyof Payment },
-    { header: "Amount ₹", accessor: "amount" as keyof Payment },
-    { header: "Payment Account", accessor: "paymentAccount" as keyof Payment },
-    { header: "Unused Amount", accessor: "unusedAmount" as keyof Payment },
-  ];
+  const paymentsData: Payment[] = useMemo(
+    () =>
+      (allPayments || []).map((payment) => ({
+        id: payment.uniqueName,
+        paymentId: payment.voucherNumber,
+        date: payment.voucherDate,
+        amount: formatCurrencyAmount(payment.grandTotal?.amountForAccount, currency, {
+          decimals: 0,
+        }),
+        paymentAccount: payment.account?.name || "N/A",
+        unusedAmount: "-",
+      })),
+    [allPayments, currency]
+  );
+
+  const sortedPaymentsData = useMemo(
+    () =>
+      [...paymentsData].sort((a, b) => {
+        if (sortFilter === "Amount") {
+          const amountA = parseFloat(a.amount.replace(/[^0-9.-]+/g, ""));
+          const amountB = parseFloat(b.amount.replace(/[^0-9.-]+/g, ""));
+          return amountB - amountA;
+        } else if (sortFilter === "Date") {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        } else if (sortFilter === "Payment ID") {
+          return a.paymentId.localeCompare(b.paymentId);
+        }
+        return 0;
+      }),
+    [paymentsData, sortFilter]
+  );
+
+  const paginatedData = useMemo(
+    () => sortedPaymentsData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+    [sortedPaymentsData, currentPage, itemsPerPage]
+  );
+
+  const columns = useMemo(
+    () => [
+      {
+        header: "Payment#",
+        accessor: (row: Payment) => (
+          <button
+            onClick={() => handlePaymentClick(row.id)}
+            className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            {row.paymentId}
+          </button>
+        ),
+      },
+      { header: "Date", accessor: "date" as keyof Payment },
+      { header: `Amount ${getCurrencySymbol(currency)}`, accessor: "amount" as keyof Payment },
+      { header: "Payment Account", accessor: "paymentAccount" as keyof Payment },
+      { header: "Unused Amount", accessor: "unusedAmount" as keyof Payment },
+    ],
+    [currency]
+  );
 
   return (
     <>
@@ -130,20 +155,22 @@ export default function PaymentsPage() {
             <TableSkeleton rows={10} />
           ) : error ? (
             <div className="py-12 text-center text-red-500">{error}</div>
-          ) : paymentsData.length === 0 ? (
+          ) : sortedPaymentsData.length === 0 ? (
             <div className="py-12 text-center text-gray-500">No payments found</div>
           ) : (
-            <DataTable columns={columns} data={paymentsData} keyExtractor={(row) => row.id} />
+            <DataTable columns={columns} data={paginatedData} keyExtractor={(row) => row.id} />
           )}
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(paymentsData.length / itemsPerPage)}
-            totalItems={paymentsData.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+          {!loading && !error && sortedPaymentsData.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(sortedPaymentsData.length / itemsPerPage)}
+              totalItems={sortedPaymentsData.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
+          )}
         </div>
       </div>
     </>

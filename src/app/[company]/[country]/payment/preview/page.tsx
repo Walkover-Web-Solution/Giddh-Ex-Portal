@@ -160,7 +160,7 @@ export default function PaymentPreviewPage() {
     return (
       <>
         <header className="border-b bg-white px-6 py-4">
-          <h1 className="text-xl font-semibold">Payment Preview</h1>
+          <h1 className="text-xl font-semibold">Payments Made</h1>
         </header>
         <div className="flex flex-1 items-center justify-center p-6">
           {error ? (

@@ -6,8 +6,12 @@ import { savePortalSession } from "@/utils/proxy/saveSession";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { selectAllCompanies, setUserData, setAccount } from "@/store/slices/companySlice";
-import { setSessionCookie } from "@/utils/cookies";
+import { selectAllCompanies } from "@/store/slices/companySlice";
+import { setupUserSession } from "@/utils/auth/setupUserSession";
+import { sessionManager } from "@/utils/sessionManager";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { ErrorMessage } from "@/components/ErrorMessage";
+import { logger } from "@/utils/logger";
 
 export default function Auth() {
   const router = useRouter();
@@ -32,18 +36,6 @@ export default function Auth() {
   const hasCalledRef = useRef(false);
 
   useEffect(() => {
-    console.log("=== AUTH PAGE ===");
-    console.log("URL companyParam:", companyParam);
-    console.log("URL countryParam:", countryParam);
-    console.log("Redux allCompanies:", allCompanies);
-    console.log("sessionStorage companyName:", sessionStorage.getItem("companyName"));
-    console.log("sessionStorage country:", sessionStorage.getItem("country"));
-    console.log("localStorage persist:companies:", localStorage.getItem("persist:companies"));
-    console.log("Final companyName:", companyName);
-    console.log("Final country:", country);
-  }, [companyParam, countryParam, allCompanies, companyName, country]);
-
-  useEffect(() => {
     const authenticateUser = async () => {
       if (!token || !companyName || hasCalledRef.current) return;
 
@@ -62,11 +54,7 @@ export default function Auth() {
 
             // If multiple accounts, redirect to account selection page
             if (accounts.length > 1) {
-              // Store accounts and token in sessionStorage for account selection page
-              sessionStorage.setItem("pendingAccounts", JSON.stringify(accounts));
-              sessionStorage.setItem("pendingToken", token);
-              sessionStorage.setItem("pendingEmail", email);
-
+              sessionManager.setPendingAuth(accounts, token, email);
               router.push(`/${companyName}/${country}/auth`);
               return;
             }
@@ -82,41 +70,18 @@ export default function Auth() {
             );
 
             if (sessionResponse.status === "success") {
-              const fullUserData = {
-                email,
-                account: userData.account,
-                vendorContactUniqueName: userData.vendorContactUniqueName,
-              };
-
               const companyUniqueName = sessionResponse.body.companyUniqueName;
               const sessionId = sessionResponse.body.session.id;
 
-              // Store session only in cookie with companyName-session format
-              setSessionCookie(companyName, sessionId);
-
-              dispatch(
-                setUserData({
-                  companyName,
-                  userData: fullUserData,
-                  companyUniqueName,
-                })
-              );
-
-              dispatch(
-                setAccount({
-                  companyName,
-                  accountUniqueName: userData.account.uniqueName,
-                })
-              );
-
-              localStorage.setItem("userEmail", email);
-              localStorage.setItem(
-                "userData",
-                JSON.stringify({
-                  ...fullUserData,
-                  companyUniqueName,
-                })
-              );
+              await setupUserSession({
+                company: companyName,
+                email,
+                account: userData.account,
+                vendorContactUniqueName: userData.vendorContactUniqueName,
+                companyUniqueName,
+                sessionId,
+                dispatch,
+              });
 
               router.push(`/${companyName}/${country}/welcome`);
             } else {
@@ -129,7 +94,7 @@ export default function Auth() {
           setError("Failed to get user details");
         }
       } catch (err) {
-        console.error("Error during authentication:", err);
+        logger.error("Error during authentication", err);
         setError("Authentication failed. Please try again.");
       }
     };
@@ -138,27 +103,8 @@ export default function Auth() {
   }, [token, companyName, country, router]);
 
   if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={() => router.push("/")}
-            className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-500"
-          >
-            Go Home
-          </button>
-        </div>
-      </div>
-    );
+    return <ErrorMessage message={error} onRetry={() => router.push("/")} variant="page" />;
   }
 
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-        <p className="text-gray-600">Authenticating...</p>
-      </div>
-    </div>
-  );
+  return <LoadingSpinner message="Authenticating..." variant="brand" />;
 }

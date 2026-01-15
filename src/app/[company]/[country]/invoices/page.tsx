@@ -3,7 +3,7 @@
 import { DataTable } from "@/components/DataTable";
 import { Pagination } from "@/components/Pagination";
 import { PayNow } from "@/components/PayNow";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -14,9 +14,13 @@ import {
   selectCompanyUniqueName,
   selectAccountUniqueName,
   selectIsInvoicesDataStale,
+  selectBalanceSummary,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
+import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/utils/currency";
 import downloadInvoice, { downloadBase64AsPDF } from "@/utils/downloadInvoice";
+import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
+import { logger } from "@/utils/logger";
 
 interface Invoice {
   id: string;
@@ -46,25 +50,14 @@ export default function InvoicesPage() {
   const loading = useAppSelector(selectAllInvoicesLoading(companyName));
   const error = useAppSelector(selectAllInvoicesError(companyName));
   const isDataStale = useAppSelector(selectIsInvoicesDataStale(companyName));
+  const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
   useEffect(() => {
-    let companyUniqueName = companyUniqueNameFromRedux;
-    let accountUniqueName = accountUniqueNameFromRedux;
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
 
-    if (!companyUniqueName && typeof window !== "undefined") {
-      const userData = localStorage.getItem("userData");
-      if (userData) {
-        try {
-          const parsedData = JSON.parse(userData);
-          companyUniqueName = parsedData.companyUniqueName;
-          accountUniqueName = parsedData.account?.uniqueName;
-        } catch (e) {
-          console.error("Error parsing userData:", e);
-        }
-      }
-    }
-
-    // Only fetch if data is stale or doesn't exist
     if (companyName && companyUniqueName && accountUniqueName && isDataStale) {
       dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName }));
     }
@@ -116,49 +109,64 @@ export default function InvoicesPage() {
         downloadBase64AsPDF(response.body, `Invoice_${invoiceNumber}.pdf`);
       }
     } catch (error) {
-      console.error("Error downloading invoice:", error);
+      logger.error("Error downloading invoice", error);
     } finally {
       setDownloadingInvoice(null);
     }
   };
 
-  const allInvoicesData: Invoice[] = (allInvoices || []).map((invoice) => ({
-    id: invoice.uniqueName,
-    invoiceNo: invoice.voucherNumber,
-    date: invoice.voucherDate,
-    total: `${invoice.companyCurrencySymbol || "₹"} ${(invoice.grandTotal?.amountForAccount || 0).toLocaleString()}`,
-    status: invoice.balanceStatus?.toUpperCase() || "UNPAID",
-    overdue: invoice.balanceStatus !== "paid" ? calculateOverdue(invoice.dueDate) : "",
-  }));
+  const currency = balanceSummary?.currency || DEFAULT_CURRENCY;
 
-  // Apply filters
-  const filteredInvoices = allInvoicesData.filter((invoice) => {
-    // Filter by status
-    if (statusFilter === "All Invoices") return true;
-    if (statusFilter === "Paid" && invoice.status !== "PAID") return false;
-    if (statusFilter === "Partial Paid" && invoice.status !== "PARTIAL-PAID") return false;
-    if (statusFilter === "Unpaid" && invoice.status !== "UNPAID") return false;
-    if (statusFilter === "Hold" && invoice.status !== "HOLD") return false;
-    if (statusFilter === "Cancel" && invoice.status !== "CANCEL") return false;
+  const allInvoicesData: Invoice[] = useMemo(
+    () =>
+      (allInvoices || []).map((invoice) => ({
+        id: invoice.uniqueName,
+        invoiceNo: invoice.voucherNumber,
+        date: invoice.voucherDate,
+        total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
+          decimals: 0,
+        }),
+        status: invoice.balanceStatus?.toUpperCase() || "UNPAID",
+        overdue: invoice.balanceStatus !== "paid" ? calculateOverdue(invoice.dueDate) : "",
+      })),
+    [allInvoices, currency]
+  );
 
-    return true;
-  });
+  const filteredInvoices = useMemo(
+    () =>
+      allInvoicesData.filter((invoice) => {
+        if (statusFilter === "All Invoices") return true;
+        if (statusFilter === "Paid" && invoice.status !== "PAID") return false;
+        if (statusFilter === "Partial Paid" && invoice.status !== "PARTIAL-PAID") return false;
+        if (statusFilter === "Unpaid" && invoice.status !== "UNPAID") return false;
+        if (statusFilter === "Hold" && invoice.status !== "HOLD") return false;
+        if (statusFilter === "Cancel" && invoice.status !== "CANCEL") return false;
+        return true;
+      }),
+    [allInvoicesData, statusFilter]
+  );
 
-  // Apply sorting
-  const invoicesData = [...filteredInvoices].sort((a, b) => {
-    if (sortBy === "Total") {
-      // Extract numeric value from total string (e.g., "₹ 33,324" -> 33324)
-      const amountA = parseFloat(a.total.replace(/[^0-9.-]+/g, ""));
-      const amountB = parseFloat(b.total.replace(/[^0-9.-]+/g, ""));
-      return amountB - amountA; // Descending order
-    } else if (sortBy === "Date") {
-      // Sort by date (newest first)
-      const dateA = new Date(a.date.split("-").reverse().join("-")).getTime();
-      const dateB = new Date(b.date.split("-").reverse().join("-")).getTime();
-      return dateB - dateA; // Descending order
-    }
-    return 0;
-  });
+  const invoicesData = useMemo(
+    () =>
+      [...filteredInvoices].sort((a, b) => {
+        if (sortBy === "Total") {
+          const amountA = parseFloat(a.total.replace(/[^0-9.-]+/g, ""));
+          const amountB = parseFloat(b.total.replace(/[^0-9.-]+/g, ""));
+          return amountB - amountA;
+        } else if (sortBy === "Date") {
+          const dateA = new Date(a.date.split("-").reverse().join("-")).getTime();
+          const dateB = new Date(b.date.split("-").reverse().join("-")).getTime();
+          return dateB - dateA;
+        }
+        return 0;
+      }),
+    [filteredInvoices, sortBy]
+  );
+
+  const paginatedData = useMemo(
+    () => invoicesData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+    [invoicesData, currentPage, itemsPerPage]
+  );
 
   const columns = [
     {
@@ -177,7 +185,7 @@ export default function InvoicesPage() {
       ),
     },
     { header: "DATE", accessor: "date" as keyof Invoice },
-    { header: "TOTAL ₹", accessor: "total" as keyof Invoice },
+    { header: `TOTAL ${getCurrencySymbol(currency)}`, accessor: "total" as keyof Invoice },
     {
       header: "STATUS",
       accessor: (row: Invoice) => (

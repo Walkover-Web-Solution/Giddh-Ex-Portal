@@ -12,6 +12,8 @@ import {
   PaymentDetailsResponse,
   PaymentMethodsResponse,
 } from "@/utils/payment";
+import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
+import { logger } from "@/utils/logger";
 
 interface PayNowProps {
   invoiceUniqueName: string;
@@ -48,6 +50,7 @@ export function PayNow({
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsResponse | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PAYMENT_METHODS_ENUM | null>(null);
   const [showPayuForm, setShowPayuForm] = useState(false);
+  const [showNoMethodsError, setShowNoMethodsError] = useState(false);
   const [payuDetails, setPayuDetails] = useState({ name: "", email: "", contactNo: "" });
   const paypalFormRef = useRef<HTMLFormElement>(null);
   const razorpayInstance = useRef<any>(null);
@@ -60,30 +63,21 @@ export function PayNow({
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const getCompanyAndAccountNames = () => {
-    let companyUniqueName = companyUniqueNameFromRedux;
-    let accountUniqueName = accountUniqueNameFromRedux;
-
-    if (!companyUniqueName || !accountUniqueName) {
-      if (typeof window !== "undefined") {
-        const userData = localStorage.getItem("userData");
-        if (userData) {
-          try {
-            const parsedData = JSON.parse(userData);
-            companyUniqueName = companyUniqueName || parsedData.companyUniqueName;
-            accountUniqueName = accountUniqueName || parsedData.account?.uniqueName;
-          } catch (e) {
-            console.error("Error parsing userData:", e);
-          }
-        }
-      }
-    }
-
-    return { companyUniqueName, accountUniqueName };
+    return getStorageNames(companyUniqueNameFromRedux, accountUniqueNameFromRedux);
   };
 
   useEffect(() => {
     loadRazorpayScript();
   }, []);
+
+  useEffect(() => {
+    if (showNoMethodsError) {
+      const timer = setTimeout(() => {
+        setShowNoMethodsError(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showNoMethodsError]);
 
   const loadRazorpayScript = () => {
     if (typeof window !== "undefined" && !window.Razorpay) {
@@ -105,7 +99,13 @@ export function PayNow({
       if (response.status === "success" && response.body) {
         setPaymentMethods(response.body);
 
-        // Set default payment method
+        const hasAnyMethod = response.body.RAZORPAY || response.body.PAYPAL || response.body.PAYU;
+
+        if (!hasAnyMethod) {
+          setShowNoMethodsError(true);
+          return null;
+        }
+
         if (response.body.RAZORPAY) {
           setSelectedMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
           return PAYMENT_METHODS_ENUM.RAZORPAY;
@@ -119,8 +119,8 @@ export function PayNow({
       }
       return null;
     } catch (error) {
-      console.error("Error loading payment methods:", error);
-      alert("Failed to load payment methods");
+      logger.error("Error loading payment methods", error);
+      alert("Failed to load payment methods. Please try again.");
       return null;
     }
   };
@@ -137,7 +137,6 @@ export function PayNow({
       return;
     }
 
-    // Load payment methods if not already loaded
     let method = selectedMethod;
     if (!paymentMethods) {
       method = await loadPaymentMethods(companyUniqueName, accountUniqueName);
@@ -148,7 +147,7 @@ export function PayNow({
     }
 
     if (!method) {
-      alert("No payment method available");
+      setShowNoMethodsError(true);
       setIsProcessing(false);
       return;
     }
@@ -173,7 +172,7 @@ export function PayNow({
             hasDetails = true;
           }
         } catch (e) {
-          console.error("Error parsing userData:", e);
+          logger.error("Error parsing userData for PayU", e);
         }
       }
 
@@ -220,7 +219,7 @@ export function PayNow({
         setIsProcessing(false);
       }
     } catch (error) {
-      console.error("Error processing payment:", error);
+      logger.error("Error processing payment", error);
       alert("Failed to process payment. Please try again.");
       setIsProcessing(false);
     }
@@ -296,7 +295,7 @@ export function PayNow({
         onSuccess?.();
       }
     } catch (error) {
-      console.error("Error updating payment status:", error);
+      logger.error("Error updating payment status", error);
       alert("Payment completed but status update failed");
     }
   };
@@ -347,7 +346,7 @@ export function PayNow({
         onSuccess?.();
       }
     } catch (error) {
-      console.error("Error updating payment status:", error);
+      logger.error("Error updating PayU payment status", error);
     }
   };
 
@@ -391,6 +390,51 @@ export function PayNow({
         >
           {isProcessing ? "Processing..." : "Pay Now"}
         </button>
+      )}
+
+      {showNoMethodsError && (
+        <div className="fixed right-4 top-4 z-50 w-96 animate-slide-in-right">
+          <div className="rounded-lg border-l-4 border-red-500 bg-white p-4 shadow-lg">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  No Payment Methods Available
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  No payment methods are currently configured for your account. Please contact
+                  support to enable payment options.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowNoMethodsError(false)}
+                className="ml-4 inline-flex flex-shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showPayuForm && (
