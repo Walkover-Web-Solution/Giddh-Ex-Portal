@@ -11,6 +11,7 @@ import {
   PaymentVoucher,
 } from "@/utils/paymentPreview";
 import { ArrowLeft, Download, Printer } from "lucide-react";
+import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 
 export default function PaymentPreviewPage() {
   const params = useParams();
@@ -160,7 +161,10 @@ export default function PaymentPreviewPage() {
     return (
       <>
         <header className="border-b bg-white px-6 py-4">
-          <h1 className="text-xl font-semibold">Payments Made</h1>
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <h1 className="text-xl font-semibold">Payments Made</h1>
+          </div>
         </header>
         <div className="flex flex-1 items-center justify-center p-6">
           {error ? (
@@ -183,29 +187,36 @@ export default function PaymentPreviewPage() {
 
   return (
     <>
-      <header className="border-b bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </button>
-          <div className="flex gap-3">
-            <button
-              onClick={handlePrint}
-              className="flex items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <Printer className="h-4 w-4" />
-              Print
-            </button>
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <Download className="h-4 w-4" />
-            </button>
+      <header className="sticky top-0 z-20 border-b bg-white">
+        <div className="mx-auto max-w-7xl px-3 py-2 md:px-6 md:py-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-2">
+              <SidebarToggleButton />
+
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sm:inline">Back</span>
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handlePrint}
+                className="flex flex-1 items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 md:flex-none"
+              >
+                <Printer className="h-4 w-4" />
+                <span className="sm:inline">Print</span>
+              </button>
+              <button
+                onClick={handleDownload}
+                className="flex flex-1 items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 md:flex-none"
+              >
+                <Download className="h-4 w-4" />
+                <span className="sm:inline">Download</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>

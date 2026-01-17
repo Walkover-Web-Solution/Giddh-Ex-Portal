@@ -8,33 +8,44 @@ import {
   fetchUserDetails,
   selectCompanyUniqueName,
   selectAccountUniqueName,
+  selectUserDetails,
 } from "@/store/slices/companySlice";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
 import SessionGuard from "@/components/SessionGuard";
+import { cn } from "@/lib/utils";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
   const pathname = usePathname();
   const isLoginPage = pathname?.includes("/login");
   const isAuthPage = pathname?.includes("/auth");
+  const params = useParams();
+  const companyName = params?.company as string;
+  const userDetails = useAppSelector(selectUserDetails(companyName));
+  const gstin = userDetails?.addresses?.[0]?.gstNumber as string;
+  const companyAddress = userDetails?.addresses?.[0]?.address as string;
 
   if (isLoginPage || isAuthPage) {
     return <>{children}</>;
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col justify-between overflow-x-hidden bg-gray-50">
       <Sidebar />
       <main
-        className={`flex flex-1 flex-col transition-[margin-left] duration-500 ease-in-out ${isCollapsed ? "ml-20" : "ml-64"}`}
+        className={cn(
+          "flex flex-1 flex-col transition-[margin-left] duration-300",
+          isCollapsed ? "md:ml-20" : "md:ml-64"
+        )}
         style={{ willChange: "margin-left" }}
       >
-        {children}
+        <div className="flex-1">{children}</div>
         <Footer
-          companyName="KJ-NV-1 - Trigger"
-          gstin="23MNBH2323A1Z4"
+          companyName={companyName}
+          gstin={gstin}
+          companyAddress={companyAddress}
           supportEmail="support@giddh.com"
           variant="full"
         />

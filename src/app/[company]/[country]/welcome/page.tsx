@@ -14,6 +14,7 @@ import {
 } from "@/store/slices/companySlice";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 
 export default function WelcomePage() {
   const params = useParams();
@@ -69,7 +70,10 @@ export default function WelcomePage() {
   return (
     <>
       <header className="border-b bg-white px-6 py-4">
-        <h1 className="text-xl font-semibold">Hello!</h1>
+        <div className="flex items-center gap-3">
+          <SidebarToggleButton />
+          <h1 className="text-xl font-semibold">Hello!</h1>
+        </div>
       </header>
 
       <div className="flex-1 p-6">

@@ -21,6 +21,7 @@ import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/uti
 import downloadInvoice, { downloadBase64AsPDF } from "@/utils/downloadInvoice";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
+import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 
 interface Invoice {
   id: string;
@@ -227,12 +228,15 @@ export default function InvoicesPage() {
   return (
     <>
       <header className="border-b bg-white px-6 py-4">
-        <h1 className="text-xl font-semibold">Invoices</h1>
+        <div className="flex items-center gap-3">
+          <SidebarToggleButton />
+          <h1 className="text-xl font-semibold">Invoices</h1>
+        </div>
       </header>
 
       <div className="flex-1 p-6">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-6 flex gap-4">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row">
             <div className="w-48">
               <label className="mb-2 block text-sm font-medium text-gray-700">Sort By</label>
               <select
