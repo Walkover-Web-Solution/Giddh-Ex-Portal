@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 interface Column<T> {
-  header: string;
+  header: string | ReactNode;
   accessor: keyof T | ((row: T, index: number) => ReactNode);
   className?: string;
 }

@@ -22,6 +22,7 @@ import downloadInvoice, { downloadBase64AsPDF } from "@/utils/downloadInvoice";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 interface Invoice {
   id: string;
@@ -38,6 +39,7 @@ export default function InvoicesPage() {
   const dispatch = useAppDispatch();
   const [statusFilter, setStatusFilter] = useState("All Invoices");
   const [sortBy, setSortBy] = useState("Total");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
@@ -70,12 +72,31 @@ export default function InvoicesPage() {
     const today = new Date();
     const diffTime = today.getTime() - due.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? `Overdue by: ${diffDays} days` : "";
+    return diffDays > 0 ? `Overdue by: ${diffDays} days` : "-";
   };
 
   const handleInvoiceClick = (invoiceUniqueName: string) => {
     router.push(`/${companyName}/${country}/invoice/preview?voucher=${invoiceUniqueName}`);
   };
+
+  const handleClearFilters = () => {
+    setStatusFilter("All Invoices");
+    setSortBy("Total");
+    setSortDirection("desc");
+    setCurrentPage(1);
+  };
+
+  const handleSort = (column: "Date" | "Total") => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortDirection("desc");
+    }
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = statusFilter !== "All Invoices" || sortBy !== "Total";
 
   const handleDownloadInvoice = async (invoiceUniqueName: string, invoiceNumber: string) => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -150,18 +171,19 @@ export default function InvoicesPage() {
   const invoicesData = useMemo(
     () =>
       [...filteredInvoices].sort((a, b) => {
+        let comparison = 0;
         if (sortBy === "Total") {
           const amountA = parseFloat(a.total.replace(/[^0-9.-]+/g, ""));
           const amountB = parseFloat(b.total.replace(/[^0-9.-]+/g, ""));
-          return amountB - amountA;
+          comparison = amountB - amountA;
         } else if (sortBy === "Date") {
           const dateA = new Date(a.date.split("-").reverse().join("-")).getTime();
           const dateB = new Date(b.date.split("-").reverse().join("-")).getTime();
-          return dateB - dateA;
+          comparison = dateB - dateA;
         }
-        return 0;
+        return sortDirection === "asc" ? -comparison : comparison;
       }),
-    [filteredInvoices, sortBy]
+    [filteredInvoices, sortBy, sortDirection]
   );
 
   const paginatedData = useMemo(
@@ -185,8 +207,46 @@ export default function InvoicesPage() {
         </button>
       ),
     },
-    { header: "DATE", accessor: "date" as keyof Invoice },
-    { header: `TOTAL ${getCurrencySymbol(currency)}`, accessor: "total" as keyof Invoice },
+    {
+      header: (
+        <button
+          onClick={() => handleSort("Date")}
+          className="flex items-center gap-1 hover:text-gray-700"
+        >
+          DATE
+          {sortBy === "Date" ? (
+            sortDirection === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : (
+              <ArrowDown className="h-4 w-4" />
+            )
+          ) : (
+            <ArrowUpDown className="h-4 w-4 opacity-50" />
+          )}
+        </button>
+      ),
+      accessor: "date" as keyof Invoice,
+    },
+    {
+      header: (
+        <button
+          onClick={() => handleSort("Total")}
+          className="flex items-center gap-1 hover:text-gray-700"
+        >
+          TOTAL
+          {sortBy === "Total" ? (
+            sortDirection === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : (
+              <ArrowDown className="h-4 w-4" />
+            )
+          ) : (
+            <ArrowUpDown className="h-4 w-4 opacity-50" />
+          )}
+        </button>
+      ),
+      accessor: "total" as keyof Invoice,
+    },
     {
       header: "STATUS",
       accessor: (row: Invoice) => (
@@ -236,30 +296,15 @@ export default function InvoicesPage() {
 
       <div className="flex-1 p-6">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-            <div className="w-48">
-              <label className="mb-2 block text-sm font-medium text-gray-700">Sort By</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: "right 0.5rem center",
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "1.5em 1.5em",
-                }}
-              >
-                <option>Total</option>
-                <option>Date</option>
-              </select>
-            </div>
-
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="w-48">
               <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
@@ -276,6 +321,37 @@ export default function InvoicesPage() {
                 <option>Cancel</option>
               </select>
             </div>
+            <div className="w-48">
+              <label className="mb-2 block text-sm font-medium text-gray-700">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: "right 0.5rem center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "1.5em 1.5em",
+                }}
+              >
+                <option>Total</option>
+                <option>Date</option>
+              </select>
+            </div>
+            {hasActiveFilters && (
+              <div className="flex items-end">
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  <X className="h-4 w-4" />
+                  Clear Filters
+                </button>
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -288,14 +364,16 @@ export default function InvoicesPage() {
             <DataTable columns={columns} data={invoicesData} keyExtractor={(row) => row.id} />
           )}
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(invoicesData.length / itemsPerPage)}
-            totalItems={invoicesData.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+          {invoicesData.length > 10 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(invoicesData.length / itemsPerPage)}
+              totalItems={invoicesData.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
+          )}
         </div>
       </div>
     </>

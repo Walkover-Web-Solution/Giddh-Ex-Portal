@@ -19,6 +19,7 @@ import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/utils/currency";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 interface Payment {
   id: string;
@@ -34,6 +35,7 @@ export default function PaymentsPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [sortFilter, setSortFilter] = useState("Amount");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -63,6 +65,24 @@ export default function PaymentsPage() {
     router.push(`/${companyName}/${country}/payment/preview?voucher=${voucherUniqueName}`);
   };
 
+  const handleClearFilters = () => {
+    setSortFilter("Amount");
+    setSortDirection("desc");
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = sortFilter !== "Amount" || sortDirection !== "desc";
+
+  const handleSort = (column: "Date" | "Amount") => {
+    if (sortFilter === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortFilter(column);
+      setSortDirection("desc");
+    }
+    setCurrentPage(1);
+  };
+
   const currency = balanceSummary?.currency || DEFAULT_CURRENCY;
 
   const paymentsData: Payment[] = useMemo(
@@ -83,18 +103,19 @@ export default function PaymentsPage() {
   const sortedPaymentsData = useMemo(
     () =>
       [...paymentsData].sort((a, b) => {
+        let comparison = 0;
         if (sortFilter === "Amount") {
           const amountA = parseFloat(a.amount.replace(/[^0-9.-]+/g, ""));
           const amountB = parseFloat(b.amount.replace(/[^0-9.-]+/g, ""));
-          return amountB - amountA;
+          comparison = amountB - amountA;
         } else if (sortFilter === "Date") {
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
+          comparison = new Date(b.date).getTime() - new Date(a.date).getTime();
         } else if (sortFilter === "Payment ID") {
-          return a.paymentId.localeCompare(b.paymentId);
+          comparison = a.paymentId.localeCompare(b.paymentId);
         }
-        return 0;
+        return sortDirection === "asc" ? -comparison : comparison;
       }),
-    [paymentsData, sortFilter]
+    [paymentsData, sortFilter, sortDirection]
   );
 
   const paginatedData = useMemo(
@@ -115,8 +136,46 @@ export default function PaymentsPage() {
           </button>
         ),
       },
-      { header: "Date", accessor: "date" as keyof Payment },
-      { header: `Amount ${getCurrencySymbol(currency)}`, accessor: "amount" as keyof Payment },
+      {
+        header: (
+          <button
+            onClick={() => handleSort("Date")}
+            className="flex items-center gap-1 hover:text-gray-700"
+          >
+            Date
+            {sortFilter === "Date" ? (
+              sortDirection === "asc" ? (
+                <ArrowUp className="h-4 w-4" />
+              ) : (
+                <ArrowDown className="h-4 w-4" />
+              )
+            ) : (
+              <ArrowUpDown className="h-4 w-4 opacity-50" />
+            )}
+          </button>
+        ),
+        accessor: "date" as keyof Payment,
+      },
+      {
+        header: (
+          <button
+            onClick={() => handleSort("Amount")}
+            className="flex items-center gap-1 hover:text-gray-700"
+          >
+            Amount {getCurrencySymbol(currency)}
+            {sortFilter === "Amount" ? (
+              sortDirection === "asc" ? (
+                <ArrowUp className="h-4 w-4" />
+              ) : (
+                <ArrowDown className="h-4 w-4" />
+              )
+            ) : (
+              <ArrowUpDown className="h-4 w-4 opacity-50" />
+            )}
+          </button>
+        ),
+        accessor: "amount" as keyof Payment,
+      },
       { header: "Payment Account", accessor: "paymentAccount" as keyof Payment },
       { header: "Unused Amount", accessor: "unusedAmount" as keyof Payment },
     ],
@@ -134,12 +193,15 @@ export default function PaymentsPage() {
 
       <div className="flex-1 p-6">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-6 flex gap-4">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="w-48">
               <label className="mb-2 block text-sm font-medium text-gray-700">Sort by</label>
               <select
                 value={sortFilter}
-                onChange={(e) => setSortFilter(e.target.value)}
+                onChange={(e) => {
+                  setSortFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
@@ -153,6 +215,17 @@ export default function PaymentsPage() {
                 <option>Payment ID</option>
               </select>
             </div>
+            {hasActiveFilters && (
+              <div className="flex items-end">
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  <X className="h-4 w-4" />
+                  Clear Filters
+                </button>
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -165,7 +238,7 @@ export default function PaymentsPage() {
             <DataTable columns={columns} data={paginatedData} keyExtractor={(row) => row.id} />
           )}
 
-          {!loading && !error && sortedPaymentsData.length > 0 && (
+          {!loading && !error && sortedPaymentsData.length > 10 && (
             <Pagination
               currentPage={currentPage}
               totalPages={Math.ceil(sortedPaymentsData.length / itemsPerPage)}

@@ -35,10 +35,8 @@ export function Footer({
             <span className="text-lg font-bold tracking-wide text-blue-900">GIDDH</span>
           </div>
 
-          {/* Center: Company info */}
           <div className="flex flex-col items-center gap-1 text-center text-xs text-gray-600 md:items-center">
             <div className="flex flex-wrap items-center justify-center gap-1.5">
-              <Building2 className="h-3.5 w-3.5 text-blue-600" />
               <span className="font-medium">{companyName}</span>
             </div>
             {companyAddress && <span className="max-w-xs break-words">{companyAddress}</span>}
