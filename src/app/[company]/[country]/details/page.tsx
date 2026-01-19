@@ -97,18 +97,18 @@ export default function DetailsPage() {
                         </div>
                       </div>
 
-                      {data.addresses.length > 1 && data.addresses[1] && (
+                      {data.addresses.length > 0 && data.addresses[0] && (
                         <div>
                           <p className="font-medium uppercase text-gray-500">Shipping Address</p>
                           <div className="mt-2 space-y-1 rounded-md bg-gray-50 p-3">
                             <p className="font-medium">{data.name}</p>
                             <p className="break-words">{data.email}</p>
-                            {data.addresses[1]?.address && (
-                              <p className="break-words">{data.addresses[1].address}</p>
+                            {data.addresses[0]?.address && (
+                              <p className="break-words">{data.addresses[0].address}</p>
                             )}
-                            {data.addresses[1]?.state?.name && (
+                            {data.addresses[0]?.state?.name && (
                               <p>
-                                {data.addresses[1].state.name}, {data.addresses[1].stateCode}
+                                {data.addresses[0].state.name}, {data.addresses[0].stateCode}
                               </p>
                             )}
                           </div>
