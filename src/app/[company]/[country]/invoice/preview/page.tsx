@@ -110,7 +110,7 @@ export default function InvoicePreviewPage() {
   const voucher = paymentDetails?.vouchers[0];
 
   const handleBack = () => {
-    router.push(`/${companyName}/${country}/invoices`);
+    router.push(`/${companyName}/${country}/invoice`);
   };
 
   const handlePrint = () => {

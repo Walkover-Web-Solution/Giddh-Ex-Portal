@@ -15,7 +15,6 @@ export const getDetails = async (proxyAuthToken: string): Promise<ProxyDetailsRe
       proxy_auth_token: proxyAuthToken,
     },
   });
-  console.log("⚡️ ~ :18 ~ getDetails ~ response:", response);
 
   return response.data;
 };

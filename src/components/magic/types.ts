@@ -2,14 +2,33 @@ export interface Transaction {
   date: string;
   particular: string;
   debit: number | null;
+  debitConverted: number | null;
   credit: number | null;
+  creditConverted: number | null;
   closingBalance: number;
+  closingBalanceConverted: number;
   balanceType: "Dr" | "Cr";
-  creditCurrency?: string;
+  // Voucher information for download
+  voucherGenerated?: boolean;
+  voucherNumber?: string;
+  voucherName?: string;
+  voucherUniqueName?: string;
+  entryUniqueName?: string;
 }
 
-export type Currency = "INR" | "GBP";
+export type Currency = string;
 export type ViewMode = "statement" | "t";
+
+export interface CurrencyInfo {
+  code: string;
+  symbol: string;
+}
+
+export interface CurrencyData {
+  transactionCurrency: CurrencyInfo;
+  convertedCurrency: CurrencyInfo;
+  companyCurrency: CurrencyInfo;
+}
 
 export interface SummaryData {
   totalDebit: number;
@@ -22,4 +41,6 @@ export interface SummaryData {
   netTotalCredit: number;
   closingBalance: number;
   closingBalanceType: "Dr" | "Cr";
+  reckoningDebitTotal?: number;
+  reckoningCreditTotal?: number;
 }

@@ -1,33 +1,45 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Header,
-  MagicSearchAndFilters,
-  MagicTransactionTable,
-  Footer,
+  SearchAndViewControls,
+  LedgerTable,
   Transaction,
   Currency,
   ViewMode,
-  SummaryData,
+  CurrencyData,
 } from "@/components/magic";
-import { getMagicLinkLedger } from "@/utils/magic/getMagicLinkLedger";
+import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 
 export default function Magic() {
   const searchParams = useSearchParams();
-  const linkId = searchParams.get("linkId") || searchParams.get("id") || "";
+  const linkId = searchParams.get("id") || "";
 
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>("INR");
   const [viewMode, setViewMode] = useState<ViewMode>("statement");
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [companyName, setCompanyName] = useState("Piyussshhh Company");
-  const [accountName, setAccountName] = useState("Sales Account");
+  const [companyName, setCompanyName] = useState("");
+  const [accountName, setAccountName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currencyData, setCurrencyData] = useState<CurrencyData | null>(null);
+  const [debitCreditTransactions, setDebitCreditTransactions] = useState<LedgerTransaction[]>([]);
+  const [debitTransactions, setDebitTransactions] = useState<LedgerTransaction[]>([]);
+  const [creditTransactions, setCreditTransactions] = useState<LedgerTransaction[]>([]);
+  const [forwardedBalance, setForwardedBalance] = useState<
+    | {
+        amount: number;
+        type: "DEBIT" | "CREDIT";
+        description?: string;
+      }
+    | undefined
+  >(undefined);
 
   // Date range state
   const today = new Date();
@@ -35,238 +47,169 @@ export default function Magic() {
   thirtyDaysAgo.setDate(today.getDate() - 30);
   const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
   const [toDate, setToDate] = useState<Date>(today);
-  const magicLinkId = "1768918035086yi0xfjm4vxa3c2ihd52g";
+  const hasSetDatesFromAPI = useRef(false);
+
+  const formatDateForAPI = (date: Date): string => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
 
   useEffect(() => {
+    if (!linkId) {
+      setError(
+        "A valid link ID is required to view this account’s transactions. Please check your link and try again."
+      );
+      setLoading(false);
+      return;
+    }
+
     const fetchMagicLinkData = async () => {
-      console.log("Fetching data for linkId:", linkId);
       setLoading(true);
       setError(null);
 
       try {
-        const response = await getMagicLinkLedger({ linkId: magicLinkId, sort: "asc" });
-        console.log("API Response:", response);
+        const result = await getMagicLinkData({ linkId, sort: "asc" }, viewMode);
 
-        if (response.status === "success" && response.body?.ledgersTransactions) {
-          const { debitTransactions, creditTransactions } = response.body.ledgersTransactions;
+        if (result.success && result.data) {
+          const {
+            transactions: transformedTransactions,
+            currencyData: extractedCurrencyData,
+            companyName: apiCompanyName,
+            accountName: apiAccountName,
+            dateRange,
+            debitCreditTransactions: apiDebitCreditTransactions,
+            debitTransactions: apiDebitTransactions,
+            creditTransactions: apiCreditTransactions,
+            forwardedBalance: apiForwardedBalance,
+          } = result.data;
 
-          // Combine and sort all transactions by date
-          const allTransactions: Array<{
-            date: string;
-            particular: string;
-            debit: number | null;
-            credit: number | null;
-            type: "DEBIT" | "CREDIT";
-            convertedCurrency?: string;
-          }> = [];
+          setTransactions(transformedTransactions);
+          setCurrencyData(extractedCurrencyData);
+          setCompanyName(apiCompanyName);
+          setAccountName(apiAccountName);
+          setDebitCreditTransactions(apiDebitCreditTransactions || []);
+          setDebitTransactions(apiDebitTransactions || []);
+          setCreditTransactions(apiCreditTransactions || []);
+          setForwardedBalance(apiForwardedBalance);
 
-          // Add debit transactions
-          debitTransactions.forEach((tx) => {
-            allTransactions.push({
-              date: tx.entryDate,
-              particular: tx.particular.name,
-              debit: tx.amount,
-              credit: null,
-              type: "DEBIT",
-              convertedCurrency:
-                tx.convertedCurrencyCode && tx.convertedCurrencyCode !== tx.currencyCode
-                  ? `${tx.convertedCurrencySymbol || ""} ${tx.convertedAmount || tx.amount}`
-                  : undefined,
-            });
-          });
+          // Set initial selected currency to transaction currency
+          if (extractedCurrencyData.transactionCurrency) {
+            setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
+          }
 
-          // Add credit transactions
-          creditTransactions.forEach((tx) => {
-            allTransactions.push({
-              date: tx.entryDate,
-              particular: tx.particular.name,
-              debit: null,
-              credit: tx.amount,
-              type: "CREDIT",
-              convertedCurrency:
-                tx.convertedCurrencyCode && tx.convertedCurrencyCode !== tx.currencyCode
-                  ? `${tx.convertedCurrencySymbol || ""} ${tx.convertedAmount || tx.amount}`
-                  : undefined,
-            });
-          });
-
-          // Sort by date
-          allTransactions.sort((a, b) => {
-            const dateA = new Date(a.date.split("-").reverse().join("-"));
-            const dateB = new Date(b.date.split("-").reverse().join("-"));
-            return dateA.getTime() - dateB.getTime();
-          });
-
-          // Calculate closing balances
-          let runningBalance = 0;
-          const apiTransactions: Transaction[] = allTransactions.map((tx) => {
-            if (tx.debit !== null) {
-              runningBalance += tx.debit;
-            } else if (tx.credit !== null) {
-              runningBalance += tx.credit;
-            }
-
-            return {
-              date: tx.date,
-              particular: tx.particular,
-              debit: tx.debit,
-              credit: tx.credit,
-              closingBalance: runningBalance,
-              balanceType: runningBalance >= 0 ? "Dr" : "Cr",
-              creditCurrency: tx.convertedCurrency,
+          if (dateRange?.from && dateRange?.to && !hasSetDatesFromAPI.current) {
+            const parseDateFromString = (dateStr: string): Date => {
+              const parts = dateStr.split("-");
+              if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day);
+              }
+              return new Date(dateStr);
             };
-          });
 
-          // Add opening balance entry if needed
-          if (apiTransactions.length > 0) {
-            const firstTx = apiTransactions[0];
-            const openingBalance =
-              firstTx.closingBalance - (firstTx.credit ?? 0) + (firstTx.debit ?? 0);
+            const apiFromDate = parseDateFromString(dateRange.from);
+            const apiToDate = parseDateFromString(dateRange.to);
 
-            if (openingBalance !== 0 || firstTx.particular.toLowerCase().includes("balance")) {
-              apiTransactions.unshift({
-                date: response.body.ledgersTransactions.from || firstTx.date,
-                particular: "To Balance b/d",
-                debit: null,
-                credit: null,
-                closingBalance: openingBalance,
-                balanceType: openingBalance >= 0 ? "Dr" : "Cr",
-              });
+            if (!isNaN(apiFromDate.getTime()) && !isNaN(apiToDate.getTime())) {
+              setFromDate(apiFromDate);
+              setToDate(apiToDate);
+              hasSetDatesFromAPI.current = true;
             }
-          }
-
-          // Add closing balance entry
-          if (apiTransactions.length > 0) {
-            const lastTx = apiTransactions[apiTransactions.length - 1];
-            apiTransactions.push({
-              date: response.body.ledgersTransactions.to || lastTx.date,
-              particular: "To Balance c/d",
-              debit: null,
-              credit: null,
-              closingBalance: lastTx.closingBalance,
-              balanceType: lastTx.balanceType,
-            });
-          }
-
-          console.log("Transformed transactions:", apiTransactions);
-          setTransactions(apiTransactions);
-
-          // Update company and account names
-          if (response.body.companyName) {
-            setCompanyName(response.body.companyName);
-          }
-          if (response.body.account?.name) {
-            setAccountName(response.body.account.name);
           }
         } else {
-          console.error("API response error:", response);
-          setError(response.message || "Failed to load ledger data");
+          setError(result.error || "Failed to load ledger data");
           setTransactions([]);
+          setDebitCreditTransactions([]);
+          setDebitTransactions([]);
+          setCreditTransactions([]);
+          setForwardedBalance(undefined);
         }
       } catch (err) {
-        console.error("Error fetching magic link ledger:", err);
         setError("Failed to load ledger data");
         setTransactions([]);
+        setDebitCreditTransactions([]);
+        setDebitTransactions([]);
+        setCreditTransactions([]);
+        setForwardedBalance(undefined);
       } finally {
         setLoading(false);
       }
     };
 
     fetchMagicLinkData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [linkId]);
+  }, [linkId, viewMode, fromDate, toDate]);
 
-  // Helper function to parse transaction date string (DD-MM-YY or DD-MM-YYYY) to Date
   const parseTransactionDate = (dateString: string): Date => {
-    const parts = dateString.split("-");
-    if (parts.length !== 3) return new Date(dateString);
+    if (!dateString) return new Date();
 
+    const parts = dateString.split("-");
+    if (parts.length !== 3) {
+      const parsed = new Date(dateString);
+      return !isNaN(parsed.getTime())
+        ? new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate())
+        : new Date();
+    }
+
+    // Check if it's ISO format (YYYY-MM-DD)
+    if (parts[0].length === 4) {
+      return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    }
+
+    // DD-MM-YY or DD-MM-YYYY format
     const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+    const month = parseInt(parts[1], 10) - 1;
     let year = parseInt(parts[2], 10);
 
-    // Handle 2-digit years (assume 2000-2099)
-    if (year < 100) {
-      year += 2000;
-    }
+    if (year < 100) year += 2000;
 
     return new Date(year, month, day);
   };
 
   const filteredTransactions = useMemo(() => {
+    const searchValue = searchQuery.toLowerCase().trim();
+    const hasSearchQuery = searchValue.length > 0;
+
     return transactions.filter((t) => {
       // Filter by search query
-      const matchesSearch = t.particular.toLowerCase().includes(searchQuery.toLowerCase());
+      if (hasSearchQuery) {
+        const matchesParticular = t.particular?.toLowerCase().includes(searchValue);
+        const matchesAmount =
+          String(t.debit ?? "").includes(searchValue) ||
+          String(t.credit ?? "").includes(searchValue);
+        if (!matchesParticular && !matchesAmount) return false;
+      }
 
       // Filter by date range
       const transactionDate = parseTransactionDate(t.date);
-      // Normalize transaction date to start of day for comparison
-      const normalizedTransactionDate = new Date(transactionDate);
-      normalizedTransactionDate.setHours(0, 0, 0, 0);
+      const normalizedTransactionDate = new Date(
+        transactionDate.getFullYear(),
+        transactionDate.getMonth(),
+        transactionDate.getDate()
+      );
+      const startOfFromDate = new Date(
+        fromDate.getFullYear(),
+        fromDate.getMonth(),
+        fromDate.getDate()
+      );
+      const endOfToDate = new Date(
+        toDate.getFullYear(),
+        toDate.getMonth(),
+        toDate.getDate(),
+        23,
+        59,
+        59,
+        999
+      );
 
-      const startOfFromDate = new Date(fromDate);
-      startOfFromDate.setHours(0, 0, 0, 0);
-      const endOfToDate = new Date(toDate);
-      endOfToDate.setHours(23, 59, 59, 999);
-
-      const matchesDateRange =
-        normalizedTransactionDate >= startOfFromDate && normalizedTransactionDate <= endOfToDate;
-
-      return matchesSearch && matchesDateRange;
+      return (
+        normalizedTransactionDate >= startOfFromDate && normalizedTransactionDate <= endOfToDate
+      );
     });
   }, [transactions, searchQuery, fromDate, toDate]);
-
-  // Calculate summary based on filtered transactions
-  const summary = useMemo<SummaryData>(() => {
-    const totalDebit = filteredTransactions.reduce((sum, tx) => sum + (tx.debit ?? 0), 0);
-    const totalCredit = filteredTransactions.reduce((sum, tx) => sum + (tx.credit ?? 0), 0);
-    const debitCount = filteredTransactions.filter((tx) => tx.debit !== null).length;
-    const creditCount = filteredTransactions.filter((tx) => tx.credit !== null).length;
-
-    // Get opening balance from first transaction
-    // If first transaction is "Balance b/d", its closing balance is the opening balance
-    // Otherwise, calculate backwards from first transaction
-    const openingBalance =
-      filteredTransactions.length > 0
-        ? filteredTransactions[0].particular.toLowerCase().includes("balance b/d")
-          ? filteredTransactions[0].closingBalance
-          : filteredTransactions[0].closingBalance -
-            (filteredTransactions[0].credit ?? 0) +
-            (filteredTransactions[0].debit ?? 0)
-        : 0;
-
-    // Get opening balance type from first transaction
-    const openingBalanceType =
-      filteredTransactions.length > 0 ? filteredTransactions[0].balanceType : "Dr";
-
-    // Get closing balance from last transaction (if exists)
-    const closingBalance =
-      filteredTransactions.length > 0
-        ? filteredTransactions[filteredTransactions.length - 1].closingBalance
-        : 0;
-
-    // Get closing balance type from last transaction
-    const closingBalanceType =
-      filteredTransactions.length > 0
-        ? filteredTransactions[filteredTransactions.length - 1].balanceType
-        : "Dr";
-
-    // Net total credit is the closing balance
-    const netTotalCredit = closingBalance;
-
-    return {
-      totalDebit,
-      totalCredit,
-      totalTransactions: filteredTransactions.length,
-      debitCount,
-      creditCount,
-      openingBalance,
-      openingBalanceType,
-      netTotalCredit,
-      closingBalance,
-      closingBalanceType,
-    };
-  }, [filteredTransactions]);
 
   const handlePrint = () => {
     window.print();
@@ -298,7 +241,6 @@ export default function Magic() {
 
   return (
     <div className="min-h-screen">
-      {/* FULL WIDTH HEADER */}
       <Header
         companyName={companyName}
         accountName={accountName}
@@ -306,10 +248,8 @@ export default function Magic() {
         toDate={toDate}
         onFromDateChange={handleFromDateChange}
         onToDateChange={handleToDateChange}
-        onPrint={handlePrint}
       />
 
-      {/* CENTERED CONTENT */}
       <main className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         {error && (
           <div className="mb-4 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-xs text-yellow-800 sm:p-4 sm:text-sm">
@@ -317,32 +257,34 @@ export default function Magic() {
           </div>
         )}
 
-        {/* Search + Filters */}
         <section className="mb-4 sm:mb-6">
-          <MagicSearchAndFilters
+          <SearchAndViewControls
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             selectedCurrency={selectedCurrency}
             onCurrencyChange={setSelectedCurrency}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
+            transactionCurrency={currencyData?.transactionCurrency}
+            convertedCurrency={currencyData?.convertedCurrency}
           />
         </section>
 
-        {/* Table */}
         <section className="mb-4 sm:mb-6">
-          <MagicTransactionTable
+          <LedgerTable
             transactions={filteredTransactions}
             selectedCurrency={selectedCurrency}
-            totalDebit={summary.totalDebit}
-            totalCredit={summary.totalCredit}
             viewMode={viewMode}
+            transactionCurrency={currencyData?.transactionCurrency}
+            convertedCurrency={currencyData?.convertedCurrency}
+            linkId={linkId}
+            debitCreditTransactions={
+              debitCreditTransactions.length > 0 ? debitCreditTransactions : undefined
+            }
+            debitTransactions={debitTransactions.length > 0 ? debitTransactions : undefined}
+            creditTransactions={creditTransactions.length > 0 ? creditTransactions : undefined}
+            forwardedBalance={forwardedBalance}
           />
-        </section>
-
-        {/* Summary Footer */}
-        <section className="mb-6 pb-6 sm:mb-8 sm:pb-12">
-          <Footer summary={summary} selectedCurrency={selectedCurrency} />
         </section>
       </main>
     </div>

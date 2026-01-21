@@ -21,13 +21,14 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname?.includes("/login");
   const isAuthPage = pathname?.includes("/auth");
+  const isPreviewPage = pathname?.includes("/preview");
   const params = useParams();
   const companyName = params?.company as string;
   const userDetails = useAppSelector(selectUserDetails(companyName));
   const gstin = userDetails?.addresses?.[0]?.gstNumber as string;
   const companyAddress = userDetails?.addresses?.[0]?.address as string;
 
-  if (isLoginPage || isAuthPage) {
+  if (isLoginPage || isAuthPage || isPreviewPage) {
     return <>{children}</>;
   }
 
