@@ -154,7 +154,7 @@ export default function PaymentPreviewPage() {
   };
 
   const handleBack = () => {
-    router.push(`/${companyName}/${country}/payments`);
+    router.push(`/${companyName}/${country}/payment`);
   };
 
   if (isLoading) {

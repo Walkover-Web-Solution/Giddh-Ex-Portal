@@ -19,8 +19,8 @@ import { clearCompanyData, logoutCompany, selectUserDetails } from "@/store/slic
 
 const navItems = [
   { name: "Home", path: "welcome", icon: Home },
-  { name: "Invoices", path: "invoices", icon: FileText },
-  { name: "Payments Made", path: "payments", icon: CreditCard },
+  { name: "Invoices", path: "invoice", icon: FileText },
+  { name: "Payments Made", path: "payment", icon: CreditCard },
   { name: "Account Statement", path: "account-statement", icon: FileSpreadsheet },
 ];
 

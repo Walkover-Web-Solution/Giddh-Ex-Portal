@@ -1,4 +1,4 @@
-import { Currency } from "./types";
+import { CurrencyInfo } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 
 interface FooterProps {
@@ -13,14 +13,16 @@ interface FooterProps {
     totalCredit: number;
     closingBalance: number;
     closingBalanceType: "Dr" | "Cr";
+    reckoningDebitTotal?: number;
+    reckoningCreditTotal?: number;
   };
-  selectedCurrency: Currency;
+  companyCurrency?: CurrencyInfo;
 }
 
-export function Footer({ summary, selectedCurrency }: FooterProps) {
+export function Footer({ summary, companyCurrency }: FooterProps) {
   const formatAmount = (amount: number | null) => {
     if (amount === null) return "-";
-    const symbol = selectedCurrency === "INR" ? "₹" : "£";
+    const symbol = companyCurrency?.symbol || "₹";
     return formatCurrencyAmount(amount, symbol, { decimals: 2 });
   };
 
@@ -52,6 +54,14 @@ export function Footer({ summary, selectedCurrency }: FooterProps) {
           <div className="mt-1 text-[10px] text-blue-900/60 sm:text-xs">
             <p>Dr Total {formatAmount(summary.totalDebit)}</p>
             <p>Cr Total {formatAmount(summary.totalCredit)}</p>
+            {summary.reckoningDebitTotal !== undefined &&
+              summary.reckoningCreditTotal !== undefined && (
+                <>
+                  <p className="mt-1 font-semibold">Reckoning:</p>
+                  <p>Dr {formatAmount(summary.reckoningDebitTotal)}</p>
+                  <p>Cr {formatAmount(summary.reckoningCreditTotal)}</p>
+                </>
+              )}
           </div>
         </div>
 

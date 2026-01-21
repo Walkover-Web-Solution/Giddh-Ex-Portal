@@ -4,18 +4,27 @@ export interface LedgerTransaction {
   particular: {
     name: string;
     uniqueName: string;
-    parentGroups: any[];
   };
   amount: number;
   type: "DEBIT" | "CREDIT";
   entryDate: string;
   voucherNumber?: string;
+  voucherName?: string;
+  voucherUniqueName?: string;
+  voucherGenerated?: boolean;
+  entryUniqueName?: string;
   currencyCode?: string;
   currencySymbol?: string;
   convertedCurrencyCode?: string;
   convertedCurrencySymbol?: string;
   convertedAmount?: number;
-  [key: string]: any;
+  companyCurrencyCode?: string;
+  companyCurrencySymbol?: string;
+  closing?: {
+    amount: number;
+    convertedAmount?: number;
+    type: "DEBIT" | "CREDIT";
+  };
 }
 
 export interface MagicLinkLedgerResponse {
@@ -27,18 +36,14 @@ export interface MagicLinkLedgerResponse {
     };
     companyName: string;
     ledgersTransactions: {
-      page: number;
-      count: number;
-      totalPages: number;
-      totalItems: number;
-      debitTransactionsCount: number;
-      creditTransactionsCount: number;
-      closingBalanceForBank: {
+      forwardedBalance?: {
         amount: number;
         type: "DEBIT" | "CREDIT";
+        description?: string;
       };
       debitTransactions: LedgerTransaction[];
       creditTransactions: LedgerTransaction[];
+      debitCreditTransactions?: LedgerTransaction[];
       from: string;
       to: string;
     };
@@ -49,31 +54,33 @@ export interface MagicLinkLedgerResponse {
 export interface GetMagicLinkLedgerRequest {
   linkId: string;
   sort?: "asc" | "desc";
+  viewMode?: "statement" | "t";
 }
 
 export const getMagicLinkLedger = async (
   request: GetMagicLinkLedgerRequest
 ): Promise<MagicLinkLedgerResponse> => {
   try {
-    const baseURL = process.env.NEXT_PUBLIC_API_URL || "https://api.giddh.com";
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || "https://apitest.giddh.com";
+
     const url = `${baseURL}/magic-link-ledger/${request.linkId}`;
-    const params = request.sort ? { sort: request.sort } : {};
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
 
     const response = await axios.get(url, {
-      params,
+      params: {
+        sort: request.sort || "asc",
+        ledgerView: request.viewMode === "t" ? "T_VIEW" : "STATEMENT_VIEW",
+      },
       headers: {
         accept: "application/json, text/plain, */*",
         "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
-        origin: typeof window !== "undefined" ? window.location.origin : "",
-        referer: typeof window !== "undefined" ? window.location.origin + "/" : "",
+        origin,
+        referer: origin ? `${origin}/` : "",
       },
     });
 
-    // API already returns { status, body } structure
-    // response.data is { status: "success", body: {...} }
     return response.data as MagicLinkLedgerResponse;
   } catch (error: any) {
-    console.error("Error fetching magic link ledger:", error);
     return {
       status: "error",
       message: error.response?.data?.message || "Failed to fetch ledger data",

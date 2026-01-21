@@ -1,5 +1,3 @@
-import { Printer } from "lucide-react";
-
 interface HeaderProps {
   companyName: string;
   accountName: string;
@@ -7,7 +5,6 @@ interface HeaderProps {
   toDate: Date;
   onFromDateChange: (date: Date) => void;
   onToDateChange: (date: Date) => void;
-  onPrint?: () => void;
 }
 
 export function Header({
@@ -17,7 +14,6 @@ export function Header({
   toDate,
   onFromDateChange,
   onToDateChange,
-  onPrint,
 }: HeaderProps) {
   return (
     <header className="w-full border-b-2 border-blue-900/20 bg-white">
@@ -33,25 +29,31 @@ export function Header({
               <input
                 type="date"
                 value={fromDate.toISOString().split("T")[0]}
-                onChange={(e) => onFromDateChange(new Date(e.target.value))}
+                onChange={(e) => {
+                  const dateValue = e.target.value;
+                  if (dateValue) {
+                    // Parse date in local timezone to avoid UTC issues
+                    const [year, month, day] = dateValue.split("-").map(Number);
+                    onFromDateChange(new Date(year, month - 1, day));
+                  }
+                }}
                 className="w-[100px] border-none bg-transparent text-xs text-blue-900 focus:outline-none sm:w-auto sm:text-sm"
               />
               <span className="text-blue-900/70">-</span>
               <input
                 type="date"
                 value={toDate.toISOString().split("T")[0]}
-                onChange={(e) => onToDateChange(new Date(e.target.value))}
+                onChange={(e) => {
+                  const dateValue = e.target.value;
+                  if (dateValue) {
+                    // Parse date in local timezone to avoid UTC issues
+                    const [year, month, day] = dateValue.split("-").map(Number);
+                    onToDateChange(new Date(year, month - 1, day));
+                  }
+                }}
                 className="w-[100px] border-none bg-transparent text-xs text-blue-900 focus:outline-none sm:w-auto sm:text-sm"
               />
             </div>
-
-            <button
-              onClick={onPrint}
-              className="inline-flex items-center justify-center gap-1.5 rounded-md bg-blue-900 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-800 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
-            >
-              <Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="xs:inline hidden">Print</span>
-            </button>
           </div>
         </div>
       </div>
