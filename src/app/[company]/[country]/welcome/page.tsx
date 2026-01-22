@@ -15,6 +15,7 @@ import {
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 
 export default function WelcomePage() {
   const params = useParams();
@@ -70,9 +71,12 @@ export default function WelcomePage() {
   return (
     <>
       <header className="border-b bg-white px-6 py-4">
-        <div className="flex items-center gap-3">
-          <SidebarToggleButton />
-          <h1 className="text-xl font-semibold">Hello!</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <h1 className="text-xl font-semibold">Hello!</h1>
+          </div>
+          <SwitchAccountButton />
         </div>
       </header>
 

@@ -114,7 +114,18 @@ export default function InvoicePreviewPage() {
   };
 
   const handlePrint = () => {
-    pdfRef.current?.contentWindow?.print();
+    if (pdfRef.current?.contentWindow) {
+      pdfRef.current.contentWindow.print();
+    } else {
+      if (pdfUrl) {
+        const printWindow = window.open(pdfUrl, "_blank");
+        if (printWindow) {
+          printWindow.onload = () => {
+            printWindow.print();
+          };
+        }
+      }
+    }
   };
 
   const handleDownload = async () => {
@@ -150,7 +161,7 @@ export default function InvoicePreviewPage() {
   return (
     <>
       <header className="sticky top-0 z-30 border-b bg-white">
-        <div className="mx-auto max-w-7xl px-3 py-2 md:px-6 md:py-3">
+        <div className="mx-auto max-w-7xl py-2 md:py-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <SidebarToggleButton />
@@ -238,6 +249,7 @@ export default function InvoicePreviewPage() {
           {pdfUrl && (
             <div className="-mx-2 md:mx-0">
               <iframe
+                ref={pdfRef}
                 src={pdfUrl}
                 className="h-[75vh] w-full bg-gray-100 md:h-[85vh]"
                 title="Invoice PDF"

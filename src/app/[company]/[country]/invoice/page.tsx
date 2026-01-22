@@ -22,6 +22,7 @@ import downloadInvoice, { downloadBase64AsPDF } from "@/utils/downloadInvoice";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 interface Invoice {
@@ -288,9 +289,12 @@ export default function InvoicesPage() {
   return (
     <>
       <header className="border-b bg-white px-6 py-4">
-        <div className="flex items-center gap-3">
-          <SidebarToggleButton />
-          <h1 className="text-xl font-semibold">Invoices</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <h1 className="text-xl font-semibold">Invoices</h1>
+          </div>
+          <SwitchAccountButton />
         </div>
       </header>
 

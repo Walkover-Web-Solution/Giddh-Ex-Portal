@@ -62,6 +62,11 @@ export default function Auth() {
             // Single account - proceed with normal flow
             const userData = accounts[0];
 
+            // Store proxy token for account switching
+            if (token) {
+              localStorage.setItem("proxy_auth_token", token);
+            }
+
             const sessionResponse = await savePortalSession(
               userData.account,
               userData.vendorContactUniqueName,

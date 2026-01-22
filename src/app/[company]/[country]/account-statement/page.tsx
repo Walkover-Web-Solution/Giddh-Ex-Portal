@@ -18,6 +18,8 @@ import {
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { Pagination } from "@/components/Pagination";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { SwitchAccountButton } from "@/components/SwitchAccountButton";
+import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
 
 export default function AccountStatementPage() {
   const params = useParams();
@@ -155,22 +157,25 @@ export default function AccountStatementPage() {
     }
   };
 
-  const handleFromDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFromDate(new Date(e.target.value));
+  const handleFromDateChange = (date: Date) => {
+    setFromDate(date);
     setCurrentPage(1);
   };
 
-  const handleToDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setToDate(new Date(e.target.value));
+  const handleToDateChange = (date: Date) => {
+    setToDate(date);
     setCurrentPage(1);
   };
 
   return (
     <>
       <header className="border-b bg-white px-6 py-4">
-        <div className="flex items-center gap-3">
-          <SidebarToggleButton />
-          <h1 className="text-xl font-semibold">Account Statement</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <h1 className="text-xl font-semibold">Account Statement</h1>
+          </div>
+          <SwitchAccountButton />
         </div>
       </header>
 
@@ -269,20 +274,12 @@ export default function AccountStatementPage() {
 
               <div className="p-4 md:p-6">
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex flex-wrap items-center gap-2 rounded-md border border-gray-300 px-3 py-2">
-                    <input
-                      type="date"
-                      value={fromDate.toISOString().split("T")[0]}
-                      onChange={handleFromDateChange}
-                      className="border-none text-sm focus:outline-none"
-                    />
-                    <span className="text-gray-500">-</span>
-                    <input
-                      type="date"
-                      value={toDate.toISOString().split("T")[0]}
-                      onChange={handleToDateChange}
-                    />
-                  </div>
+                  <DateRangeCalendar
+                    fromDate={fromDate}
+                    toDate={toDate}
+                    onFromDateChange={handleFromDateChange}
+                    onToDateChange={handleToDateChange}
+                  />
                   <button
                     onClick={handleExport}
                     disabled={isExporting}

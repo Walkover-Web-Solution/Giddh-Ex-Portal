@@ -10,6 +10,7 @@ import {
   isSameDay,
   addMonths,
   subMonths,
+  subYears,
   startOfWeek,
   endOfWeek,
   isWithinInterval,
@@ -226,6 +227,22 @@ export function DateRangeCalendar({
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         return { from: startOfMonth, to: today };
+      },
+    },
+    {
+      label: "Last 6 months",
+      getDates: () => {
+        const today = new Date();
+        const sixMonthsAgo = subMonths(today, 6);
+        return { from: sixMonthsAgo, to: today };
+      },
+    },
+    {
+      label: "Last 1 year",
+      getDates: () => {
+        const today = new Date();
+        const oneYearAgo = subYears(today, 1);
+        return { from: oneYearAgo, to: today };
       },
     },
   ];

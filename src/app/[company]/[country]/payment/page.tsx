@@ -19,6 +19,7 @@ import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/utils/currency";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 interface Payment {
@@ -185,9 +186,12 @@ export default function PaymentsPage() {
   return (
     <>
       <header className="border-b bg-white px-6 py-4">
-        <div className="flex items-center gap-3">
-          <SidebarToggleButton />
-          <h1 className="text-xl font-semibold">Payments Made</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <h1 className="text-xl font-semibold">Payments Made</h1>
+          </div>
+          <SwitchAccountButton />
         </div>
       </header>
 

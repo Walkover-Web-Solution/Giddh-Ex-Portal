@@ -47,6 +47,11 @@ export default function AuthPage() {
     setError(null);
 
     try {
+      // Store proxy token for account switching
+      if (token) {
+        localStorage.setItem("proxy_auth_token", token);
+      }
+
       const sessionResponse = await savePortalSession(
         selectedAccount.account,
         selectedAccount.vendorContactUniqueName,
