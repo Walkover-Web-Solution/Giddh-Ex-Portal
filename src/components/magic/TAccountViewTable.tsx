@@ -5,6 +5,7 @@ import { formatCurrencyAmount } from "@/utils/currency";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { useMemo, useState } from "react";
 import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
+import { formatParticularWithPrefix } from "@/utils/magic/transformLedgerTransaction";
 
 interface Props {
   transactions: Transaction[];
@@ -172,7 +173,7 @@ export function TAccountViewTable({
                       </div>
                       <div className="line-clamp-2 text-[10px] sm:text-xs">
                         {isLedgerTransaction(dr)
-                          ? dr.particular.name
+                          ? formatParticularWithPrefix(dr.particular.name, dr.type)
                           : (dr as Transaction).particular}
                       </div>
                       <div className="flex items-center justify-end gap-1.5">
@@ -270,7 +271,7 @@ export function TAccountViewTable({
                       </div>
                       <div className="line-clamp-2 text-[10px] sm:text-xs">
                         {isLedgerTransaction(cr)
-                          ? cr.particular.name
+                          ? formatParticularWithPrefix(cr.particular.name, cr.type)
                           : (cr as Transaction).particular}
                       </div>
                       <div className="flex items-center justify-end gap-1.5">

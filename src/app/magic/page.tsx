@@ -48,6 +48,10 @@ export default function Magic() {
   const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
   const [toDate, setToDate] = useState<Date>(today);
   const hasSetDatesFromAPI = useRef(false);
+  const isUpdatingDatesFromAPI = useRef(false);
+  const isInitialMount = useRef(true);
+  const prevFromDateRef = useRef<Date>(thirtyDaysAgo);
+  const prevToDateRef = useRef<Date>(today);
 
   const formatDateForAPI = (date: Date): string => {
     const day = String(date.getDate()).padStart(2, "0");
@@ -57,6 +61,13 @@ export default function Magic() {
   };
 
   useEffect(() => {
+    if (isUpdatingDatesFromAPI.current) {
+      queueMicrotask(() => {
+        isUpdatingDatesFromAPI.current = false;
+      });
+      return;
+    }
+
     if (!linkId) {
       setError(
         "A valid link ID is required to view this account’s transactions. Please check your link and try again."
@@ -107,7 +118,13 @@ export default function Magic() {
             setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
           }
 
-          if (dateRange?.from && dateRange?.to && !hasSetDatesFromAPI.current) {
+          // Only update dates from API on initial load
+          if (
+            dateRange?.from &&
+            dateRange?.to &&
+            !hasSetDatesFromAPI.current &&
+            isInitialMount.current
+          ) {
             const parseDateFromString = (dateStr: string): Date => {
               const parts = dateStr.split("-");
               if (parts.length === 3) {
@@ -123,10 +140,15 @@ export default function Magic() {
             const apiToDate = parseDateFromString(dateRange.to);
 
             if (!isNaN(apiFromDate.getTime()) && !isNaN(apiToDate.getTime())) {
+              isUpdatingDatesFromAPI.current = true;
+              hasSetDatesFromAPI.current = true;
               setFromDate(apiFromDate);
               setToDate(apiToDate);
-              hasSetDatesFromAPI.current = true;
             }
+          }
+
+          if (isInitialMount.current) {
+            isInitialMount.current = false;
           }
         } else {
           setError(result.error || "Failed to load ledger data");
@@ -149,7 +171,7 @@ export default function Magic() {
     };
 
     fetchMagicLinkData();
-  }, [linkId, viewMode, fromDate, toDate]);
+  }, [linkId, viewMode, fromDate.getTime(), toDate.getTime()]);
 
   const parseTransactionDate = (dateString: string): Date => {
     if (!dateString) return new Date();

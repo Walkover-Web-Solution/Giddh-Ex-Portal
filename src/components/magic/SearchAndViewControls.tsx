@@ -35,7 +35,7 @@ export function SearchAndViewControls({
       : [];
   return (
     <div className="w-full border-blue-900/20 bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+      <div className="mx-auto max-w-7xl py-3 sm:py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="relative w-full sm:max-w-xs">
             <svg

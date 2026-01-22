@@ -4,7 +4,10 @@ import {
   LedgerTransaction,
 } from "./getMagicLinkLedger";
 import { Transaction, CurrencyData, CurrencyInfo } from "@/components/magic/types";
-import { transformLedgerTransactionToDisplay } from "./transformLedgerTransaction";
+import {
+  transformLedgerTransactionToDisplay,
+  formatParticularWithPrefix,
+} from "./transformLedgerTransaction";
 
 export interface MagicLinkData {
   transactions: Transaction[];
@@ -113,7 +116,7 @@ export const getMagicLinkData = async (
       const allTransactions: Partial<Transaction>[] = [
         ...(debitTransactions || []).map((tx) => ({
           date: tx.entryDate,
-          particular: tx.particular.name,
+          particular: formatParticularWithPrefix(tx.particular.name, tx.type),
           debit: tx.amount,
           debitConverted: getConvertedAmount(tx),
           credit: null,
@@ -126,7 +129,7 @@ export const getMagicLinkData = async (
         })),
         ...(creditTransactions || []).map((tx) => ({
           date: tx.entryDate,
-          particular: tx.particular.name,
+          particular: formatParticularWithPrefix(tx.particular.name, tx.type),
           debit: null,
           debitConverted: null,
           credit: tx.amount,

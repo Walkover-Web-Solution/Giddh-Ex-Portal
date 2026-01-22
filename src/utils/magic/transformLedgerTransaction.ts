@@ -7,6 +7,20 @@ import { Transaction } from "@/components/magic/types";
  * @param includeOriginalTx - Whether to include the original tx reference (needed for downloads)
  * @returns A Transaction object ready for display
  */
+/**
+ * Formats the particular field with appropriate prefix based on transaction type
+ * @param particular - The particular name
+ * @param type - The transaction type (DEBIT or CREDIT)
+ * @returns Formatted particular with prefix
+ */
+export function formatParticularWithPrefix(particular: string, type: "DEBIT" | "CREDIT"): string {
+  if (type === "DEBIT") {
+    return `To ${particular}`;
+  } else {
+    return `By ${particular}`;
+  }
+}
+
 export function transformLedgerTransactionToDisplay(
   tx: LedgerTransaction,
   includeOriginalTx: boolean = false
@@ -16,7 +30,7 @@ export function transformLedgerTransactionToDisplay(
 
   const transaction: Transaction & { tx?: LedgerTransaction } = {
     date: tx.entryDate,
-    particular: tx.particular.name,
+    particular: formatParticularWithPrefix(tx.particular.name, tx.type),
     debit: isDebit ? tx.amount : null,
     debitConverted: isDebit && tx.convertedAmount ? tx.convertedAmount : null,
     credit: !isDebit ? tx.amount : null,
