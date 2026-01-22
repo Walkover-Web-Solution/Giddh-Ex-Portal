@@ -1,11 +1,12 @@
 "use client";
 
-import { Currency, CurrencyInfo } from "./types";
+import { Currency, CurrencyInfo, Transaction } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
 import { useState, useMemo } from "react";
 import { getCurrencyConfig, getPrimaryAmount, getSecondaryAmount } from "./currencyUtils";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
+import { transformLedgerTransactionToDisplay } from "@/utils/magic/transformLedgerTransaction";
 
 interface Props {
   selectedCurrency: Currency;
@@ -90,55 +91,22 @@ export function StatementViewTable({
     }
   };
 
-  // Prepare transactions from debitCreditTransactions
+  // Transform debitCreditTransactions using shared utility function
   const displayTransactions = useMemo(() => {
     if (!debitCreditTransactions || debitCreditTransactions.length === 0) {
       return [];
     }
 
-    const transactions: Array<{
-      tx: LedgerTransaction;
-      date: string;
-      particular: string;
-      debit: number | null;
-      debitConverted: number | null;
-      credit: number | null;
-      creditConverted: number | null;
-      closingBalance: number;
-      closingBalanceConverted: number;
-      balanceType: "Dr" | "Cr";
-      voucherGenerated: boolean;
-      voucherNumber?: string;
-      voucherName?: string;
-      voucherUniqueName?: string;
-      entryUniqueName?: string;
-    }> = debitCreditTransactions.map((tx) => {
-      const isDebit = tx.type === "DEBIT";
-      const closing = tx.closing || { amount: 0, convertedAmount: 0, type: "DEBIT" as const };
-
-      return {
-        tx,
-        date: tx.entryDate,
-        particular: tx.particular.name,
-        debit: isDebit ? tx.amount : null,
-        debitConverted: isDebit && tx.convertedAmount ? tx.convertedAmount : null,
-        credit: !isDebit ? tx.amount : null,
-        creditConverted: !isDebit && tx.convertedAmount ? tx.convertedAmount : null,
-        closingBalance: closing.amount,
-        closingBalanceConverted: closing.convertedAmount ?? closing.amount,
-        balanceType: closing.type === "DEBIT" ? "Dr" : "Cr",
-        voucherGenerated: tx.voucherGenerated ?? false,
-        voucherNumber: tx.voucherNumber,
-        voucherName: tx.voucherName,
-        voucherUniqueName: tx.voucherUniqueName,
-        entryUniqueName: tx.entryUniqueName,
-      };
-    });
+    // Use shared utility function to transform, including original tx reference for downloads
+    const transactions: Array<Transaction & { tx: LedgerTransaction }> =
+      debitCreditTransactions.map(
+        (tx) =>
+          transformLedgerTransactionToDisplay(tx, true) as Transaction & { tx: LedgerTransaction }
+      );
 
     // Add forwarded balance at the beginning if it exists
     if (forwardedBalance) {
       transactions.unshift({
-        tx: {} as LedgerTransaction, // Placeholder, won't be used
         date: "", // Will be set from date range if available
         particular: forwardedBalance.description || "To Balance b/d",
         debit: null,
@@ -149,7 +117,12 @@ export function StatementViewTable({
         closingBalanceConverted: forwardedBalance.amount,
         balanceType: forwardedBalance.type === "DEBIT" ? "Dr" : "Cr",
         voucherGenerated: false,
-      });
+        voucherNumber: undefined,
+        voucherName: undefined,
+        voucherUniqueName: undefined,
+        entryUniqueName: undefined,
+        tx: {} as LedgerTransaction, // Placeholder, won't be used
+      } as Transaction & { tx: LedgerTransaction });
     }
 
     return transactions;
@@ -203,7 +176,7 @@ export function StatementViewTable({
             ) : (
               displayTransactions.map((item, i) => {
                 // Always include index to ensure uniqueness even when entryUniqueName is duplicated
-                const transactionId = `tx-${i}-${item.entryUniqueName || item.voucherNumber || "tx"}`;
+                const transactionId = `tx-${i}-${item.entryUniqueName ?? item.voucherNumber ?? "tx"}`;
                 const isDownloadingThis = downloadingTransactionId === transactionId;
 
                 return (

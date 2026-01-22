@@ -4,6 +4,7 @@ import {
   LedgerTransaction,
 } from "./getMagicLinkLedger";
 import { Transaction, CurrencyData, CurrencyInfo } from "@/components/magic/types";
+import { transformLedgerTransactionToDisplay } from "./transformLedgerTransaction";
 
 export interface MagicLinkData {
   transactions: Transaction[];
@@ -84,28 +85,10 @@ export const getMagicLinkData = async (
     let apiTransactions: Transaction[] = [];
 
     if (viewMode === "statement" && debitCreditTransactions && debitCreditTransactions.length > 0) {
-      apiTransactions = debitCreditTransactions.map((tx: any) => {
-        const isDebit = tx.type === "DEBIT";
-        const closing = tx.closing || { amount: 0, type: "DEBIT" as const };
-
-        return {
-          date: tx.entryDate,
-          particular: tx.particular.name,
-          debit: isDebit ? tx.amount : null,
-          debitConverted: isDebit && tx.convertedAmount ? tx.convertedAmount : null,
-          credit: !isDebit ? tx.amount : null,
-          creditConverted: !isDebit && tx.convertedAmount ? tx.convertedAmount : null,
-          closingBalance: closing.amount,
-          closingBalanceConverted: closing.convertedAmount ?? closing.amount,
-          balanceType: closing.type === "DEBIT" ? "Dr" : "Cr",
-          // Voucher information
-          voucherGenerated: tx.voucherGenerated ?? false,
-          voucherNumber: tx.voucherNumber,
-          voucherName: tx.voucherName,
-          voucherUniqueName: tx.voucherUniqueName,
-          entryUniqueName: tx.entryUniqueName,
-        };
-      });
+      // Transform with original tx reference included for download functionality
+      apiTransactions = debitCreditTransactions.map((tx: LedgerTransaction) =>
+        transformLedgerTransactionToDisplay(tx, true)
+      );
 
       const forwardedBalance = response.body.ledgersTransactions.forwardedBalance;
       if (forwardedBalance) {

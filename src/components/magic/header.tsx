@@ -1,4 +1,4 @@
-import { DateRangeCalendar } from "./DateRangeCalendar";
+import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
 
 interface HeaderProps {
   companyName: string;

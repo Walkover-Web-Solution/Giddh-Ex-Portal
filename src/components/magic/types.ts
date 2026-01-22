@@ -8,12 +8,12 @@ export interface Transaction {
   closingBalance: number;
   closingBalanceConverted: number;
   balanceType: "Dr" | "Cr";
-  // Voucher information for download
   voucherGenerated?: boolean;
   voucherNumber?: string;
   voucherName?: string;
   voucherUniqueName?: string;
   entryUniqueName?: string;
+  tx?: any; // Using any to avoid circular dependency, but should be LedgerTransaction
 }
 
 export type Currency = string;
