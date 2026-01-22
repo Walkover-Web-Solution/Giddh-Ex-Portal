@@ -70,7 +70,15 @@ export default function Magic() {
       setError(null);
 
       try {
-        const result = await getMagicLinkData({ linkId, sort: "asc" }, viewMode);
+        const result = await getMagicLinkData(
+          {
+            linkId,
+            sort: "asc",
+            from: formatDateForAPI(fromDate),
+            to: formatDateForAPI(toDate),
+          },
+          viewMode
+        );
 
         if (result.success && result.data) {
           const {
@@ -211,6 +219,64 @@ export default function Magic() {
     });
   }, [transactions, searchQuery, fromDate, toDate]);
 
+  // Filter LedgerTransaction arrays based on search query (particular and amount)
+  const filteredDebitCreditTransactions = useMemo(() => {
+    const searchValue = searchQuery.toLowerCase().trim();
+    const hasSearchQuery = searchValue.length > 0;
+
+    if (!debitCreditTransactions || debitCreditTransactions.length === 0) {
+      return debitCreditTransactions;
+    }
+
+    if (!hasSearchQuery) {
+      return debitCreditTransactions;
+    }
+
+    return debitCreditTransactions.filter((tx) => {
+      const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
+      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      return matchesParticular || matchesAmount;
+    });
+  }, [debitCreditTransactions, searchQuery]);
+
+  const filteredDebitTransactions = useMemo(() => {
+    const searchValue = searchQuery.toLowerCase().trim();
+    const hasSearchQuery = searchValue.length > 0;
+
+    if (!debitTransactions || debitTransactions.length === 0) {
+      return debitTransactions;
+    }
+
+    if (!hasSearchQuery) {
+      return debitTransactions;
+    }
+
+    return debitTransactions.filter((tx) => {
+      const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
+      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      return matchesParticular || matchesAmount;
+    });
+  }, [debitTransactions, searchQuery]);
+
+  const filteredCreditTransactions = useMemo(() => {
+    const searchValue = searchQuery.toLowerCase().trim();
+    const hasSearchQuery = searchValue.length > 0;
+
+    if (!creditTransactions || creditTransactions.length === 0) {
+      return creditTransactions;
+    }
+
+    if (!hasSearchQuery) {
+      return creditTransactions;
+    }
+
+    return creditTransactions.filter((tx) => {
+      const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
+      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      return matchesParticular || matchesAmount;
+    });
+  }, [creditTransactions, searchQuery]);
+
   const handlePrint = () => {
     window.print();
   };
@@ -279,10 +345,20 @@ export default function Magic() {
             convertedCurrency={currencyData?.convertedCurrency}
             linkId={linkId}
             debitCreditTransactions={
-              debitCreditTransactions.length > 0 ? debitCreditTransactions : undefined
+              filteredDebitCreditTransactions && filteredDebitCreditTransactions.length > 0
+                ? filteredDebitCreditTransactions
+                : undefined
             }
-            debitTransactions={debitTransactions.length > 0 ? debitTransactions : undefined}
-            creditTransactions={creditTransactions.length > 0 ? creditTransactions : undefined}
+            debitTransactions={
+              filteredDebitTransactions && filteredDebitTransactions.length > 0
+                ? filteredDebitTransactions
+                : undefined
+            }
+            creditTransactions={
+              filteredCreditTransactions && filteredCreditTransactions.length > 0
+                ? filteredCreditTransactions
+                : undefined
+            }
             forwardedBalance={forwardedBalance}
           />
         </section>

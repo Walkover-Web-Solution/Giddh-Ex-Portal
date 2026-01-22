@@ -3,6 +3,7 @@ export { MagicTopControls } from "./MagicTopControls";
 export { SearchAndViewControls } from "./SearchAndViewControls";
 export { LedgerTable } from "./LedgerTable";
 export { Footer } from "./footer";
+export { DateRangeCalendar } from "./DateRangeCalendar";
 export type {
   Transaction,
   Currency,

@@ -55,6 +55,8 @@ export interface GetMagicLinkLedgerRequest {
   linkId: string;
   sort?: "asc" | "desc";
   viewMode?: "statement" | "t";
+  from?: string;
+  to?: string;
 }
 
 export const getMagicLinkLedger = async (
@@ -66,11 +68,21 @@ export const getMagicLinkLedger = async (
     const url = `${baseURL}/magic-link-ledger/${request.linkId}`;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
 
+    const params: Record<string, string> = {
+      sort: request.sort || "asc",
+      ledgerView: request.viewMode === "t" ? "T_VIEW" : "STATEMENT_VIEW",
+    };
+
+    // Add date parameters if provided
+    if (request.from) {
+      params.from = request.from;
+    }
+    if (request.to) {
+      params.to = request.to;
+    }
+
     const response = await axios.get(url, {
-      params: {
-        sort: request.sort || "asc",
-        ledgerView: request.viewMode === "t" ? "T_VIEW" : "STATEMENT_VIEW",
-      },
+      params,
       headers: {
         accept: "application/json, text/plain, */*",
         "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
