@@ -1,4 +1,5 @@
 import axios from "axios";
+import { config } from "@/config";
 
 export interface LedgerTransaction {
   particular: {
@@ -63,7 +64,7 @@ export const getMagicLinkLedger = async (
   request: GetMagicLinkLedgerRequest
 ): Promise<MagicLinkLedgerResponse> => {
   try {
-    const baseURL = process.env.NEXT_PUBLIC_GIDDH_API_URL;
+    const baseURL = config.NEXT_PUBLIC_GIDDH_API_URL;
 
     const url = `${baseURL}/magic-link-ledger/${request.linkId}`;
     const origin = typeof window !== "undefined" ? window.location.origin : "";

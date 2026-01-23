@@ -2,7 +2,7 @@
 
 ## Overview
 
-Giddh Portal is built using Next.js 14 with the App Router, TypeScript, Redux Toolkit for state management, and Tailwind CSS for styling. The application follows a feature-based architecture with clear separation of concerns.
+Giddh Portal is built using Next.js 16 with the App Router, TypeScript, Redux Toolkit for state management, and Tailwind CSS for styling. The application follows a feature-based architecture with clear separation of concerns and a centralized configuration system.
 
 ## Tech Stack
 
@@ -10,7 +10,7 @@ Giddh Portal is built using Next.js 14 with the App Router, TypeScript, Redux To
 
 | Technology    | Version | Purpose                         |
 | ------------- | ------- | ------------------------------- |
-| Next.js       | 14.2.35 | React framework with App Router |
+| Next.js       | 16.1.1  | React framework with App Router |
 | TypeScript    | Latest  | Type-safe development           |
 | Redux Toolkit | Latest  | State management                |
 | Tailwind CSS  | Latest  | Utility-first CSS framework     |
@@ -40,6 +40,7 @@ src/
 │   │       ├── login/            # Login page
 │   │       └── welcome/          # Welcome page
 │   ├── auth/                     # Authentication pages
+│   ├── magic/                    # Magic link pages
 │   ├── globals.css               # Global styles
 │   ├── layout.tsx                # Root layout
 │   └── page.tsx                  # Home page
@@ -58,6 +59,20 @@ src/
 │   ├── PayNow.tsx                # Payment gateway integration
 │   └── Sidebar.tsx               # Navigation sidebar
 │
+├── config/                        # Configuration system
+│   ├── default.ts                # Default configuration values
+│   └── index.ts                  # Config exports
+│
+├── contexts/                      # React contexts
+│   ├── ConfigContext.tsx         # Configuration context
+│   └── SidebarContext.tsx        # Sidebar state context
+│
+├── hooks/                         # Custom React hooks
+│   └── useAppConfig.ts           # Configuration hook
+│
+├── services/                      # Service layer
+│   └── whitelabel.ts             # White-label API service
+│
 ├── store/                         # Redux store
 │   ├── slices/
 │   │   └── companySlice.ts       # Company state management
@@ -65,6 +80,8 @@ src/
 │   └── store.ts                  # Store configuration
 │
 ├── utils/                         # API utilities
+│   ├── magic/                    # Magic link utilities
+│   ├── proxy/                    # Proxy authentication utilities
 │   ├── accountStatement.ts       # Account statement APIs
 │   ├── invoicePreview.ts         # Invoice preview APIs
 │   ├── payment.ts                # Payment APIs
@@ -380,11 +397,12 @@ try {
 npm run build
 ```
 
-### Environment Variables
+### Configuration System
 
-- `.env.production` for production
-- `.env` for development
-- API base URLs configured per environment
+- **Centralized Config**: All configuration in `src/config/default.ts`
+- **No Environment Files**: Configuration is hardcoded (white-label feature disabled)
+- **Type-Safe**: Full TypeScript support for all config values
+- **Easy Access**: Use `useAppConfig()` hook in components or `config` import in utilities
 
 ### Static Generation
 

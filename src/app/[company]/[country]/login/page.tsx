@@ -6,11 +6,13 @@ import { useAppDispatch } from "@/store/hooks";
 import { setCompanyData } from "@/store/slices/companySlice";
 import { getSessionCookie } from "@/utils/cookies";
 import { sessionManager } from "@/utils/sessionManager";
+import { useAppConfig } from "@/hooks/useAppConfig";
 
 export default function LoginPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { referenceId } = useAppConfig();
   const company = params?.company as string;
   const country = params?.country as string;
 
@@ -38,7 +40,7 @@ export default function LoginPage() {
 
     script.onload = () => {
       (window as any).initVerification?.({
-        referenceId: process.env.NEXT_PUBLIC_REFERENCE_ID,
+        referenceId,
         success: () => {
           console.log("Login initialized successfully");
         },
@@ -55,7 +57,7 @@ export default function LoginPage() {
         document.body.removeChild(script);
       }
     };
-  }, []);
+  }, [referenceId]);
 
   return (
     <>
@@ -65,7 +67,7 @@ export default function LoginPage() {
           <p className="mb-6 text-center text-sm text-gray-600 sm:text-base">
             Welcome back! Please enter your details.
           </p>
-          <div id={process.env.NEXT_PUBLIC_REFERENCE_ID} className="auth-container" />
+          <div id={referenceId} className="auth-container" />
         </div>
       </div>
     </>

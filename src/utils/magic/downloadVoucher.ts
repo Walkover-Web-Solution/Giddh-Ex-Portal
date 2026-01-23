@@ -1,4 +1,5 @@
 import axios from "axios";
+import { config } from "@/config";
 
 export interface DownloadVoucherRequest {
   linkId: string;
@@ -16,11 +17,7 @@ export interface DownloadVoucherRequest {
  */
 export async function downloadMagicLinkVoucher(request: DownloadVoucherRequest): Promise<void> {
   try {
-    // Use NEXT_PUBLIC_ prefix for client-side access, with fallback
-    const baseURL =
-      process.env.NEXT_PUBLIC_NEXT_GIDDH_API_URL ||
-      process.env.NEXT_GIDDH_API_URL ||
-      "https://apitest.giddh.com";
+    const baseURL = config.NEXT_PUBLIC_GIDDH_API_URL;
     const voucherVersion = request.voucherVersion || 2;
     const linkId = request.linkId;
 

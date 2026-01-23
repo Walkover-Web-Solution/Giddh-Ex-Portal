@@ -10,9 +10,10 @@ The Giddh Portal integrates with backend APIs to manage invoices, payments, acco
 
 ```typescript
 import axios from "axios";
+import { config as appConfig } from "@/config";
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.giddh.com",
+  baseURL: appConfig.NEXT_PUBLIC_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -717,10 +718,41 @@ const url = `/portal/company/${encodeURIComponent(companyUniqueName)}/accounts/$
 - Use debouncing for search/filter operations
 - Cache responses in Redux when possible
 
-## Environment Variables
+## Configuration System
 
-```env
-NEXT_PUBLIC_API_BASE_URL=https://api.giddh.com
+The application uses a centralized configuration system located in `src/config/`:
+
+```typescript
+// src/config/default.ts
+export const DEFAULT_CONFIG: AppConfig = {
+  disableWhiteLabel: true,
+  NEXT_PUBLIC_REFERENCE_ID: "1362783l1767680954695cabba5ada1",
+  NEXT_PUBLIC_GIDDH_API_URL: "https://apitest.giddh.com",
+  NEXT_PUBLIC_PROXY_URL: "https://routes.msg91.com",
+  NEXT_PUBLIC_API_URL: "https://routes.msg91.com/api/proxy/117230/24lvqun1",
+  NEXT_PUBLIC_PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
+  NEXT_PUBLIC_REFERENCE_ID_UK: "117230d172709659666f16714325b0",
+  NEXT_PUBLIC_API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2",
+};
+```
+
+### Usage in Components
+
+```typescript
+import { useAppConfig } from "@/hooks/useAppConfig";
+
+function MyComponent() {
+  const { apiUrl, giddhApiUrl, referenceId } = useAppConfig();
+  // Use config values
+}
+```
+
+### Usage in Utilities
+
+```typescript
+import { config } from "@/config";
+
+const baseUrl = config.NEXT_PUBLIC_API_URL;
 ```
 
 ## Testing APIs

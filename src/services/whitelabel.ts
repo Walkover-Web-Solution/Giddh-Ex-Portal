@@ -1,4 +1,5 @@
 import { DEFAULT_CONFIG, type AppConfig } from "@/config/default";
+import { config } from "@/config";
 
 const WHITELABEL_API_TIMEOUT = 10000;
 
@@ -14,10 +15,10 @@ interface WhitelabelResponse {
 
 export async function fetchWhitelabelConfig(): Promise<AppConfig> {
   try {
-    const whitelabelApiUrl = process.env.NEXT_PUBLIC_WHITELABEL_API_URL;
+    const whitelabelApiUrl = "";
 
     if (!whitelabelApiUrl) {
-      console.warn("NEXT_PUBLIC_WHITELABEL_API_URL not configured, using default config");
+      console.warn("Whitelabel API URL not configured, using default config");
       return DEFAULT_CONFIG;
     }
 

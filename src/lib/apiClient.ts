@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { getSessionCookie } from "@/utils/cookies";
+import { config as appConfig } from "@/config";
 
 class ApiClient {
   private instance: AxiosInstance;
@@ -39,12 +40,12 @@ class ApiClient {
           }
 
           if (country === "uk") {
-            config.baseURL = process.env.NEXT_PUBLIC_API_URL_UK || process.env.NEXT_PUBLIC_API_URL;
+            config.baseURL = appConfig.NEXT_PUBLIC_API_URL_UK;
           } else {
-            config.baseURL = process.env.NEXT_PUBLIC_API_URL;
+            config.baseURL = appConfig.NEXT_PUBLIC_API_URL;
           }
         } else {
-          config.baseURL = process.env.NEXT_PUBLIC_API_URL;
+          config.baseURL = appConfig.NEXT_PUBLIC_API_URL;
         }
 
         return config;
