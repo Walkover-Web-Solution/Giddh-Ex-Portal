@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
 import getAccountsList, { Account } from "@/utils/getAccountsList";
@@ -196,7 +197,7 @@ export const fetchBalanceSummary = createAsyncThunk(
     uniqueName: string;
   }) => {
     const response = await apiClient.get(
-      `/portal/company/${companyUniqueName}/accounts/${uniqueName}/vouchers/balance-summary`,
+      API_PATHS.vouchersBalanceSummary(companyUniqueName, uniqueName),
       {
         params: {
           voucherVersion: 2,

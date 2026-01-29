@@ -1,4 +1,5 @@
 import axios from "axios";
+import { PROXY_API_PATHS } from "@/constants/apiPaths";
 import type { VerifyPortalUserResponse } from "./types";
 
 export const verifyPortalUser = async (
@@ -7,9 +8,10 @@ export const verifyPortalUser = async (
   token: string
 ): Promise<VerifyPortalUserResponse> => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "";
+  const url = `${baseUrl}/${PROXY_API_PATHS.VERIFY_PORTAL_USER}`;
 
   const response = await axios.post<VerifyPortalUserResponse>(
-    `${baseUrl}/v2/verify-portal-user`,
+    url,
     {
       emailId,
       subDomain,

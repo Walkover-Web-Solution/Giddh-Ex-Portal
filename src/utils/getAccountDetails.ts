@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 
 export interface AccountAddress {
   gstNumber: string;
@@ -29,7 +30,7 @@ export default async function getAccountDetails(
   accountUniqueName: string
 ): Promise<AccountDetailsResponse> {
   const response = await apiClient.get(
-    `/portal/company/${companyUniqueName}/accounts/${accountUniqueName}/details`
+    API_PATHS.accountDetails(companyUniqueName, accountUniqueName)
   );
   return response.data;
 }

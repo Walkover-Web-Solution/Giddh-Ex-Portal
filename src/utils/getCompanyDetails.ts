@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 
 export interface CompanyInfo {
   name: string;
@@ -23,7 +24,7 @@ export default async function getCompanyDetails(
   accountUniqueName: string
 ): Promise<CompanyDetailsResponse> {
   const response = await apiClient.get(
-    `/portal/company/${companyUniqueName}/accounts/${accountUniqueName}/get-company-details`
+    API_PATHS.companyDetails(companyUniqueName, accountUniqueName)
   );
   return response.data;
 }

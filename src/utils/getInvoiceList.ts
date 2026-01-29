@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 
 export interface InvoiceVoucher {
   uniqueName: string;
@@ -49,7 +50,7 @@ export default async function getInvoiceList({
   uniqueNames = [],
 }: GetInvoiceListParams): Promise<InvoiceListResponse> {
   const response = await apiClient.post(
-    `/portal/company/${companyUniqueName}/accounts/${accountUniqueName}/vouchers/get-all`,
+    API_PATHS.vouchersGetAll(companyUniqueName, accountUniqueName),
     {
       companyUniqueName,
       accountUniqueName,

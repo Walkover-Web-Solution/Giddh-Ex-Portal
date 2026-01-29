@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 
 export interface BalanceAmount {
   amount: number;
@@ -69,7 +70,15 @@ export async function getAccountStatement(
   request: AccountStatementRequest
 ): Promise<AccountStatementResponse> {
   const response = await apiClient.get(
-    `/portal/company/${encodeURIComponent(request.companyUniqueName)}/accounts/${encodeURIComponent(request.accountUniqueName)}/view-statement?page=${request.page}&count=${request.count}&from=${request.from}&to=${request.to}&sort=${request.sort}`
+    API_PATHS.viewStatement(
+      request.companyUniqueName,
+      request.accountUniqueName,
+      request.page,
+      request.count,
+      request.from,
+      request.to,
+      request.sort
+    )
   );
   return response.data;
 }
@@ -78,7 +87,15 @@ export async function downloadAccountStatement(
   request: AccountStatementRequest
 ): Promise<{ status: string; body: { data: string; type: string; name: string } }> {
   const response = await apiClient.get(
-    `/portal/company/${encodeURIComponent(request.companyUniqueName)}/accounts/${encodeURIComponent(request.accountUniqueName)}/export-account-statement?page=${request.page}&count=${request.count}&from=${request.from}&to=${request.to}&sort=${request.sort}`
+    API_PATHS.exportAccountStatement(
+      request.companyUniqueName,
+      request.accountUniqueName,
+      request.page,
+      request.count,
+      request.from,
+      request.to,
+      request.sort
+    )
   );
   return response.data;
 }

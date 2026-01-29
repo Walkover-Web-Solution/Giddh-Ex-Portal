@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 
 export interface VoucherDetails {
   content: string;
@@ -42,7 +43,7 @@ export async function getPaymentMethods(
   }
 
   const response = await apiClient.get(
-    `/portal/company/${companyUniqueName}/accounts/${accountUniqueName}/payment-methods`,
+    API_PATHS.paymentMethodsBase(companyUniqueName, accountUniqueName),
     { headers }
   );
   return response.data;
@@ -57,7 +58,7 @@ export async function getVoucherDetails(
   }
 
   const response = await apiClient.post(
-    `/portal/company/${request.companyUniqueName}/accounts/${request.accountUniqueName}/invoice-pay-request?voucherVersion=2`,
+    API_PATHS.invoicePayRequest(request.companyUniqueName, request.accountUniqueName),
     [request.voucherUniqueName],
     { headers }
   );
@@ -73,7 +74,11 @@ export async function getInvoiceComments(
   }
 
   const response = await apiClient.get(
-    `/portal/company/${request.companyUniqueName}/accounts/${request.accountUniqueName}/${request.voucherUniqueName}/comments?voucherVersion=2`,
+    API_PATHS.voucherComments(
+      request.companyUniqueName,
+      request.accountUniqueName,
+      request.voucherUniqueName
+    ),
     { headers }
   );
   return response.data;
@@ -91,7 +96,11 @@ export async function addComment(
   }
 
   const response = await apiClient.post(
-    `/portal/company/${request.companyUniqueName}/accounts/${request.accountUniqueName}/${request.voucherUniqueName}/add-comment?voucherVersion=2`,
+    API_PATHS.voucherAddComment(
+      request.companyUniqueName,
+      request.accountUniqueName,
+      request.voucherUniqueName
+    ),
     { description: commentText },
     { headers }
   );
@@ -107,7 +116,7 @@ export async function downloadVoucher(
   }
 
   const response = await apiClient.post(
-    `/portal/company/${request.companyUniqueName}/accounts/${request.accountUniqueName}/download-file?voucherVersion=2&fileType=base64`,
+    API_PATHS.downloadFile(request.companyUniqueName, request.accountUniqueName),
     [request.voucherUniqueName],
     { headers }
   );
