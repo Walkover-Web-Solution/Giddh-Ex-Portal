@@ -10,14 +10,16 @@ Welcome to the Giddh Portal documentation. This directory contains comprehensive
 - **[Redux State Management](./REDUX.md)** - Store configuration, slices, selectors, and async thunks
 - **[API Documentation](./API.md)** - API endpoints, utilities, request/response formats
 - **[Routing](./ROUTING.md)** - Next.js routing structure and navigation patterns
+- **[White-Label Configuration](./WHITELABEL_CONFIG.md)** - Configuration system and white-label setup
 
 ### 🔧 Technical Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **State Management**: Redux Toolkit
 - **Styling**: Tailwind CSS
 - **HTTP Client**: Axios
+- **Configuration**: Centralized config system
 
 ### 📖 Quick Links
 
@@ -54,6 +56,9 @@ giddh-portal/
 │   │   │       ├── account-statement/
 │   │   │       └── ...
 │   ├── components/            # Reusable React components
+│   ├── config/                # Configuration system
+│   ├── contexts/              # React contexts
+│   ├── hooks/                 # Custom React hooks
 │   ├── store/                 # Redux store and slices
 │   ├── utils/                 # API utilities and helpers
 │   ├── lib/                   # Core libraries and configurations

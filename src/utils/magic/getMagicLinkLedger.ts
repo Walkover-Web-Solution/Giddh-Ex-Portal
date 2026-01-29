@@ -1,6 +1,7 @@
 import axios from "axios";
 import { LedgerView, LedgerTransactionType, MagicLinkViewMode } from "@/constants/ledger";
 import { SortOrder } from "@/constants/sort";
+import { config } from "@/config";
 
 export interface LedgerTransaction {
   particular: {
@@ -65,7 +66,7 @@ export const getMagicLinkLedger = async (
   request: GetMagicLinkLedgerRequest
 ): Promise<MagicLinkLedgerResponse> => {
   try {
-    const baseURL = process.env.NEXT_PUBLIC_GIDDH_API_URL;
+    const baseURL = config.NEXT_PUBLIC_GIDDH_API_URL;
 
     const pathLinkId = encodeURIComponent(request.linkId);
     const basePath = `${baseURL}/magic-link-ledger/${pathLinkId}`;
