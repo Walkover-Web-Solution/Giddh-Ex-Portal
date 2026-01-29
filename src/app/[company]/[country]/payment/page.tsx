@@ -21,14 +21,15 @@ import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { Payment } from "./types";
+import { SortOrder } from "@/constants/sort";
+import type { Payment, PaymentSortColumn } from "./types";
 
 export default function PaymentsPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [sortFilter, setSortFilter] = useState("Amount");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [sortFilter, setSortFilter] = useState<PaymentSortColumn>("Amount");
+  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -55,23 +56,25 @@ export default function PaymentsPage() {
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
 
   const handlePaymentClick = (voucherUniqueName: string) => {
-    router.push(`/${companyName}/${country}/payment/preview?voucher=${voucherUniqueName}`);
+    router.push(
+      `/${companyName}/${country}/payment/preview?voucher=${encodeURIComponent(voucherUniqueName)}`
+    );
   };
 
   const handleClearFilters = () => {
     setSortFilter("Amount");
-    setSortDirection("desc");
+    setSortDirection(SortOrder.DESC);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = sortFilter !== "Amount" || sortDirection !== "desc";
+  const hasActiveFilters = sortFilter !== "Amount" || sortDirection !== SortOrder.DESC;
 
-  const handleSort = (column: "Date" | "Amount") => {
+  const handleSort = (column: PaymentSortColumn) => {
     if (sortFilter === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDirection(sortDirection === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC);
     } else {
       setSortFilter(column);
-      setSortDirection("desc");
+      setSortDirection(SortOrder.DESC);
     }
     setCurrentPage(1);
   };
@@ -106,7 +109,7 @@ export default function PaymentsPage() {
         } else if (sortFilter === "Payment ID") {
           comparison = a.paymentId.localeCompare(b.paymentId);
         }
-        return sortDirection === "asc" ? -comparison : comparison;
+        return sortDirection === SortOrder.ASC ? -comparison : comparison;
       }),
     [paymentsData, sortFilter, sortDirection]
   );
@@ -137,7 +140,7 @@ export default function PaymentsPage() {
           >
             Date
             {sortFilter === "Date" ? (
-              sortDirection === "asc" ? (
+              sortDirection === SortOrder.ASC ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
                 <ArrowDown className="h-4 w-4" />
@@ -157,7 +160,7 @@ export default function PaymentsPage() {
           >
             Amount {getCurrencySymbol(currency)}
             {sortFilter === "Amount" ? (
-              sortDirection === "asc" ? (
+              sortDirection === SortOrder.ASC ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
                 <ArrowDown className="h-4 w-4" />
@@ -195,7 +198,7 @@ export default function PaymentsPage() {
               <select
                 value={sortFilter}
                 onChange={(e) => {
-                  setSortFilter(e.target.value);
+                  setSortFilter(e.target.value as PaymentSortColumn);
                   setCurrentPage(1);
                 }}
                 className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"

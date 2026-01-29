@@ -6,3 +6,6 @@ export interface Invoice {
   status: string;
   overdue: string;
 }
+
+/** Sortable column for invoice list */
+export type InvoiceSortColumn = "Date" | "Total";

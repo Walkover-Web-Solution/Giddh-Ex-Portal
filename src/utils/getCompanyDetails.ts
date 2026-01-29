@@ -1,23 +1,8 @@
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
+import type { CompanyDetailsResponse, CompanyInfo, UserCompanyData } from "@/types/company";
 
-export interface CompanyInfo {
-  name: string;
-  uniqueName: string;
-}
-
-export interface UserCompanyData {
-  name: string;
-  id: string;
-  email: string;
-  companies: CompanyInfo[];
-  currentCompany: CompanyInfo;
-}
-
-export interface CompanyDetailsResponse {
-  status: string;
-  body: UserCompanyData[];
-}
+export type { CompanyDetailsResponse, CompanyInfo, UserCompanyData } from "@/types/company";
 
 export default async function getCompanyDetails(
   companyUniqueName: string,

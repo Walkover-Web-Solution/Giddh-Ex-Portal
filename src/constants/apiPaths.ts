@@ -31,7 +31,7 @@ export const API_PATHS = {
 
   /** POST update payment / pay */
   invoicePay: (c: string, a: string, paymentId: string) =>
-    `${portalAccount(c, a)}/invoices/${paymentId}/pay?voucherVersion=2`,
+    `${portalAccount(c, a)}/invoices/${encodeURIComponent(paymentId)}/pay?voucherVersion=2`,
 
   /** POST download file (base64, voucherVersion=2); company/account encoded */
   downloadFile: (c: string, a: string) =>
@@ -49,7 +49,7 @@ export const API_PATHS = {
 
   /** GET payment vouchers list (receipt type, single uniqueName) */
   paymentVouchersList: (c: string, a: string, uniqueName: string) =>
-    `${portalAccount(c, a, true)}/vouchers?type=receipt&page=1&count=10&uniqueNames=${uniqueName}&voucherVersion=2`,
+    `${portalAccount(c, a, true)}/vouchers?type=receipt&page=1&count=10&uniqueNames=${encodeURIComponent(uniqueName)}&voucherVersion=2`,
 
   /** GET view statement */
   viewStatement: (
@@ -61,7 +61,7 @@ export const API_PATHS = {
     to: string,
     sort: string
   ) =>
-    `${portalAccount(c, a, true)}/view-statement?page=${page}&count=${count}&from=${from}&to=${to}&sort=${sort}`,
+    `${portalAccount(c, a, true)}/view-statement?page=${page}&count=${count}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&sort=${encodeURIComponent(sort)}`,
 
   /** GET export account statement */
   exportAccountStatement: (
@@ -73,15 +73,15 @@ export const API_PATHS = {
     to: string,
     sort: string
   ) =>
-    `${portalAccount(c, a, true)}/export-account-statement?page=${page}&count=${count}&from=${from}&to=${to}&sort=${sort}`,
+    `${portalAccount(c, a, true)}/export-account-statement?page=${page}&count=${count}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&sort=${encodeURIComponent(sort)}`,
 
   /** GET voucher comments */
   voucherComments: (c: string, a: string, voucherUniqueName: string) =>
-    `${portalAccount(c, a)}/${voucherUniqueName}/comments?voucherVersion=2`,
+    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/comments?voucherVersion=2`,
 
   /** POST add comment to voucher */
   voucherAddComment: (c: string, a: string, voucherUniqueName: string) =>
-    `${portalAccount(c, a)}/${voucherUniqueName}/add-comment?voucherVersion=2`,
+    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/add-comment?voucherVersion=2`,
 } as const;
 
 /**

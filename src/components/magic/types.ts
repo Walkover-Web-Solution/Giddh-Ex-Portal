@@ -17,7 +17,7 @@ export interface Transaction {
 }
 
 export type Currency = string;
-export type ViewMode = "statement" | "t";
+export type { MagicLinkViewMode as ViewMode } from "@/constants/ledger";
 
 export interface CurrencyInfo {
   code: string;

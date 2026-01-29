@@ -8,7 +8,13 @@ export {
   BALANCE_TYPE_CR,
   DEFAULT_CLOSING_AMOUNT,
 } from "./ledger";
+export type { LedgerTransactionType } from "./ledger";
+export { SortOrder } from "./sort";
 
+/** Default page number (1-based) */
+export const DEFAULT_PAGE = 1;
+
+/** Default page size / items per page */
 export const PAGINATION_LIMIT = 50;
 
 export const PAGE_SIZE_OPTIONS = [20, 50, 100];

@@ -6,3 +6,6 @@ export interface Payment {
   paymentAccount: string;
   unusedAmount: string;
 }
+
+/** Sortable column for payment list (includes Payment ID from sort dropdown) */
+export type PaymentSortColumn = "Date" | "Amount" | "Payment ID";

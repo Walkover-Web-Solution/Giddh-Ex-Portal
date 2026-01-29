@@ -1,3 +1,4 @@
+import { MagicLinkViewMode } from "@/constants/ledger";
 import { Currency, ViewMode, CurrencyInfo } from "./types";
 
 interface SearchAndViewControlsProps {
@@ -82,8 +83,8 @@ export function SearchAndViewControls({
             <div className="flex rounded-md bg-blue-900/5 p-0.5 sm:p-1">
               {(
                 [
-                  { label: "Statement View", value: "statement" },
-                  { label: "T View", value: "t" },
+                  { label: "Statement View", value: MagicLinkViewMode.STATEMENT },
+                  { label: "T View", value: MagicLinkViewMode.T },
                 ] as { label: string; value: ViewMode }[]
               ).map((view) => (
                 <button
@@ -95,7 +96,7 @@ export function SearchAndViewControls({
                 >
                   <span className="hidden sm:inline">{view.label}</span>
                   <span className="sm:hidden">
-                    {view.value === "statement" ? "Statement" : "T"}
+                    {view.value === MagicLinkViewMode.STATEMENT ? "Statement" : "T"}
                   </span>
                 </button>
               ))}

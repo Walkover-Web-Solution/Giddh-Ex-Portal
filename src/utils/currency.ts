@@ -19,7 +19,7 @@ export function formatCurrencyAmount(
 ): string {
   const { showSymbol = true, showCode = false, decimals = 2 } = options || {};
 
-  const numericAmount = amount ?? 0;
+  const numericAmount = amount !== undefined && amount !== null ? amount : 0;
 
   let currencySymbol = DEFAULT_CURRENCY.symbol;
   let currencyCode = DEFAULT_CURRENCY.code;

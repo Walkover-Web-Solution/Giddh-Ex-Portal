@@ -1,3 +1,4 @@
+import { MagicLinkViewMode } from "@/constants/ledger";
 import {
   getMagicLinkLedger,
   GetMagicLinkLedgerRequest,
@@ -44,7 +45,7 @@ export interface GetMagicLinkDataResult {
  */
 export const getMagicLinkData = async (
   request: GetMagicLinkLedgerRequest,
-  viewMode: "statement" | "t" = "statement"
+  viewMode: MagicLinkViewMode = MagicLinkViewMode.STATEMENT
 ): Promise<GetMagicLinkDataResult> => {
   try {
     const response = await getMagicLinkLedger({ ...request, viewMode });
@@ -60,13 +61,13 @@ export const getMagicLinkData = async (
       response.body.ledgersTransactions;
 
     const firstTransaction =
-      (viewMode === "statement" && debitCreditTransactions?.[0]) ||
+      (viewMode === MagicLinkViewMode.STATEMENT && debitCreditTransactions?.[0]) ||
       debitTransactions?.[0] ||
       creditTransactions?.[0];
 
     const transactionCurrency: CurrencyInfo = {
-      code: firstTransaction?.currencyCode || "INR",
-      symbol: firstTransaction?.currencySymbol || "₹",
+      code: firstTransaction?.currencyCode ?? "",
+      symbol: firstTransaction?.currencySymbol ?? "",
     };
 
     const convertedCurrency: CurrencyInfo = {
@@ -87,7 +88,11 @@ export const getMagicLinkData = async (
 
     let apiTransactions: Transaction[] = [];
 
-    if (viewMode === "statement" && debitCreditTransactions && debitCreditTransactions.length > 0) {
+    if (
+      viewMode === MagicLinkViewMode.STATEMENT &&
+      debitCreditTransactions &&
+      debitCreditTransactions.length > 0
+    ) {
       // Transform with original tx reference included for download functionality
       apiTransactions = debitCreditTransactions.map((tx: LedgerTransaction) =>
         transformLedgerTransactionToDisplay(tx, true)
@@ -193,9 +198,10 @@ export const getMagicLinkData = async (
     const result: MagicLinkData = {
       transactions: apiTransactions,
       // Include raw API response arrays
-      debitCreditTransactions: viewMode === "statement" ? debitCreditTransactions : undefined,
-      debitTransactions: viewMode === "t" ? debitTransactions : undefined,
-      creditTransactions: viewMode === "t" ? creditTransactions : undefined,
+      debitCreditTransactions:
+        viewMode === MagicLinkViewMode.STATEMENT ? debitCreditTransactions : undefined,
+      debitTransactions: viewMode === MagicLinkViewMode.T ? debitTransactions : undefined,
+      creditTransactions: viewMode === MagicLinkViewMode.T ? creditTransactions : undefined,
       forwardedBalance: response.body.ledgersTransactions.forwardedBalance,
       companyName: response.body.companyName || "",
       accountName: response.body.account?.name || "",

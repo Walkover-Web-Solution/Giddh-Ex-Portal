@@ -11,6 +11,8 @@ import {
   ViewMode,
   CurrencyData,
 } from "@/components/magic";
+import { MagicLinkViewMode } from "@/constants/ledger";
+import { SortOrder } from "@/constants/sort";
 import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
@@ -21,7 +23,7 @@ export default function Magic() {
   const linkId = searchParams.get("id") || "";
 
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>("INR");
-  const [viewMode, setViewMode] = useState<ViewMode>("statement");
+  const [viewMode, setViewMode] = useState<ViewMode>(MagicLinkViewMode.STATEMENT);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [companyName, setCompanyName] = useState("");
@@ -84,7 +86,7 @@ export default function Magic() {
         const result = await getMagicLinkData(
           {
             linkId,
-            sort: "asc",
+            sort: SortOrder.ASC,
             from: formatDateForAPI(fromDate),
             to: formatDateForAPI(toDate),
           },

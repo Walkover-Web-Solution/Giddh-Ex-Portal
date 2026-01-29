@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
+import { SortOrder } from "@/constants/sort";
 
 export interface BalanceAmount {
   amount: number;
@@ -63,7 +64,7 @@ export interface AccountStatementRequest {
   count: number;
   from: string;
   to: string;
-  sort: "asc" | "desc";
+  sort: SortOrder;
 }
 
 export async function getAccountStatement(

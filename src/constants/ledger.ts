@@ -2,6 +2,9 @@
 export const LEDGER_TYPE_DEBIT = "DEBIT" as const;
 export const LEDGER_TYPE_CREDIT = "CREDIT" as const;
 
+/** Type for DEBIT | CREDIT (ledger entry / transaction type) */
+export type LedgerTransactionType = typeof LEDGER_TYPE_DEBIT | typeof LEDGER_TYPE_CREDIT;
+
 /** Prefix for particular field in display */
 export const PARTICULAR_PREFIX_DEBIT = "To ";
 export const PARTICULAR_PREFIX_CREDIT = "By ";
@@ -12,3 +15,15 @@ export const BALANCE_TYPE_CR = "Cr" as const;
 
 /** Default amount for missing closing */
 export const DEFAULT_CLOSING_AMOUNT = 0;
+
+/** Magic link ledger view mode (request) */
+export enum MagicLinkViewMode {
+  STATEMENT = "statement",
+  T = "t",
+}
+
+/** Magic link ledger view (API param value) */
+export enum LedgerView {
+  STATEMENT_VIEW = "STATEMENT_VIEW",
+  T_VIEW = "T_VIEW",
+}

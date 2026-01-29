@@ -1,4 +1,6 @@
 import axios from "axios";
+import { LedgerView, LedgerTransactionType, MagicLinkViewMode } from "@/constants/ledger";
+import { SortOrder } from "@/constants/sort";
 
 export interface LedgerTransaction {
   particular: {
@@ -6,7 +8,7 @@ export interface LedgerTransaction {
     uniqueName: string;
   };
   amount: number;
-  type: "DEBIT" | "CREDIT";
+  type: LedgerTransactionType;
   entryDate: string;
   voucherNumber?: string;
   voucherName?: string;
@@ -23,7 +25,7 @@ export interface LedgerTransaction {
   closing?: {
     amount: number;
     convertedAmount?: number;
-    type: "DEBIT" | "CREDIT";
+    type: LedgerTransactionType;
   };
 }
 
@@ -38,7 +40,7 @@ export interface MagicLinkLedgerResponse {
     ledgersTransactions: {
       forwardedBalance?: {
         amount: number;
-        type: "DEBIT" | "CREDIT";
+        type: LedgerTransactionType;
         description?: string;
       };
       debitTransactions: LedgerTransaction[];
@@ -53,8 +55,8 @@ export interface MagicLinkLedgerResponse {
 
 export interface GetMagicLinkLedgerRequest {
   linkId: string;
-  sort?: "asc" | "desc";
-  viewMode?: "statement" | "t";
+  sort?: SortOrder;
+  viewMode?: MagicLinkViewMode;
   from?: string;
   to?: string;
 }
@@ -65,24 +67,25 @@ export const getMagicLinkLedger = async (
   try {
     const baseURL = process.env.NEXT_PUBLIC_GIDDH_API_URL;
 
-    const url = `${baseURL}/magic-link-ledger/${request.linkId}`;
+    const pathLinkId = encodeURIComponent(request.linkId);
+    const basePath = `${baseURL}/magic-link-ledger/${pathLinkId}`;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
 
-    const params: Record<string, string> = {
-      sort: request.sort || "asc",
-      ledgerView: request.viewMode === "t" ? "T_VIEW" : "STATEMENT_VIEW",
-    };
-
-    // Add date parameters if provided
+    const queryParts: string[] = [
+      `sort=${encodeURIComponent(request.sort ?? SortOrder.ASC)}`,
+      `ledgerView=${encodeURIComponent(
+        request.viewMode === MagicLinkViewMode.T ? LedgerView.T_VIEW : LedgerView.STATEMENT_VIEW
+      )}`,
+    ];
     if (request.from) {
-      params.from = request.from;
+      queryParts.push(`from=${encodeURIComponent(request.from)}`);
     }
     if (request.to) {
-      params.to = request.to;
+      queryParts.push(`to=${encodeURIComponent(request.to)}`);
     }
+    const url = `${basePath}?${queryParts.join("&")}`;
 
     const response = await axios.get(url, {
-      params,
       headers: {
         accept: "application/json, text/plain, */*",
         "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",

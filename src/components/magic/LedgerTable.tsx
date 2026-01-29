@@ -1,3 +1,4 @@
+import { MagicLinkViewMode } from "@/constants/ledger";
 import { Transaction, Currency, ViewMode, CurrencyInfo } from "./types";
 import { StatementViewTable } from "./StatementViewTable";
 import { TAccountViewTable } from "./TAccountViewTable";
@@ -32,7 +33,7 @@ export function LedgerTable({
   creditTransactions,
   forwardedBalance,
 }: LedgerTableProps) {
-  if (viewMode === "statement") {
+  if (viewMode === MagicLinkViewMode.STATEMENT) {
     return (
       <StatementViewTable
         selectedCurrency={selectedCurrency}

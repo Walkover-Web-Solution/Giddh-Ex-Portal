@@ -20,7 +20,9 @@ import { Pagination } from "@/components/Pagination";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
+import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
 import { PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { SortOrder } from "@/constants/sort";
 import { useToast } from "@/contexts/ToastContext";
 
 export default function AccountStatementPage() {
@@ -49,7 +51,7 @@ export default function AccountStatementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [totalItems, setTotalItems] = useState(0);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);
   const { showToast } = useToast();
 
   const getCompanyAndAccountNames = () => {
@@ -235,7 +237,7 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between text-gray-600">
                             <span>Opening Balance</span>
                             <span className="font-medium">
-                              {summary.openingBalance.type === "CREDIT" && "-"}
+                              {summary.openingBalance.type === LEDGER_TYPE_CREDIT && "-"}
                               {formatCurrency(
                                 summary.openingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -261,7 +263,7 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between font-semibold text-gray-800">
                             <span>Balance Due</span>
                             <span>
-                              {summary.closingBalance.type === "CREDIT" && "-"}
+                              {summary.closingBalance.type === LEDGER_TYPE_CREDIT && "-"}
                               {formatCurrency(
                                 summary.closingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -336,7 +338,7 @@ export default function AccountStatementPage() {
                               {transaction.voucherNumber}
                             </td>
                             <td className="min-w-[120px] whitespace-nowrap px-2 py-3 text-right sm:px-3 md:px-4">
-                              {transaction.voucherAmount.type === "DEBIT"
+                              {transaction.voucherAmount.type === LEDGER_TYPE_DEBIT
                                 ? formatCurrency(
                                     transaction.voucherAmount.amount,
                                     accountAddress?.currency?.symbol
@@ -344,7 +346,7 @@ export default function AccountStatementPage() {
                                 : "-"}
                             </td>
                             <td className="hidden min-w-[120px] whitespace-nowrap px-3 py-3 text-right sm:table-cell md:px-4">
-                              {transaction.voucherAmount.type === "CREDIT"
+                              {transaction.voucherAmount.type === LEDGER_TYPE_CREDIT
                                 ? formatCurrency(
                                     transaction.voucherAmount.amount,
                                     accountAddress?.currency?.symbol
@@ -352,7 +354,7 @@ export default function AccountStatementPage() {
                                 : "-"}
                             </td>
                             <td className="min-w-[140px] whitespace-nowrap px-2 py-3 text-right font-medium sm:px-3 md:px-4">
-                              {transaction.closingBalance.type === "CREDIT" && "-"}
+                              {transaction.closingBalance.type === LEDGER_TYPE_CREDIT && "-"}
                               {formatCurrency(
                                 transaction.closingBalance.amount,
                                 accountAddress?.currency?.symbol
