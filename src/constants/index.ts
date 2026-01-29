@@ -1,3 +1,4 @@
+export { HttpStatus } from "./httpStatus";
 export { TIMING } from "./timing";
 export {
   LEDGER_TYPE_DEBIT,
@@ -8,8 +9,9 @@ export {
   BALANCE_TYPE_CR,
   DEFAULT_CLOSING_AMOUNT,
 } from "./ledger";
-export type { LedgerTransactionType } from "./ledger";
+export type { LedgerTransactionType, BalanceType } from "./ledger";
 export { SortOrder } from "./sort";
+export type { SortOrderType } from "./sort";
 
 /** Default page number (1-based) */
 export const DEFAULT_PAGE = 1;

@@ -53,7 +53,7 @@ export function Footer({
               <span className="break-all sm:break-normal">{supportEmail}</span>
             </a>
 
-            <span className="text-gray-400">© {new Date().getFullYear()} Giddh</span>
+            <span className="text-gray-400">&#169; {new Date().getFullYear()} Giddh</span>
           </div>
         </div>
       </div>

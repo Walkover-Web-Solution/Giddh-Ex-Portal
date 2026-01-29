@@ -14,7 +14,7 @@ import { logger } from "@/utils/logger";
 import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
 import { ChevronDown, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { mergeClassNames } from "@/lib/utils";
 
 export function SwitchAccountButton() {
   const params = useParams();
@@ -169,14 +169,16 @@ export function SwitchAccountButton() {
       <button
         onClick={handleToggle}
         disabled={loading}
-        className={cn(
+        className={mergeClassNames(
           "flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50",
           isOpen && "bg-gray-50"
         )}
       >
-        <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+        <RefreshCw className={mergeClassNames("h-4 w-4", loading && "animate-spin")} />
         <span>Switch Account</span>
-        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown
+          className={mergeClassNames("h-4 w-4 transition-transform", isOpen && "rotate-180")}
+        />
       </button>
 
       {isOpen && (
@@ -206,7 +208,7 @@ export function SwitchAccountButton() {
                       key={index}
                       onClick={() => handleAccountSelect(account)}
                       disabled={loading || isCurrentAccount}
-                      className={cn(
+                      className={mergeClassNames(
                         "w-full rounded-md px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50",
                         isCurrentAccount
                           ? "bg-blue-50 font-medium text-blue-700"

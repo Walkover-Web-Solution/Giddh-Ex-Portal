@@ -22,18 +22,18 @@ export function SearchAndViewControls({
   transactionCurrency,
   convertedCurrency,
 }: SearchAndViewControlsProps) {
-  // Determine if toggle should be shown (only if currencies are different)
-  const showCurrencyToggle =
-    transactionCurrency && convertedCurrency && transactionCurrency.code !== convertedCurrency.code;
+  const transactionCode = transactionCurrency?.code?.trim().toUpperCase();
+  const convertedCode = convertedCurrency?.code?.trim().toUpperCase();
+  const hasTwoDistinct = !!transactionCode && !!convertedCode && transactionCode !== convertedCode;
 
-  // Get available currencies for toggle
   const availableCurrencies =
-    transactionCurrency && convertedCurrency
+    transactionCurrency && convertedCurrency && hasTwoDistinct
       ? [
           { code: transactionCurrency.code, label: transactionCurrency.code },
           { code: convertedCurrency.code, label: convertedCurrency.code },
         ]
       : [];
+  const showCurrencyToggle = hasTwoDistinct && availableCurrencies.length === 2;
   return (
     <div className="w-full border-blue-900/20 bg-white">
       <div className="mx-auto max-w-7xl py-3 sm:py-4">
@@ -58,11 +58,11 @@ export function SearchAndViewControls({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search transactions..."
-              className="w-full rounded-md border border-blue-900/30 py-1.5 pl-8 pr-3 text-xs text-blue-900 placeholder-blue-900/50 focus:border-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-900 sm:py-2 sm:pl-9 sm:text-sm"
+              className="w-full rounded-md border border-blue-900/30 bg-white py-1.5 pl-8 pr-3 text-xs text-blue-900 placeholder-gray-500 focus:border-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-900 sm:py-2 sm:pl-9 sm:text-sm"
             />
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {showCurrencyToggle && availableCurrencies.length > 0 && (
+            {showCurrencyToggle && (
               <div className="flex rounded-md bg-blue-900/5 p-0.5 sm:p-1">
                 {availableCurrencies.map((currency) => (
                   <button

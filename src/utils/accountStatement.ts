@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
 import { SortOrder } from "@/constants/sort";
+import { formatDateToAPI as formatDateToAPIUtil, formatDateDisplay } from "@/utils/dateUtils";
 
 export interface BalanceAmount {
   amount: number;
@@ -105,17 +106,8 @@ export function formatCurrency(amount: number, currencySymbol: string = "₹"): 
   return `${currencySymbol}${Math.abs(amount).toLocaleString("en-IN")}`;
 }
 
-export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-}
+/** Format date string for display (dd-MM-yyyy). Re-exported from dateUtils. */
+export const formatDate = formatDateDisplay;
 
-export function convertDateToAPIFormat(date: Date): string {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-}
+/** Format Date for API (dd-MM-yyyy). Re-exported from dateUtils. */
+export const convertDateToAPIFormat = formatDateToAPIUtil;

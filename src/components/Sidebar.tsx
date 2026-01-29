@@ -12,7 +12,7 @@ import {
   ChevronRight,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { mergeClassNames } from "@/lib/utils";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCompanyData, logoutCompany, selectUserDetails } from "@/store/slices/companySlice";
@@ -58,7 +58,7 @@ export function Sidebar() {
       )}
 
       <aside
-        className={cn(
+        className={mergeClassNames(
           "fixed left-0 top-0 z-50 flex h-screen flex-col justify-between border-r bg-white transition-all duration-300",
           isCollapsed ? "md:w-20" : "md:w-64",
           "w-64",
@@ -66,9 +66,9 @@ export function Sidebar() {
         )}
       >
         <div>
-          <div className={cn("relative py-3", "px-3", isCollapsed && "md:px-0")}>
+          <div className={mergeClassNames("relative py-3", "px-3", isCollapsed && "md:px-0")}>
             <div
-              className={cn(
+              className={mergeClassNames(
                 "flex items-center gap-2",
                 isCollapsed && !isMobileOpen ? "md:justify-center" : "justify-between"
               )}
@@ -98,7 +98,13 @@ export function Sidebar() {
             </div>
           </div>
 
-          <nav className={cn("mt-2 flex flex-col gap-1 py-2", "px-3", isCollapsed && "md:px-0")}>
+          <nav
+            className={mergeClassNames(
+              "mt-2 flex flex-col gap-1 py-2",
+              "px-3",
+              isCollapsed && "md:px-0"
+            )}
+          >
             {navItems.map(({ name, path, icon: Icon }) => {
               const href = `/${company}/${country}/${path}`;
               const active = pathname?.includes(`/${path}`);
@@ -108,7 +114,7 @@ export function Sidebar() {
                   key={name}
                   href={href}
                   onClick={closeMobile}
-                  className={cn(
+                  className={mergeClassNames(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
                     active ? "bg-blue-900 text-white" : "text-gray-700 hover:bg-gray-100",
                     isCollapsed && "md:justify-center"

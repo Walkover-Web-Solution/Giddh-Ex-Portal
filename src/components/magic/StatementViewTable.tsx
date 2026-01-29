@@ -1,5 +1,6 @@
 "use client";
 
+import { BALANCE_TYPE_DR, BALANCE_TYPE_CR } from "@/constants/ledger";
 import { Currency, CurrencyInfo, Transaction } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
@@ -34,7 +35,6 @@ export function StatementViewTable({
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingVouchers, setDownloadingVouchers] = useState<Set<string>>(new Set());
 
-  // Calculate totals from debitCreditTransactions
   const { totalDebit, totalCredit } = useMemo(() => {
     if (!debitCreditTransactions || debitCreditTransactions.length === 0) {
       return { totalDebit: 0, totalCredit: 0 };
@@ -120,7 +120,7 @@ export function StatementViewTable({
         creditConverted: null,
         closingBalance: forwardedBalance.amount,
         closingBalanceConverted: forwardedBalance.amount,
-        balanceType: forwardedBalance.type === "DEBIT" ? "Dr" : "Cr",
+        balanceType: forwardedBalance.type === "DEBIT" ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
         voucherGenerated: false,
         voucherNumber: undefined,
         voucherName: undefined,

@@ -367,22 +367,20 @@ export default function AccountStatementPage() {
                   </table>
                 </div>
 
-                {totalItems > Math.min(...PAGE_SIZE_OPTIONS) && (
-                  <div className="mt-4">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={Math.ceil(totalItems / itemsPerPage)}
-                      totalItems={totalItems}
-                      itemsPerPage={itemsPerPage}
-                      pageSizeOptions={PAGE_SIZE_OPTIONS}
-                      onPageChange={setCurrentPage}
-                      onItemsPerPageChange={(newSize) => {
-                        setItemsPerPage(newSize);
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div>
-                )}
+                <div className="mt-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.max(1, Math.ceil(totalItems / itemsPerPage))}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    pageSizeOptions={PAGE_SIZE_OPTIONS}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={(newSize) => {
+                      setItemsPerPage(newSize);
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
               </div>
             </div>
           )}

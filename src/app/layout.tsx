@@ -1,19 +1,11 @@
-import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { ReduxProvider } from "@/providers/ReduxProvider";
 import { ToastProvider } from "@/contexts/ToastContext";
 import SessionVerification from "@/components/SessionVerification";
+import { metadata } from "./metadata";
 
-export const metadata: Metadata = {
-  title: "Giddh Portal",
-  description: "Modern Next.js application with TypeScript, TailwindCSS, Redux, and SASS",
-  icons: {
-    icon: "/icons/giddh_app_icon.svg",
-    shortcut: "/icons/giddh_app_icon.svg",
-    apple: "/icons/giddh_app_icon.svg",
-  },
-};
+export { metadata };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,4 +1,10 @@
-import { MagicLinkViewMode } from "@/constants/ledger";
+import {
+  BALANCE_TYPE_CR,
+  BALANCE_TYPE_DR,
+  LEDGER_TYPE_DEBIT,
+  MagicLinkViewMode,
+} from "@/constants/ledger";
+import { parseDateToTimestamp } from "@/utils/dateUtils";
 import {
   getMagicLinkLedger,
   GetMagicLinkLedgerRequest,
@@ -109,7 +115,8 @@ export const getMagicLinkData = async (
           creditConverted: null,
           closingBalance: forwardedBalance.amount,
           closingBalanceConverted: forwardedBalance.amount,
-          balanceType: forwardedBalance.type === "DEBIT" ? "Dr" : "Cr",
+          balanceType:
+            forwardedBalance.type === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
         });
       }
     } else {
@@ -148,11 +155,7 @@ export const getMagicLinkData = async (
       ];
 
       allTransactions.sort((a, b) => {
-        const parseDate = (dateStr: string) => {
-          const [d, m, y] = dateStr.split("-");
-          return new Date(`${y}-${m}-${d}`).getTime();
-        };
-        return parseDate(a.date!) - parseDate(b.date!);
+        return parseDateToTimestamp(a.date!) - parseDateToTimestamp(b.date!);
       });
 
       let runningBalance = 0;
@@ -165,7 +168,7 @@ export const getMagicLinkData = async (
           ...tx,
           closingBalance: Math.abs(runningBalance),
           closingBalanceConverted: Math.abs(runningBalanceConverted),
-          balanceType: (runningBalance >= 0 ? "Dr" : "Cr") as "Dr" | "Cr",
+          balanceType: runningBalance >= 0 ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
           voucherGenerated: tx.voucherGenerated ?? false,
         } as Transaction;
       });
@@ -189,7 +192,7 @@ export const getMagicLinkData = async (
             creditConverted: null,
             closingBalance: Math.abs(openingBalance),
             closingBalanceConverted: Math.abs(openingBalanceConverted),
-            balanceType: (openingBalance >= 0 ? "Dr" : "Cr") as "Dr" | "Cr",
+            balanceType: openingBalance >= 0 ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
           });
         }
       }

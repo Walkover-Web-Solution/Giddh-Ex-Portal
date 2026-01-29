@@ -13,6 +13,8 @@ import {
 } from "@/components/magic";
 import { MagicLinkViewMode } from "@/constants/ledger";
 import { SortOrder } from "@/constants/sort";
+import { isValid } from "date-fns";
+import { formatDateToAPI, parseDateFromAPI, parseTransactionDate } from "@/utils/dateUtils";
 import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
@@ -55,13 +57,6 @@ export default function Magic() {
   const prevFromDateRef = useRef<Date>(thirtyDaysAgo);
   const prevToDateRef = useRef<Date>(today);
 
-  const formatDateForAPI = (date: Date): string => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
-
   useEffect(() => {
     if (isUpdatingDatesFromAPI.current) {
       queueMicrotask(() => {
@@ -87,8 +82,8 @@ export default function Magic() {
           {
             linkId,
             sort: SortOrder.ASC,
-            from: formatDateForAPI(fromDate),
-            to: formatDateForAPI(toDate),
+            from: formatDateToAPI(fromDate),
+            to: formatDateToAPI(toDate),
           },
           viewMode
         );
@@ -127,21 +122,10 @@ export default function Magic() {
             !hasSetDatesFromAPI.current &&
             isInitialMount.current
           ) {
-            const parseDateFromString = (dateStr: string): Date => {
-              const parts = dateStr.split("-");
-              if (parts.length === 3) {
-                const day = parseInt(parts[0], 10);
-                const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
-                const year = parseInt(parts[2], 10);
-                return new Date(year, month, day);
-              }
-              return new Date(dateStr);
-            };
+            const apiFromDate = parseDateFromAPI(dateRange.from);
+            const apiToDate = parseDateFromAPI(dateRange.to);
 
-            const apiFromDate = parseDateFromString(dateRange.from);
-            const apiToDate = parseDateFromString(dateRange.to);
-
-            if (!isNaN(apiFromDate.getTime()) && !isNaN(apiToDate.getTime())) {
+            if (isValid(apiFromDate) && isValid(apiToDate)) {
               isUpdatingDatesFromAPI.current = true;
               hasSetDatesFromAPI.current = true;
               setFromDate(apiFromDate);
@@ -174,32 +158,6 @@ export default function Magic() {
 
     fetchMagicLinkData();
   }, [linkId, viewMode, fromDate.getTime(), toDate.getTime()]);
-
-  const parseTransactionDate = (dateString: string): Date => {
-    if (!dateString) return new Date();
-
-    const parts = dateString.split("-");
-    if (parts.length !== 3) {
-      const parsed = new Date(dateString);
-      return !isNaN(parsed.getTime())
-        ? new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate())
-        : new Date();
-    }
-
-    // Check if it's ISO format (YYYY-MM-DD)
-    if (parts[0].length === 4) {
-      return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-    }
-
-    // DD-MM-YY or DD-MM-YYYY format
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    let year = parseInt(parts[2], 10);
-
-    if (year < 100) year += 2000;
-
-    return new Date(year, month, day);
-  };
 
   const filteredTransactions = useMemo(() => {
     const searchValue = searchQuery.toLowerCase().trim();

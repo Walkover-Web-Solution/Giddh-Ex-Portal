@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from "axios";
+import { HttpStatus } from "@/constants/httpStatus";
 import { getSessionCookie } from "@/utils/cookies";
 
 class ApiClient {
@@ -55,7 +56,10 @@ class ApiClient {
     this.instance.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401 || error.response?.status === 403) {
+        if (
+          error.response?.status === HttpStatus.UNAUTHORIZED ||
+          error.response?.status === HttpStatus.FORBIDDEN
+        ) {
           console.error("Unauthorized - Session expired");
 
           // Emit custom event for session expiry

@@ -13,6 +13,9 @@ export const PARTICULAR_PREFIX_CREDIT = "By ";
 export const BALANCE_TYPE_DR = "Dr" as const;
 export const BALANCE_TYPE_CR = "Cr" as const;
 
+/** Type for Dr | Cr (balance type in statement display) */
+export type BalanceType = typeof BALANCE_TYPE_DR | typeof BALANCE_TYPE_CR;
+
 /** Default amount for missing closing */
 export const DEFAULT_CLOSING_AMOUNT = 0;
 

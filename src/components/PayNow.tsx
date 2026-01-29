@@ -12,6 +12,7 @@ import {
   PaymentDetailsResponse,
   PaymentMethodsResponse,
 } from "@/utils/payment";
+import { formatDateToAPI } from "@/utils/dateUtils";
 import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
 import { useToast } from "@/contexts/ToastContext";
@@ -98,25 +99,29 @@ export function PayNow({
         sessionId: sessionId || undefined,
       });
 
-      if (response.status === "success" && response.body) {
+      if (response && response.status === "success" && response.body) {
         setPaymentMethods(response.body);
 
-        const hasAnyMethod = response.body.RAZORPAY || response.body.PAYPAL || response.body.PAYU;
-
+        const hasAnyMethod = Boolean(
+          response.body.RAZORPAY || response.body.PAYPAL || response.body.PAYU
+        );
         if (!hasAnyMethod) {
           setShowNoMethodsError(true);
           return null;
         }
 
-        if (response.body.RAZORPAY) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
-          return PAYMENT_METHODS_ENUM.RAZORPAY;
-        } else if (response.body.PAYPAL) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.PAYPAL);
-          return PAYMENT_METHODS_ENUM.PAYPAL;
-        } else if (response.body.PAYU) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.PAYU);
-          return PAYMENT_METHODS_ENUM.PAYU;
+        switch (true) {
+          case Boolean(response.body.RAZORPAY):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
+            return PAYMENT_METHODS_ENUM.RAZORPAY;
+          case Boolean(response.body.PAYPAL):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.PAYPAL);
+            return PAYMENT_METHODS_ENUM.PAYPAL;
+          case Boolean(response.body.PAYU):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.PAYU);
+            return PAYMENT_METHODS_ENUM.PAYU;
+          default:
+            return null;
         }
       }
       return null;
@@ -276,7 +281,7 @@ export function PayNow({
     if (!companyUniqueName || !accountUniqueName) return;
 
     const today = new Date();
-    const date = `${String(today.getDate()).padStart(2, "0")}-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()}`;
+    const date = formatDateToAPI(today);
 
     try {
       const response = await updatePaymentStatus(

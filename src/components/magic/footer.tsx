@@ -1,5 +1,6 @@
-import { CurrencyInfo } from "./types";
+import type { BalanceType } from "@/constants/ledger";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { CurrencyInfo } from "./types";
 
 interface FooterProps {
   summary: {
@@ -7,12 +8,12 @@ interface FooterProps {
     debitCount: number;
     creditCount: number;
     openingBalance: number;
-    openingBalanceType: "Dr" | "Cr";
+    openingBalanceType: BalanceType;
     netTotalCredit: number;
     totalDebit: number;
     totalCredit: number;
     closingBalance: number;
-    closingBalanceType: "Dr" | "Cr";
+    closingBalanceType: BalanceType;
     reckoningDebitTotal?: number;
     reckoningCreditTotal?: number;
   };

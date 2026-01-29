@@ -77,11 +77,11 @@ export const API_PATHS = {
 
   /** GET voucher comments */
   voucherComments: (c: string, a: string, voucherUniqueName: string) =>
-    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/comments?voucherVersion=2`,
+    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/comments?`,
 
   /** POST add comment to voucher */
   voucherAddComment: (c: string, a: string, voucherUniqueName: string) =>
-    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/add-comment?voucherVersion=2`,
+    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/add-comment?`,
 } as const;
 
 /**

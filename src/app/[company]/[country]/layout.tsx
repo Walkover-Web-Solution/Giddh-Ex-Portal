@@ -14,7 +14,7 @@ import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
 import SessionGuard from "@/components/SessionGuard";
-import { cn } from "@/lib/utils";
+import { mergeClassNames } from "@/lib/utils";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
@@ -36,7 +36,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col justify-between overflow-x-hidden bg-gray-50">
       <Sidebar />
       <main
-        className={cn(
+        className={mergeClassNames(
           "flex flex-1 flex-col transition-[margin-left] duration-300",
           isCollapsed ? "md:ml-20" : "md:ml-64"
         )}
