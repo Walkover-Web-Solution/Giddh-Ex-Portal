@@ -6,6 +6,7 @@ import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { useMemo, useState } from "react";
 import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
 import { formatParticularWithPrefix } from "@/utils/magic/transformLedgerTransaction";
+import { useToast } from "@/contexts/ToastContext";
 
 interface Props {
   transactions: Transaction[];
@@ -26,6 +27,7 @@ export function TAccountViewTable({
   convertedCurrency,
   linkId,
 }: Props) {
+  const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingVouchers, setDownloadingVouchers] = useState<Set<string>>(new Set());
 
@@ -60,7 +62,10 @@ export function TAccountViewTable({
       });
     } catch (error: any) {
       console.error("Error downloading voucher:", error);
-      alert(error.message || `Invoice for ${tx.voucherNumber} cannot be downloaded now.`);
+      showToast(
+        error.message || `Invoice for ${tx.voucherNumber} cannot be downloaded now.`,
+        "error"
+      );
     } finally {
       setDownloadingTransactionId(null);
       setDownloadingVouchers((prev) => {

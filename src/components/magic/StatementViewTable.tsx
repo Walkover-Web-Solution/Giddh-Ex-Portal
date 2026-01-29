@@ -7,6 +7,7 @@ import { useState, useMemo } from "react";
 import { getCurrencyConfig, getPrimaryAmount, getSecondaryAmount } from "./currencyUtils";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { transformLedgerTransactionToDisplay } from "@/utils/magic/transformLedgerTransaction";
+import { useToast } from "@/contexts/ToastContext";
 
 interface Props {
   selectedCurrency: Currency;
@@ -29,6 +30,7 @@ export function StatementViewTable({
   convertedCurrency,
   linkId,
 }: Props) {
+  const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingVouchers, setDownloadingVouchers] = useState<Set<string>>(new Set());
 
@@ -80,7 +82,10 @@ export function StatementViewTable({
       });
     } catch (error: any) {
       console.error("Error downloading voucher:", error);
-      alert(error.message || `Invoice for ${tx.voucherNumber} cannot be downloaded now.`);
+      showToast(
+        error.message || `Invoice for ${tx.voucherNumber} cannot be downloaded now.`,
+        "error"
+      );
     } finally {
       setDownloadingTransactionId(null);
       setDownloadingVouchers((prev) => {

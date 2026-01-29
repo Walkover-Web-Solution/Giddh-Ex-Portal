@@ -21,15 +21,7 @@ import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-
-interface Payment {
-  id: string;
-  paymentId: string;
-  date: string;
-  amount: string;
-  paymentAccount: string;
-  unusedAmount: string;
-}
+import type { Payment } from "./types";
 
 export default function PaymentsPage() {
   const params = useParams();

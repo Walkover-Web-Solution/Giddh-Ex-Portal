@@ -20,6 +20,8 @@ import { Pagination } from "@/components/Pagination";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
+import { PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AccountStatementPage() {
   const params = useParams();
@@ -45,9 +47,10 @@ export default function AccountStatementPage() {
   const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
   const [toDate, setToDate] = useState<Date>(today);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [totalItems, setTotalItems] = useState(0);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const { showToast } = useToast();
 
   const getCompanyAndAccountNames = () => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -143,7 +146,7 @@ export default function AccountStatementPage() {
         link.href = url;
         link.download =
           response.body.name ||
-          `account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.pdf`;
+          `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -151,7 +154,7 @@ export default function AccountStatementPage() {
       }
     } catch (err) {
       console.error("Error exporting statement:", err);
-      alert("Failed to export statement");
+      showToast("Failed to export statement", "error");
     } finally {
       setIsExporting(false);
     }
@@ -362,13 +365,14 @@ export default function AccountStatementPage() {
                   </table>
                 </div>
 
-                {totalItems > 10 && (
+                {totalItems > Math.min(...PAGE_SIZE_OPTIONS) && (
                   <div className="mt-4">
                     <Pagination
                       currentPage={currentPage}
                       totalPages={Math.ceil(totalItems / itemsPerPage)}
                       totalItems={totalItems}
                       itemsPerPage={itemsPerPage}
+                      pageSizeOptions={PAGE_SIZE_OPTIONS}
                       onPageChange={setCurrentPage}
                       onItemsPerPageChange={(newSize) => {
                         setItemsPerPage(newSize);

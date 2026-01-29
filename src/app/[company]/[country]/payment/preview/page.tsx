@@ -12,6 +12,7 @@ import {
 } from "@/utils/paymentPreview";
 import { ArrowLeft, Download, Printer } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function PaymentPreviewPage() {
   const params = useParams();
@@ -30,6 +31,7 @@ export default function PaymentPreviewPage() {
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [paymentVoucher, setPaymentVoucher] = useState<PaymentVoucher | null>(null);
   const [error, setError] = useState<string>("");
+  const { showToast } = useToast();
 
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -140,7 +142,7 @@ export default function PaymentPreviewPage() {
       }
     } catch (error) {
       console.error("Error downloading payment voucher:", error);
-      alert("Failed to download payment voucher");
+      showToast("Failed to download payment voucher", "error");
     }
   };
 

@@ -1,3 +1,5 @@
+import { PAGE_SIZE_OPTIONS } from "@/constants";
+
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -5,6 +7,7 @@ interface PaginationProps {
   itemsPerPage: number;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (items: number) => void;
+  pageSizeOptions?: number[];
 }
 
 export function Pagination({
@@ -14,6 +17,7 @@ export function Pagination({
   itemsPerPage,
   onPageChange,
   onItemsPerPageChange,
+  pageSizeOptions = PAGE_SIZE_OPTIONS,
 }: PaginationProps) {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
@@ -28,10 +32,11 @@ export function Pagination({
             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
             className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
+            {pageSizeOptions.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
           </select>
           <span>entries</span>
         </div>

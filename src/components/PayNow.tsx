@@ -14,6 +14,7 @@ import {
 } from "@/utils/payment";
 import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
+import { useToast } from "@/contexts/ToastContext";
 
 interface PayNowProps {
   invoiceUniqueName: string;
@@ -46,6 +47,7 @@ export function PayNow({
 }: PayNowProps) {
   const params = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsResponse | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PAYMENT_METHODS_ENUM | null>(null);
@@ -120,7 +122,7 @@ export function PayNow({
       return null;
     } catch (error) {
       logger.error("Error loading payment methods", error);
-      alert("Failed to load payment methods. Please try again.");
+      showToast("Failed to load payment methods. Please try again.", "error");
       return null;
     }
   };
@@ -132,7 +134,7 @@ export function PayNow({
 
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
     if (!companyUniqueName || !accountUniqueName) {
-      alert("Missing company or account information");
+      showToast("Missing company or account information", "error");
       setIsProcessing(false);
       return;
     }
@@ -215,17 +217,18 @@ export function PayNow({
       if (response.status === "success" && response.body) {
         initializePaymentGateway(response.body);
       } else {
-        alert("Failed to initialize payment");
+        showToast("Failed to initialize payment", "error");
         setIsProcessing(false);
       }
     } catch (error) {
       logger.error("Error processing payment", error);
-      alert("Failed to process payment. Please try again.");
+      showToast("Failed to process payment. Please try again.", "error");
       setIsProcessing(false);
     }
   };
 
   const initializePaymentGateway = (paymentDetails: PaymentDetailsResponse) => {
+    console.log("🚀 ~ initializePaymentGateway ~ paymentDetails:", paymentDetails);
     switch (paymentDetails.paymentGatewayType) {
       case PAYMENT_METHODS_ENUM.RAZORPAY:
         initializeRazorpay(paymentDetails);
@@ -241,7 +244,7 @@ export function PayNow({
 
   const initializeRazorpay = (paymentDetails: PaymentDetailsResponse) => {
     if (!window.Razorpay) {
-      alert("Razorpay SDK not loaded");
+      showToast("Razorpay SDK not loaded", "error");
       setIsProcessing(false);
       return;
     }
@@ -291,12 +294,12 @@ export function PayNow({
       );
 
       if (response.status === "success") {
-        alert("Payment successful!");
+        showToast("Payment successful!", "success");
         onSuccess?.();
       }
     } catch (error) {
       logger.error("Error updating payment status", error);
-      alert("Payment completed but status update failed");
+      console.log("paymentKey is missing in the api response", error);
     }
   };
 
@@ -342,7 +345,7 @@ export function PayNow({
       );
 
       if (response.status === "success") {
-        alert("Payment successful!");
+        showToast("Payment successful!", "success");
         onSuccess?.();
       }
     } catch (error) {
@@ -352,7 +355,7 @@ export function PayNow({
 
   const handlePayuFormSubmit = () => {
     if (!payuDetails.name || !payuDetails.email || !payuDetails.contactNo) {
-      alert("Please fill all fields");
+      showToast("Please fill all fields", "error");
       return;
     }
     setShowPayuForm(false);

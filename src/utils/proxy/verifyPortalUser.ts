@@ -1,20 +1,5 @@
 import axios from "axios";
-
-interface VerifyPortalUserResponse {
-  status: string;
-  body: Array<{
-    email: string;
-    account: {
-      name: string;
-      uniqueName: string;
-    };
-    vendorContactUniqueName: string;
-    companyUniqueName: string;
-    session?: {
-      id: string;
-    };
-  }>;
-}
+import type { VerifyPortalUserResponse } from "./types";
 
 export const verifyPortalUser = async (
   emailId: string,

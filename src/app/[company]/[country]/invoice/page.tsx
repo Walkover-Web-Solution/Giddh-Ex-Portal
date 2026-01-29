@@ -24,15 +24,7 @@ import { logger } from "@/utils/logger";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-
-interface Invoice {
-  id: string;
-  invoiceNo: string;
-  date: string;
-  total: string;
-  status: string;
-  overdue: string;
-}
+import type { Invoice } from "./types";
 
 export default function InvoicesPage() {
   const params = useParams();
