@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import { HttpStatus } from "@/constants/httpStatus";
 import { getSessionCookie } from "@/utils/cookies";
-import { config as appConfig } from "@/config";
+import { getConfig } from "@/config";
 
 class ApiClient {
   private instance: AxiosInstance;
@@ -20,6 +20,8 @@ class ApiClient {
   private setupInterceptors() {
     this.instance.interceptors.request.use(
       (config) => {
+        const appConfig = getConfig();
+
         if (typeof window !== "undefined") {
           // Extract company name from URL path (e.g., /PiyusssshhCompany/in/welcome)
           const pathParts = window.location.pathname.split("/").filter(Boolean);
@@ -41,12 +43,12 @@ class ApiClient {
           }
 
           if (country === "uk") {
-            config.baseURL = appConfig.NEXT_PUBLIC_API_URL_UK;
+            config.baseURL = appConfig.API_URL_UK;
           } else {
-            config.baseURL = appConfig.NEXT_PUBLIC_API_URL;
+            config.baseURL = appConfig.API_URL;
           }
         } else {
-          config.baseURL = appConfig.NEXT_PUBLIC_API_URL;
+          config.baseURL = appConfig.API_URL;
         }
 
         return config;

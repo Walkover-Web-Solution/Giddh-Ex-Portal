@@ -86,8 +86,8 @@ export const API_PATHS = {
 
 /**
  * Proxy API path suffixes.
- * - VERIFY_PORTAL_USER, SAVE_SESSION: base URL from NEXT_PUBLIC_API_URL
- * - GET_DETAILS: base URL from NEXT_PUBLIC_PROXY_URL
+ * - VERIFY_PORTAL_USER, SAVE_SESSION: base URL from API_URL
+ * - GET_DETAILS: base URL from PROXY_URL
  */
 export const PROXY_API_PATHS = {
   VERIFY_PORTAL_USER: "v2/verify-portal-user",
