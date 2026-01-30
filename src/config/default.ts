@@ -5,6 +5,14 @@ export const APP_ENV = {
 
 export type AppEnvType = (typeof APP_ENV)[keyof typeof APP_ENV];
 
+export interface LogoConfig {
+  primary: string;
+  light: string;
+  dark: string;
+  icon: string;
+  favicon: string;
+}
+
 export interface GiddhWhiteLabel {
   uniqueName?: string;
   baseDomain?: string;
@@ -15,7 +23,8 @@ export interface GiddhWhiteLabel {
   uiDomains?: string[];
   certificateRequired?: boolean;
   certificateStatus?: string;
-  logo?: string;
+  logos?: LogoConfig;
+  brandName?: string;
 }
 
 export interface WhiteLabelConfig {
@@ -37,6 +46,8 @@ export interface AppConfig {
   API_URL: string;
   PAYPAL_URL: string;
   WEBSITE_DOMAIN: string;
+  BRAND_NAME: string;
+  LOGOS: LogoConfig;
 }
 
 const PROD_CONFIG: AppConfig = {
@@ -48,6 +59,14 @@ const PROD_CONFIG: AppConfig = {
   PROXY_URL: "https://routes.msg91.com",
   PAYPAL_URL: "https://www.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://giddh.com",
+  BRAND_NAME: "Giddh",
+  LOGOS: {
+    primary: "giddh-logo.png",
+    light: "giddh-logo-dark.png",
+    dark: "giddh-logo-light.png",
+    icon: "giddh-square.logo",
+    favicon: "favicon.ico",
+  },
 };
 
 const NON_PROD_CONFIG: AppConfig = {
@@ -59,6 +78,14 @@ const NON_PROD_CONFIG: AppConfig = {
   PROXY_URL: "https://routes.msg91.com",
   PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://web.giddh.com",
+  BRAND_NAME: "Giddh",
+  LOGOS: {
+    primary: "giddh-logo.png",
+    light: "giddh-logo-dark.png",
+    dark: "giddh-logo-light.png",
+    icon: "giddh-square.logo",
+    favicon: "favicon.ico",
+  },
 };
 
 const appEnv = (process.env.APP_ENV ||
@@ -84,6 +111,8 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
     REFERENCE_ID_UK: whiteLabel.proxyReferenceIdUk || DEFAULT_CONFIG.REFERENCE_ID_UK,
     WEBSITE_DOMAIN: whiteLabel.websiteDomain || DEFAULT_CONFIG.WEBSITE_DOMAIN,
     GIDDH_API_URL: giddhWhiteLabel?.apiDomain || DEFAULT_CONFIG.GIDDH_API_URL,
+    BRAND_NAME: giddhWhiteLabel?.brandName || DEFAULT_CONFIG.BRAND_NAME,
+    LOGOS: giddhWhiteLabel?.logos || DEFAULT_CONFIG.LOGOS,
   };
 }
 

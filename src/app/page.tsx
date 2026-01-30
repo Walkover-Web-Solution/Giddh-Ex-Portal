@@ -52,7 +52,7 @@ export default function Home() {
             href={config.WEBSITE_DOMAIN}
             className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 md:mt-6 lg:mt-10"
           >
-            Know more about Giddh
+            Know more about {config.BRAND_NAME}
             <ArrowRight className="h-4 w-4" />
           </a>
         </div>
