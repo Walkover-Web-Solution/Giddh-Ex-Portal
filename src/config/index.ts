@@ -11,4 +11,5 @@ export {
   type AppEnvType,
   type WhiteLabelConfig,
   type GiddhWhiteLabel,
+  type LogoConfig,
 } from "./default";

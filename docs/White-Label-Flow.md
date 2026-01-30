@@ -217,7 +217,14 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
       "certificateRequired": true,
       "certificateStatus": "ISSUED",
       "domainName": "http://localhost:3000",
-      "logo": "",
+      "brandName": "Giddh",
+      "logos": {
+        "primary": "giddh-logo.png",
+        "light": "giddh-logo-dark.png",
+        "dark": "giddh-logo-light.png",
+        "icon": "giddh-square.logo",
+        "favicon": "favicon.ico"
+      },
       "apiDomain": "https://apitest.giddh.com",
       "adminDomain": "https://vtest.giddh.com",
       "uiDomains": [
@@ -244,6 +251,8 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
 | `websiteDomain`              | `WEBSITE_DOMAIN`  | Main website domain     |
 | `giddhWhiteLabel.baseDomain` | `WEBSITE_DOMAIN`  | Fallback website domain |
 | `giddhWhiteLabel.apiDomain`  | `GIDDH_API_URL`   | Giddh API base URL      |
+| `giddhWhiteLabel.brandName`  | `BRAND_NAME`      | Brand name              |
+| `giddhWhiteLabel.logos`      | `LOGOS`           | Logo configuration      |
 
 ## Usage Examples
 
@@ -263,6 +272,8 @@ function MyComponent() {
     <div>
       <p>API URL: {config.API_URL}</p>
       <p>Website: {config.WEBSITE_DOMAIN}</p>
+      <p>Brand: {config.BRAND_NAME}</p>
+      <img src={config.LOGOS.primary} alt="Logo" />
     </div>
   );
 }
