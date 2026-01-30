@@ -1,8 +1,12 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { DEFAULT_CONFIG, type AppConfig } from "@/config/default";
-import { fetchWhitelabelConfig } from "@/services/whitelabel";
+import {
+  DEFAULT_CONFIG,
+  mergeWhiteLabelConfig,
+  type AppConfig,
+  type WhiteLabelConfig,
+} from "@/config/default";
 
 interface ConfigContextType {
   config: AppConfig;
@@ -12,8 +16,20 @@ interface ConfigContextType {
 
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 
+function getStoredWhiteLabel(): WhiteLabelConfig | null {
+  try {
+    const stored = localStorage.getItem("whiteLabel");
+    return stored && stored !== "null" ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
+  const storedWhiteLabel = getStoredWhiteLabel();
+  const initialConfig = mergeWhiteLabelConfig(storedWhiteLabel);
+
+  const [config, setConfig] = useState<AppConfig>(initialConfig);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -21,26 +37,25 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
 
     async function loadConfig() {
-      if (DEFAULT_CONFIG.disableWhiteLabel) {
-        if (isMounted) {
-          setConfig(DEFAULT_CONFIG);
-          setIsLoading(false);
-        }
-        return;
-      }
+      let whiteLabelData = getStoredWhiteLabel();
 
       try {
-        const whitelabelConfig = await fetchWhitelabelConfig();
-        if (isMounted) {
-          setConfig(whitelabelConfig);
-          setIsLoading(false);
+        const response = await fetch(`${DEFAULT_CONFIG.GIDDH_API_URL}/white-label`);
+        const data = await response.json();
+
+        if (data?.body) {
+          whiteLabelData = data.body;
+          localStorage.setItem("whiteLabel", JSON.stringify(whiteLabelData));
         }
       } catch (err) {
         if (isMounted) {
           setError(err instanceof Error ? err : new Error("Failed to load config"));
-          setConfig(DEFAULT_CONFIG);
-          setIsLoading(false);
         }
+      }
+
+      if (isMounted) {
+        setConfig(mergeWhiteLabelConfig(whiteLabelData));
+        setIsLoading(false);
       }
     }
 

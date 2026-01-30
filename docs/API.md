@@ -13,7 +13,7 @@ import axios from "axios";
 import { config as appConfig } from "@/config";
 
 export const apiClient = axios.create({
-  baseURL: appConfig.NEXT_PUBLIC_API_URL,
+  baseURL: appConfig.API_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -720,30 +720,78 @@ const url = `/portal/company/${encodeURIComponent(companyUniqueName)}/accounts/$
 
 ## Configuration System
 
-The application uses a centralized configuration system located in `src/config/`:
+The application uses a centralized environment-based configuration system located in `src/config/`:
+
+### Environment Constants
 
 ```typescript
 // src/config/default.ts
-export const DEFAULT_CONFIG: AppConfig = {
-  disableWhiteLabel: true,
-  NEXT_PUBLIC_REFERENCE_ID: "1362783l1767680954695cabba5ada1",
-  NEXT_PUBLIC_GIDDH_API_URL: "https://apitest.giddh.com",
-  NEXT_PUBLIC_PROXY_URL: "https://routes.msg91.com",
-  NEXT_PUBLIC_API_URL: "https://routes.msg91.com/api/proxy/117230/24lvqun1",
-  NEXT_PUBLIC_PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
-  NEXT_PUBLIC_REFERENCE_ID_UK: "117230d172709659666f16714325b0",
-  NEXT_PUBLIC_API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2",
+export const APP_ENV = {
+  LOCAL: "local",
+  PROD: "prod",
+} as const;
+
+export type AppEnvType = (typeof APP_ENV)[keyof typeof APP_ENV];
+```
+
+### Configuration Structure
+
+The system automatically selects the appropriate configuration based on the `APP_ENV` environment variable:
+
+```typescript
+// Production Configuration
+const PROD_CONFIG: AppConfig = {
+  REFERENCE_ID: "117230e170290843965805217bfd25",
+  API_URL: "https://routes.msg91.com/api/proxy/117230/24yrfox2",
+  REFERENCE_ID_UK: "117230d172709659666f16714325b0",
+  API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2",
+  GIDDH_API_URL: "https://api.giddh.com",
+  PROXY_URL: "https://routes.msg91.com",
+  PAYPAL_URL: "https://www.paypal.com/cgi-bin/webscr",
+  WEBSITE_DOMAIN: "https://giddh.com",
 };
+
+// Non-Production Configuration (Local/Test)
+const NON_PROD_CONFIG: AppConfig = {
+  REFERENCE_ID: "117230p1697093599652797df30cea",
+  API_URL: "https://routes.msg91.com/api/proxy/117230/24lvqun1",
+  REFERENCE_ID_UK: "117230d172709659666f16714325b0",
+  API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2",
+  GIDDH_API_URL: "https://apitest.giddh.com",
+  PROXY_URL: "https://routes.msg91.com",
+  PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
+  WEBSITE_DOMAIN: "https://web.giddh.com",
+};
+
+// Environment-based config selection
+const appEnv = (process.env.APP_ENV || APP_ENV.LOCAL) as AppEnvType;
+export const DEFAULT_CONFIG: AppConfig = appEnv === APP_ENV.PROD ? PROD_CONFIG : NON_PROD_CONFIG;
+```
+
+### Environment Setup
+
+Set the `APP_ENV` environment variable to control which configuration is used:
+
+```bash
+# For production
+APP_ENV=prod npm run build
+
+# For local/development (default)
+npm run dev
 ```
 
 ### Usage in Components
 
 ```typescript
-import { useAppConfig } from "@/hooks/useAppConfig";
+import { useConfig } from "@/contexts/ConfigContext";
 
 function MyComponent() {
-  const { apiUrl, giddhApiUrl, referenceId } = useAppConfig();
-  // Use config values
+  const { config } = useConfig();
+
+  // Access config values
+  const apiUrl = config.API_URL;
+  const giddhApiUrl = config.GIDDH_API_URL;
+  const websiteDomain = config.WEBSITE_DOMAIN;
 }
 ```
 
@@ -752,8 +800,109 @@ function MyComponent() {
 ```typescript
 import { config } from "@/config";
 
-const baseUrl = config.NEXT_PUBLIC_API_URL;
+const baseUrl = config.API_URL;
+const giddhApiUrl = config.GIDDH_API_URL;
 ```
+
+### White-Label Configuration
+
+The application supports white-label customization through the `/white-label` API endpoint. White-label data is fetched on app initialization and stored in localStorage, then merged with the default configuration.
+
+#### White-Label API Response Structure
+
+```typescript
+interface GiddhWhiteLabel {
+  uniqueName?: string;
+  baseDomain?: string;
+  adminDomain?: string;
+  apiDomain?: string;
+  portalDomain?: string;
+  domainName?: string;
+  uiDomains?: string[];
+  certificateRequired?: boolean;
+  certificateStatus?: string;
+  logo?: string;
+}
+
+interface WhiteLabelConfig {
+  proxyApiUrl?: string; // Maps to API_URL
+  proxyApiUrlUk?: string; // Maps to API_URL_UK
+  proxyReferenceId?: string; // Maps to REFERENCE_ID
+  proxyReferenceIdUk?: string; // Maps to REFERENCE_ID_UK
+  proxyUrl?: string; // Maps to PROXY_URL
+  websiteDomain?: string; // Maps to WEBSITE_DOMAIN
+  giddhWhiteLabel?: GiddhWhiteLabel;
+}
+```
+
+#### White-Label Integration Flow
+
+1. **On App Load**: `ConfigProvider` fetches white-label data from `${GIDDH_API_URL}/white-label`
+2. **Storage**: Full response body is stored in `localStorage.getItem('whiteLabel')`
+3. **Merging**: White-label values override default config using `mergeWhiteLabelConfig()`
+4. **Fallback**: If API fails, uses stored white-label data from localStorage
+5. **Final Fallback**: If no white-label data exists, uses environment-based default config
+
+#### White-Label Mapping
+
+| White-Label Key              | Config Key        | Description             |
+| ---------------------------- | ----------------- | ----------------------- |
+| `proxyUrl`                   | `PROXY_URL`       | MSG91 Proxy Base URL    |
+| `proxyApiUrl`                | `API_URL`         | MSG91 API Proxy URL     |
+| `proxyApiUrlUk`              | `API_URL_UK`      | MSG91 UK API Proxy URL  |
+| `proxyReferenceId`           | `REFERENCE_ID`    | MSG91 Reference ID      |
+| `proxyReferenceIdUk`         | `REFERENCE_ID_UK` | MSG91 UK Reference ID   |
+| `websiteDomain`              | `WEBSITE_DOMAIN`  | Main website domain     |
+| `giddhWhiteLabel.baseDomain` | `WEBSITE_DOMAIN`  | Fallback website domain |
+| `giddhWhiteLabel.apiDomain`  | `GIDDH_API_URL`   | Giddh API base URL      |
+
+**Example White-Label Response:**
+
+```json
+{
+  "status": "success",
+  "body": {
+    "proxyReferenceId": "117230p1697093599652797df30cea",
+    "proxyUrl": "https://routes.msg91.com",
+    "proxyApiUrl": "https://routes.msg91.com/api/proxy/117230/24lvqun1",
+    "proxyReferenceIdUk": "117230d172709659666f16714325b0",
+    "proxyApiUrlUk": "https://routes.msg91.com/api/proxy/117230/34ytsup2",
+    "websiteDomain": "https://web.giddh.com",
+    "giddhWhiteLabel": {
+      "uniqueName": "91368c94526a0e27c91b976e72808f16",
+      "baseDomain": "https://test.giddh.com",
+      "certificateRequired": true,
+      "certificateStatus": "ISSUED",
+      "domainName": "http://localhost:3000",
+      "logo": "",
+      "apiDomain": "https://apitest.giddh.com",
+      "adminDomain": "https://vtest.giddh.com",
+      "uiDomains": [
+        "https://test.giddh.com",
+        "https://web.giddh.com",
+        "https://stage.giddh.com",
+        "http://localhost:3000"
+      ],
+      "portalDomain": "https://testportal.giddh.com"
+    }
+  }
+}
+```
+
+### Available Configuration Keys
+
+| Key               | Description            | Production                                           | Non-Production                                       |
+| ----------------- | ---------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| `REFERENCE_ID`    | MSG91 Reference ID     | `117230e170290843965805217bfd25`                     | `117230p1697093599652797df30cea`                     |
+| `API_URL`         | MSG91 API Proxy URL    | `https://routes.msg91.com/api/proxy/117230/24yrfox2` | `https://routes.msg91.com/api/proxy/117230/24lvqun1` |
+| `REFERENCE_ID_UK` | MSG91 UK Reference ID  | `117230d172709659666f16714325b0`                     | `117230d172709659666f16714325b0`                     |
+| `API_URL_UK`      | MSG91 UK API Proxy URL | `https://routes.msg91.com/api/proxy/117230/34ytsup2` | `https://routes.msg91.com/api/proxy/117230/34ytsup2` |
+| `GIDDH_API_URL`   | Giddh API Base URL     | `https://api.giddh.com`                              | `https://apitest.giddh.com`                          |
+| `PROXY_URL`       | MSG91 Proxy Base URL   | `https://routes.msg91.com`                           | `https://routes.msg91.com`                           |
+| `PAYPAL_URL`      | PayPal Payment URL     | `https://www.paypal.com/cgi-bin/webscr`              | `https://www.sandbox.paypal.com/cgi-bin/webscr`      |
+| `WEBSITE_DOMAIN`  | Giddh Website Domain   | `https://giddh.com`                                  | `https://web.giddh.com`                              |
+
+**Note:** White-label values from the API will override the default configuration values shown above.
 
 ## Testing APIs
 

@@ -61,13 +61,13 @@ Located in `src/config/default.ts`:
 
 ```typescript
 {
-  NEXT_PUBLIC_REFERENCE_ID: "1362783l1767680954695cabba5ada1",
-  NEXT_PUBLIC_GIDDH_API_URL: "https://apitest.giddh.com",
-  NEXT_PUBLIC_PROXY_URL: "https://routes.msg91.com",
-  NEXT_PUBLIC_API_URL: "https://routes.msg91.com/api/proxy/117230/24lvqun1",
-  NEXT_PUBLIC_PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
-  NEXT_PUBLIC_REFERENCE_ID_UK: "117230d172709659666f16714325b0",
-  NEXT_PUBLIC_API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2"
+  REFERENCE_ID: "1362783l1767680954695cabba5ada1",
+  GIDDH_API_URL: "https://apitest.giddh.com",
+  PROXY_URL: "https://routes.msg91.com",
+  API_URL: "https://routes.msg91.com/api/proxy/117230/24lvqun1",
+  PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
+  REFERENCE_ID_UK: "117230d172709659666f16714325b0",
+  API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2"
 }
 ```
 
@@ -101,10 +101,10 @@ function MyComponent() {
 If you enable white-label feature (`disableWhiteLabel: false`), you'll need to set:
 
 ```bash
-NEXT_PUBLIC_WHITELABEL_API_URL=https://your-whitelabel-api.com/config
+WHITELABEL_API_URL=https://your-whitelabel-api.com/config
 ```
 
-**Important:** Must use `NEXT_PUBLIC_` prefix for client-side access.
+**Important:** Must use `` prefix for client-side access.
 
 **Current Status:** White-label is disabled, so no environment variables are needed. All configuration is hardcoded in `src/config/default.ts`.
 
@@ -154,13 +154,13 @@ Your whitelabel API should return JSON:
 
 ```json
 {
-  "NEXT_PUBLIC_REFERENCE_ID": "custom-value",
-  "NEXT_PUBLIC_GIDDH_API_URL": "https://custom-api.com",
-  "NEXT_PUBLIC_PROXY_URL": "https://custom-proxy.com",
-  "NEXT_PUBLIC_API_URL": "https://custom-api.com/proxy",
-  "NEXT_PUBLIC_PAYPAL_URL": "https://paypal.com/custom",
-  "NEXT_PUBLIC_REFERENCE_ID_UK": "uk-custom-value",
-  "NEXT_PUBLIC_API_URL_UK": "https://custom-api-uk.com"
+  "REFERENCE_ID": "custom-value",
+  "GIDDH_API_URL": "https://custom-api.com",
+  "PROXY_URL": "https://custom-proxy.com",
+  "API_URL": "https://custom-api.com/proxy",
+  "PAYPAL_URL": "https://paypal.com/custom",
+  "REFERENCE_ID_UK": "uk-custom-value",
+  "API_URL_UK": "https://custom-api-uk.com"
 }
 ```
 

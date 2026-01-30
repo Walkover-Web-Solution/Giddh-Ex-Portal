@@ -1,5 +1,5 @@
 import axios from "axios";
-import { config } from "@/config";
+import { getConfig } from "@/config";
 
 export interface DownloadVoucherRequest {
   linkId: string;
@@ -17,7 +17,8 @@ export interface DownloadVoucherRequest {
  */
 export async function downloadMagicLinkVoucher(request: DownloadVoucherRequest): Promise<void> {
   try {
-    const baseURL = config.NEXT_PUBLIC_GIDDH_API_URL;
+    const config = getConfig();
+    const baseURL = config.GIDDH_API_URL;
     const voucherVersion = request.voucherVersion || 2;
     const linkId = request.linkId;
 

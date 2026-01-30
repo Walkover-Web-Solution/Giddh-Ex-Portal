@@ -1,5 +1,5 @@
 import axios from "axios";
-import { config } from "@/config";
+import { getConfig } from "@/config";
 
 interface VerifyPortalUserResponse {
   status: string;
@@ -22,7 +22,8 @@ export const verifyPortalUser = async (
   subDomain: string,
   token: string
 ): Promise<VerifyPortalUserResponse> => {
-  const baseUrl = config.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+  const config = getConfig();
+  const baseUrl = config.API_URL.replace(/\/$/, "");
 
   const response = await axios.post<VerifyPortalUserResponse>(
     `${baseUrl}/v2/verify-portal-user`,
