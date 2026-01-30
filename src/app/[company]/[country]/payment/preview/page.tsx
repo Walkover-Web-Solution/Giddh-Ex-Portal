@@ -23,6 +23,8 @@ export default function PaymentPreviewPage() {
   const companyName = params?.company as string;
   const country = params?.country as string;
   const voucherUniqueName = searchParams.get("voucher") || "";
+  const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
+  const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
@@ -54,20 +56,34 @@ export default function PaymentPreviewPage() {
       }
     }
 
+    if (!companyUniqueName) companyUniqueName = companyUniqueNameFromUrl;
+    if (!accountUniqueName) accountUniqueName = accountUniqueNameFromUrl;
+
     return { companyUniqueName, accountUniqueName };
   };
 
   useEffect(() => {
-    if (voucherUniqueName) {
-      const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
-      if (companyUniqueName && accountUniqueName) {
-        loadPaymentData(companyUniqueName, accountUniqueName);
-      } else {
-        setError("Missing company or account information. Please log in again.");
-        setIsLoading(false);
-      }
+    if (!voucherUniqueName) {
+      setError("No payment specified.");
+      setIsLoading(false);
+      return;
     }
-  }, [voucherUniqueName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
+    if (companyUniqueName && accountUniqueName) {
+      setError("");
+      loadPaymentData(companyUniqueName, accountUniqueName);
+    } else {
+      setError("Missing company or account information. Please log in again.");
+      setIsLoading(false);
+    }
+  }, [
+    voucherUniqueName,
+    companyUniqueNameFromUrl,
+    accountUniqueNameFromUrl,
+    companyUniqueNameFromRedux,
+    accountUniqueNameFromRedux,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -108,8 +124,8 @@ export default function PaymentPreviewPage() {
       if (paymentListResponse.status === "success" && paymentListResponse.body.items.length > 0) {
         setPaymentVoucher(paymentListResponse.body.items[0]);
       }
-    } catch (error) {
-      console.error("Error loading payment data:", error);
+    } catch (err) {
+      console.error("Error loading payment data:", err);
       setError("An error occurred while loading the payment voucher. Please try again.");
     } finally {
       setIsLoading(false);

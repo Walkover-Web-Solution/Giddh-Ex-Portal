@@ -82,7 +82,7 @@ export function DateRangeCalendar({
   minDate,
   maxDate,
   position = "right",
-  calendarWidth = "w-[320px] sm:w-[360px]",
+  calendarWidth = "w-[calc(100vw-2rem)] max-w-[360px]",
 }: DateRangeCalendarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(fromDate);
@@ -257,7 +257,7 @@ export function DateRangeCalendar({
 
   const positionClasses = {
     left: "left-0",
-    right: "right-0",
+    right: "right-0 sm:left-auto sm:right-0 left-1/2 -translate-x-1/2 sm:translate-x-0",
     center: "left-1/2 -translate-x-1/2",
   };
 
@@ -344,7 +344,7 @@ export function DateRangeCalendar({
                     key={dayIdx}
                     onClick={() => handleDateClick(day)}
                     disabled={!isCurrentMonth || isDisabled}
-                    className={`relative flex h-9 items-center justify-center rounded-md text-xs transition-colors ${
+                    className={`relative flex h-10 items-center justify-center rounded-md text-xs transition-colors sm:h-9 ${
                       !isCurrentMonth || isDisabled
                         ? "cursor-not-allowed text-blue-900/20"
                         : "cursor-pointer text-blue-900"
@@ -366,7 +366,7 @@ export function DateRangeCalendar({
             </div>
 
             {quickActionButtons.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-blue-900/10 pt-3">
+              <div className="mt-4 flex max-h-24 flex-wrap gap-2 overflow-y-auto border-t border-blue-900/10 pt-3">
                 {quickActionButtons.map((action, idx) => (
                   <button
                     key={idx}

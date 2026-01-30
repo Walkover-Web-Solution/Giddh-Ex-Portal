@@ -71,9 +71,14 @@ export default function InvoicesPage() {
   };
 
   const handleInvoiceClick = (invoiceUniqueName: string) => {
-    router.push(
-      `/${companyName}/${country}/invoice/preview?voucher=${encodeURIComponent(invoiceUniqueName)}`
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
     );
+    const params = new URLSearchParams({ voucher: invoiceUniqueName });
+    if (companyUniqueName) params.set("companyUniqueName", companyUniqueName);
+    if (accountUniqueName) params.set("accountUniqueName", accountUniqueName);
+    router.push(`/${companyName}/${country}/invoice/preview?${params.toString()}`);
   };
 
   const handleClearFilters = () => {
