@@ -141,7 +141,11 @@ export function Sidebar() {
                 </div>
                 <span className="truncate text-sm font-medium">{user?.name}</span>
               </Link>
-              <button onClick={handleLogout} className="shrink-0 rounded-md p-2 hover:bg-gray-100">
+              <button
+                onClick={handleLogout}
+                className="shrink-0 rounded-md p-2 hover:bg-gray-100"
+                title="Logout"
+              >
                 <LogOut className="h-4 w-4" />
               </button>
             </div>
@@ -155,7 +159,11 @@ export function Sidebar() {
               >
                 {initials}
               </Link>
-              <button onClick={handleLogout} className="rounded-md p-2 hover:bg-gray-100">
+              <button
+                onClick={handleLogout}
+                className="rounded-md p-2 hover:bg-gray-100"
+                title="Logout"
+              >
                 <LogOut className="h-4 w-4" />
               </button>
             </div>

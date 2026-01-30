@@ -32,6 +32,13 @@ export function SwitchAccountButton() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isProcessing = useRef(false);
 
+  // Fetch accounts on mount to know if we should show the button (hide when single account)
+  useEffect(() => {
+    if (company) {
+      fetchAccounts();
+    }
+  }, [company]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -163,6 +170,13 @@ export function SwitchAccountButton() {
       isProcessing.current = false;
     }
   };
+
+  if (accounts.length === 1) {
+    return null;
+  }
+  if (fetchingAccounts && accounts.length === 0) {
+    return null;
+  }
 
   return (
     <div className="relative" ref={dropdownRef}>

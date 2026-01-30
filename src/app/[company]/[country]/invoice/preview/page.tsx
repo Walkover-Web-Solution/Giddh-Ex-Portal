@@ -26,6 +26,8 @@ export default function InvoicePreviewPage() {
   const companyName = params?.company as string;
   const country = params?.country as string;
   const voucherUniqueName = searchParams.get("voucher") || "";
+  const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
+  const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
@@ -33,6 +35,9 @@ export default function InvoicePreviewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetailsResponse | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [commentError, setCommentError] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
   const [error, setError] = useState("");
 
@@ -45,17 +50,28 @@ export default function InvoicePreviewPage() {
     if ((!companyUniqueName || !accountUniqueName) && typeof window !== "undefined") {
       const stored = localStorage.getItem("userData");
       if (stored) {
-        const parsed = JSON.parse(stored);
-        companyUniqueName ||= parsed.companyUniqueName;
-        accountUniqueName ||= parsed.account?.uniqueName;
+        try {
+          const parsed = JSON.parse(stored);
+          companyUniqueName ||= parsed.companyUniqueName;
+          accountUniqueName ||= parsed.account?.uniqueName;
+        } catch {
+          // Skip invalid userData; continue with Redux or URL params
+        }
       }
     }
+
+    if (!companyUniqueName) companyUniqueName = companyUniqueNameFromUrl;
+    if (!accountUniqueName) accountUniqueName = accountUniqueNameFromUrl;
 
     return { companyUniqueName, accountUniqueName };
   };
 
   useEffect(() => {
-    if (!voucherUniqueName) return;
+    if (!voucherUniqueName) {
+      setError("No invoice specified.");
+      setIsLoading(false);
+      return;
+    }
 
     const { companyUniqueName, accountUniqueName } = getNames();
     if (!companyUniqueName || !accountUniqueName) {
@@ -64,8 +80,15 @@ export default function InvoicePreviewPage() {
       return;
     }
 
+    setError("");
     loadInvoice(companyUniqueName, accountUniqueName);
-  }, [voucherUniqueName]);
+  }, [
+    voucherUniqueName,
+    companyUniqueNameFromUrl,
+    accountUniqueNameFromUrl,
+    companyUniqueNameFromRedux,
+    accountUniqueNameFromRedux,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -95,6 +118,8 @@ export default function InvoicePreviewPage() {
           const blob = base64ToBlob(base64);
           setPdfUrl(URL.createObjectURL(blob));
         }
+      } else {
+        setError("Failed to load invoice.");
       }
 
       if (commentsRes.status === "success") {
@@ -147,6 +172,56 @@ export default function InvoicePreviewPage() {
       a.download = `${voucher?.number || "invoice"}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+    }
+  };
+
+  function formatCommentDate(dateString: string): string {
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "0 days ago";
+    if (diffDays === 1) return "1 day ago";
+    return `${diffDays} days ago`;
+  }
+
+  const handleAddComment = async () => {
+    const text = commentText.trim();
+    if (!text) {
+      setCommentError("Please enter a comment.");
+      return;
+    }
+
+    const { companyUniqueName, accountUniqueName } = getNames();
+    if (!companyUniqueName || !accountUniqueName) {
+      setCommentError("Missing company or account information.");
+      return;
+    }
+
+    setCommentError("");
+    setIsSubmittingComment(true);
+    try {
+      const request = {
+        companyUniqueName,
+        accountUniqueName,
+        voucherUniqueName,
+        sessionId: sessionId || undefined,
+      };
+      const res = await addComment(request, text);
+      if (res.status === "success") {
+        setCommentText("");
+        const commentsRes = await getInvoiceComments(request);
+        if (commentsRes.status === "success") {
+          setComments(commentsRes.body);
+        }
+      } else {
+        setCommentError((res as { message?: string }).message || "Login required to add comments");
+      }
+    } catch {
+      setCommentError("Login required to add comments");
+    } finally {
+      setIsSubmittingComment(false);
     }
   };
 
@@ -227,19 +302,42 @@ export default function InvoicePreviewPage() {
           <div className="rounded-lg border bg-white p-4 md:p-6">
             <h2 className="mb-3 text-lg font-semibold">Comments</h2>
 
+            <div className="mb-4">
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Enter Your Comments"
+                rows={3}
+                className="w-full resize-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                disabled={isSubmittingComment}
+              />
+              <button
+                type="button"
+                onClick={handleAddComment}
+                disabled={isSubmittingComment || !commentText.trim()}
+                className="mt-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50"
+              >
+                {isSubmittingComment ? "Adding…" : "Add Comment"}
+              </button>
+              {commentError && <p className="mt-2 text-sm text-red-600">{commentError}</p>}
+            </div>
+
             {comments.length > 0 ? (
-              <div className="space-y-3">
-                {comments.map((comment, index) => (
-                  <div
-                    key={comment.id || `comment-${index}`}
-                    className="border-l-2 border-blue-600 pl-3"
-                  >
-                    <p className="text-sm">{comment.description}</p>
-                    <p className="mt-1 text-xs text-gray-500">
-                      by {comment.userName} • {comment.dateString}
-                    </p>
-                  </div>
-                ))}
+              <div className="max-h-[280px] overflow-y-auto overflow-x-hidden rounded-md pr-1">
+                <div className="space-y-3 py-1">
+                  {comments.map((comment, index) => (
+                    <div
+                      key={comment.id ?? `comment-${index}`}
+                      className="flex flex-wrap items-start gap-x-3 gap-y-1 border-l-2 border-gray-300 pl-3"
+                    >
+                      <span className="shrink-0 text-xs text-gray-500">
+                        {formatCommentDate(comment.dateString)}
+                      </span>
+                      <span className="min-w-0 flex-1 text-sm">{comment.description}</span>
+                      <span className="shrink-0 text-xs text-gray-500">by {comment.userName}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
               <p className="text-sm text-gray-500">No comments yet</p>

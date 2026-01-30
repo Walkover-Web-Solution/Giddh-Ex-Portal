@@ -85,8 +85,11 @@ export async function getAccountStatement(
   return response.data;
 }
 
+export type ExportFormat = "pdf" | "xls";
+
 export async function downloadAccountStatement(
-  request: AccountStatementRequest
+  request: AccountStatementRequest,
+  fileType: ExportFormat = "pdf"
 ): Promise<{ status: string; body: { data: string; type: string; name: string } }> {
   const response = await apiClient.get(
     API_PATHS.exportAccountStatement(
@@ -96,7 +99,8 @@ export async function downloadAccountStatement(
       request.count,
       request.from,
       request.to,
-      request.sort
+      request.sort,
+      fileType
     )
   );
   return response.data;

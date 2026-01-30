@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
@@ -14,12 +14,14 @@ import {
   AccountSummary,
   AccountAddress,
   Address,
+  type ExportFormat,
 } from "@/utils/accountStatement";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { Pagination } from "@/components/Pagination";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
+import { ChevronDown } from "lucide-react";
 import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
 import { PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
 import { SortOrder } from "@/constants/sort";
@@ -41,6 +43,8 @@ export default function AccountStatementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
 
   const today = new Date();
   const thirtyDaysAgo = new Date(today);
@@ -123,7 +127,20 @@ export default function AccountStatementPage() {
     }
   };
 
-  const handleExport = async () => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setExportDropdownOpen(false);
+      }
+    };
+    if (exportDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [exportDropdownOpen]);
+
+  const handleExport = async (format: ExportFormat) => {
+    setExportDropdownOpen(false);
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
     if (!companyUniqueName || !accountUniqueName) return;
 
@@ -139,16 +156,17 @@ export default function AccountStatementPage() {
         sort: sortDirection,
       };
 
-      const response = await downloadAccountStatement(request);
+      const response = await downloadAccountStatement(request, format);
 
       if (response.status === "success" && response.body) {
         const blob = new Blob([atob(response.body.data)], { type: response.body.type });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
+        const ext = format === "xls" ? "xls" : "pdf";
         link.download =
           response.body.name ||
-          `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.pdf`;
+          `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.${ext}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -285,13 +303,39 @@ export default function AccountStatementPage() {
                     onFromDateChange={handleFromDateChange}
                     onToDateChange={handleToDateChange}
                   />
-                  <button
-                    onClick={handleExport}
-                    disabled={isExporting}
-                    className="w-full rounded-md border border-blue-600 bg-white px-6 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                  >
-                    {isExporting ? "Exporting..." : "Export"}
-                  </button>
+                  <div className="relative w-full sm:w-auto" ref={exportDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setExportDropdownOpen((open) => !open)}
+                      disabled={isExporting}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-md border border-blue-600 bg-white px-6 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    >
+                      {isExporting ? "Exporting..." : "Export"}
+                      <ChevronDown
+                        className={exportDropdownOpen ? "h-4 w-4 rotate-180" : "h-4 w-4"}
+                      />
+                    </button>
+                    {exportDropdownOpen && (
+                      <div className="absolute right-0 top-full z-10 mt-1 min-w-[140px] rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => handleExport("pdf")}
+                          disabled={isExporting}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          As PDF
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleExport("xls")}
+                          disabled={isExporting}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          As XLS
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">

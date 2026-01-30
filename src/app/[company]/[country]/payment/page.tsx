@@ -56,9 +56,14 @@ export default function PaymentsPage() {
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
 
   const handlePaymentClick = (voucherUniqueName: string) => {
-    router.push(
-      `/${companyName}/${country}/payment/preview?voucher=${encodeURIComponent(voucherUniqueName)}`
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
     );
+    const params = new URLSearchParams({ voucher: voucherUniqueName });
+    if (companyUniqueName) params.set("companyUniqueName", companyUniqueName);
+    if (accountUniqueName) params.set("accountUniqueName", accountUniqueName);
+    router.push(`/${companyName}/${country}/payment/preview?${params.toString()}`);
   };
 
   const handleClearFilters = () => {

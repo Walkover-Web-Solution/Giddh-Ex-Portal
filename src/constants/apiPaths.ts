@@ -63,7 +63,7 @@ export const API_PATHS = {
   ) =>
     `${portalAccount(c, a, true)}/view-statement?page=${page}&count=${count}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&sort=${encodeURIComponent(sort)}`,
 
-  /** GET export account statement */
+  /** GET export account statement (fileType: pdf | xls) */
   exportAccountStatement: (
     c: string,
     a: string,
@@ -71,17 +71,18 @@ export const API_PATHS = {
     count: number,
     from: string,
     to: string,
-    sort: string
+    sort: string,
+    fileType: "pdf" | "xls" = "pdf"
   ) =>
-    `${portalAccount(c, a, true)}/export-account-statement?page=${page}&count=${count}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&sort=${encodeURIComponent(sort)}`,
+    `${portalAccount(c, a, true)}/export-account-statement?page=${page}&count=${count}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&sort=${encodeURIComponent(sort)}&fileType=${fileType}`,
 
   /** GET voucher comments */
   voucherComments: (c: string, a: string, voucherUniqueName: string) =>
-    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/comments?`,
+    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/comments?voucherVersion=2`,
 
   /** POST add comment to voucher */
   voucherAddComment: (c: string, a: string, voucherUniqueName: string) =>
-    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/add-comment?`,
+    `${portalAccount(c, a)}/${encodeURIComponent(voucherUniqueName)}/add-comment?voucherVersion=2`,
 } as const;
 
 /**
