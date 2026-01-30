@@ -12,11 +12,13 @@ import { sessionManager } from "@/utils/sessionManager";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { logger } from "@/utils/logger";
+import { useConfig } from "@/contexts/ConfigContext";
 
 export default function Auth() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
+  const { isLoading: configLoading } = useConfig();
   const token = searchParams.get("proxy_auth_token");
   const companyParam = searchParams.get("company");
   const countryParam = searchParams.get("country");
@@ -37,7 +39,7 @@ export default function Auth() {
 
   useEffect(() => {
     const authenticateUser = async () => {
-      if (!token || !companyName || hasCalledRef.current) return;
+      if (!token || !companyName || hasCalledRef.current || configLoading) return;
 
       hasCalledRef.current = true;
 
@@ -105,7 +107,7 @@ export default function Auth() {
     };
 
     authenticateUser();
-  }, [token, companyName, country, router]);
+  }, [token, companyName, country, router, configLoading]);
 
   if (error) {
     return <ErrorMessage message={error} onRetry={() => router.push("/")} variant="page" />;

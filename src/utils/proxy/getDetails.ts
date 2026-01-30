@@ -1,5 +1,5 @@
 import axios from "axios";
-import { config } from "@/config";
+import { getConfig } from "@/config";
 
 interface ProxyDetailsResponse {
   status: string;
@@ -9,7 +9,8 @@ interface ProxyDetailsResponse {
 }
 
 export const getDetails = async (proxyAuthToken: string): Promise<ProxyDetailsResponse> => {
-  const baseUrl = config.NEXT_PUBLIC_PROXY_URL.replace(/\/$/, "");
+  const config = getConfig();
+  const baseUrl = config.PROXY_URL.replace(/\/$/, "");
 
   const response = await axios.get<ProxyDetailsResponse>(`${baseUrl}/api/c/getDetails`, {
     headers: {

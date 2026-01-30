@@ -1,5 +1,5 @@
 import axios from "axios";
-import { config } from "@/config";
+import { getConfig } from "@/config";
 
 interface SaveSessionRequest {
   account: {
@@ -29,7 +29,8 @@ export const savePortalSession = async (
   proxyAuthToken: string,
   subDomain: string
 ): Promise<SaveSessionResponse> => {
-  const baseUrl = config.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+  const config = getConfig();
+  const baseUrl = config.API_URL.replace(/\/$/, "");
 
   const requestBody: SaveSessionRequest = {
     account,
