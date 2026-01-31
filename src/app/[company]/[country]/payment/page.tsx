@@ -95,8 +95,8 @@ export default function PaymentsPage() {
         amount: formatCurrencyAmount(payment.grandTotal?.amountForAccount, currency, {
           decimals: 0,
         }),
-        paymentAccount: payment.account?.name || "N/A",
-        unusedAmount: "-",
+        paymentAccount: payment.account?.name ?? "",
+        unusedAmount: "",
       })),
     [allPayments, currency]
   );

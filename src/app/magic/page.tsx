@@ -11,7 +11,7 @@ import {
   ViewMode,
   CurrencyData,
 } from "@/components/magic";
-import { MagicLinkViewMode } from "@/constants/ledger";
+import { LedgerView, type LedgerTransactionType } from "@/constants/ledger";
 import { SortOrder } from "@/constants/sort";
 import { isValid } from "date-fns";
 import { formatDateToAPI, parseDateFromAPI, parseTransactionDate } from "@/utils/dateUtils";
@@ -25,7 +25,7 @@ export default function Magic() {
   const linkId = searchParams.get("id") || "";
 
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>("INR");
-  const [viewMode, setViewMode] = useState<ViewMode>(MagicLinkViewMode.STATEMENT);
+  const [viewMode, setViewMode] = useState<ViewMode>(LedgerView.STATEMENT_VIEW);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [companyName, setCompanyName] = useState("");
@@ -39,7 +39,7 @@ export default function Magic() {
   const [forwardedBalance, setForwardedBalance] = useState<
     | {
         amount: number;
-        type: "DEBIT" | "CREDIT";
+        type: LedgerTransactionType;
         description?: string;
       }
     | undefined

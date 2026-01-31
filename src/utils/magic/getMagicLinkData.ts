@@ -2,7 +2,7 @@ import {
   BALANCE_TYPE_CR,
   BALANCE_TYPE_DR,
   LEDGER_TYPE_DEBIT,
-  MagicLinkViewMode,
+  LedgerView,
 } from "@/constants/ledger";
 import { parseDateToTimestamp } from "@/utils/dateUtils";
 import {
@@ -51,7 +51,7 @@ export interface GetMagicLinkDataResult {
  */
 export const getMagicLinkData = async (
   request: GetMagicLinkLedgerRequest,
-  viewMode: MagicLinkViewMode = MagicLinkViewMode.STATEMENT
+  viewMode: LedgerView = LedgerView.STATEMENT_VIEW
 ): Promise<GetMagicLinkDataResult> => {
   try {
     const response = await getMagicLinkLedger({ ...request, viewMode });
@@ -67,7 +67,7 @@ export const getMagicLinkData = async (
       response.body.ledgersTransactions;
 
     const firstTransaction =
-      (viewMode === MagicLinkViewMode.STATEMENT && debitCreditTransactions?.[0]) ||
+      (viewMode === LedgerView.STATEMENT_VIEW && debitCreditTransactions?.[0]) ||
       debitTransactions?.[0] ||
       creditTransactions?.[0];
 
@@ -95,7 +95,7 @@ export const getMagicLinkData = async (
     let apiTransactions: Transaction[] = [];
 
     if (
-      viewMode === MagicLinkViewMode.STATEMENT &&
+      viewMode === LedgerView.STATEMENT_VIEW &&
       debitCreditTransactions &&
       debitCreditTransactions.length > 0
     ) {
@@ -202,9 +202,9 @@ export const getMagicLinkData = async (
       transactions: apiTransactions,
       // Include raw API response arrays
       debitCreditTransactions:
-        viewMode === MagicLinkViewMode.STATEMENT ? debitCreditTransactions : undefined,
-      debitTransactions: viewMode === MagicLinkViewMode.T ? debitTransactions : undefined,
-      creditTransactions: viewMode === MagicLinkViewMode.T ? creditTransactions : undefined,
+        viewMode === LedgerView.STATEMENT_VIEW ? debitCreditTransactions : undefined,
+      debitTransactions: viewMode === LedgerView.T_VIEW ? debitTransactions : undefined,
+      creditTransactions: viewMode === LedgerView.T_VIEW ? creditTransactions : undefined,
       forwardedBalance: response.body.ledgersTransactions.forwardedBalance,
       companyName: response.body.companyName || "",
       accountName: response.body.account?.name || "",

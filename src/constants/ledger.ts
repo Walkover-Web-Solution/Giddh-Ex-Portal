@@ -19,14 +19,14 @@ export type BalanceType = typeof BALANCE_TYPE_DR | typeof BALANCE_TYPE_CR;
 /** Default amount for missing closing */
 export const DEFAULT_CLOSING_AMOUNT = 0;
 
-/** Magic link ledger view mode (request) */
-export enum MagicLinkViewMode {
-  STATEMENT = "statement",
-  T = "t",
-}
-
-/** Magic link ledger view (API param value) */
+/** Magic link ledger view (UI state & API param) */
 export enum LedgerView {
   STATEMENT_VIEW = "STATEMENT_VIEW",
   T_VIEW = "T_VIEW",
 }
+
+/** Display label for each ledger view */
+export const LEDGER_VIEW_LABEL: Record<LedgerView, string> = {
+  [LedgerView.STATEMENT_VIEW]: "Statement View",
+  [LedgerView.T_VIEW]: "T View",
+};

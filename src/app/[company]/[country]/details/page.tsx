@@ -70,13 +70,13 @@ export default function DetailsPage() {
                   <div>
                     <p className="font-medium text-gray-500">Name</p>
                     <p className="mt-1 break-words font-semibold text-gray-900">
-                      {data?.name || "N/A"}
+                      {data?.name ?? ""}
                     </p>
                   </div>
 
                   <div>
                     <p className="font-medium text-gray-500">Email</p>
-                    <p className="mt-1 break-words text-gray-900">{data?.email || "N/A"}</p>
+                    <p className="mt-1 break-words text-gray-900">{data?.email ?? ""}</p>
                   </div>
 
                   {data?.addresses && data.addresses.length > 0 && (

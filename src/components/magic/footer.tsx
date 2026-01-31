@@ -22,8 +22,8 @@ interface FooterProps {
 
 export function Footer({ summary, companyCurrency }: FooterProps) {
   const formatAmount = (amount: number | null) => {
-    if (amount === null) return "-";
-    const symbol = companyCurrency?.symbol || "₹";
+    if (amount === null) return "";
+    const symbol = companyCurrency?.symbol;
     return formatCurrencyAmount(amount, symbol, { decimals: 2 });
   };
 

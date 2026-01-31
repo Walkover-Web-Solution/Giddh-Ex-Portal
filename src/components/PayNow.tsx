@@ -16,6 +16,7 @@ import { formatDateToAPI } from "@/utils/dateUtils";
 import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
 import { useToast } from "@/contexts/ToastContext";
+import { ApiResponseStatus } from "@/utils/proxy/types";
 
 interface PayNowProps {
   invoiceUniqueName: string;
@@ -99,7 +100,7 @@ export function PayNow({
         sessionId: sessionId || undefined,
       });
 
-      if (response && response.status === "success" && response.body) {
+      if (response && response.status === ApiResponseStatus.SUCCESS && response.body) {
         setPaymentMethods(response.body);
 
         const hasAnyMethod = Boolean(
@@ -219,7 +220,7 @@ export function PayNow({
 
       const response = await getVoucherPaymentDetails(request);
 
-      if (response.status === "success" && response.body) {
+      if (response.status === ApiResponseStatus.SUCCESS && response.body) {
         initializePaymentGateway(response.body);
       } else {
         showToast("Failed to initialize payment", "error");
@@ -233,7 +234,6 @@ export function PayNow({
   };
 
   const initializePaymentGateway = (paymentDetails: PaymentDetailsResponse) => {
-    console.log("🚀 ~ initializePaymentGateway ~ paymentDetails:", paymentDetails);
     switch (paymentDetails.paymentGatewayType) {
       case PAYMENT_METHODS_ENUM.RAZORPAY:
         initializeRazorpay(paymentDetails);
@@ -298,7 +298,7 @@ export function PayNow({
         }
       );
 
-      if (response.status === "success") {
+      if (response.status === ApiResponseStatus.SUCCESS) {
         showToast("Payment successful!", "success");
         onSuccess?.();
       }
@@ -349,7 +349,7 @@ export function PayNow({
         }
       );
 
-      if (response.status === "success") {
+      if (response.status === ApiResponseStatus.SUCCESS) {
         showToast("Payment successful!", "success");
         onSuccess?.();
       }

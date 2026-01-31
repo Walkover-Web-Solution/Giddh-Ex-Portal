@@ -50,21 +50,21 @@ export function LastPaymentCard() {
         <div className="py-1">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <span className="text-sm text-gray-600">Payment Number</span>
-            <span className="text-sm font-medium md:text-right">{data.voucherNumber || "N/A"}</span>
+            <span className="text-sm font-medium md:text-right">{data?.voucherNumber}</span>
           </div>
         </div>
 
         <div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <span className="text-sm text-gray-600">Paid On</span>
-            <span className="text-sm font-medium md:text-right">{data.voucherDate || "N/A"}</span>
+            <span className="text-sm font-medium md:text-right">{data?.voucherDate}</span>
           </div>
         </div>
         <div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <span className="text-sm text-gray-600">Paid For</span>
             <span className="break-words text-sm font-medium md:text-right">
-              {data.account?.name || "N/A"}
+              {data?.account?.name}
             </span>
           </div>
         </div>

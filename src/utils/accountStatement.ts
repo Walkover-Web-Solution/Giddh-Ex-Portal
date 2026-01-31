@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
+import { FileType } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { formatDateToAPI as formatDateToAPIUtil, formatDateDisplay } from "@/utils/dateUtils";
 
@@ -85,11 +86,9 @@ export async function getAccountStatement(
   return response.data;
 }
 
-export type ExportFormat = "pdf" | "xls";
-
 export async function downloadAccountStatement(
   request: AccountStatementRequest,
-  fileType: ExportFormat = "pdf"
+  fileType: FileType = FileType.PDF
 ): Promise<{ status: string; body: { data: string; type: string; name: string } }> {
   const response = await apiClient.get(
     API_PATHS.exportAccountStatement(

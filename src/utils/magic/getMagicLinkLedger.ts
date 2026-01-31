@@ -1,5 +1,5 @@
 import axios from "axios";
-import { LedgerView, LedgerTransactionType, MagicLinkViewMode } from "@/constants/ledger";
+import { LedgerView, LedgerTransactionType } from "@/constants/ledger";
 import { SortOrder } from "@/constants/sort";
 import { getConfig } from "@/config";
 
@@ -57,7 +57,7 @@ export interface MagicLinkLedgerResponse {
 export interface GetMagicLinkLedgerRequest {
   linkId: string;
   sort?: SortOrder;
-  viewMode?: MagicLinkViewMode;
+  viewMode?: LedgerView;
   from?: string;
   to?: string;
 }
@@ -76,7 +76,7 @@ export const getMagicLinkLedger = async (
     const queryParts: string[] = [
       `sort=${encodeURIComponent(request.sort ?? SortOrder.ASC)}`,
       `ledgerView=${encodeURIComponent(
-        request.viewMode === MagicLinkViewMode.T ? LedgerView.T_VIEW : LedgerView.STATEMENT_VIEW
+        request.viewMode === LedgerView.T_VIEW ? LedgerView.T_VIEW : LedgerView.STATEMENT_VIEW
       )}`,
     ];
     if (request.from) {

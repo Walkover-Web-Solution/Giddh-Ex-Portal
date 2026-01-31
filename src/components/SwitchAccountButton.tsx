@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectAccountUniqueName } from "@/store/slices/companySlice";
 import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
-import { VerifyPortalUserStatus } from "@/utils/proxy/types";
+import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -71,10 +71,7 @@ export function SwitchAccountButton() {
 
       const verifyResponse = await verifyPortalUser(email, company, proxyToken);
 
-      if (
-        verifyResponse.status === VerifyPortalUserStatus.SUCCESS &&
-        verifyResponse.body?.length > 0
-      ) {
+      if (verifyResponse.status === ApiResponseStatus.SUCCESS && verifyResponse.body?.length > 0) {
         setAccounts(verifyResponse.body);
         if (verifyResponse.body.length === 1) {
           setError(null);

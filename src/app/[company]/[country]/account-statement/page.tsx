@@ -14,7 +14,6 @@ import {
   AccountSummary,
   AccountAddress,
   Address,
-  type ExportFormat,
 } from "@/utils/accountStatement";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { Pagination } from "@/components/Pagination";
@@ -23,7 +22,7 @@ import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
 import { ChevronDown } from "lucide-react";
 import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
-import { PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { FileType, PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { useToast } from "@/contexts/ToastContext";
 
@@ -139,7 +138,7 @@ export default function AccountStatementPage() {
     }
   }, [exportDropdownOpen]);
 
-  const handleExport = async (format: ExportFormat) => {
+  const handleExport = async (format: FileType) => {
     setExportDropdownOpen(false);
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
     if (!companyUniqueName || !accountUniqueName) return;
@@ -163,10 +162,10 @@ export default function AccountStatementPage() {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        const ext = format === "xls" ? "xls" : "pdf";
+        const extension = response.body.type.includes(FileType.PDF) ? FileType.PDF : FileType.XLSX;
         link.download =
           response.body.name ||
-          `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.${ext}`;
+          `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.${extension}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -255,7 +254,6 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between text-gray-600">
                             <span>Opening Balance</span>
                             <span className="font-medium">
-                              {summary.openingBalance.type === LEDGER_TYPE_CREDIT && "-"}
                               {formatCurrency(
                                 summary.openingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -281,7 +279,6 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between font-semibold text-gray-800">
                             <span>Balance Due</span>
                             <span>
-                              {summary.closingBalance.type === LEDGER_TYPE_CREDIT && "-"}
                               {formatCurrency(
                                 summary.closingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -319,7 +316,7 @@ export default function AccountStatementPage() {
                       <div className="absolute right-0 top-full z-10 mt-1 min-w-[140px] rounded-md border border-gray-200 bg-white py-1 shadow-lg">
                         <button
                           type="button"
-                          onClick={() => handleExport("pdf")}
+                          onClick={() => handleExport(FileType.PDF)}
                           disabled={isExporting}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                         >
@@ -327,7 +324,7 @@ export default function AccountStatementPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleExport("xls")}
+                          onClick={() => handleExport(FileType.XLSX)}
                           disabled={isExporting}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                         >
@@ -387,7 +384,7 @@ export default function AccountStatementPage() {
                                     transaction.voucherAmount.amount,
                                     accountAddress?.currency?.symbol
                                   )
-                                : "-"}
+                                : ""}
                             </td>
                             <td className="hidden min-w-[120px] whitespace-nowrap px-3 py-3 text-right sm:table-cell md:px-4">
                               {transaction.voucherAmount.type === LEDGER_TYPE_CREDIT
@@ -395,10 +392,9 @@ export default function AccountStatementPage() {
                                     transaction.voucherAmount.amount,
                                     accountAddress?.currency?.symbol
                                   )
-                                : "-"}
+                                : ""}
                             </td>
                             <td className="min-w-[140px] whitespace-nowrap px-2 py-3 text-right font-medium sm:px-3 md:px-4">
-                              {transaction.closingBalance.type === LEDGER_TYPE_CREDIT && "-"}
                               {formatCurrency(
                                 transaction.closingBalance.amount,
                                 accountAddress?.currency?.symbol

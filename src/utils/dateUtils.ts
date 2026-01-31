@@ -1,10 +1,7 @@
 import { format as formatDateFns, parse, isValid } from "date-fns";
 
-/** API/request date format: dd-MM-yyyy */
+/** API/ledger date format: dd-MM-yyyy */
 const API_DATE_FORMAT = "dd-MM-yyyy";
-
-/** ISO date format: yyyy-MM-dd */
-const ISO_DATE_FORMAT = "yyyy-MM-dd";
 
 /**
  * Format a Date for API requests (dd-MM-yyyy).
@@ -40,7 +37,7 @@ export function parseDateFromAPI(dateStr: string): Date {
 }
 
 /**
- * Parse a transaction/ledger date string (DD-MM-YYYY, YYYY-MM-DD, or DD-MM-YY).
+ * Parse a transaction/ledger date string (dd-MM-yyyy or dd-MM-yy).
  * Returns start-of-day Date or invalid Date on failure.
  */
 export function parseTransactionDate(dateString: string): Date {
@@ -53,17 +50,8 @@ export function parseTransactionDate(dateString: string): Date {
     return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
   }
 
-  if (parts[0].length === 4) {
-    try {
-      const parsed = parse(dateString, ISO_DATE_FORMAT, new Date());
-      return isValid(parsed) ? parsed : new Date();
-    } catch {
-      return new Date();
-    }
-  }
-
   try {
-    let parsed = parse(dateString, API_DATE_FORMAT, new Date());
+    const parsed = parse(dateString, API_DATE_FORMAT, new Date());
     if (isValid(parsed)) return parsed;
     const day = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10) - 1;
@@ -77,21 +65,17 @@ export function parseTransactionDate(dateString: string): Date {
 }
 
 /**
- * Get timestamp for sorting (dd-MM-yyyy, dd-MM-yy, or yyyy-MM-dd string).
+ * Get timestamp for sorting (dd-MM-yyyy or dd-MM-yy string).
  */
 export function parseDateToTimestamp(dateStr: string): number {
   const parts = dateStr.split("-");
   if (parts.length === 3) {
-    if (parts[0].length === 4) {
-      const d = parse(dateStr, ISO_DATE_FORMAT, new Date());
-      return isValid(d) ? d.getTime() : NaN;
-    }
     let year = parseInt(parts[2], 10);
     if (year < 100) year += 2000;
     const month = parts[1].padStart(2, "0");
     const day = parts[0].padStart(2, "0");
     const normalized = `${year}-${month}-${day}`;
-    const parsed = parse(normalized, ISO_DATE_FORMAT, new Date());
+    const parsed = parse(normalized, "yyyy-MM-dd", new Date());
     return isValid(parsed) ? parsed.getTime() : NaN;
   }
   return new Date(dateStr).getTime();

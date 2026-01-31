@@ -67,7 +67,7 @@ export default function InvoicesPage() {
     const today = new Date();
     const diffTime = today.getTime() - due.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? `Overdue by: ${diffDays} days` : "-";
+    return diffDays > 0 ? `Overdue by ${diffDays} day${diffDays > 1 ? "s" : ""}` : "";
   };
 
   const handleInvoiceClick = (invoiceUniqueName: string) => {
@@ -75,10 +75,12 @@ export default function InvoicesPage() {
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
-    const params = new URLSearchParams({ voucher: invoiceUniqueName });
+    const params = new URLSearchParams();
+    params.set("voucher", invoiceUniqueName);
     if (companyUniqueName) params.set("companyUniqueName", companyUniqueName);
     if (accountUniqueName) params.set("accountUniqueName", accountUniqueName);
-    router.push(`/${companyName}/${country}/invoice/preview?${params.toString()}`);
+    const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice/preview`;
+    router.push(`${path}?${params.toString()}`);
   };
 
   const handleClearFilters = () => {

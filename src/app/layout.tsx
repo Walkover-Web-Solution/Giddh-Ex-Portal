@@ -1,5 +1,5 @@
 import Script from "next/script";
-import "./globals.css";
+import "./globals.scss";
 import { ReduxProvider } from "@/providers/ReduxProvider";
 import { ToastProvider } from "@/contexts/ToastContext";
 import SessionVerification from "@/components/SessionVerification";

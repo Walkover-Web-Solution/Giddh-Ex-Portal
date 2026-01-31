@@ -1,4 +1,4 @@
-import { MagicLinkViewMode } from "@/constants/ledger";
+import { LedgerView, LEDGER_VIEW_LABEL } from "@/constants/ledger";
 import { Currency, ViewMode, CurrencyInfo } from "./types";
 
 interface SearchAndViewControlsProps {
@@ -81,23 +81,15 @@ export function SearchAndViewControls({
             )}
 
             <div className="flex rounded-md bg-blue-900/5 p-0.5 sm:p-1">
-              {(
-                [
-                  { label: "Statement View", value: MagicLinkViewMode.STATEMENT },
-                  { label: "T View", value: MagicLinkViewMode.T },
-                ] as { label: string; value: ViewMode }[]
-              ).map((view) => (
+              {(Object.values(LedgerView) as LedgerView[]).map((value) => (
                 <button
-                  key={view.value}
-                  onClick={() => onViewModeChange(view.value)}
+                  key={value}
+                  onClick={() => onViewModeChange(value)}
                   className={`rounded-md px-2.5 py-1 text-xs font-medium transition sm:px-4 sm:py-1.5 sm:text-sm ${
-                    viewMode === view.value ? "bg-white text-blue-900 shadow-sm" : "text-blue-900"
+                    viewMode === value ? "bg-white text-blue-900 shadow-sm" : "text-blue-900"
                   }`}
                 >
-                  <span className="hidden sm:inline">{view.label}</span>
-                  <span className="sm:hidden">
-                    {view.value === MagicLinkViewMode.STATEMENT ? "Statement" : "T"}
-                  </span>
+                  {LEDGER_VIEW_LABEL[value]}
                 </button>
               ))}
             </div>

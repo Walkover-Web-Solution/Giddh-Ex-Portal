@@ -1,6 +1,12 @@
 "use client";
 
-import { BALANCE_TYPE_DR, BALANCE_TYPE_CR } from "@/constants/ledger";
+import {
+  BALANCE_TYPE_DR,
+  BALANCE_TYPE_CR,
+  LEDGER_TYPE_DEBIT,
+  LEDGER_TYPE_CREDIT,
+  type LedgerTransactionType,
+} from "@/constants/ledger";
 import { Currency, CurrencyInfo, Transaction } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
@@ -15,7 +21,7 @@ interface Props {
   debitCreditTransactions?: LedgerTransaction[];
   forwardedBalance?: {
     amount: number;
-    type: "DEBIT" | "CREDIT";
+    type: LedgerTransactionType;
     description?: string;
   };
   transactionCurrency?: CurrencyInfo;
@@ -41,11 +47,11 @@ export function StatementViewTable({
     }
 
     const debit = debitCreditTransactions
-      .filter((tx) => tx.type === "DEBIT")
+      .filter((tx) => tx.type === LEDGER_TYPE_DEBIT)
       .reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
     const credit = debitCreditTransactions
-      .filter((tx) => tx.type === "CREDIT")
+      .filter((tx) => tx.type === LEDGER_TYPE_CREDIT)
       .reduce((sum, tx) => sum + (tx.amount || 0), 0);
 
     return { totalDebit: debit, totalCredit: credit };
@@ -120,7 +126,8 @@ export function StatementViewTable({
         creditConverted: null,
         closingBalance: forwardedBalance.amount,
         closingBalanceConverted: forwardedBalance.amount,
-        balanceType: forwardedBalance.type === "DEBIT" ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
+        balanceType:
+          forwardedBalance.type === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
         voucherGenerated: false,
         voucherNumber: undefined,
         voucherName: undefined,
@@ -141,7 +148,7 @@ export function StatementViewTable({
     currencyConfig;
 
   const format = (amount: number | null, symbol?: string) => {
-    if (amount === null) return "-";
+    if (amount === null) return "";
     return formatCurrencyAmount(amount, symbol || "₹", { decimals: 2 });
   };
 

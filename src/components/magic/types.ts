@@ -19,7 +19,7 @@ export interface Transaction {
 }
 
 export type Currency = string;
-export type { MagicLinkViewMode as ViewMode } from "@/constants/ledger";
+export type { LedgerView as ViewMode } from "@/constants/ledger";
 
 export interface CurrencyInfo {
   code: string;
