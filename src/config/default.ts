@@ -1,5 +1,6 @@
 export const APP_ENV = {
   LOCAL: "local",
+  TEST: "test",
   PROD: "prod",
 } as const;
 
