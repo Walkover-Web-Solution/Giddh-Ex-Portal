@@ -10,12 +10,15 @@ import {
   Currency,
   ViewMode,
   CurrencyData,
+  Footer,
 } from "@/components/magic";
 import { LedgerView, type LedgerTransactionType } from "@/constants/ledger";
 import { SortOrder } from "@/constants/sort";
 import { isValid } from "date-fns";
 import { formatDateToAPI, parseDateFromAPI, parseTransactionDate } from "@/utils/dateUtils";
+import { buildFooterSummary } from "@/utils/magic/buildFooterSummary";
 import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
+import { getMagicLinkLedgerBalance } from "@/utils/magic/getMagicLinkLedgerBalance";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { Pagination } from "@/components/Pagination";
@@ -46,6 +49,8 @@ export default function Magic() {
       }
     | undefined
   >(undefined);
+  const [ledgerBalance, setLedgerBalance] =
+    useState<Awaited<ReturnType<typeof getMagicLinkLedgerBalance>>["body"]>(undefined);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
@@ -115,6 +120,13 @@ export default function Magic() {
           setCreditTransactions(apiCreditTransactions || []);
           setForwardedBalance(apiForwardedBalance);
 
+          const balanceRes = await getMagicLinkLedgerBalance({ linkId });
+          if (balanceRes.status === "success" && balanceRes.body) {
+            setLedgerBalance(balanceRes.body);
+          } else {
+            setLedgerBalance(undefined);
+          }
+
           // Set initial selected currency to transaction currency
           if (extractedCurrencyData.transactionCurrency) {
             setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
@@ -148,6 +160,7 @@ export default function Magic() {
           setDebitTransactions([]);
           setCreditTransactions([]);
           setForwardedBalance(undefined);
+          setLedgerBalance(undefined);
         }
       } catch (err) {
         setError("Failed to load ledger data");
@@ -156,6 +169,7 @@ export default function Magic() {
         setDebitTransactions([]);
         setCreditTransactions([]);
         setForwardedBalance(undefined);
+        setLedgerBalance(undefined);
       } finally {
         setLoading(false);
       }
@@ -318,6 +332,26 @@ export default function Magic() {
 
   const totalPages = Math.max(1, Math.ceil(totalEntries / itemsPerPage));
 
+  const summary = useMemo(
+    () =>
+      buildFooterSummary({
+        ledgerBalance,
+        forwardedBalance,
+        viewMode,
+        filteredDebitCreditTransactions,
+        filteredDebitTransactions,
+        filteredCreditTransactions,
+      }),
+    [
+      ledgerBalance,
+      forwardedBalance,
+      viewMode,
+      filteredDebitCreditTransactions,
+      filteredDebitTransactions,
+      filteredCreditTransactions,
+    ]
+  );
+
   const handlePrint = () => {
     window.print();
   };
@@ -437,6 +471,7 @@ export default function Magic() {
               pageSizeOptions={PAGE_SIZE_OPTIONS}
             />
           )}
+          <Footer summary={summary} companyCurrency={currencyData?.transactionCurrency} />
         </section>
       </main>
     </div>

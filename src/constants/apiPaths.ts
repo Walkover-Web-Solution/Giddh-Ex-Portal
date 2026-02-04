@@ -102,3 +102,13 @@ export const PROXY_API_PATHS = {
   SAVE_SESSION: "v2/portal-user/save-session",
   GET_DETAILS: "api/c/getDetails",
 } as const;
+
+/**
+ * Giddh Magic Link API path builders (used with config.GIDDH_API_URL as base).
+ */
+export const GIDDH_MAGIC_LINK_PATHS = {
+  /** GET ledger transactions (append ?sort=...&ledgerView=...&from=...&to=...) */
+  ledger: (linkId: string) => `/magic-link-ledger/${encodeURIComponent(linkId)}`,
+  /** GET ledger balance summary for footer */
+  ledgerBalance: (linkId: string) => `/magic-link-ledger-balance/${encodeURIComponent(linkId)}`,
+} as const;

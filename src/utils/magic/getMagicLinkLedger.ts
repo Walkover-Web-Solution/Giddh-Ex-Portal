@@ -1,7 +1,8 @@
 import axios from "axios";
+import { getConfig } from "@/config";
+import { GIDDH_MAGIC_LINK_PATHS } from "@/constants/apiPaths";
 import { LedgerView, LedgerTransactionType } from "@/constants/ledger";
 import { SortOrder } from "@/constants/sort";
-import { getConfig } from "@/config";
 
 export interface LedgerTransaction {
   particular: {
@@ -67,10 +68,6 @@ export const getMagicLinkLedger = async (
 ): Promise<MagicLinkLedgerResponse> => {
   try {
     const config = getConfig();
-    const baseURL = config.GIDDH_API_URL;
-
-    const pathLinkId = encodeURIComponent(request.linkId);
-    const basePath = `${baseURL}/magic-link-ledger/${pathLinkId}`;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
 
     const queryParts: string[] = [
@@ -85,7 +82,7 @@ export const getMagicLinkLedger = async (
     if (request.to) {
       queryParts.push(`to=${encodeURIComponent(request.to)}`);
     }
-    const url = `${basePath}?${queryParts.join("&")}`;
+    const url = `${config.GIDDH_API_URL}${GIDDH_MAGIC_LINK_PATHS.ledger(request.linkId)}?${queryParts.join("&")}`;
 
     const response = await axios.get(url, {
       headers: {
