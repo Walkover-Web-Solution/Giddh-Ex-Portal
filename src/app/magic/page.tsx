@@ -18,6 +18,8 @@ import { formatDateToAPI, parseDateFromAPI, parseTransactionDate } from "@/utils
 import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { Pagination } from "@/components/Pagination";
+import { PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 
 export default function Magic() {
@@ -44,6 +46,9 @@ export default function Magic() {
       }
     | undefined
   >(undefined);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
 
   // Date range state
   const today = new Date();
@@ -259,6 +264,60 @@ export default function Magic() {
     });
   }, [creditTransactions, searchQuery]);
 
+  // Reset to first page when filters or view change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [linkId, viewMode, searchQuery, fromDate.getTime(), toDate.getTime()]);
+
+  const totalEntries = useMemo(() => {
+    if (viewMode === LedgerView.STATEMENT_VIEW) {
+      const count = filteredDebitCreditTransactions?.length ?? 0;
+      return (forwardedBalance ? 1 : 0) + count;
+    }
+    return Math.max(
+      filteredDebitTransactions?.length ?? 0,
+      filteredCreditTransactions?.length ?? 0
+    );
+  }, [
+    viewMode,
+    forwardedBalance,
+    filteredDebitCreditTransactions?.length,
+    filteredDebitTransactions?.length,
+    filteredCreditTransactions?.length,
+  ]);
+
+  const paginatedStatementData = useMemo(() => {
+    if (viewMode !== LedgerView.STATEMENT_VIEW || !filteredDebitCreditTransactions) return null;
+    const list = filteredDebitCreditTransactions;
+    const hasForwarded = Boolean(forwardedBalance);
+    const start = currentPage === 1 ? 0 : (currentPage - 1) * itemsPerPage - (hasForwarded ? 1 : 0);
+    const end =
+      currentPage === 1
+        ? itemsPerPage - (hasForwarded ? 1 : 0)
+        : currentPage * itemsPerPage - (hasForwarded ? 1 : 0);
+    return list.slice(start, end);
+  }, [viewMode, filteredDebitCreditTransactions, forwardedBalance, currentPage, itemsPerPage]);
+
+  const paginatedTViewData = useMemo(() => {
+    if (viewMode !== LedgerView.T_VIEW) return null;
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = currentPage * itemsPerPage;
+    return {
+      transactions: filteredTransactions.slice(start, end),
+      debitTransactions: (filteredDebitTransactions ?? []).slice(start, end),
+      creditTransactions: (filteredCreditTransactions ?? []).slice(start, end),
+    };
+  }, [
+    viewMode,
+    filteredTransactions,
+    filteredDebitTransactions,
+    filteredCreditTransactions,
+    currentPage,
+    itemsPerPage,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalEntries / itemsPerPage));
+
   const handlePrint = () => {
     window.print();
   };
@@ -320,29 +379,64 @@ export default function Magic() {
 
         <section className="mb-4 sm:mb-6">
           <LedgerTable
-            transactions={filteredTransactions}
+            transactions={
+              viewMode === LedgerView.T_VIEW &&
+              totalEntries > PAGINATION_LIMIT &&
+              paginatedTViewData
+                ? paginatedTViewData.transactions
+                : filteredTransactions
+            }
             selectedCurrency={selectedCurrency}
             viewMode={viewMode}
             transactionCurrency={currencyData?.transactionCurrency}
             convertedCurrency={currencyData?.convertedCurrency}
             linkId={linkId}
             debitCreditTransactions={
-              filteredDebitCreditTransactions && filteredDebitCreditTransactions.length > 0
-                ? filteredDebitCreditTransactions
-                : undefined
+              viewMode === LedgerView.STATEMENT_VIEW && totalEntries > PAGINATION_LIMIT
+                ? (paginatedStatementData ?? undefined)
+                : filteredDebitCreditTransactions && filteredDebitCreditTransactions.length > 0
+                  ? filteredDebitCreditTransactions
+                  : undefined
             }
             debitTransactions={
-              filteredDebitTransactions && filteredDebitTransactions.length > 0
-                ? filteredDebitTransactions
-                : undefined
+              viewMode === LedgerView.T_VIEW &&
+              totalEntries > PAGINATION_LIMIT &&
+              paginatedTViewData
+                ? paginatedTViewData.debitTransactions
+                : filteredDebitTransactions && filteredDebitTransactions.length > 0
+                  ? filteredDebitTransactions
+                  : undefined
             }
             creditTransactions={
-              filteredCreditTransactions && filteredCreditTransactions.length > 0
-                ? filteredCreditTransactions
+              viewMode === LedgerView.T_VIEW &&
+              totalEntries > PAGINATION_LIMIT &&
+              paginatedTViewData
+                ? paginatedTViewData.creditTransactions
+                : filteredCreditTransactions && filteredCreditTransactions.length > 0
+                  ? filteredCreditTransactions
+                  : undefined
+            }
+            forwardedBalance={
+              viewMode === LedgerView.STATEMENT_VIEW &&
+              (totalEntries <= PAGINATION_LIMIT || currentPage === 1)
+                ? forwardedBalance
                 : undefined
             }
-            forwardedBalance={forwardedBalance}
           />
+          {totalEntries > PAGINATION_LIMIT && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalEntries}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(size) => {
+                setItemsPerPage(size);
+                setCurrentPage(1);
+              }}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+            />
+          )}
         </section>
       </main>
     </div>

@@ -98,9 +98,16 @@ export const getMagicLinkLedger = async (
 
     return response.data as MagicLinkLedgerResponse;
   } catch (error: any) {
+    const data = error.response?.data;
+    const code = data?.code;
+    const apiMessage = data?.message;
+    const message =
+      code === "NOT_FOUND"
+        ? "Magic link not found. The link may be invalid or expired. Please request a new statement link from the account owner."
+        : apiMessage || "Failed to fetch ledger data";
     return {
       status: "error",
-      message: error.response?.data?.message || "Failed to fetch ledger data",
+      message,
     };
   }
 };
