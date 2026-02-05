@@ -1,45 +1,58 @@
 {
-    "name": "giddh-portal",
-    "version": "1.0.0",
-    "scripts": {
-        "ng": "ng",
-        "start": "ng serve",
-        "build": "ng build",
-        "build-test": "ng build --configuration=test",
-        "build-prod": "ng build --configuration=production",
-        "watch": "ng build --watch --configuration development",
-        "test": "ng test"
-    },
-    "private": true,
-    "dependencies": {
-        "bootstrap-daterangepicker": "3.1.0",               
-        "jquery": "3.5.1",                    
-        "@angular/animations": "^16.2.3",
-        "@angular/cdk": "~16.2.2",
-        "@angular/common": "^16.2.3",
-        "@angular/compiler": "^16.2.3",
-        "@angular/core": "^16.2.3",
-        "@angular/forms": "^16.2.3",
-        "@angular/material": "~16.2.2",
-        "@angular/platform-browser": "^16.2.3",
-        "@angular/platform-browser-dynamic": "^16.2.3",
-        "@angular/router": "^16.2.3",
-        "@ngrx/effects": "^16.3.0",
-        "@ngrx/router-store": "^16.3.0",
-        "@ngrx/store-devtools": "^16.3.0",
-        "ngrx-store-localstorage": "^16.0.0",
-        "file-saver": "^2.0.2",
-        "dayjs": "^1.11.9",
-        "rxjs": "~6.6.0",
-        "tslib": "^2.1.0",
-        "zone.js": "~0.13.1"
-    },
-    "devDependencies": {
-        "@angular-devkit/build-angular": "^16.2.1",
-        "@angular/cli": "^16.2.1",
-        "@angular/compiler-cli": "^16.2.3",
-        "@types/jasmine": "~3.6.0",
-        "@types/node": "^12.11.1",
-        "typescript": "~4.9.5"
-    }
+  "name": "giddh-portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 8008",
+    "build": "next build",
+    "start": "next start -p 8008",
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "echo 'skip husky in CI'"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.1.0",
+    "@reduxjs/toolkit": "^2.5.0",
+    "axios": "^1.7.9",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "daisyui": "^4.12.14",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.468.0",
+    "next": "16.1.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-redux": "^9.2.0",
+    "redux-persist": "^6.0.0",
+    "tailwind-merge": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.3",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "16.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
+    "postcss": "^8.4.49",
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "sass": "^1.97.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,css,scss,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
