@@ -1,6 +1,37 @@
 import { NextResponse } from "next/server";
 
-export async function GET() {
+/**
+ * Fetches AWS EC2 instance metadata using IMDSv2 (Instance Metadata Service version 2).
+ *
+ * This function performs a two-step process:
+ * 1. Obtains a session token from the metadata service
+ * 2. Uses the token to fetch the instance identity document
+ *
+ * @returns {Promise<NextResponse>} JSON response containing instance metadata or error details
+ *
+ * @throws {AbortError} If the request exceeds the 3-second timeout
+ *
+ * @example
+ * Response on success:
+ * {
+ *   "accountId": "123456789012",
+ *   "architecture": "x86_64",
+ *   "availabilityZone": "us-east-1a",
+ *   "region": "us-east-1",
+ *   ...
+ * }
+ *
+ * @example
+ * Response on timeout (504):
+ * { "error": "Metadata request timeout" }
+ *
+ * @example
+ * Response on failure (503):
+ * { "error": "Failed to obtain metadata token" }
+ * { "error": "Failed to fetch instance metadata" }
+ * { "error": "Metadata unavailable" }
+ */
+async function fetchInstanceMetadata() {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 3000);
 
@@ -39,4 +70,60 @@ export async function GET() {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+/**
+ * GET handler for instance metadata endpoint.
+ * @returns {Promise<NextResponse>} Instance metadata response
+ */
+export async function GET() {
+  return fetchInstanceMetadata();
+}
+
+/**
+ * POST handler for instance metadata endpoint.
+ * @returns {Promise<NextResponse>} Instance metadata response
+ */
+export async function POST() {
+  return fetchInstanceMetadata();
+}
+
+/**
+ * PUT handler for instance metadata endpoint.
+ * @returns {Promise<NextResponse>} Instance metadata response
+ */
+export async function PUT() {
+  return fetchInstanceMetadata();
+}
+
+/**
+ * PATCH handler for instance metadata endpoint.
+ * @returns {Promise<NextResponse>} Instance metadata response
+ */
+export async function PATCH() {
+  return fetchInstanceMetadata();
+}
+
+/**
+ * DELETE handler for instance metadata endpoint.
+ * @returns {Promise<NextResponse>} Instance metadata response
+ */
+export async function DELETE() {
+  return fetchInstanceMetadata();
+}
+
+/**
+ * OPTIONS handler for instance metadata endpoint.
+ * @returns {Promise<NextResponse>} Instance metadata response
+ */
+export async function OPTIONS() {
+  return fetchInstanceMetadata();
+}
+
+/**
+ * HEAD handler for instance metadata endpoint.
+ * @returns {Promise<NextResponse>} Instance metadata response
+ */
+export async function HEAD() {
+  return fetchInstanceMetadata();
 }
