@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectAccountUniqueName } from "@/store/slices/companySlice";
 import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
+import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -13,7 +14,7 @@ import { logger } from "@/utils/logger";
 import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
 import { ChevronDown, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { mergeClassNames } from "@/lib/utils";
 
 export function SwitchAccountButton() {
   const params = useParams();
@@ -30,6 +31,13 @@ export function SwitchAccountButton() {
   const [fetchingAccounts, setFetchingAccounts] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isProcessing = useRef(false);
+
+  // Fetch accounts on mount to know if we should show the button (hide when single account)
+  useEffect(() => {
+    if (company) {
+      fetchAccounts();
+    }
+  }, [company]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -63,7 +71,7 @@ export function SwitchAccountButton() {
 
       const verifyResponse = await verifyPortalUser(email, company, proxyToken);
 
-      if (verifyResponse.status === "success" && verifyResponse.body?.length > 0) {
+      if (verifyResponse.status === ApiResponseStatus.SUCCESS && verifyResponse.body?.length > 0) {
         setAccounts(verifyResponse.body);
         if (verifyResponse.body.length === 1) {
           setError(null);
@@ -160,19 +168,28 @@ export function SwitchAccountButton() {
     }
   };
 
+  if (accounts.length === 1) {
+    return null;
+  }
+  if (fetchingAccounts && accounts.length === 0) {
+    return null;
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={handleToggle}
         disabled={loading}
-        className={cn(
+        className={mergeClassNames(
           "flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50",
           isOpen && "bg-gray-50"
         )}
       >
-        <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+        <RefreshCw className={mergeClassNames("h-4 w-4", loading && "animate-spin")} />
         <span>Switch Account</span>
-        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown
+          className={mergeClassNames("h-4 w-4 transition-transform", isOpen && "rotate-180")}
+        />
       </button>
 
       {isOpen && (
@@ -202,7 +219,7 @@ export function SwitchAccountButton() {
                       key={index}
                       onClick={() => handleAccountSelect(account)}
                       disabled={loading || isCurrentAccount}
-                      className={cn(
+                      className={mergeClassNames(
                         "w-full rounded-md px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50",
                         isCurrentAccount
                           ? "bg-blue-50 font-medium text-blue-700"

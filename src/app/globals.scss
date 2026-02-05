@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* AUTH CONTAINER */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  > div {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 14px;
+    width: 100%;
+
+    @media (min-width: 640px) {
+      gap: 16px;
+    }
+  }
+
+  a {
+    display: none !important;
+  }
+
+  span {
+    text-align: center;
+  }
+
+  button {
+    min-width: 120px !important;
+  }
+}
+
+/* Toast – DaisyUI with custom colors */
+.toast-item {
+  color: white;
+  border: none;
+
+  &.alert-success {
+    background-color: #22c55e;
+  }
+
+  &.alert-error {
+    background-color: #dc2626;
+  }
+
+  &.alert-info {
+    background-color: #1e3a8a;
+  }
+
+  .btn-circle {
+    color: inherit;
+    opacity: 0.9;
+
+    &:hover {
+      opacity: 1;
+      background-color: rgb(255 255 255 / 0.2);
+    }
+  }
+}

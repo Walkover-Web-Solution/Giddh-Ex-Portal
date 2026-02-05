@@ -18,29 +18,23 @@ import {
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/utils/currency";
-import downloadInvoice, { downloadBase64AsPDF } from "@/utils/downloadInvoice";
+import { downloadBase64AsPDF } from "@/utils/fileUtils";
+import downloadInvoice from "@/utils/downloadInvoice";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-
-interface Invoice {
-  id: string;
-  invoiceNo: string;
-  date: string;
-  total: string;
-  status: string;
-  overdue: string;
-}
+import { SortOrder } from "@/constants/sort";
+import type { Invoice, InvoiceSortColumn } from "./types";
 
 export default function InvoicesPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [statusFilter, setStatusFilter] = useState("All Invoices");
-  const [sortBy, setSortBy] = useState("Total");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [sortBy, setSortBy] = useState<InvoiceSortColumn>("Total");
+  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
@@ -73,26 +67,35 @@ export default function InvoicesPage() {
     const today = new Date();
     const diffTime = today.getTime() - due.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? `Overdue by: ${diffDays} days` : "-";
+    return diffDays > 0 ? `Overdue by ${diffDays} day${diffDays > 1 ? "s" : ""}` : "";
   };
 
   const handleInvoiceClick = (invoiceUniqueName: string) => {
-    router.push(`/${companyName}/${country}/invoice/preview?voucher=${invoiceUniqueName}`);
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
+    const params = new URLSearchParams();
+    params.set("voucher", invoiceUniqueName);
+    if (companyUniqueName) params.set("companyUniqueName", companyUniqueName);
+    if (accountUniqueName) params.set("accountUniqueName", accountUniqueName);
+    const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice/preview`;
+    router.push(`${path}?${params.toString()}`);
   };
 
   const handleClearFilters = () => {
     setStatusFilter("All Invoices");
     setSortBy("Total");
-    setSortDirection("desc");
+    setSortDirection(SortOrder.DESC);
     setCurrentPage(1);
   };
 
-  const handleSort = (column: "Date" | "Total") => {
+  const handleSort = (column: InvoiceSortColumn) => {
     if (sortBy === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDirection(sortDirection === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC);
     } else {
       setSortBy(column);
-      setSortDirection("desc");
+      setSortDirection(SortOrder.DESC);
     }
     setCurrentPage(1);
   };
@@ -182,7 +185,7 @@ export default function InvoicesPage() {
           const dateB = new Date(b.date.split("-").reverse().join("-")).getTime();
           comparison = dateB - dateA;
         }
-        return sortDirection === "asc" ? -comparison : comparison;
+        return sortDirection === SortOrder.ASC ? -comparison : comparison;
       }),
     [filteredInvoices, sortBy, sortDirection]
   );
@@ -216,7 +219,7 @@ export default function InvoicesPage() {
         >
           DATE
           {sortBy === "Date" ? (
-            sortDirection === "asc" ? (
+            sortDirection === SortOrder.ASC ? (
               <ArrowUp className="h-4 w-4" />
             ) : (
               <ArrowDown className="h-4 w-4" />
@@ -236,7 +239,7 @@ export default function InvoicesPage() {
         >
           TOTAL
           {sortBy === "Total" ? (
-            sortDirection === "asc" ? (
+            sortDirection === SortOrder.ASC ? (
               <ArrowUp className="h-4 w-4" />
             ) : (
               <ArrowDown className="h-4 w-4" />
@@ -330,7 +333,7 @@ export default function InvoicesPage() {
               <select
                 value={sortBy}
                 onChange={(e) => {
-                  setSortBy(e.target.value);
+                  setSortBy(e.target.value as InvoiceSortColumn);
                   setCurrentPage(1);
                 }}
                 className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"

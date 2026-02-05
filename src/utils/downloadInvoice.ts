@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 
 export interface DownloadInvoiceResponse {
   status: string;
@@ -11,7 +12,7 @@ export default async function downloadInvoice(
   voucherUniqueName: string
 ): Promise<DownloadInvoiceResponse> {
   const response = await apiClient.post(
-    `/portal/company/${companyUniqueName}/accounts/${accountUniqueName}/download-file`,
+    API_PATHS.downloadFileBase(companyUniqueName, accountUniqueName),
     [voucherUniqueName],
     {
       params: {
@@ -21,12 +22,4 @@ export default async function downloadInvoice(
     }
   );
   return response.data;
-}
-
-export function downloadBase64AsPDF(base64String: string, fileName: string) {
-  const linkSource = `data:application/pdf;base64,${base64String}`;
-  const downloadLink = document.createElement("a");
-  downloadLink.href = linkSource;
-  downloadLink.download = fileName;
-  downloadLink.click();
 }

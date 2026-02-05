@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
@@ -20,6 +20,11 @@ import { Pagination } from "@/components/Pagination";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
+import { ChevronDown } from "lucide-react";
+import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
+import { FileType, PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { SortOrder } from "@/constants/sort";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AccountStatementPage() {
   const params = useParams();
@@ -37,6 +42,8 @@ export default function AccountStatementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
 
   const today = new Date();
   const thirtyDaysAgo = new Date(today);
@@ -45,9 +52,10 @@ export default function AccountStatementPage() {
   const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
   const [toDate, setToDate] = useState<Date>(today);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [totalItems, setTotalItems] = useState(0);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);
+  const { showToast } = useToast();
 
   const getCompanyAndAccountNames = () => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -118,7 +126,20 @@ export default function AccountStatementPage() {
     }
   };
 
-  const handleExport = async () => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setExportDropdownOpen(false);
+      }
+    };
+    if (exportDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [exportDropdownOpen]);
+
+  const handleExport = async (format: FileType) => {
+    setExportDropdownOpen(false);
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
     if (!companyUniqueName || !accountUniqueName) return;
 
@@ -134,16 +155,17 @@ export default function AccountStatementPage() {
         sort: sortDirection,
       };
 
-      const response = await downloadAccountStatement(request);
+      const response = await downloadAccountStatement(request, format);
 
       if (response.status === "success" && response.body) {
         const blob = new Blob([atob(response.body.data)], { type: response.body.type });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
+        const extension = response.body.type.includes(FileType.PDF) ? FileType.PDF : FileType.XLSX;
         link.download =
           response.body.name ||
-          `account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.pdf`;
+          `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.${extension}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -151,7 +173,7 @@ export default function AccountStatementPage() {
       }
     } catch (err) {
       console.error("Error exporting statement:", err);
-      alert("Failed to export statement");
+      showToast("Failed to export statement", "error");
     } finally {
       setIsExporting(false);
     }
@@ -232,7 +254,6 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between text-gray-600">
                             <span>Opening Balance</span>
                             <span className="font-medium">
-                              {summary.openingBalance.type === "CREDIT" && "-"}
                               {formatCurrency(
                                 summary.openingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -258,7 +279,6 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between font-semibold text-gray-800">
                             <span>Balance Due</span>
                             <span>
-                              {summary.closingBalance.type === "CREDIT" && "-"}
                               {formatCurrency(
                                 summary.closingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -280,13 +300,39 @@ export default function AccountStatementPage() {
                     onFromDateChange={handleFromDateChange}
                     onToDateChange={handleToDateChange}
                   />
-                  <button
-                    onClick={handleExport}
-                    disabled={isExporting}
-                    className="w-full rounded-md border border-blue-600 bg-white px-6 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-                  >
-                    {isExporting ? "Exporting..." : "Export"}
-                  </button>
+                  <div className="relative w-full sm:w-auto" ref={exportDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setExportDropdownOpen((open) => !open)}
+                      disabled={isExporting}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-md border border-blue-600 bg-white px-6 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                    >
+                      {isExporting ? "Exporting..." : "Export"}
+                      <ChevronDown
+                        className={exportDropdownOpen ? "h-4 w-4 rotate-180" : "h-4 w-4"}
+                      />
+                    </button>
+                    {exportDropdownOpen && (
+                      <div className="absolute right-0 top-full z-10 mt-1 min-w-[140px] rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => handleExport(FileType.PDF)}
+                          disabled={isExporting}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          As PDF
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleExport(FileType.XLSX)}
+                          disabled={isExporting}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          As XLS
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -333,23 +379,22 @@ export default function AccountStatementPage() {
                               {transaction.voucherNumber}
                             </td>
                             <td className="min-w-[120px] whitespace-nowrap px-2 py-3 text-right sm:px-3 md:px-4">
-                              {transaction.voucherAmount.type === "DEBIT"
+                              {transaction.voucherAmount.type === LEDGER_TYPE_DEBIT
                                 ? formatCurrency(
                                     transaction.voucherAmount.amount,
                                     accountAddress?.currency?.symbol
                                   )
-                                : "-"}
+                                : ""}
                             </td>
                             <td className="hidden min-w-[120px] whitespace-nowrap px-3 py-3 text-right sm:table-cell md:px-4">
-                              {transaction.voucherAmount.type === "CREDIT"
+                              {transaction.voucherAmount.type === LEDGER_TYPE_CREDIT
                                 ? formatCurrency(
                                     transaction.voucherAmount.amount,
                                     accountAddress?.currency?.symbol
                                   )
-                                : "-"}
+                                : ""}
                             </td>
                             <td className="min-w-[140px] whitespace-nowrap px-2 py-3 text-right font-medium sm:px-3 md:px-4">
-                              {transaction.closingBalance.type === "CREDIT" && "-"}
                               {formatCurrency(
                                 transaction.closingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -362,21 +407,20 @@ export default function AccountStatementPage() {
                   </table>
                 </div>
 
-                {totalItems > 10 && (
-                  <div className="mt-4">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={Math.ceil(totalItems / itemsPerPage)}
-                      totalItems={totalItems}
-                      itemsPerPage={itemsPerPage}
-                      onPageChange={setCurrentPage}
-                      onItemsPerPageChange={(newSize) => {
-                        setItemsPerPage(newSize);
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div>
-                )}
+                <div className="mt-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.max(1, Math.ceil(totalItems / itemsPerPage))}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    pageSizeOptions={PAGE_SIZE_OPTIONS}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={(newSize) => {
+                      setItemsPerPage(newSize);
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
               </div>
             </div>
           )}

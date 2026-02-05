@@ -41,7 +41,7 @@ src/
 │   │       └── welcome/          # Welcome page
 │   ├── auth/                     # Authentication pages
 │   ├── magic/                    # Magic link pages
-│   ├── globals.css               # Global styles
+│   ├── globals.scss              # Global styles
 │   ├── layout.tsx                # Root layout
 │   └── page.tsx                  # Home page
 │

@@ -2,6 +2,7 @@
 
 import { getDetails } from "@/utils/proxy/getDetails";
 import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
+import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -51,7 +52,10 @@ export default function Auth() {
 
           const verifyResponse = await verifyPortalUser(email, companyName, token);
 
-          if (verifyResponse.status === "success" && verifyResponse.body?.length > 0) {
+          if (
+            verifyResponse.status === ApiResponseStatus.SUCCESS &&
+            verifyResponse.body?.length > 0
+          ) {
             const accounts = verifyResponse.body;
 
             // If multiple accounts, redirect to account selection page

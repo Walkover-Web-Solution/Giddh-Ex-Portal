@@ -1,4 +1,8 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
+import { FileType } from "@/constants";
+import { SortOrder } from "@/constants/sort";
+import { formatDateToAPI as formatDateToAPIUtil, formatDateDisplay } from "@/utils/dateUtils";
 
 export interface BalanceAmount {
   amount: number;
@@ -62,23 +66,41 @@ export interface AccountStatementRequest {
   count: number;
   from: string;
   to: string;
-  sort: "asc" | "desc";
+  sort: SortOrder;
 }
 
 export async function getAccountStatement(
   request: AccountStatementRequest
 ): Promise<AccountStatementResponse> {
   const response = await apiClient.get(
-    `/portal/company/${encodeURIComponent(request.companyUniqueName)}/accounts/${encodeURIComponent(request.accountUniqueName)}/view-statement?page=${request.page}&count=${request.count}&from=${request.from}&to=${request.to}&sort=${request.sort}`
+    API_PATHS.viewStatement(
+      request.companyUniqueName,
+      request.accountUniqueName,
+      request.page,
+      request.count,
+      request.from,
+      request.to,
+      request.sort
+    )
   );
   return response.data;
 }
 
 export async function downloadAccountStatement(
-  request: AccountStatementRequest
+  request: AccountStatementRequest,
+  fileType: FileType = FileType.PDF
 ): Promise<{ status: string; body: { data: string; type: string; name: string } }> {
   const response = await apiClient.get(
-    `/portal/company/${encodeURIComponent(request.companyUniqueName)}/accounts/${encodeURIComponent(request.accountUniqueName)}/export-account-statement?page=${request.page}&count=${request.count}&from=${request.from}&to=${request.to}&sort=${request.sort}`
+    API_PATHS.exportAccountStatement(
+      request.companyUniqueName,
+      request.accountUniqueName,
+      request.page,
+      request.count,
+      request.from,
+      request.to,
+      request.sort,
+      fileType
+    )
   );
   return response.data;
 }
@@ -87,17 +109,8 @@ export function formatCurrency(amount: number, currencySymbol: string = "₹"): 
   return `${currencySymbol}${Math.abs(amount).toLocaleString("en-IN")}`;
 }
 
-export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-}
+/** Format date string for display (dd-MM-yyyy). Re-exported from dateUtils. */
+export const formatDate = formatDateDisplay;
 
-export function convertDateToAPIFormat(date: Date): string {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-}
+/** Format Date for API (dd-MM-yyyy). Re-exported from dateUtils. */
+export const convertDateToAPIFormat = formatDateToAPIUtil;

@@ -12,8 +12,11 @@ import {
   PaymentDetailsResponse,
   PaymentMethodsResponse,
 } from "@/utils/payment";
+import { formatDateToAPI } from "@/utils/dateUtils";
 import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
+import { useToast } from "@/contexts/ToastContext";
+import { ApiResponseStatus } from "@/utils/proxy/types";
 
 interface PayNowProps {
   invoiceUniqueName: string;
@@ -46,6 +49,7 @@ export function PayNow({
 }: PayNowProps) {
   const params = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsResponse | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PAYMENT_METHODS_ENUM | null>(null);
@@ -96,31 +100,35 @@ export function PayNow({
         sessionId: sessionId || undefined,
       });
 
-      if (response.status === "success" && response.body) {
+      if (response && response.status === ApiResponseStatus.SUCCESS && response.body) {
         setPaymentMethods(response.body);
 
-        const hasAnyMethod = response.body.RAZORPAY || response.body.PAYPAL || response.body.PAYU;
-
+        const hasAnyMethod = Boolean(
+          response.body.RAZORPAY || response.body.PAYPAL || response.body.PAYU
+        );
         if (!hasAnyMethod) {
           setShowNoMethodsError(true);
           return null;
         }
 
-        if (response.body.RAZORPAY) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
-          return PAYMENT_METHODS_ENUM.RAZORPAY;
-        } else if (response.body.PAYPAL) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.PAYPAL);
-          return PAYMENT_METHODS_ENUM.PAYPAL;
-        } else if (response.body.PAYU) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.PAYU);
-          return PAYMENT_METHODS_ENUM.PAYU;
+        switch (true) {
+          case Boolean(response.body.RAZORPAY):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
+            return PAYMENT_METHODS_ENUM.RAZORPAY;
+          case Boolean(response.body.PAYPAL):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.PAYPAL);
+            return PAYMENT_METHODS_ENUM.PAYPAL;
+          case Boolean(response.body.PAYU):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.PAYU);
+            return PAYMENT_METHODS_ENUM.PAYU;
+          default:
+            return null;
         }
       }
       return null;
     } catch (error) {
       logger.error("Error loading payment methods", error);
-      alert("Failed to load payment methods. Please try again.");
+      showToast("Failed to load payment methods. Please try again.", "error");
       return null;
     }
   };
@@ -132,7 +140,7 @@ export function PayNow({
 
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
     if (!companyUniqueName || !accountUniqueName) {
-      alert("Missing company or account information");
+      showToast("Missing company or account information", "error");
       setIsProcessing(false);
       return;
     }
@@ -212,15 +220,15 @@ export function PayNow({
 
       const response = await getVoucherPaymentDetails(request);
 
-      if (response.status === "success" && response.body) {
+      if (response.status === ApiResponseStatus.SUCCESS && response.body) {
         initializePaymentGateway(response.body);
       } else {
-        alert("Failed to initialize payment");
+        showToast("Failed to initialize payment", "error");
         setIsProcessing(false);
       }
     } catch (error) {
       logger.error("Error processing payment", error);
-      alert("Failed to process payment. Please try again.");
+      showToast("Failed to process payment. Please try again.", "error");
       setIsProcessing(false);
     }
   };
@@ -241,7 +249,7 @@ export function PayNow({
 
   const initializeRazorpay = (paymentDetails: PaymentDetailsResponse) => {
     if (!window.Razorpay) {
-      alert("Razorpay SDK not loaded");
+      showToast("Razorpay SDK not loaded", "error");
       setIsProcessing(false);
       return;
     }
@@ -273,7 +281,7 @@ export function PayNow({
     if (!companyUniqueName || !accountUniqueName) return;
 
     const today = new Date();
-    const date = `${String(today.getDate()).padStart(2, "0")}-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()}`;
+    const date = formatDateToAPI(today);
 
     try {
       const response = await updatePaymentStatus(
@@ -290,13 +298,13 @@ export function PayNow({
         }
       );
 
-      if (response.status === "success") {
-        alert("Payment successful!");
+      if (response.status === ApiResponseStatus.SUCCESS) {
+        showToast("Payment successful!", "success");
         onSuccess?.();
       }
     } catch (error) {
       logger.error("Error updating payment status", error);
-      alert("Payment completed but status update failed");
+      console.log("paymentKey is missing in the api response", error);
     }
   };
 
@@ -341,8 +349,8 @@ export function PayNow({
         }
       );
 
-      if (response.status === "success") {
-        alert("Payment successful!");
+      if (response.status === ApiResponseStatus.SUCCESS) {
+        showToast("Payment successful!", "success");
         onSuccess?.();
       }
     } catch (error) {
@@ -352,7 +360,7 @@ export function PayNow({
 
   const handlePayuFormSubmit = () => {
     if (!payuDetails.name || !payuDetails.email || !payuDetails.contactNo) {
-      alert("Please fill all fields");
+      showToast("Please fill all fields", "error");
       return;
     }
     setShowPayuForm(false);

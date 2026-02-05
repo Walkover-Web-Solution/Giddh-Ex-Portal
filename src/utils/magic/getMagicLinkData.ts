@@ -1,4 +1,11 @@
 import {
+  BALANCE_TYPE_CR,
+  BALANCE_TYPE_DR,
+  LEDGER_TYPE_DEBIT,
+  LedgerView,
+} from "@/constants/ledger";
+import { parseDateToTimestamp } from "@/utils/dateUtils";
+import {
   getMagicLinkLedger,
   GetMagicLinkLedgerRequest,
   LedgerTransaction,
@@ -44,7 +51,7 @@ export interface GetMagicLinkDataResult {
  */
 export const getMagicLinkData = async (
   request: GetMagicLinkLedgerRequest,
-  viewMode: "statement" | "t" = "statement"
+  viewMode: LedgerView = LedgerView.STATEMENT_VIEW
 ): Promise<GetMagicLinkDataResult> => {
   try {
     const response = await getMagicLinkLedger({ ...request, viewMode });
@@ -60,13 +67,13 @@ export const getMagicLinkData = async (
       response.body.ledgersTransactions;
 
     const firstTransaction =
-      (viewMode === "statement" && debitCreditTransactions?.[0]) ||
+      (viewMode === LedgerView.STATEMENT_VIEW && debitCreditTransactions?.[0]) ||
       debitTransactions?.[0] ||
       creditTransactions?.[0];
 
     const transactionCurrency: CurrencyInfo = {
-      code: firstTransaction?.currencyCode || "INR",
-      symbol: firstTransaction?.currencySymbol || "₹",
+      code: firstTransaction?.currencyCode ?? "",
+      symbol: firstTransaction?.currencySymbol ?? "",
     };
 
     const convertedCurrency: CurrencyInfo = {
@@ -87,7 +94,11 @@ export const getMagicLinkData = async (
 
     let apiTransactions: Transaction[] = [];
 
-    if (viewMode === "statement" && debitCreditTransactions && debitCreditTransactions.length > 0) {
+    if (
+      viewMode === LedgerView.STATEMENT_VIEW &&
+      debitCreditTransactions &&
+      debitCreditTransactions.length > 0
+    ) {
       // Transform with original tx reference included for download functionality
       apiTransactions = debitCreditTransactions.map((tx: LedgerTransaction) =>
         transformLedgerTransactionToDisplay(tx, true)
@@ -104,7 +115,8 @@ export const getMagicLinkData = async (
           creditConverted: null,
           closingBalance: forwardedBalance.amount,
           closingBalanceConverted: forwardedBalance.amount,
-          balanceType: forwardedBalance.type === "DEBIT" ? "Dr" : "Cr",
+          balanceType:
+            forwardedBalance.type === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
         });
       }
     } else {
@@ -143,11 +155,7 @@ export const getMagicLinkData = async (
       ];
 
       allTransactions.sort((a, b) => {
-        const parseDate = (dateStr: string) => {
-          const [d, m, y] = dateStr.split("-");
-          return new Date(`${y}-${m}-${d}`).getTime();
-        };
-        return parseDate(a.date!) - parseDate(b.date!);
+        return parseDateToTimestamp(a.date!) - parseDateToTimestamp(b.date!);
       });
 
       let runningBalance = 0;
@@ -160,7 +168,7 @@ export const getMagicLinkData = async (
           ...tx,
           closingBalance: Math.abs(runningBalance),
           closingBalanceConverted: Math.abs(runningBalanceConverted),
-          balanceType: (runningBalance >= 0 ? "Dr" : "Cr") as "Dr" | "Cr",
+          balanceType: runningBalance >= 0 ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
           voucherGenerated: tx.voucherGenerated ?? false,
         } as Transaction;
       });
@@ -184,7 +192,7 @@ export const getMagicLinkData = async (
             creditConverted: null,
             closingBalance: Math.abs(openingBalance),
             closingBalanceConverted: Math.abs(openingBalanceConverted),
-            balanceType: (openingBalance >= 0 ? "Dr" : "Cr") as "Dr" | "Cr",
+            balanceType: openingBalance >= 0 ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
           });
         }
       }
@@ -193,9 +201,10 @@ export const getMagicLinkData = async (
     const result: MagicLinkData = {
       transactions: apiTransactions,
       // Include raw API response arrays
-      debitCreditTransactions: viewMode === "statement" ? debitCreditTransactions : undefined,
-      debitTransactions: viewMode === "t" ? debitTransactions : undefined,
-      creditTransactions: viewMode === "t" ? creditTransactions : undefined,
+      debitCreditTransactions:
+        viewMode === LedgerView.STATEMENT_VIEW ? debitCreditTransactions : undefined,
+      debitTransactions: viewMode === LedgerView.T_VIEW ? debitTransactions : undefined,
+      creditTransactions: viewMode === LedgerView.T_VIEW ? creditTransactions : undefined,
       forwardedBalance: response.body.ledgersTransactions.forwardedBalance,
       companyName: response.body.companyName || "",
       accountName: response.body.account?.name || "",

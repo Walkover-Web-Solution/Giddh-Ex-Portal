@@ -6,6 +6,7 @@ import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { useMemo, useState } from "react";
 import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
 import { formatParticularWithPrefix } from "@/utils/magic/transformLedgerTransaction";
+import { useToast } from "@/contexts/ToastContext";
 
 interface Props {
   transactions: Transaction[];
@@ -26,6 +27,7 @@ export function TAccountViewTable({
   convertedCurrency,
   linkId,
 }: Props) {
+  const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingVouchers, setDownloadingVouchers] = useState<Set<string>>(new Set());
 
@@ -60,7 +62,10 @@ export function TAccountViewTable({
       });
     } catch (error: any) {
       console.error("Error downloading voucher:", error);
-      alert(error.message || `Invoice for ${tx.voucherNumber} cannot be downloaded now.`);
+      showToast(
+        error.message || `Invoice for ${tx.voucherNumber} cannot be downloaded now.`,
+        "error"
+      );
     } finally {
       setDownloadingTransactionId(null);
       setDownloadingVouchers((prev) => {
@@ -119,7 +124,7 @@ export function TAccountViewTable({
 
   return (
     <div className="overflow-x-auto rounded-lg border border-blue-900/30 bg-white">
-      <div className="min-w-[640px]">
+      <div className="min-w-[510px]">
         <div className="grid grid-cols-2 bg-blue-900 text-white">
           <div className="py-2 text-center text-xs font-semibold sm:py-4 sm:text-base">
             Dr (Debit)
@@ -130,7 +135,7 @@ export function TAccountViewTable({
         </div>
 
         <div className="grid grid-cols-2 border-b border-blue-900/20">
-          <div className="grid grid-cols-[80px_1fr_100px] px-2 py-1.5 text-[10px] font-medium sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-2 sm:text-xs">
+          <div className="grid grid-cols-[80px_1fr_70px] px-2 py-1.5 text-[10px] font-medium sm:px-4 sm:py-2 sm:text-xs">
             <span>DATE</span>
             <span>PARTICULARS</span>
             <span className="text-right">AMOUNT</span>
@@ -164,8 +169,8 @@ export function TAccountViewTable({
             const isDownloadingCredit = downloadingTransactionId === creditTransactionId;
 
             return (
-              <div key={i} className="grid min-h-[48px] grid-cols-2 sm:min-h-[64px]">
-                <div className="grid grid-cols-[80px_1fr_100px] px-2 py-2 sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-3">
+              <div key={i} className="grid min-h-[48px] grid-cols-2 sm:min-h-[48px]">
+                <div className="grid grid-cols-[80px_1fr_100px] items-center px-2 py-2 sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-3">
                   {dr ? (
                     <>
                       <div className="text-[10px] sm:text-xs">
@@ -263,7 +268,7 @@ export function TAccountViewTable({
                   )}
                 </div>
 
-                <div className="grid grid-cols-[80px_1fr_100px] border-l border-blue-900/20 px-2 py-2 sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-3">
+                <div className="grid grid-cols-[80px_1fr_100px] items-center border-l border-blue-900/20 px-2 py-2 sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-3">
                   {cr ? (
                     <>
                       <div className="text-[10px] sm:text-xs">
@@ -365,7 +370,6 @@ export function TAccountViewTable({
           })}
         </div>
 
-        {/* Totals */}
         <div className="grid grid-cols-2 border-t border-blue-900/20 bg-blue-900/5">
           <div className="grid grid-cols-[1fr_100px] px-2 py-2 font-semibold sm:grid-cols-[1fr_160px] sm:px-4 sm:py-4">
             <span>Total</span>

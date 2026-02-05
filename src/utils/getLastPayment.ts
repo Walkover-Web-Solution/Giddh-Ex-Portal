@@ -1,4 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
+import { DEFAULT_PAGE, PAGINATION_LIMIT } from "@/constants";
 
 export interface PaymentVoucher {
   uniqueName: string;
@@ -36,13 +38,13 @@ export default async function getLastPayment({
   companyUniqueName,
   accountUniqueName,
   type = "receipt",
-  page = 1,
-  count = 1,
+  page = DEFAULT_PAGE,
+  count = PAGINATION_LIMIT,
   sort = "",
   sortBy = "DESC",
 }: GetLastPaymentParams): Promise<LastPaymentResponse> {
   const response = await apiClient.post(
-    `/portal/company/${companyUniqueName}/accounts/${accountUniqueName}/vouchers/get-all`,
+    API_PATHS.vouchersGetAll(companyUniqueName, accountUniqueName),
     {},
     {
       params: {

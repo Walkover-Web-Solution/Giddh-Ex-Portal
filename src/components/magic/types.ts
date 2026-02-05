@@ -1,3 +1,5 @@
+import type { BalanceType } from "@/constants/ledger";
+
 export interface Transaction {
   date: string;
   particular: string;
@@ -7,7 +9,7 @@ export interface Transaction {
   creditConverted: number | null;
   closingBalance: number;
   closingBalanceConverted: number;
-  balanceType: "Dr" | "Cr";
+  balanceType: BalanceType;
   voucherGenerated?: boolean;
   voucherNumber?: string;
   voucherName?: string;
@@ -17,7 +19,7 @@ export interface Transaction {
 }
 
 export type Currency = string;
-export type ViewMode = "statement" | "t";
+export type { LedgerView as ViewMode } from "@/constants/ledger";
 
 export interface CurrencyInfo {
   code: string;
@@ -37,10 +39,10 @@ export interface SummaryData {
   debitCount: number;
   creditCount: number;
   openingBalance: number;
-  openingBalanceType: "Dr" | "Cr";
+  openingBalanceType: BalanceType;
   netTotalCredit: number;
   closingBalance: number;
-  closingBalanceType: "Dr" | "Cr";
+  closingBalanceType: BalanceType;
   reckoningDebitTotal?: number;
   reckoningCreditTotal?: number;
 }
