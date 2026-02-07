@@ -17,7 +17,7 @@ import {
   isBefore,
   isAfter,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, CalendarIcon } from "@heroicons/react/20/solid";
 
 export interface DateRangeCalendarProps {
   fromDate: Date;
@@ -91,7 +91,6 @@ export function DateRangeCalendar({
   const [tempToDate, setTempToDate] = useState<Date | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
 
-  // Reset temporary dates when calendar opens
   useEffect(() => {
     if (isOpen) {
       setTempFromDate(fromDate);
@@ -100,14 +99,12 @@ export function DateRangeCalendar({
     }
   }, [isOpen, fromDate, toDate]);
 
-  // Update current month when fromDate changes and calendar is closed
   useEffect(() => {
     if (!isOpen) {
       setCurrentMonth(fromDate);
     }
   }, [fromDate, isOpen]);
 
-  // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
@@ -117,17 +114,12 @@ export function DateRangeCalendar({
         setTempToDate(null);
       }
     };
-
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // Get calendar days for current month
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart);
@@ -135,12 +127,10 @@ export function DateRangeCalendar({
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const handleDateClick = (day: Date) => {
-    // Check min/max date constraints
     if (minDate && isBefore(day, minDate)) return;
     if (maxDate && isAfter(day, maxDate)) return;
 
     if (selecting === "from") {
-      // If selecting from date and the day is after tempToDate, reset both
       if (tempToDate && isAfter(day, tempToDate)) {
         setTempFromDate(day);
         setTempToDate(day);
@@ -150,7 +140,6 @@ export function DateRangeCalendar({
         setSelecting("to");
       }
     } else {
-      // If selecting to date and the day is before tempFromDate, set it as new fromDate
       if (tempFromDate && isBefore(day, tempFromDate)) {
         setTempFromDate(day);
         setTempToDate(day);
@@ -174,28 +163,20 @@ export function DateRangeCalendar({
 
   const isDateInRange = (day: Date) => {
     if (!tempFromDate || !tempToDate) return false;
-    if (isSameDay(day, tempFromDate) || isSameDay(day, tempToDate)) {
-      return false; // Start and end dates are handled separately
-    }
+    if (isSameDay(day, tempFromDate) || isSameDay(day, tempToDate)) return false;
     return isWithinInterval(day, { start: tempFromDate, end: tempToDate });
   };
 
   const isDateStart = (day: Date) => (tempFromDate ? isSameDay(day, tempFromDate) : false);
   const isDateEnd = (day: Date) => (tempToDate ? isSameDay(day, tempToDate) : false);
-
   const isBothDatesSelected = tempFromDate !== null && tempToDate !== null;
 
-  const goToPreviousMonth = () => {
-    setCurrentMonth(subMonths(currentMonth, 1));
-  };
-
-  const goToNextMonth = () => {
-    setCurrentMonth(addMonths(currentMonth, 1));
-  };
+  const goToPreviousMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
   const formatDateRange = () => {
-    const desktopFormat = dateFormat?.desktop || "dd MMM yyyy";
-    const mobileFormat = dateFormat?.mobile || "dd/MM";
+    const desktopFormat = dateFormat?.desktop ?? "dd MMM yyyy";
+    const mobileFormat = dateFormat?.mobile ?? "dd/MM";
     return {
       desktop: `${format(fromDate, desktopFormat)} - ${format(toDate, desktopFormat)}`,
       mobile: `${format(fromDate, mobileFormat)} - ${format(toDate, mobileFormat)}`,
@@ -206,48 +187,52 @@ export function DateRangeCalendar({
     {
       label: "Last 7 days",
       getDates: () => {
-        const today = new Date();
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 7);
-        return { from: sevenDaysAgo, to: today };
+        const t = new Date();
+        const f = new Date(t);
+        f.setDate(t.getDate() - 7);
+        return { from: f, to: t };
       },
     },
     {
       label: "Last 30 days",
       getDates: () => {
-        const today = new Date();
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(today.getDate() - 30);
-        return { from: thirtyDaysAgo, to: today };
+        const t = new Date();
+        const f = new Date(t);
+        f.setDate(t.getDate() - 30);
+        return { from: f, to: t };
       },
     },
     {
       label: "This month",
       getDates: () => {
-        const today = new Date();
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        return { from: startOfMonth, to: today };
+        const t = new Date();
+        const f = new Date(t.getFullYear(), t.getMonth(), 1);
+        return { from: f, to: endOfMonth(t) };
       },
     },
     {
       label: "Last 6 months",
       getDates: () => {
-        const today = new Date();
-        const sixMonthsAgo = subMonths(today, 6);
-        return { from: sixMonthsAgo, to: today };
+        const t = new Date();
+        return { from: subMonths(t, 6), to: t };
       },
     },
     {
       label: "Last 1 year",
       getDates: () => {
-        const today = new Date();
-        const oneYearAgo = subYears(today, 1);
-        return { from: oneYearAgo, to: today };
+        const t = new Date();
+        return { from: subYears(t, 1), to: t };
       },
     },
   ];
 
-  const quickActionButtons = quickActions || (showQuickActions ? defaultQuickActions : []);
+  const quickActionButtons = quickActions ?? (showQuickActions ? defaultQuickActions : []);
+
+  const isQuickActionSelected = (action: { getDates: () => { from: Date; to: Date } }) => {
+    if (tempFromDate == null || tempToDate == null) return false;
+    const { from, to } = action.getDates();
+    return isSameDay(from, tempFromDate) && isSameDay(to, tempToDate);
+  };
 
   const isDateDisabled = (day: Date) => {
     if (minDate && isBefore(day, minDate)) return true;
@@ -270,7 +255,7 @@ export function DateRangeCalendar({
           fromDate,
           toDate,
           onClick: () => {
-            setIsOpen(!isOpen);
+            setIsOpen((open) => !open);
             if (!isOpen) {
               setCurrentMonth(fromDate);
               setSelecting("from");
@@ -280,7 +265,7 @@ export function DateRangeCalendar({
       ) : (
         <button
           onClick={() => {
-            setIsOpen(!isOpen);
+            setIsOpen((open) => !open);
             if (!isOpen) {
               setCurrentMonth(fromDate);
               setSelecting("from");
@@ -296,99 +281,131 @@ export function DateRangeCalendar({
 
       {isOpen && (
         <div
-          className={`absolute ${positionClasses[position]} top-full z-50 mt-2 ${calendarWidth} rounded-lg border border-blue-900/20 bg-white shadow-lg`}
+          className={`absolute ${positionClasses[position]} top-full z-50 mt-2 ${calendarWidth} rounded-lg bg-white p-4 shadow-lg ring-1 ring-gray-200`}
         >
-          <div className="p-4">
-            <div className="mb-4 flex items-center justify-between">
+          <div className="text-center">
+            <div className="flex items-center text-gray-900">
               <button
+                type="button"
                 onClick={goToPreviousMonth}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-blue-900 transition-colors hover:bg-blue-50"
+                className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
                 aria-label="Previous month"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeftIcon aria-hidden className="size-5" />
               </button>
-              <h3 className="text-sm font-semibold text-blue-900 sm:text-base">
+              <div className="flex-auto text-sm font-semibold">
                 {format(currentMonth, "MMMM yyyy")}
-              </h3>
+              </div>
               <button
                 onClick={goToNextMonth}
-                className="flex h-8 w-8 items-center justify-center rounded-md text-blue-900 transition-colors hover:bg-blue-50"
+                className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
                 aria-label="Next month"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRightIcon aria-hidden className="size-5" />
               </button>
             </div>
 
-            <div className="mb-2 grid grid-cols-7 gap-1">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div
-                  key={day}
-                  className="flex items-center justify-center py-1 text-xs font-medium text-blue-900/60"
-                >
-                  {day}
-                </div>
-              ))}
+            <div className="mt-6 grid grid-cols-7 text-xs font-medium leading-6 text-gray-500">
+              <div>S</div>
+              <div>M</div>
+              <div>T</div>
+              <div>W</div>
+              <div>T</div>
+              <div>F</div>
+              <div>S</div>
             </div>
 
-            <div className="grid grid-cols-7 gap-1">
+            <div className="mt-2 grid grid-cols-7 bg-gray-200">
               {days.map((day, dayIdx) => {
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isInRange = isDateInRange(day);
                 const isStart = isDateStart(day);
                 const isEnd = isDateEnd(day);
-                const isToday = isSameDay(day, new Date());
                 const isDisabled = isDateDisabled(day);
 
                 return (
                   <button
                     key={dayIdx}
+                    type="button"
                     onClick={() => handleDateClick(day)}
                     disabled={!isCurrentMonth || isDisabled}
-                    className={`relative flex h-10 items-center justify-center rounded-md text-xs transition-colors sm:h-9 ${
-                      !isCurrentMonth || isDisabled
-                        ? "cursor-not-allowed text-blue-900/20"
-                        : "cursor-pointer text-blue-900"
-                    } ${isInRange ? "bg-blue-50" : ""} ${
-                      isStart || isEnd ? "bg-blue-900 font-semibold text-white" : ""
-                    } ${
-                      isCurrentMonth && !isStart && !isEnd && !isDisabled ? "hover:bg-blue-100" : ""
-                    } ${isToday && !isStart && !isEnd ? "ring-2 ring-blue-900/30" : ""}`}
+                    className={`relative h-10 bg-white text-sm disabled:cursor-not-allowed disabled:text-gray-400 ${
+                      isCurrentMonth && !isDisabled ? "hover:bg-gray-50" : ""
+                    }`}
+                    aria-label={
+                      isStart && isEnd
+                        ? `From and to date: ${format(day, "MMMM d, yyyy")}`
+                        : isStart
+                          ? `From date: ${format(day, "MMMM d, yyyy")}`
+                          : isEnd
+                            ? `To date: ${format(day, "MMMM d, yyyy")}`
+                            : undefined
+                    }
                   >
-                    {format(day, "d")}
-                    {(isStart || isEnd) && (
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        {format(day, "d")}
-                      </span>
+                    {isInRange && (
+                      <span className="absolute inset-0 my-1 bg-blue-900/10" aria-hidden />
                     )}
+                    {isStart && (
+                      <span
+                        className="absolute inset-y-0 left-1 right-0 my-1 rounded-l-full bg-blue-900/10"
+                        aria-hidden
+                      />
+                    )}
+                    {isEnd && (
+                      <span
+                        className="absolute inset-y-0 left-0 right-1 my-1 rounded-r-full bg-blue-900/10"
+                        aria-hidden
+                      />
+                    )}
+                    <time
+                      dateTime={format(day, "yyyy-MM-dd")}
+                      className={[
+                        "relative z-10 mx-auto flex h-7 w-7 items-center justify-center rounded-full",
+                        (isStart || isEnd) && "bg-blue-900 font-semibold text-white",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      {format(day, "d")}
+                    </time>
                   </button>
                 );
               })}
             </div>
 
             {quickActionButtons.length > 0 && (
-              <div className="mt-4 flex max-h-24 flex-wrap gap-2 overflow-y-auto border-t border-blue-900/10 pt-3">
-                {quickActionButtons.map((action, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      const { from, to } = action.getDates();
-                      setTempFromDate(from);
-                      setTempToDate(to);
-                      setSelecting("from");
-                    }}
-                    className="rounded-md border border-blue-900/20 px-2 py-1 text-xs text-blue-900 transition-colors hover:bg-blue-50"
-                  >
-                    {action.label}
-                  </button>
-                ))}
+              <div className="mt-4 flex max-h-24 flex-wrap gap-2 overflow-y-auto border-t border-gray-100 pt-3">
+                {quickActionButtons.map((action, idx) => {
+                  const selected = isQuickActionSelected(action);
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        const { from, to } = action.getDates();
+                        setTempFromDate(from);
+                        setTempToDate(to);
+                        setSelecting("from");
+                      }}
+                      className={`rounded-md px-2.5 py-1.5 text-sm font-semibold shadow-sm transition-colors ${
+                        selected
+                          ? "bg-blue-900 text-white ring-1 ring-blue-900 hover:bg-blue-800"
+                          : "bg-white text-blue-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {action.label}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
-            <div className="mt-3 flex justify-end border-t border-blue-900/10 pt-3">
+            <div className="mt-3 flex justify-end border-t border-gray-100 pt-3">
               <button
+                type="button"
                 onClick={handleApply}
                 disabled={!isBothDatesSelected}
-                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
                   isBothDatesSelected
                     ? "bg-blue-900 text-white hover:bg-blue-800"
                     : "cursor-not-allowed bg-gray-200 text-gray-400"

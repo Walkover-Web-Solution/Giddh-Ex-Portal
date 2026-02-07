@@ -242,13 +242,15 @@ export default function PaymentPreviewPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl">
           {pdfUrl ? (
-            <div className="rounded-lg border bg-white p-4">
-              <iframe
-                ref={pdfContainerRef}
-                src={pdfUrl}
-                className="h-[800px] w-full"
-                title="Payment Voucher PDF"
-              />
+            <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <iframe
+                  ref={pdfContainerRef}
+                  src={pdfUrl}
+                  className="h-[800px] w-full"
+                  title="Payment Voucher PDF"
+                />
+              </div>
             </div>
           ) : (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-red-600">

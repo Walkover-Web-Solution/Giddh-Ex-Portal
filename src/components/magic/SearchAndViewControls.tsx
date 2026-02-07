@@ -1,5 +1,7 @@
 import { LedgerView, LEDGER_VIEW_LABEL } from "@/constants/ledger";
 import { Currency, ViewMode, CurrencyInfo } from "./types";
+import { Input, InputGroup } from "@/components/ui/input";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 
 interface SearchAndViewControlsProps {
   searchQuery: string;
@@ -38,28 +40,17 @@ export function SearchAndViewControls({
     <div className="w-full border-blue-900/20 bg-white">
       <div className="mx-auto max-w-7xl py-3 sm:py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <div className="relative w-full sm:max-w-xs">
-            <svg
-              className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-blue-900/60 sm:left-3 sm:h-4 sm:w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
+          <div className="w-full sm:max-w-xs">
+            <InputGroup
+              icon={<MagnifyingGlassIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35m1.6-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+              <Input
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search transactions..."
+                aria-label="Search transactions"
               />
-            </svg>
-
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search transactions..."
-              className="w-full rounded-md border border-blue-900/30 bg-white py-1.5 pl-8 pr-3 text-xs text-blue-900 placeholder-gray-500 focus:border-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-900 sm:py-2 sm:pl-9 sm:text-sm"
-            />
+            </InputGroup>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {showCurrencyToggle && (

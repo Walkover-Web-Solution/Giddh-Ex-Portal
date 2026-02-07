@@ -288,16 +288,17 @@ export default function Magic() {
       const count = filteredDebitCreditTransactions?.length ?? 0;
       return (forwardedBalance ? 1 : 0) + count;
     }
-    return Math.max(
-      filteredDebitTransactions?.length ?? 0,
-      filteredCreditTransactions?.length ?? 0
-    );
+    const debitLength = filteredDebitTransactions?.length ?? 0;
+    const creditLength = filteredCreditTransactions?.length ?? 0;
+    const txLength = filteredTransactions?.length ?? 0;
+    return Math.max(debitLength, creditLength, txLength);
   }, [
     viewMode,
     forwardedBalance,
     filteredDebitCreditTransactions?.length,
     filteredDebitTransactions?.length,
     filteredCreditTransactions?.length,
+    filteredTransactions?.length,
   ]);
 
   const paginatedStatementData = useMemo(() => {
@@ -331,6 +332,7 @@ export default function Magic() {
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalEntries / itemsPerPage));
+  const hasMultiplePages = totalEntries > itemsPerPage;
 
   const summary = useMemo(
     () =>
@@ -414,9 +416,7 @@ export default function Magic() {
         <section className="mb-4 sm:mb-6">
           <LedgerTable
             transactions={
-              viewMode === LedgerView.T_VIEW &&
-              totalEntries > PAGINATION_LIMIT &&
-              paginatedTViewData
+              viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
                 ? paginatedTViewData.transactions
                 : filteredTransactions
             }
@@ -426,38 +426,49 @@ export default function Magic() {
             convertedCurrency={currencyData?.convertedCurrency}
             linkId={linkId}
             debitCreditTransactions={
-              viewMode === LedgerView.STATEMENT_VIEW && totalEntries > PAGINATION_LIMIT
+              viewMode === LedgerView.STATEMENT_VIEW && hasMultiplePages
                 ? (paginatedStatementData ?? undefined)
                 : filteredDebitCreditTransactions && filteredDebitCreditTransactions.length > 0
                   ? filteredDebitCreditTransactions
                   : undefined
             }
             debitTransactions={
-              viewMode === LedgerView.T_VIEW &&
-              totalEntries > PAGINATION_LIMIT &&
-              paginatedTViewData
+              viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
                 ? paginatedTViewData.debitTransactions
                 : filteredDebitTransactions && filteredDebitTransactions.length > 0
                   ? filteredDebitTransactions
                   : undefined
             }
             creditTransactions={
-              viewMode === LedgerView.T_VIEW &&
-              totalEntries > PAGINATION_LIMIT &&
-              paginatedTViewData
+              viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
                 ? paginatedTViewData.creditTransactions
                 : filteredCreditTransactions && filteredCreditTransactions.length > 0
                   ? filteredCreditTransactions
                   : undefined
             }
             forwardedBalance={
-              viewMode === LedgerView.STATEMENT_VIEW &&
-              (totalEntries <= PAGINATION_LIMIT || currentPage === 1)
+              viewMode === LedgerView.STATEMENT_VIEW && (!hasMultiplePages || currentPage === 1)
                 ? forwardedBalance
                 : undefined
             }
+            pagination={
+              viewMode === LedgerView.T_VIEW && hasMultiplePages
+                ? {
+                    currentPage,
+                    totalPages,
+                    totalItems: totalEntries,
+                    itemsPerPage,
+                    onPageChange: setCurrentPage,
+                    onItemsPerPageChange: (size) => {
+                      setItemsPerPage(size);
+                      setCurrentPage(1);
+                    },
+                    pageSizeOptions: PAGE_SIZE_OPTIONS,
+                  }
+                : undefined
+            }
           />
-          {totalEntries > PAGINATION_LIMIT && (
+          {viewMode === LedgerView.STATEMENT_VIEW && hasMultiplePages && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { Dropdown } from "@/components/Dropdown";
 import { Pagination } from "@/components/Pagination";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/uti
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortOrder } from "@/constants/sort";
 import type { Payment, PaymentSortColumn } from "./types";
@@ -200,24 +202,42 @@ export default function PaymentsPage() {
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="w-48">
               <label className="mb-2 block text-sm font-medium text-gray-700">Sort by</label>
-              <select
-                value={sortFilter}
-                onChange={(e) => {
-                  setSortFilter(e.target.value as PaymentSortColumn);
-                  setCurrentPage(1);
-                }}
-                className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: "right 0.5rem center",
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "1.5em 1.5em",
-                }}
+              <Dropdown
+                trigger={
+                  <>
+                    <span className="block truncate text-left">{sortFilter}</span>
+                    <ChevronDownIcon aria-hidden className="-mr-1 size-5 shrink-0 text-gray-400" />
+                  </>
+                }
+                buttonClassName="w-full justify-between"
+                panelClassName="w-48 min-w-full"
+                fullWidth
               >
-                <option>Amount</option>
-                <option>Date</option>
-                <option>Payment ID</option>
-              </select>
+                <Dropdown.Item
+                  onClick={() => {
+                    setSortFilter("Amount");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Amount
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setSortFilter("Date");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Date
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setSortFilter("Payment ID");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Payment ID
+                </Dropdown.Item>
+              </Dropdown>
             </div>
             {hasActiveFilters && (
               <div className="flex items-end">

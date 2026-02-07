@@ -13,7 +13,8 @@ import { ErrorMessage } from "@/components/ErrorMessage";
 import { logger } from "@/utils/logger";
 import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
-import { ChevronDown, RefreshCw } from "lucide-react";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { RefreshCw } from "lucide-react";
 import { mergeClassNames } from "@/lib/utils";
 
 export function SwitchAccountButton() {
@@ -176,27 +177,31 @@ export function SwitchAccountButton() {
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative inline-block" ref={dropdownRef}>
       <button
         onClick={handleToggle}
         disabled={loading}
         className={mergeClassNames(
-          "flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50",
+          "inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50",
           isOpen && "bg-gray-50"
         )}
       >
-        <RefreshCw className={mergeClassNames("h-4 w-4", loading && "animate-spin")} />
+        <RefreshCw className={mergeClassNames("size-5 shrink-0", loading && "animate-spin")} />
         <span>Switch Account</span>
-        <ChevronDown
-          className={mergeClassNames("h-4 w-4 transition-transform", isOpen && "rotate-180")}
+        <ChevronDownIcon
+          aria-hidden
+          className={mergeClassNames(
+            "-mr-1 size-5 text-gray-400 transition-transform",
+            isOpen && "rotate-180"
+          )}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg">
-          <div className="p-2">
+        <div className="absolute right-0 z-10 mt-2 w-64 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none">
+          <div className="py-1">
             {error && (
-              <div className="mb-2">
+              <div className="px-4 py-2">
                 <ErrorMessage message={error} />
               </div>
             )}
@@ -206,7 +211,7 @@ export function SwitchAccountButton() {
                 <LoadingSpinner message="Loading accounts..." fullScreen={false} />
               </div>
             ) : accounts.length > 0 ? (
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {accounts.map((account, index) => {
                   const isCurrentAccount =
                     account.account.uniqueName === currentAccountUniqueName ||
@@ -220,28 +225,30 @@ export function SwitchAccountButton() {
                       onClick={() => handleAccountSelect(account)}
                       disabled={loading || isCurrentAccount}
                       className={mergeClassNames(
-                        "w-full rounded-md px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                        "block w-full px-4 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50",
                         isCurrentAccount
-                          ? "bg-blue-50 font-medium text-blue-700"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-indigo-50 font-medium text-indigo-700"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none"
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <span>{account.account.name}</span>
-                        {isCurrentAccount && <span className="text-xs text-blue-600">Current</span>}
+                        {isCurrentAccount && (
+                          <span className="text-xs text-indigo-600">Current</span>
+                        )}
                       </div>
                     </button>
                   );
                 })}
               </div>
             ) : (
-              <div className="py-4 text-center text-sm text-gray-500">
+              <div className="px-4 py-4 text-center text-sm text-gray-500">
                 {error ? "Error loading accounts" : "No accounts available"}
               </div>
             )}
 
             {loading && (
-              <div className="mt-2">
+              <div className="border-t border-gray-100 px-4 py-2">
                 <LoadingSpinner message="Switching account..." fullScreen={false} />
               </div>
             )}
