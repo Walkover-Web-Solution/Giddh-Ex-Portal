@@ -305,7 +305,7 @@ export default function InvoicePreviewPage() {
                     }}
                     className="relative"
                   >
-                    <div className="rounded-lg bg-white outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
+                    <div className="rounded-lg bg-white outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2">
                       <label htmlFor="invoice-comment" className="sr-only">
                         Add your comment
                       </label>
