@@ -21,6 +21,7 @@ import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { Pagination } from "@/components/Pagination";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
@@ -240,8 +241,8 @@ export default function AccountStatementPage() {
               {error}
             </div>
           ) : (
-            <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-              <div className="border-b p-4 md:p-8">
+            <Card>
+              <CardHeader className="border-b">
                 <div className="flex flex-col gap-6 py-2 md:flex-row md:justify-between">
                   <div className="text-sm text-gray-600">
                     <h2 className="mb-1 font-bold text-black">{accountName}</h2>
@@ -320,9 +321,9 @@ export default function AccountStatementPage() {
                     </div>
                   </div>
                 )}
-              </div>
+              </CardHeader>
 
-              <div className="p-4 md:p-6">
+              <CardContent>
                 <div className="mb-4 flex flex-row items-center justify-between gap-3">
                   <DateRangeCalendar
                     fromDate={fromDate}
@@ -379,8 +380,8 @@ export default function AccountStatementPage() {
                     }}
                   />
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>

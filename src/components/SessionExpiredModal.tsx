@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { deleteSessionCookie } from "@/utils/cookies";
 
 interface SessionExpiredModalProps {
@@ -67,12 +68,9 @@ export default function SessionExpiredModal({ isOpen, onClose }: SessionExpiredM
           Your session has expired. Please log in again to continue.
         </p>
 
-        <button
-          onClick={handleRelogin}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
+        <Button size="lg" onClick={handleRelogin} className="w-full">
           Re-login
-        </button>
+        </Button>
       </div>
     </div>
   );

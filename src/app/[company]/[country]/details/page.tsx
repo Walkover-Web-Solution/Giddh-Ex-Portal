@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectUserDetails, selectUserDetailsLoading } from "@/store/slices/companySlice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft, User } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 
@@ -52,13 +53,10 @@ export default function DetailsPage() {
 
       <div className="flex-1 p-6">
         <div className="mx-auto max-w-7xl space-y-6">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
-          >
+          <Button variant="link" size="sm" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4" />
             Back
-          </button>
+          </Button>
 
           <div className="grid gap-6 md:grid-cols-2">
             <Card>

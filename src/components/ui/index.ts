@@ -1,3 +1,4 @@
+export { Button, buttonVariants } from "./button";
 export { DataTable } from "./DataTable";
 export type { Column, DataTableProps } from "./DataTable";
 export { DateRangeCalendar } from "./DateRangeCalendar";

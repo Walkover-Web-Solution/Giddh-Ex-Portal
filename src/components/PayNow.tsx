@@ -17,6 +17,7 @@ import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDat
 import { logger } from "@/utils/logger";
 import { useToast } from "@/contexts/ToastContext";
 import { ApiResponseStatus } from "@/utils/proxy/types";
+import { Button } from "@/components/ui/button";
 
 interface PayNowProps {
   invoiceUniqueName: string;
@@ -374,30 +375,27 @@ export function PayNow({
     return null;
   }
 
-  const sizeClasses = {
-    sm: "px-3 py-1 text-xs",
-    md: "px-4 py-2 text-sm",
-    lg: "px-6 py-3 text-base",
-  };
-
   return (
     <>
       {variant === "link" ? (
-        <button
+        <Button
+          variant="link"
+          size={size === "lg" ? "lg" : size === "sm" ? "sm" : "md"}
           onClick={handlePayNow}
           disabled={isProcessing}
-          className={`font-medium text-green-600 hover:text-green-800 hover:underline disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+          className={className}
         >
           {isProcessing ? "Processing..." : "Pay Now"}
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
+          size={size === "lg" ? "lg" : size === "sm" ? "sm" : "md"}
           onClick={handlePayNow}
           disabled={isProcessing}
-          className={`rounded-md bg-green-600 font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${sizeClasses[size]} ${className}`}
+          className={className}
         >
           {isProcessing ? "Processing..." : "Pay Now"}
-        </button>
+        </Button>
       )}
 
       {showNoMethodsError && (
@@ -428,9 +426,13 @@ export function PayNow({
                   support to enable payment options.
                 </p>
               </div>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowNoMethodsError(false)}
-                className="ml-4 inline-flex flex-shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none"
+                className="ml-4 shrink-0 text-gray-400 hover:text-gray-600"
+                aria-label="Close"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                   <path
@@ -439,7 +441,7 @@ export function PayNow({
                     clipRule="evenodd"
                   />
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -482,18 +484,17 @@ export function PayNow({
                 />
               </div>
               <div className="flex gap-3">
-                <button
-                  onClick={handlePayuFormSubmit}
-                  className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
+                <Button size="lg" onClick={handlePayuFormSubmit} className="flex-1">
                   Proceed to Payment
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
                   onClick={() => setShowPayuForm(false)}
-                  className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </div>

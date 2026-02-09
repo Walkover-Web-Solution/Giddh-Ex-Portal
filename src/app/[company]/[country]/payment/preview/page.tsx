@@ -12,6 +12,7 @@ import {
 } from "@/utils/paymentPreview";
 import { ArrowLeft, Download, Printer } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastContext";
 
 export default function PaymentPreviewPage() {
@@ -188,12 +189,9 @@ export default function PaymentPreviewPage() {
           {error ? (
             <div className="text-center">
               <p className="mb-4 text-red-600">{error}</p>
-              <button
-                onClick={handleBack}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
+              <Button size="lg" onClick={handleBack}>
                 Back to Payments
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
@@ -211,29 +209,20 @@ export default function PaymentPreviewPage() {
             <div className="flex items-center gap-2">
               <SidebarToggleButton />
 
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800"
-              >
+              <Button variant="link" size="sm" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sm:inline">Back</span>
-              </button>
+              </Button>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={handlePrint}
-                className="flex flex-1 items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 md:flex-none"
-              >
+              <Button variant="outline" size="lg" onClick={handlePrint}>
                 <Printer className="h-4 w-4" />
                 <span className="sm:inline">Print</span>
-              </button>
-              <button
-                onClick={handleDownload}
-                className="flex flex-1 items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 md:flex-none"
-              >
+              </Button>
+              <Button variant="outline" size="lg" onClick={handleDownload}>
                 <Download className="h-4 w-4" />
                 <span className="sm:inline">Download</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>

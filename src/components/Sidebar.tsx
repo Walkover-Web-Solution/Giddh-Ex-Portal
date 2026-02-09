@@ -13,6 +13,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { mergeClassNames } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCompanyData, logoutCompany, selectUserDetails } from "@/store/slices/companySlice";
@@ -78,22 +79,30 @@ export function Sidebar() {
               </span>
             )}
             <div className="flex shrink-0 items-center gap-1">
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={toggleCollapsed}
-                className="hidden rounded-md p-2 text-gray-400 hover:bg-gray-50 hover:text-blue-900 md:block"
+                className="hidden text-gray-400 hover:bg-gray-50 hover:text-blue-900 md:flex"
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
                 {isCollapsed ? (
                   <ChevronRightIcon className="size-5" aria-hidden />
                 ) : (
                   <ChevronLeftIcon className="size-5" aria-hidden />
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={closeMobile}
-                className="rounded-md p-2 text-gray-900 hover:bg-gray-50 hover:text-blue-900 md:hidden"
+                className="md:hidden"
+                aria-label="Close sidebar"
               >
                 <XMarkIcon className="size-5" aria-hidden />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -162,13 +171,17 @@ export function Sidebar() {
                   {user?.name}
                 </span>
               </Link>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={handleLogout}
-                className="shrink-0 rounded-md p-2 text-gray-400 hover:bg-gray-50 hover:text-blue-900"
+                className="shrink-0 text-gray-400 hover:bg-gray-50 hover:text-blue-900"
                 title="Logout"
+                aria-label="Logout"
               >
                 <ArrowRightOnRectangleIcon className="size-5" aria-hidden />
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 px-2 pb-4">
@@ -180,13 +193,17 @@ export function Sidebar() {
               >
                 {initials}
               </Link>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={handleLogout}
-                className="rounded-md p-2 text-gray-400 hover:bg-gray-50 hover:text-blue-900"
+                className="text-gray-400 hover:bg-gray-50 hover:text-blue-900"
                 title="Logout"
+                aria-label="Logout"
               >
                 <ArrowRightOnRectangleIcon className="size-4" aria-hidden />
-              </button>
+              </Button>
             </div>
           )}
         </div>

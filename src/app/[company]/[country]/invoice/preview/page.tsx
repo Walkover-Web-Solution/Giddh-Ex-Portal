@@ -13,9 +13,9 @@ import {
   PaymentDetailsResponse,
   Comment,
 } from "@/utils/invoicePreview";
-import { PayNow } from "@/components/PayNow";
-import { ArrowLeft, Download, Printer } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function InvoicePreviewPage() {
   const params = useParams();
@@ -241,28 +241,18 @@ export default function InvoicePreviewPage() {
             <div className="flex items-center gap-2">
               <SidebarToggleButton />
 
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline"
-              >
+              <Button variant="link" size="sm" onClick={handleBack}>
                 ← Back to Invoices
-              </button>
+              </Button>
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={handlePrint}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" size="md" onClick={handlePrint}>
                 Print
-              </button>
-
-              <button
-                onClick={handleDownload}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              </Button>
+              <Button variant="outline" size="md" onClick={handleDownload}>
                 Download
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -271,8 +261,8 @@ export default function InvoicePreviewPage() {
       <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="mx-auto max-w-7xl space-y-4 md:space-y-6">
           {voucher && (
-            <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
+            <Card>
+              <CardContent>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                   <div>
                     <p className="text-xs text-gray-500">Invoice Number</p>
@@ -297,14 +287,15 @@ export default function InvoicePreviewPage() {
                     {voucher.message}
                   </div>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )}
 
-          <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h2 className="mb-3 text-lg font-semibold">Comments</h2>
-
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Comments</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="mb-4">
                 <div className="min-w-0">
                   <form
@@ -337,13 +328,13 @@ export default function InvoicePreviewPage() {
                     <div className="absolute inset-x-0 bottom-0 flex justify-between py-2 pl-3 pr-2">
                       <div className="flex items-center" />
                       <div className="shrink-0">
-                        <button
+                        <Button
                           type="submit"
+                          size="lg"
                           disabled={isSubmittingComment || !commentText.trim()}
-                          className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:pointer-events-none disabled:opacity-50"
                         >
                           {isSubmittingComment ? "Adding…" : "Add Comment"}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </form>
@@ -375,8 +366,8 @@ export default function InvoicePreviewPage() {
               ) : (
                 <p className="text-sm text-gray-500">No comments yet</p>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {pdfUrl && (
             <div className="-mx-2 md:mx-0">

@@ -7,6 +7,7 @@ import {
   InformationCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
+import { Button } from "@/components/ui/button";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -96,14 +97,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 </div>
                 <div className="ml-auto pl-3">
                   <div className="-mx-1.5 -my-1.5">
-                    <button
+                    <Button
                       type="button"
-                      className={style.dismissClass}
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
                       onClick={() => removeToast(toast.id)}
                       aria-label="Dismiss"
                     >
                       <XMarkIcon aria-hidden className="size-5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
