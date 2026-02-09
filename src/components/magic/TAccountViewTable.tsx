@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
 import { formatParticularWithPrefix } from "@/utils/magic/transformLedgerTransaction";
 import { useToast } from "@/contexts/ToastContext";
+import { DataTable } from "@/components/ui/DataTable";
 
 interface Props {
   transactions: Transaction[];
@@ -103,51 +104,63 @@ export function TAccountViewTable({
     return tx.amount;
   };
 
-  // Calculate totals from raw arrays
-  const { totalDebit, totalCredit } = useMemo(() => {
-    const useConverted = isConvertedCurrencySelected ?? false;
-    const debit = (debitTransactions || []).reduce(
-      (sum, tx) => sum + getAmount(tx, useConverted),
-      0
-    );
-    const credit = (creditTransactions || []).reduce(
-      (sum, tx) => sum + getAmount(tx, useConverted),
-      0
-    );
-    return { totalDebit: debit, totalCredit: credit };
-  }, [debitTransactions, creditTransactions, isConvertedCurrencySelected]);
-
-  // Use raw arrays directly, fallback to transactions if not available
-  const debitTx = debitTransactions || transactions.filter((t) => t.debit !== null);
-  const creditTx = creditTransactions || transactions.filter((t) => t.credit !== null);
+  // Use raw arrays when they have data; otherwise derive from transactions (e.g. when API returns only combined list or paginated slice)
+  const debitTx =
+    debitTransactions && debitTransactions.length > 0
+      ? debitTransactions
+      : transactions.filter((t) => t.debit !== null);
+  const creditTx =
+    creditTransactions && creditTransactions.length > 0
+      ? creditTransactions
+      : transactions.filter((t) => t.credit !== null);
   const maxRows = Math.max(debitTx.length, creditTx.length);
 
+  const { totalDebit, totalCredit } = useMemo(() => {
+    const useConverted = isConvertedCurrencySelected ?? false;
+    const sumDebit = debitTx.reduce((sum, tx) => {
+      const amount =
+        typeof (tx as LedgerTransaction).amount === "number"
+          ? getAmount(tx as LedgerTransaction, useConverted)
+          : ((useConverted ? (tx as Transaction).debitConverted : (tx as Transaction).debit) ?? 0);
+      return sum + (typeof amount === "number" ? amount : 0);
+    }, 0);
+    const sumCredit = creditTx.reduce((sum, tx) => {
+      const amount =
+        typeof (tx as LedgerTransaction).amount === "number"
+          ? getAmount(tx as LedgerTransaction, useConverted)
+          : ((useConverted ? (tx as Transaction).creditConverted : (tx as Transaction).credit) ??
+            0);
+      return sum + (typeof amount === "number" ? amount : 0);
+    }, 0);
+    return { totalDebit: sumDebit, totalCredit: sumCredit };
+  }, [debitTx, creditTx, isConvertedCurrencySelected]);
+
   return (
-    <div className="overflow-x-auto rounded-lg border border-blue-900/30 bg-white">
+    <DataTable>
       <div className="min-w-[510px]">
-        <div className="grid grid-cols-2 bg-blue-900 text-white">
-          <div className="py-2 text-center text-xs font-semibold sm:py-4 sm:text-base">
+        <div className="grid grid-cols-2 bg-blue-900">
+          <div className="py-3.5 pl-4 pr-3 text-center text-sm font-semibold capitalize text-white sm:pl-6">
             Dr (Debit)
           </div>
-          <div className="border-l border-white/20 py-2 text-center text-xs font-semibold sm:py-4 sm:text-base">
+          <div className="border-l border-white/20 py-3.5 pl-3 pr-4 text-center text-sm font-semibold capitalize text-white sm:pr-6">
             Cr (Credit)
           </div>
         </div>
 
-        <div className="grid grid-cols-2 border-b border-blue-900/20">
-          <div className="grid grid-cols-[80px_1fr_70px] px-2 py-1.5 text-[10px] font-medium sm:px-4 sm:py-2 sm:text-xs">
-            <span>DATE</span>
-            <span>PARTICULARS</span>
-            <span className="text-right">AMOUNT</span>
+        <div className="grid grid-cols-2 border-b border-gray-200 bg-white">
+          <div className="grid grid-cols-[80px_1fr_70px] px-3 py-3.5 text-xs font-semibold text-gray-900 sm:px-4 sm:pl-6">
+            <span>Date</span>
+            <span>Particulars</span>
+            <span className="text-right">Amount</span>
           </div>
-          <div className="grid grid-cols-[80px_1fr_100px] border-l border-blue-900/20 px-2 py-1.5 text-[10px] font-medium sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-2 sm:text-xs">
-            <span>DATE</span>
-            <span>PARTICULARS</span>
-            <span className="text-right">AMOUNT</span>
+          <div className="grid grid-cols-[80px_1fr_100px] border-l border-gray-200 px-3 py-3.5 text-xs font-semibold text-gray-900 sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:pr-6">
+            <span>Date</span>
+            <span>Particulars</span>
+            <span className="text-right">Amount</span>
           </div>
         </div>
 
-        <div className="divide-y divide-blue-900/10">
+        <div className="divide-y divide-gray-200 bg-white">
           {Array.from({ length: maxRows }).map((_, i) => {
             const dr = debitTx[i] as LedgerTransaction | Transaction | undefined;
             const cr = creditTx[i] as LedgerTransaction | Transaction | undefined;
@@ -173,16 +186,16 @@ export function TAccountViewTable({
                 <div className="grid grid-cols-[80px_1fr_100px] items-center px-2 py-2 sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-3">
                   {dr ? (
                     <>
-                      <div className="text-[10px] sm:text-xs">
+                      <div className="whitespace-nowrap text-sm text-gray-900">
                         {isLedgerTransaction(dr) ? dr.entryDate : (dr as Transaction).date}
                       </div>
-                      <div className="line-clamp-2 text-[10px] sm:text-xs">
+                      <div className="line-clamp-2 text-sm text-gray-500">
                         {isLedgerTransaction(dr)
                           ? formatParticularWithPrefix(dr.particular.name, dr.type)
                           : (dr as Transaction).particular}
                       </div>
                       <div className="flex items-center justify-end gap-1.5">
-                        <div className="text-right text-[10px] font-medium sm:text-xs">
+                        <div className="text-right text-sm font-medium text-gray-900">
                           <div>
                             {format(
                               isLedgerTransaction(dr)
@@ -195,7 +208,7 @@ export function TAccountViewTable({
                           </div>
 
                           {hasMultipleCurrencies && isLedgerTransaction(dr) && (
-                            <div className="text-[9px] text-blue-900/60 sm:text-xs">
+                            <div className="text-xs text-gray-500">
                               {format(
                                 getAmount(dr, !(isConvertedCurrencySelected ?? false)),
                                 secondaryCurrency?.symbol
@@ -207,7 +220,7 @@ export function TAccountViewTable({
                             (isConvertedCurrencySelected
                               ? ((dr as Transaction).debit ?? null)
                               : ((dr as Transaction).debitConverted ?? null)) !== null && (
-                              <div className="text-[9px] text-blue-900/60 sm:text-xs">
+                              <div className="text-xs text-gray-500">
                                 {format(
                                   isConvertedCurrencySelected
                                     ? ((dr as Transaction).debit ?? null)
@@ -221,7 +234,7 @@ export function TAccountViewTable({
                           <button
                             onClick={() => handleDownload(dr, i, "debit")}
                             disabled={isDownloadingDebit}
-                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-900/5 text-blue-900 hover:bg-blue-900/10 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
+                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
                             title={`Download ${dr.voucherNumber}`}
                           >
                             {isDownloadingDebit ? (
@@ -268,19 +281,19 @@ export function TAccountViewTable({
                   )}
                 </div>
 
-                <div className="grid grid-cols-[80px_1fr_100px] items-center border-l border-blue-900/20 px-2 py-2 sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-3">
+                <div className="grid grid-cols-[80px_1fr_100px] items-center border-l border-gray-200 px-2 py-2 sm:grid-cols-[120px_1fr_160px] sm:px-4 sm:py-3">
                   {cr ? (
                     <>
-                      <div className="text-[10px] sm:text-xs">
+                      <div className="whitespace-nowrap text-sm text-gray-900">
                         {isLedgerTransaction(cr) ? cr.entryDate : (cr as Transaction).date}
                       </div>
-                      <div className="line-clamp-2 text-[10px] sm:text-xs">
+                      <div className="line-clamp-2 text-sm text-gray-500">
                         {isLedgerTransaction(cr)
                           ? formatParticularWithPrefix(cr.particular.name, cr.type)
                           : (cr as Transaction).particular}
                       </div>
                       <div className="flex items-center justify-end gap-1.5">
-                        <div className="text-right text-[10px] font-medium sm:text-xs">
+                        <div className="text-right text-sm font-medium text-gray-900">
                           <div>
                             {format(
                               isLedgerTransaction(cr)
@@ -293,7 +306,7 @@ export function TAccountViewTable({
                           </div>
 
                           {hasMultipleCurrencies && isLedgerTransaction(cr) && (
-                            <div className="text-[9px] text-blue-900/60 sm:text-xs">
+                            <div className="text-xs text-gray-500">
                               {format(
                                 getAmount(cr, !(isConvertedCurrencySelected ?? false)),
                                 secondaryCurrency?.symbol
@@ -305,7 +318,7 @@ export function TAccountViewTable({
                             (isConvertedCurrencySelected
                               ? ((cr as Transaction).credit ?? null)
                               : ((cr as Transaction).creditConverted ?? null)) !== null && (
-                              <div className="text-[9px] text-blue-900/60 sm:text-xs">
+                              <div className="text-xs text-gray-500">
                                 {format(
                                   isConvertedCurrencySelected
                                     ? ((cr as Transaction).credit ?? null)
@@ -319,7 +332,7 @@ export function TAccountViewTable({
                           <button
                             onClick={() => handleDownload(cr, i, "credit")}
                             disabled={isDownloadingCredit}
-                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-900/5 text-blue-900 hover:bg-blue-900/10 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
+                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
                             title={`Download ${cr.voucherNumber}`}
                           >
                             {isDownloadingCredit ? (
@@ -370,17 +383,17 @@ export function TAccountViewTable({
           })}
         </div>
 
-        <div className="grid grid-cols-2 border-t border-blue-900/20 bg-blue-900/5">
-          <div className="grid grid-cols-[1fr_100px] px-2 py-2 font-semibold sm:grid-cols-[1fr_160px] sm:px-4 sm:py-4">
+        <div className="grid grid-cols-2 border-t border-gray-200 bg-gray-50">
+          <div className="grid grid-cols-[1fr_100px] px-4 py-4 font-semibold text-gray-900 sm:grid-cols-[1fr_160px] sm:pl-6 sm:pr-6">
             <span>Total</span>
             <span className="text-right">{format(totalDebit, primaryCurrency?.symbol)}</span>
           </div>
-          <div className="grid grid-cols-[1fr_100px] border-l border-blue-900/20 px-2 py-2 font-semibold sm:grid-cols-[1fr_160px] sm:px-4 sm:py-4">
+          <div className="grid grid-cols-[1fr_100px] border-l border-gray-200 px-4 py-4 font-semibold text-gray-900 sm:grid-cols-[1fr_160px] sm:pr-6">
             <span>Total</span>
             <span className="text-right">{format(totalCredit, primaryCurrency?.symbol)}</span>
           </div>
         </div>
       </div>
-    </div>
+    </DataTable>
   );
 }

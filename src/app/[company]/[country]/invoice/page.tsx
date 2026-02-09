@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { Dropdown } from "@/components/Dropdown";
 import { Pagination } from "@/components/Pagination";
 import { PayNow } from "@/components/PayNow";
 import { useState, useEffect, useMemo } from "react";
@@ -24,6 +25,7 @@ import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortOrder } from "@/constants/sort";
 import type { Invoice, InvoiceSortColumn } from "./types";
@@ -197,11 +199,11 @@ export default function InvoicesPage() {
 
   const columns = [
     {
-      header: "S.NO",
+      header: "S. No.",
       accessor: (row: Invoice, index: number) => index + 1 + (currentPage - 1) * itemsPerPage,
     },
     {
-      header: "INVOICE NO",
+      header: "Invoice No.",
       accessor: (row: Invoice) => (
         <button
           onClick={() => handleInvoiceClick(row.id)}
@@ -217,7 +219,7 @@ export default function InvoicesPage() {
           onClick={() => handleSort("Date")}
           className="flex items-center gap-1 hover:text-gray-700"
         >
-          DATE
+          Date
           {sortBy === "Date" ? (
             sortDirection === SortOrder.ASC ? (
               <ArrowUp className="h-4 w-4" />
@@ -237,7 +239,7 @@ export default function InvoicesPage() {
           onClick={() => handleSort("Total")}
           className="flex items-center gap-1 hover:text-gray-700"
         >
-          TOTAL
+          Total
           {sortBy === "Total" ? (
             sortDirection === SortOrder.ASC ? (
               <ArrowUp className="h-4 w-4" />
@@ -252,7 +254,7 @@ export default function InvoicesPage() {
       accessor: "total" as keyof Invoice,
     },
     {
-      header: "STATUS",
+      header: "Status",
       accessor: (row: Invoice) => (
         <span
           className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
@@ -264,11 +266,11 @@ export default function InvoicesPage() {
       ),
     },
     {
-      header: "OVERDUE",
+      header: "Over Due",
       accessor: (row: Invoice) => <span className="text-orange-600">{row.overdue}</span>,
     },
     {
-      header: "ACTION",
+      header: "Action",
       accessor: (row: Invoice) => (
         <div className="flex gap-2">
           <PayNow
@@ -306,47 +308,97 @@ export default function InvoicesPage() {
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="w-48">
               <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: "right 0.5rem center",
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "1.5em 1.5em",
-                }}
+              <Dropdown
+                trigger={
+                  <>
+                    <span className="block truncate text-left">{statusFilter}</span>
+                    <ChevronDownIcon aria-hidden className="-mr-1 size-5 shrink-0 text-gray-400" />
+                  </>
+                }
+                buttonClassName="w-full justify-between"
+                panelClassName="w-48 min-w-full"
+                fullWidth
               >
-                <option>All Invoices</option>
-                <option>Paid</option>
-                <option>Partial Paid</option>
-                <option>Unpaid</option>
-                <option>Hold</option>
-                <option>Cancel</option>
-              </select>
+                <Dropdown.Item
+                  onClick={() => {
+                    setStatusFilter("All Invoices");
+                    setCurrentPage(1);
+                  }}
+                >
+                  All Invoices
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setStatusFilter("Paid");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Paid
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setStatusFilter("Partial Paid");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Partial Paid
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setStatusFilter("Unpaid");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Unpaid
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setStatusFilter("Hold");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Hold
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setStatusFilter("Cancel");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Cancel
+                </Dropdown.Item>
+              </Dropdown>
             </div>
             <div className="w-48">
               <label className="mb-2 block text-sm font-medium text-gray-700">Sort By</label>
-              <select
-                value={sortBy}
-                onChange={(e) => {
-                  setSortBy(e.target.value as InvoiceSortColumn);
-                  setCurrentPage(1);
-                }}
-                className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: "right 0.5rem center",
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "1.5em 1.5em",
-                }}
+              <Dropdown
+                trigger={
+                  <>
+                    <span className="block truncate text-left">{sortBy}</span>
+                    <ChevronDownIcon aria-hidden className="-mr-1 size-5 shrink-0 text-gray-400" />
+                  </>
+                }
+                buttonClassName="w-full justify-between"
+                panelClassName="w-48 min-w-full"
+                fullWidth
               >
-                <option>Total</option>
-                <option>Date</option>
-              </select>
+                <Dropdown.Item
+                  onClick={() => {
+                    setSortBy("Total");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Total
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setSortBy("Date");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Date
+                </Dropdown.Item>
+              </Dropdown>
             </div>
             {hasActiveFilters && (
               <div className="flex items-end">

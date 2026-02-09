@@ -28,8 +28,8 @@ export function Footer({ summary, companyCurrency }: FooterProps) {
   };
 
   return (
-    <div className="py-4">
-      <div className="rounded-xl border border-blue-900/20 bg-blue-900/[0.02] px-3 py-4 sm:px-6 sm:py-5">
+    <div className="my-4 overflow-hidden rounded-lg bg-white shadow-sm">
+      <div className="px-4 py-5 sm:p-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           <div>
             <p className="text-xs text-blue-900/70 sm:text-sm">

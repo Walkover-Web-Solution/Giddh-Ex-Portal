@@ -66,31 +66,3 @@
     min-width: 120px !important;
   }
 }
-
-/* Toast – DaisyUI with custom colors */
-.toast-item {
-  color: white;
-  border: none;
-
-  &.alert-success {
-    background-color: #22c55e;
-  }
-
-  &.alert-error {
-    background-color: #dc2626;
-  }
-
-  &.alert-info {
-    background-color: #1e3a8a;
-  }
-
-  .btn-circle {
-    color: inherit;
-    opacity: 0.9;
-
-    &:hover {
-      opacity: 1;
-      background-color: rgb(255 255 255 / 0.2);
-    }
-  }
-}

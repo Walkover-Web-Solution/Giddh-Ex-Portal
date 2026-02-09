@@ -15,6 +15,7 @@ import { getCurrencyConfig } from "./currencyUtils";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { transformLedgerTransactionToDisplay } from "@/utils/magic/transformLedgerTransaction";
 import { useToast } from "@/contexts/ToastContext";
+import { DataTable } from "@/components/ui/DataTable";
 
 interface Props {
   selectedCurrency: Currency;
@@ -165,29 +166,49 @@ export function StatementViewTable({
   );
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-blue-900/30 bg-white">
-      <table className="w-full min-w-[640px] text-sm">
-        <thead className="bg-blue-900 text-white">
+    <DataTable>
+      <table className="text-sm} relative mx-auto w-full min-w-full divide-y divide-gray-300">
+        <thead className="bg-blue-900">
           <tr>
-            <th className="px-4 py-3 text-left">Date</th>
-            <th className="px-4 py-3 text-left">Particular</th>
-            <th className="px-4 py-3 text-right">Debit</th>
-            <th className="px-4 py-3 text-right">Credit</th>
-            <th className="px-4 py-3 text-right">Closing Balance</th>
+            <th
+              scope="col"
+              className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6"
+            >
+              Date
+            </th>
+            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
+              Particular
+            </th>
+            <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-white">
+              Debit
+            </th>
+            <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-white">
+              Credit
+            </th>
+            <th
+              scope="col"
+              className="py-3.5 pl-3 pr-4 text-right text-sm font-semibold text-white sm:pr-6"
+            >
+              Closing Balance
+            </th>
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-blue-900/10">
+        <tbody className="divide-y divide-gray-200 bg-white">
           {displayTransactions.map((item, i) => {
             const txId = `tx-${i}-${item.entryUniqueName ?? ""}`;
             const downloading = downloadingTransactionId === txId;
 
             return (
-              <tr key={i} className="align-middle">
-                <td className="px-4 py-3">{item.date}</td>
-                <td className="px-4 py-3">{item.particular}</td>
+              <tr key={i}>
+                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                  {item.date}
+                </td>
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  {item.particular}
+                </td>
 
-                <td className="px-4 py-3">
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <AmountCell
                     amount={item.debit}
                     convertedAmount={item.debitConverted}
@@ -197,7 +218,7 @@ export function StatementViewTable({
                   />
                 </td>
 
-                <td className="px-4 py-3">
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   <AmountCell
                     amount={item.credit}
                     convertedAmount={item.creditConverted}
@@ -207,9 +228,9 @@ export function StatementViewTable({
                   />
                 </td>
 
-                <td className="px-4 py-3">
+                <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <div className="flex items-center justify-end gap-1">
-                    <span className="font-medium">
+                    <span className="font-medium text-gray-900">
                       {format(
                         getAmount(
                           item.closingBalance,
@@ -219,7 +240,7 @@ export function StatementViewTable({
                         primaryCurrency?.symbol
                       )}
                     </span>
-                    <span className="text-[10px] text-blue-900/70">{item.balanceType}</span>
+                    <span className="text-[10px] text-gray-500">{item.balanceType}</span>
                   </div>
 
                   {hasMultipleCurrencies &&
@@ -228,7 +249,7 @@ export function StatementViewTable({
                       item.closingBalanceConverted,
                       !isConvertedCurrencySelected
                     ) !== null && (
-                      <div className="text-right text-[10px] text-blue-900/60">
+                      <div className="text-right text-[10px] text-gray-500">
                         {format(
                           getAmount(
                             item.closingBalance,
@@ -245,17 +266,21 @@ export function StatementViewTable({
           })}
         </tbody>
 
-        <tfoot className="bg-blue-900/5 font-semibold">
+        <tfoot className="divide-y divide-gray-200 bg-gray-50 font-semibold">
           <tr>
-            <td colSpan={2} className="px-4 py-3">
+            <td colSpan={2} className="py-4 pl-4 pr-3 text-sm text-gray-900 sm:pl-6">
               Total
             </td>
-            <td className="px-4 py-3 text-right">{format(totalDebit, primaryCurrency?.symbol)}</td>
-            <td className="px-4 py-3 text-right">{format(totalCredit, primaryCurrency?.symbol)}</td>
-            <td />
+            <td className="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-900">
+              {format(totalDebit, primaryCurrency?.symbol)}
+            </td>
+            <td className="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-900">
+              {format(totalCredit, primaryCurrency?.symbol)}
+            </td>
+            <td className="py-4 pl-3 pr-4 sm:pr-6" />
           </tr>
         </tfoot>
       </table>
-    </div>
+    </DataTable>
   );
 }

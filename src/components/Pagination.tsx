@@ -1,8 +1,10 @@
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+"use client";
+
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { PAGE_SIZE_OPTIONS } from "@/constants";
 import { mergeClassNames } from "@/lib/utils";
 
-interface PaginationProps {
+export interface PaginationProps {
   currentPage: number;
   totalPages: number;
   totalItems: number;
@@ -10,6 +12,13 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (items: number) => void;
   pageSizeOptions?: number[];
+}
+
+function getPageNumbers(totalPages: number): (number | "ellipsis")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  return [1, 2, 3, "ellipsis", totalPages - 2, totalPages - 1, totalPages];
 }
 
 export function Pagination({
@@ -24,76 +33,108 @@ export function Pagination({
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
   const hasPages = totalPages > 0;
+  const pageNumbers = getPageNumbers(totalPages);
 
-  const navButtonClass =
-    "rounded-md border border-gray-300 p-1.5 text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent";
+  const navLinkBase =
+    "relative inline-flex items-center border border-gray-300 bg-white text-blue-900 text-sm font-medium hover:text-blue-900 hover:bg-gray-50  disabled:pointer-events-none disabled:opacity-50";
+  const navLinkRoundedL = "rounded-l-md";
+  const navLinkRoundedR = "rounded-r-md";
+  const pageLinkBase =
+    "relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50-0 -ml-px";
+  const pageLinkCurrent =
+    "z-10 border-blue-900 bg-blue-900 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-900";
 
   return (
-    <div className="mt-4 border-t bg-white px-4 py-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-600 sm:justify-start">
-          <span>Items per page:</span>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-            className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+    <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+      <div className="flex flex-1 justify-between sm:hidden">
+        <button
+          type="button"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={!hasPages || currentPage === 1}
+          className={mergeClassNames(navLinkBase, "rounded-md px-4 py-2")}
+          aria-label="Previous"
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={!hasPages || currentPage === totalPages}
+          className={mergeClassNames(navLinkBase, "ml-3 rounded-md px-4 py-2")}
+          aria-label="Next"
+        >
+          Next
+        </button>
+      </div>
+
+      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <p className="text-sm text-gray-700">
+            Showing <span className="font-medium">{startItem}</span> to{" "}
+            <span className="font-medium">{endItem}</span> of{" "}
+            <span className="font-medium">{totalItems}</span> results
+          </p>
+        </div>
+
+        <nav
+          aria-label="Pagination"
+          className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+        >
+          <button
+            type="button"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={!hasPages || currentPage === 1}
+            className={mergeClassNames(
+              pageLinkBase,
+              navLinkRoundedL,
+              "px-2 py-2 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+            )}
+            aria-label="Previous"
           >
-            {pageSizeOptions.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </div>
+            <span className="sr-only">Previous</span>
+            <ChevronLeftIcon aria-hidden className="size-5" />
+          </button>
 
-        <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
-          <span className="text-sm text-gray-600">
-            {startItem}–{endItem} of {totalItems}
-          </span>
+          {pageNumbers.map((page, idx) =>
+            page === "ellipsis" ? (
+              <span
+                key={`ellipsis-${idx}`}
+                className="relative -ml-px inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700"
+              >
+                ...
+              </span>
+            ) : (
+              <button
+                key={page}
+                type="button"
+                onClick={() => onPageChange(page)}
+                disabled={!hasPages}
+                aria-current={currentPage === page ? "page" : undefined}
+                className={mergeClassNames(
+                  pageLinkBase,
+                  currentPage === page ? pageLinkCurrent : ""
+                )}
+              >
+                {page}
+              </button>
+            )
+          )}
 
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => onPageChange(1)}
-              disabled={!hasPages || currentPage === 1}
-              className={mergeClassNames(navButtonClass)}
-              title="First page"
-              aria-label="First page"
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={!hasPages || currentPage === 1}
-              className={mergeClassNames(navButtonClass)}
-              title="Previous page"
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={!hasPages || currentPage === totalPages}
-              className={mergeClassNames(navButtonClass)}
-              title="Next page"
-              aria-label="Next page"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onPageChange(totalPages)}
-              disabled={!hasPages || currentPage === totalPages}
-              className={mergeClassNames(navButtonClass)}
-              title="Last page"
-              aria-label="Last page"
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+          <button
+            type="button"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={!hasPages || currentPage === totalPages}
+            className={mergeClassNames(
+              pageLinkBase,
+              navLinkRoundedR,
+              "px-2 py-2 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+            )}
+            aria-label="Next"
+          >
+            <span className="sr-only">Next</span>
+            <ChevronRightIcon aria-hidden className="size-5" />
+          </button>
+        </nav>
       </div>
     </div>
   );

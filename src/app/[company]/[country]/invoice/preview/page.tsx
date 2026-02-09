@@ -13,9 +13,9 @@ import {
   PaymentDetailsResponse,
   Comment,
 } from "@/utils/invoicePreview";
-import { PayNow } from "@/components/PayNow";
-import { ArrowLeft, Download, Printer } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function InvoicePreviewPage() {
   const params = useParams();
@@ -241,28 +241,18 @@ export default function InvoicePreviewPage() {
             <div className="flex items-center gap-2">
               <SidebarToggleButton />
 
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline"
-              >
+              <Button variant="link" size="sm" onClick={handleBack}>
                 ← Back to Invoices
-              </button>
+              </Button>
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={handlePrint}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <Button variant="outline" size="md" onClick={handlePrint}>
                 Print
-              </button>
-
-              <button
-                onClick={handleDownload}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              </Button>
+              <Button variant="outline" size="md" onClick={handleDownload}>
                 Download
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -271,78 +261,113 @@ export default function InvoicePreviewPage() {
       <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="mx-auto max-w-7xl space-y-4 md:space-y-6">
           {voucher && (
-            <div className="rounded-lg border bg-white p-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                <div>
-                  <p className="text-xs text-gray-500">Invoice Number</p>
-                  <p className="text-lg font-semibold">{voucher.number}</p>
+            <Card>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                  <div>
+                    <p className="text-xs text-gray-500">Invoice Number</p>
+                    <p className="text-lg font-semibold">{voucher.number}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-gray-500">Due Date</p>
+                    <p className="text-lg font-semibold">{voucher.dueDate}</p>
+                  </div>
+
+                  <div className="sm:col-span-2 md:col-span-1">
+                    <p className="text-xs text-gray-500">Balance Due</p>
+                    <p className="text-xl font-bold text-blue-900">
+                      {paymentDetails?.currency?.symbol} {voucher.amount}
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <p className="text-xs text-gray-500">Due Date</p>
-                  <p className="text-lg font-semibold">{voucher.dueDate}</p>
-                </div>
-
-                <div className="sm:col-span-2 md:col-span-1">
-                  <p className="text-xs text-gray-500">Balance Due</p>
-                  <p className="text-xl font-bold text-blue-900">
-                    {paymentDetails?.currency?.symbol} {voucher.amount}
-                  </p>
-                </div>
-              </div>
-
-              {!voucher.canPay && voucher.message && (
-                <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
-                  {voucher.message}
-                </div>
-              )}
-            </div>
+                {!voucher.canPay && voucher.message && (
+                  <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
+                    {voucher.message}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
 
-          <div className="rounded-lg border bg-white p-4 md:p-6">
-            <h2 className="mb-3 text-lg font-semibold">Comments</h2>
-
-            <div className="mb-4">
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Enter Your Comments"
-                rows={3}
-                className="w-full resize-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                disabled={isSubmittingComment}
-              />
-              <button
-                type="button"
-                onClick={handleAddComment}
-                disabled={isSubmittingComment || !commentText.trim()}
-                className="mt-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50"
-              >
-                {isSubmittingComment ? "Adding…" : "Add Comment"}
-              </button>
-              {commentError && <p className="mt-2 text-sm text-red-600">{commentError}</p>}
-            </div>
-
-            {comments.length > 0 ? (
-              <div className="max-h-[280px] overflow-y-auto overflow-x-hidden rounded-md pr-1">
-                <div className="space-y-3 py-1">
-                  {comments.map((comment, index) => (
-                    <div
-                      key={comment.id ?? `comment-${index}`}
-                      className="flex flex-wrap items-start gap-x-3 gap-y-1 border-l-2 border-gray-300 pl-3"
-                    >
-                      <span className="shrink-0 text-xs text-gray-500">
-                        {formatCommentDate(comment.dateString)}
-                      </span>
-                      <span className="min-w-0 flex-1 text-sm">{comment.description}</span>
-                      <span className="shrink-0 text-xs text-gray-500">by {comment.userName}</span>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Comments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <div className="min-w-0">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleAddComment();
+                    }}
+                    className="relative"
+                  >
+                    <div className="rounded-lg bg-white outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2">
+                      <label htmlFor="invoice-comment" className="sr-only">
+                        Add your comment
+                      </label>
+                      <textarea
+                        id="invoice-comment"
+                        name="comment"
+                        rows={3}
+                        placeholder="Add your comment..."
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        disabled={isSubmittingComment}
+                        className="block w-full resize-none bg-transparent px-3 py-1.5 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm sm:leading-6"
+                      />
+                      <div aria-hidden="true" className="py-2">
+                        <div className="py-px">
+                          <div className="h-1" />
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                    <div className="absolute inset-x-0 bottom-0 flex justify-between py-2 pl-3 pr-2">
+                      <div className="flex items-center" />
+                      <div className="shrink-0">
+                        <Button
+                          type="submit"
+                          size="lg"
+                          disabled={isSubmittingComment || !commentText.trim()}
+                        >
+                          {isSubmittingComment ? "Adding…" : "Add Comment"}
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
                 </div>
+                {commentError && <p className="mt-2 text-sm text-red-600">{commentError}</p>}
               </div>
-            ) : (
-              <p className="text-sm text-gray-500">No comments yet</p>
-            )}
-          </div>
+
+              {comments.length > 0 ? (
+                <div className="max-h-[280px] overflow-y-auto overflow-x-hidden rounded-md pr-1">
+                  <div className="space-y-3 py-1">
+                    {comments.map((comment, index) => (
+                      <div
+                        key={comment.id ?? `comment-${index}`}
+                        className="grid grid-cols-[auto_1fr_auto] items-start gap-x-3 border-l-2 border-gray-300 pl-3"
+                      >
+                        <span className="whitespace-nowrap text-sm text-gray-500">
+                          {formatCommentDate(comment.dateString)}
+                        </span>
+
+                        <span className="break-words text-sm">{comment.description}</span>
+
+                        <span className="whitespace-nowrap text-xs text-gray-500">
+                          by {comment.userName}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No comments yet</p>
+              )}
+            </CardContent>
+          </Card>
 
           {pdfUrl && (
             <div className="-mx-2 md:mx-0">

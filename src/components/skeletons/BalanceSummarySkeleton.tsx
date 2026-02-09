@@ -7,7 +7,7 @@ export function BalanceSummarySkeleton() {
         <div className="h-6 w-40 animate-pulse rounded bg-gray-200"></div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between border-b pb-3">
+        <div className="flex items-center justify-between pb-3">
           <div className="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
           <div className="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
         </div>
