@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
@@ -15,11 +15,19 @@ import {
   AccountAddress,
   Address,
 } from "@/utils/accountStatement";
+import { DataTable } from "@/components/DataTable";
+import { Dropdown } from "@/components/Dropdown";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { Pagination } from "@/components/Pagination";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
+import { FileType, PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { SortOrder } from "@/constants/sort";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function AccountStatementPage() {
   const params = useParams();
@@ -45,9 +53,10 @@ export default function AccountStatementPage() {
   const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
   const [toDate, setToDate] = useState<Date>(today);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [totalItems, setTotalItems] = useState(0);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);
+  const { showToast } = useToast();
 
   const getCompanyAndAccountNames = () => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -118,7 +127,7 @@ export default function AccountStatementPage() {
     }
   };
 
-  const handleExport = async () => {
+  const handleExport = async (format: FileType) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
     if (!companyUniqueName || !accountUniqueName) return;
 
@@ -134,16 +143,17 @@ export default function AccountStatementPage() {
         sort: sortDirection,
       };
 
-      const response = await downloadAccountStatement(request);
+      const response = await downloadAccountStatement(request, format);
 
       if (response.status === "success" && response.body) {
         const blob = new Blob([atob(response.body.data)], { type: response.body.type });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
+        const extension = response.body.type.includes(FileType.PDF) ? FileType.PDF : FileType.XLSX;
         link.download =
           response.body.name ||
-          `account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.pdf`;
+          `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.${extension}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -151,7 +161,7 @@ export default function AccountStatementPage() {
       }
     } catch (err) {
       console.error("Error exporting statement:", err);
-      alert("Failed to export statement");
+      showToast("Failed to export statement", "error");
     } finally {
       setIsExporting(false);
     }
@@ -166,6 +176,49 @@ export default function AccountStatementPage() {
     setToDate(date);
     setCurrentPage(1);
   };
+
+  const statementColumns = useMemo(
+    () => [
+      { header: "Date", accessor: (row: Transaction) => row.date },
+      {
+        header: "Transaction",
+        accessor: (row: Transaction) => row.voucherType,
+        cellClassName: "font-medium",
+      },
+      {
+        header: "Details",
+        accessor: (row: Transaction) => row.voucherNumber,
+        headerClassName: "hidden md:table-cell",
+        cellClassName: "hidden md:table-cell text-gray-600",
+      },
+      {
+        header: "Amount",
+        accessor: (row: Transaction) =>
+          row.voucherAmount.type === LEDGER_TYPE_DEBIT
+            ? formatCurrency(row.voucherAmount.amount, accountAddress?.currency?.symbol)
+            : "",
+        headerClassName: "text-right",
+        cellClassName: "text-right",
+      },
+      {
+        header: "Payments",
+        accessor: (row: Transaction) =>
+          row.voucherAmount.type === LEDGER_TYPE_CREDIT
+            ? formatCurrency(row.voucherAmount.amount, accountAddress?.currency?.symbol)
+            : "",
+        headerClassName: "hidden md:table-cell text-right",
+        cellClassName: "hidden md:table-cell text-right",
+      },
+      {
+        header: "Balance",
+        accessor: (row: Transaction) =>
+          formatCurrency(row.closingBalance.amount, accountAddress?.currency?.symbol),
+        headerClassName: "text-right",
+        cellClassName: "text-right font-medium",
+      },
+    ],
+    [accountAddress?.currency?.symbol]
+  );
 
   return (
     <>
@@ -188,8 +241,8 @@ export default function AccountStatementPage() {
               {error}
             </div>
           ) : (
-            <div className="rounded-lg border bg-white">
-              <div className="border-b p-4 md:p-8">
+            <Card>
+              <CardHeader className="border-b">
                 <div className="flex flex-col gap-6 py-2 md:flex-row md:justify-between">
                   <div className="text-sm text-gray-600">
                     <h2 className="mb-1 font-bold text-black">{accountName}</h2>
@@ -232,7 +285,6 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between text-gray-600">
                             <span>Opening Balance</span>
                             <span className="font-medium">
-                              {summary.openingBalance.type === "CREDIT" && "-"}
                               {formatCurrency(
                                 summary.openingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -258,7 +310,6 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between font-semibold text-gray-800">
                             <span>Balance Due</span>
                             <span>
-                              {summary.closingBalance.type === "CREDIT" && "-"}
                               {formatCurrency(
                                 summary.closingBalance.amount,
                                 accountAddress?.currency?.symbol
@@ -270,115 +321,71 @@ export default function AccountStatementPage() {
                     </div>
                   </div>
                 )}
-              </div>
+              </CardHeader>
 
-              <div className="p-4 md:p-6">
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <CardContent>
+                <div className="mb-4 flex flex-row items-center justify-between gap-3">
                   <DateRangeCalendar
                     fromDate={fromDate}
                     toDate={toDate}
                     onFromDateChange={handleFromDateChange}
                     onToDateChange={handleToDateChange}
+                    openDirection="top"
+                    position="left"
+                    compact
                   />
-                  <button
-                    onClick={handleExport}
+
+                  <Dropdown
+                    trigger={
+                      <>
+                        <span>{isExporting ? "Exporting..." : "Export"}</span>
+                        <ChevronDownIcon
+                          aria-hidden
+                          className="-mr-1 size-5 shrink-0 text-gray-400"
+                        />
+                      </>
+                    }
+                    buttonClassName="w-auto min-w-0 justify-center px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6"
+                    panelClassName="w-56 min-w-[140px]"
                     disabled={isExporting}
-                    className="w-full rounded-md border border-blue-600 bg-white px-6 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   >
-                    {isExporting ? "Exporting..." : "Export"}
-                  </button>
+                    <Dropdown.Item
+                      onClick={() => handleExport(FileType.PDF)}
+                      disabled={isExporting}
+                    >
+                      As PDF
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      onClick={() => handleExport(FileType.XLSX)}
+                      disabled={isExporting}
+                    >
+                      As XLS
+                    </Dropdown.Item>
+                  </Dropdown>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full table-fixed border-collapse">
-                    <thead>
-                      <tr className="border-b bg-gray-800 text-left text-sm text-white">
-                        <th className="min-w-[110px] whitespace-nowrap px-2 py-3 font-medium sm:px-3 md:px-4">
-                          Date
-                        </th>
-                        <th className="min-w-[140px] whitespace-nowrap px-2 py-3 font-medium sm:px-3 md:px-4">
-                          Transaction
-                        </th>
-                        <th className="hidden min-w-[160px] whitespace-nowrap px-3 py-3 font-medium md:table-cell md:px-4">
-                          Details
-                        </th>
-                        <th className="min-w-[120px] whitespace-nowrap px-2 py-3 text-right font-medium sm:px-3 md:px-4">
-                          Amount
-                        </th>
-                        <th className="hidden min-w-[120px] whitespace-nowrap px-3 py-3 text-right font-medium sm:table-cell md:px-4">
-                          Payments
-                        </th>
-                        <th className="min-w-[140px] whitespace-nowrap px-2 py-3 text-right font-medium sm:px-3 md:px-4">
-                          Balance
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-sm">
-                      {transactions.length === 0 ? (
-                        <tr>
-                          <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
-                            No transactions found
-                          </td>
-                        </tr>
-                      ) : (
-                        transactions.map((transaction, index) => (
-                          <tr key={index} className="border-b hover:bg-gray-50">
-                            <td className="min-w-[110px] whitespace-nowrap px-2 py-3 sm:px-3 md:px-4">
-                              {transaction.date}
-                            </td>
-                            <td className="min-w-[140px] whitespace-nowrap px-2 py-3 font-medium sm:px-3 md:px-4">
-                              {transaction.voucherType}
-                            </td>
-                            <td className="hidden min-w-[160px] whitespace-nowrap px-3 py-3 text-gray-600 md:table-cell md:px-4">
-                              {transaction.voucherNumber}
-                            </td>
-                            <td className="min-w-[120px] whitespace-nowrap px-2 py-3 text-right sm:px-3 md:px-4">
-                              {transaction.voucherAmount.type === "DEBIT"
-                                ? formatCurrency(
-                                    transaction.voucherAmount.amount,
-                                    accountAddress?.currency?.symbol
-                                  )
-                                : "-"}
-                            </td>
-                            <td className="hidden min-w-[120px] whitespace-nowrap px-3 py-3 text-right sm:table-cell md:px-4">
-                              {transaction.voucherAmount.type === "CREDIT"
-                                ? formatCurrency(
-                                    transaction.voucherAmount.amount,
-                                    accountAddress?.currency?.symbol
-                                  )
-                                : "-"}
-                            </td>
-                            <td className="min-w-[140px] whitespace-nowrap px-2 py-3 text-right font-medium sm:px-3 md:px-4">
-                              {transaction.closingBalance.type === "CREDIT" && "-"}
-                              {formatCurrency(
-                                transaction.closingBalance.amount,
-                                accountAddress?.currency?.symbol
-                              )}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                <DataTable
+                  columns={statementColumns}
+                  data={transactions}
+                  keyExtractor={(row) => `${row.date}-${row.voucherNumber}-${row.voucherType}`}
+                />
 
-                {totalItems > 10 && (
-                  <div className="mt-4">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={Math.ceil(totalItems / itemsPerPage)}
-                      totalItems={totalItems}
-                      itemsPerPage={itemsPerPage}
-                      onPageChange={setCurrentPage}
-                      onItemsPerPageChange={(newSize) => {
-                        setItemsPerPage(newSize);
-                        setCurrentPage(1);
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+                <div className="mt-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.max(1, Math.ceil(totalItems / itemsPerPage))}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    pageSizeOptions={PAGE_SIZE_OPTIONS}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={(newSize) => {
+                      setItemsPerPage(newSize);
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>

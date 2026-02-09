@@ -30,7 +30,7 @@ export async function downloadMagicLinkVoucher(request: DownloadVoucherRequest):
 
     if (voucherVersion === 2) {
       // POST request for voucher version 2
-      const url = `${baseURL}/magic-link/${linkId}/download-voucher?voucherVersion=${voucherVersion}&downloadOption=VOUCHER`;
+      const url = `${baseURL}/magic-link/${encodeURIComponent(linkId)}/download-voucher?voucherVersion=${encodeURIComponent(String(voucherVersion))}&downloadOption=${encodeURIComponent("VOUCHER")}`;
 
       const payload: any = {
         voucherType: request.voucherName,
@@ -52,8 +52,8 @@ export async function downloadMagicLinkVoucher(request: DownloadVoucherRequest):
         },
       });
     } else {
-      // GET request for older voucher versions
-      const url = `${baseURL}/magic-link/${linkId}/download-invoice/${request.voucherNumber}`;
+      // GET request for older voucher versions (encode path segments)
+      const url = `${baseURL}/magic-link/${encodeURIComponent(linkId)}/download-invoice/${encodeURIComponent(request.voucherNumber)}`;
       apiObservable = axios.get(url, {
         headers: {
           accept: "application/json, text/plain, */*",

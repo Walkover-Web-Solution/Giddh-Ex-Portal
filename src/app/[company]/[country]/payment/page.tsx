@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/DataTable";
+import { Dropdown } from "@/components/Dropdown";
 import { Pagination } from "@/components/Pagination";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -20,23 +21,18 @@ import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/uti
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
+import { Button } from "@/components/ui/button";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-
-interface Payment {
-  id: string;
-  paymentId: string;
-  date: string;
-  amount: string;
-  paymentAccount: string;
-  unusedAmount: string;
-}
+import { SortOrder } from "@/constants/sort";
+import type { Payment, PaymentSortColumn } from "./types";
 
 export default function PaymentsPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [sortFilter, setSortFilter] = useState("Amount");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [sortFilter, setSortFilter] = useState<PaymentSortColumn>("Amount");
+  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -63,23 +59,30 @@ export default function PaymentsPage() {
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
 
   const handlePaymentClick = (voucherUniqueName: string) => {
-    router.push(`/${companyName}/${country}/payment/preview?voucher=${voucherUniqueName}`);
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
+    const params = new URLSearchParams({ voucher: voucherUniqueName });
+    if (companyUniqueName) params.set("companyUniqueName", companyUniqueName);
+    if (accountUniqueName) params.set("accountUniqueName", accountUniqueName);
+    router.push(`/${companyName}/${country}/payment/preview?${params.toString()}`);
   };
 
   const handleClearFilters = () => {
     setSortFilter("Amount");
-    setSortDirection("desc");
+    setSortDirection(SortOrder.DESC);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = sortFilter !== "Amount" || sortDirection !== "desc";
+  const hasActiveFilters = sortFilter !== "Amount" || sortDirection !== SortOrder.DESC;
 
-  const handleSort = (column: "Date" | "Amount") => {
+  const handleSort = (column: PaymentSortColumn) => {
     if (sortFilter === column) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDirection(sortDirection === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC);
     } else {
       setSortFilter(column);
-      setSortDirection("desc");
+      setSortDirection(SortOrder.DESC);
     }
     setCurrentPage(1);
   };
@@ -95,8 +98,8 @@ export default function PaymentsPage() {
         amount: formatCurrencyAmount(payment.grandTotal?.amountForAccount, currency, {
           decimals: 0,
         }),
-        paymentAccount: payment.account?.name || "N/A",
-        unusedAmount: "-",
+        paymentAccount: payment.account?.name ?? "",
+        unusedAmount: "",
       })),
     [allPayments, currency]
   );
@@ -114,7 +117,7 @@ export default function PaymentsPage() {
         } else if (sortFilter === "Payment ID") {
           comparison = a.paymentId.localeCompare(b.paymentId);
         }
-        return sortDirection === "asc" ? -comparison : comparison;
+        return sortDirection === SortOrder.ASC ? -comparison : comparison;
       }),
     [paymentsData, sortFilter, sortDirection]
   );
@@ -129,23 +132,17 @@ export default function PaymentsPage() {
       {
         header: "Payment#",
         accessor: (row: Payment) => (
-          <button
-            onClick={() => handlePaymentClick(row.id)}
-            className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
-          >
+          <Button variant="link" size="sm" onClick={() => handlePaymentClick(row.id)}>
             {row.paymentId}
-          </button>
+          </Button>
         ),
       },
       {
         header: (
-          <button
-            onClick={() => handleSort("Date")}
-            className="flex items-center gap-1 hover:text-gray-700"
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleSort("Date")}>
             Date
             {sortFilter === "Date" ? (
-              sortDirection === "asc" ? (
+              sortDirection === SortOrder.ASC ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
                 <ArrowDown className="h-4 w-4" />
@@ -153,19 +150,16 @@ export default function PaymentsPage() {
             ) : (
               <ArrowUpDown className="h-4 w-4 opacity-50" />
             )}
-          </button>
+          </Button>
         ),
         accessor: "date" as keyof Payment,
       },
       {
         header: (
-          <button
-            onClick={() => handleSort("Amount")}
-            className="flex items-center gap-1 hover:text-gray-700"
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleSort("Amount")}>
             Amount {getCurrencySymbol(currency)}
             {sortFilter === "Amount" ? (
-              sortDirection === "asc" ? (
+              sortDirection === SortOrder.ASC ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
                 <ArrowDown className="h-4 w-4" />
@@ -173,7 +167,7 @@ export default function PaymentsPage() {
             ) : (
               <ArrowUpDown className="h-4 w-4 opacity-50" />
             )}
-          </button>
+          </Button>
         ),
         accessor: "amount" as keyof Payment,
       },
@@ -200,34 +194,49 @@ export default function PaymentsPage() {
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="w-48">
               <label className="mb-2 block text-sm font-medium text-gray-700">Sort by</label>
-              <select
-                value={sortFilter}
-                onChange={(e) => {
-                  setSortFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                  backgroundPosition: "right 0.5rem center",
-                  backgroundRepeat: "no-repeat",
-                  backgroundSize: "1.5em 1.5em",
-                }}
+              <Dropdown
+                trigger={
+                  <>
+                    <span className="block truncate text-left">{sortFilter}</span>
+                    <ChevronDownIcon aria-hidden className="-mr-1 size-5 shrink-0 text-gray-400" />
+                  </>
+                }
+                buttonClassName="w-full justify-between"
+                panelClassName="w-48 min-w-full"
+                fullWidth
               >
-                <option>Amount</option>
-                <option>Date</option>
-                <option>Payment ID</option>
-              </select>
+                <Dropdown.Item
+                  onClick={() => {
+                    setSortFilter("Amount");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Amount
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setSortFilter("Date");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Date
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setSortFilter("Payment ID");
+                    setCurrentPage(1);
+                  }}
+                >
+                  Payment ID
+                </Dropdown.Item>
+              </Dropdown>
             </div>
             {hasActiveFilters && (
               <div className="flex items-end">
-                <button
-                  onClick={handleClearFilters}
-                  className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
+                <Button variant="outline" size="md" onClick={handleClearFilters}>
                   <X className="h-4 w-4" />
                   Clear Filters
-                </button>
+                </Button>
               </div>
             )}
           </div>

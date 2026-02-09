@@ -8,6 +8,7 @@ import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { sessionManager } from "@/utils/sessionManager";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { Button } from "@/components/ui/button";
 import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
 import { logger } from "@/utils/logger";
@@ -109,17 +110,19 @@ export default function AuthPage() {
 
             <div className="space-y-2">
               {accounts.map((account, index) => (
-                <button
+                <Button
                   key={index}
+                  type="button"
+                  variant="outline"
+                  size="xl"
                   onClick={() => handleAccountSelect(account)}
                   disabled={loading}
-                  className="group relative w-full overflow-hidden rounded-lg border border-gray-200 bg-white px-6 py-4 text-center text-base font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-giddh-primary/30 hover:bg-giddh-primary/5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                  className="group relative w-full overflow-hidden py-4"
                 >
-                  <span className="relative z-10 transition-colors group-hover:text-giddh-primary">
+                  <span className="relative z-10 transition-colors group-hover:text-indigo-700">
                     {account.account.name}
                   </span>
-                  <div className="absolute inset-0 -z-0 bg-gradient-to-r from-giddh-primary/0 via-giddh-primary/5 to-giddh-primary/0 opacity-0 transition-opacity group-hover:opacity-100" />
-                </button>
+                </Button>
               ))}
             </div>
 

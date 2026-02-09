@@ -42,8 +42,8 @@ export function UserDetailsCard() {
           <div className="py-4 text-center text-sm text-red-500">{error}</div>
         ) : data ? (
           <div className="space-y-3">
-            <div className="text-base font-semibold">{data.name || "N/A"}</div>
-            <div className="text-sm text-gray-600">{data.email || "N/A"}</div>
+            <div className="text-base font-semibold">{data.name ?? ""}</div>
+            <div className="text-sm text-gray-600">{data.email ?? ""}</div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Users className="h-4 w-4" />
               <span>{data.contacts?.length || 0} Contact Persons</span>

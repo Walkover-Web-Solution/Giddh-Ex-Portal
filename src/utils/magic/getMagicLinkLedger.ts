@@ -1,5 +1,8 @@
 import axios from "axios";
 import { getConfig } from "@/config";
+import { GIDDH_MAGIC_LINK_PATHS } from "@/constants/apiPaths";
+import { LedgerView, LedgerTransactionType } from "@/constants/ledger";
+import { SortOrder } from "@/constants/sort";
 
 export interface LedgerTransaction {
   particular: {
@@ -7,7 +10,7 @@ export interface LedgerTransaction {
     uniqueName: string;
   };
   amount: number;
-  type: "DEBIT" | "CREDIT";
+  type: LedgerTransactionType;
   entryDate: string;
   voucherNumber?: string;
   voucherName?: string;
@@ -24,7 +27,7 @@ export interface LedgerTransaction {
   closing?: {
     amount: number;
     convertedAmount?: number;
-    type: "DEBIT" | "CREDIT";
+    type: LedgerTransactionType;
   };
 }
 
@@ -39,7 +42,7 @@ export interface MagicLinkLedgerResponse {
     ledgersTransactions: {
       forwardedBalance?: {
         amount: number;
-        type: "DEBIT" | "CREDIT";
+        type: LedgerTransactionType;
         description?: string;
       };
       debitTransactions: LedgerTransaction[];
@@ -54,8 +57,8 @@ export interface MagicLinkLedgerResponse {
 
 export interface GetMagicLinkLedgerRequest {
   linkId: string;
-  sort?: "asc" | "desc";
-  viewMode?: "statement" | "t";
+  sort?: SortOrder;
+  viewMode?: LedgerView;
   from?: string;
   to?: string;
 }
@@ -65,26 +68,23 @@ export const getMagicLinkLedger = async (
 ): Promise<MagicLinkLedgerResponse> => {
   try {
     const config = getConfig();
-    const baseURL = config.GIDDH_API_URL;
-
-    const url = `${baseURL}/magic-link-ledger/${request.linkId}`;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
 
-    const params: Record<string, string> = {
-      sort: request.sort || "asc",
-      ledgerView: request.viewMode === "t" ? "T_VIEW" : "STATEMENT_VIEW",
-    };
-
-    // Add date parameters if provided
+    const queryParts: string[] = [
+      `sort=${encodeURIComponent(request.sort ?? SortOrder.ASC)}`,
+      `ledgerView=${encodeURIComponent(
+        request.viewMode === LedgerView.T_VIEW ? LedgerView.T_VIEW : LedgerView.STATEMENT_VIEW
+      )}`,
+    ];
     if (request.from) {
-      params.from = request.from;
+      queryParts.push(`from=${encodeURIComponent(request.from)}`);
     }
     if (request.to) {
-      params.to = request.to;
+      queryParts.push(`to=${encodeURIComponent(request.to)}`);
     }
+    const url = `${config.GIDDH_API_URL}${GIDDH_MAGIC_LINK_PATHS.ledger(request.linkId)}?${queryParts.join("&")}`;
 
     const response = await axios.get(url, {
-      params,
       headers: {
         accept: "application/json, text/plain, */*",
         "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
@@ -95,9 +95,16 @@ export const getMagicLinkLedger = async (
 
     return response.data as MagicLinkLedgerResponse;
   } catch (error: any) {
+    const data = error.response?.data;
+    const code = data?.code;
+    const apiMessage = data?.message;
+    const message =
+      code === "NOT_FOUND"
+        ? "Magic link not found. The link may be invalid or expired. Please request a new statement link from the account owner."
+        : apiMessage || "Failed to fetch ledger data";
     return {
       status: "error",
-      message: error.response?.data?.message || "Failed to fetch ledger data",
+      message,
     };
   }
 };

@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 
 export interface PaymentPreviewRequest {
   companyUniqueName: string;
@@ -37,7 +38,7 @@ export async function downloadPaymentVoucher(
   }
 
   const response = await apiClient.post(
-    `/portal/company/${encodeURIComponent(request.companyUniqueName)}/accounts/${encodeURIComponent(request.accountUniqueName)}/download-file?voucherVersion=2&fileType=base64`,
+    API_PATHS.downloadFile(request.companyUniqueName, request.accountUniqueName),
     [request.voucherUniqueName],
     { headers }
   );
@@ -51,7 +52,11 @@ export async function getPaymentList(request: PaymentPreviewRequest): Promise<Pa
   }
 
   const response = await apiClient.get(
-    `/portal/company/${encodeURIComponent(request.companyUniqueName)}/accounts/${encodeURIComponent(request.accountUniqueName)}/vouchers?type=receipt&page=1&count=10&uniqueNames=${request.voucherUniqueName}&voucherVersion=2`,
+    API_PATHS.paymentVouchersList(
+      request.companyUniqueName,
+      request.accountUniqueName,
+      request.voucherUniqueName
+    ),
     { headers }
   );
   return response.data;

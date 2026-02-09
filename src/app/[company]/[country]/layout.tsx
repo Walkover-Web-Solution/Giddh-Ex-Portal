@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -14,7 +14,8 @@ import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
 import SessionGuard from "@/components/SessionGuard";
-import { cn } from "@/lib/utils";
+import { mergeClassNames } from "@/lib/utils";
+import { getSessionCookie } from "@/utils/cookies";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
@@ -28,7 +29,17 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const gstin = userDetails?.addresses?.[0]?.gstNumber as string;
   const companyAddress = userDetails?.addresses?.[0]?.address as string;
 
-  if (isLoginPage || isAuthPage || isPreviewPage) {
+  const [showSidebarOnPreview, setShowSidebarOnPreview] = useState(false);
+
+  useEffect(() => {
+    if (isPreviewPage && companyName) {
+      setShowSidebarOnPreview(!!getSessionCookie(companyName));
+    }
+  }, [isPreviewPage, companyName]);
+
+  const hideSidebar = isLoginPage || isAuthPage || (isPreviewPage && !showSidebarOnPreview);
+
+  if (hideSidebar) {
     return <>{children}</>;
   }
 
@@ -36,7 +47,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col justify-between overflow-x-hidden bg-gray-50">
       <Sidebar />
       <main
-        className={cn(
+        className={mergeClassNames(
           "flex flex-1 flex-col transition-[margin-left] duration-300",
           isCollapsed ? "md:ml-20" : "md:ml-64"
         )}

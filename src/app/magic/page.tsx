@@ -10,10 +10,19 @@ import {
   Currency,
   ViewMode,
   CurrencyData,
+  Footer,
 } from "@/components/magic";
+import { LedgerView, type LedgerTransactionType } from "@/constants/ledger";
+import { SortOrder } from "@/constants/sort";
+import { isValid } from "date-fns";
+import { formatDateToAPI, parseDateFromAPI, parseTransactionDate } from "@/utils/dateUtils";
+import { buildFooterSummary } from "@/utils/magic/buildFooterSummary";
 import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
+import { getMagicLinkLedgerBalance } from "@/utils/magic/getMagicLinkLedgerBalance";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { Pagination } from "@/components/Pagination";
+import { PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 
 export default function Magic() {
@@ -21,7 +30,7 @@ export default function Magic() {
   const linkId = searchParams.get("id") || "";
 
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>("INR");
-  const [viewMode, setViewMode] = useState<ViewMode>("statement");
+  const [viewMode, setViewMode] = useState<ViewMode>(LedgerView.STATEMENT_VIEW);
   const [searchQuery, setSearchQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [companyName, setCompanyName] = useState("");
@@ -35,11 +44,16 @@ export default function Magic() {
   const [forwardedBalance, setForwardedBalance] = useState<
     | {
         amount: number;
-        type: "DEBIT" | "CREDIT";
+        type: LedgerTransactionType;
         description?: string;
       }
     | undefined
   >(undefined);
+  const [ledgerBalance, setLedgerBalance] =
+    useState<Awaited<ReturnType<typeof getMagicLinkLedgerBalance>>["body"]>(undefined);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
 
   // Date range state
   const today = new Date();
@@ -52,13 +66,6 @@ export default function Magic() {
   const isInitialMount = useRef(true);
   const prevFromDateRef = useRef<Date>(thirtyDaysAgo);
   const prevToDateRef = useRef<Date>(today);
-
-  const formatDateForAPI = (date: Date): string => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
 
   useEffect(() => {
     if (isUpdatingDatesFromAPI.current) {
@@ -84,9 +91,9 @@ export default function Magic() {
         const result = await getMagicLinkData(
           {
             linkId,
-            sort: "asc",
-            from: formatDateForAPI(fromDate),
-            to: formatDateForAPI(toDate),
+            sort: SortOrder.ASC,
+            from: formatDateToAPI(fromDate),
+            to: formatDateToAPI(toDate),
           },
           viewMode
         );
@@ -113,6 +120,13 @@ export default function Magic() {
           setCreditTransactions(apiCreditTransactions || []);
           setForwardedBalance(apiForwardedBalance);
 
+          const balanceRes = await getMagicLinkLedgerBalance({ linkId });
+          if (balanceRes.status === "success" && balanceRes.body) {
+            setLedgerBalance(balanceRes.body);
+          } else {
+            setLedgerBalance(undefined);
+          }
+
           // Set initial selected currency to transaction currency
           if (extractedCurrencyData.transactionCurrency) {
             setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
@@ -125,21 +139,10 @@ export default function Magic() {
             !hasSetDatesFromAPI.current &&
             isInitialMount.current
           ) {
-            const parseDateFromString = (dateStr: string): Date => {
-              const parts = dateStr.split("-");
-              if (parts.length === 3) {
-                const day = parseInt(parts[0], 10);
-                const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
-                const year = parseInt(parts[2], 10);
-                return new Date(year, month, day);
-              }
-              return new Date(dateStr);
-            };
+            const apiFromDate = parseDateFromAPI(dateRange.from);
+            const apiToDate = parseDateFromAPI(dateRange.to);
 
-            const apiFromDate = parseDateFromString(dateRange.from);
-            const apiToDate = parseDateFromString(dateRange.to);
-
-            if (!isNaN(apiFromDate.getTime()) && !isNaN(apiToDate.getTime())) {
+            if (isValid(apiFromDate) && isValid(apiToDate)) {
               isUpdatingDatesFromAPI.current = true;
               hasSetDatesFromAPI.current = true;
               setFromDate(apiFromDate);
@@ -157,6 +160,7 @@ export default function Magic() {
           setDebitTransactions([]);
           setCreditTransactions([]);
           setForwardedBalance(undefined);
+          setLedgerBalance(undefined);
         }
       } catch (err) {
         setError("Failed to load ledger data");
@@ -165,6 +169,7 @@ export default function Magic() {
         setDebitTransactions([]);
         setCreditTransactions([]);
         setForwardedBalance(undefined);
+        setLedgerBalance(undefined);
       } finally {
         setLoading(false);
       }
@@ -172,32 +177,6 @@ export default function Magic() {
 
     fetchMagicLinkData();
   }, [linkId, viewMode, fromDate.getTime(), toDate.getTime()]);
-
-  const parseTransactionDate = (dateString: string): Date => {
-    if (!dateString) return new Date();
-
-    const parts = dateString.split("-");
-    if (parts.length !== 3) {
-      const parsed = new Date(dateString);
-      return !isNaN(parsed.getTime())
-        ? new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate())
-        : new Date();
-    }
-
-    // Check if it's ISO format (YYYY-MM-DD)
-    if (parts[0].length === 4) {
-      return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-    }
-
-    // DD-MM-YY or DD-MM-YYYY format
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    let year = parseInt(parts[2], 10);
-
-    if (year < 100) year += 2000;
-
-    return new Date(year, month, day);
-  };
 
   const filteredTransactions = useMemo(() => {
     const searchValue = searchQuery.toLowerCase().trim();
@@ -299,6 +278,82 @@ export default function Magic() {
     });
   }, [creditTransactions, searchQuery]);
 
+  // Reset to first page when filters or view change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [linkId, viewMode, searchQuery, fromDate.getTime(), toDate.getTime()]);
+
+  const totalEntries = useMemo(() => {
+    if (viewMode === LedgerView.STATEMENT_VIEW) {
+      const count = filteredDebitCreditTransactions?.length ?? 0;
+      return (forwardedBalance ? 1 : 0) + count;
+    }
+    const debitLength = filteredDebitTransactions?.length ?? 0;
+    const creditLength = filteredCreditTransactions?.length ?? 0;
+    const txLength = filteredTransactions?.length ?? 0;
+    return Math.max(debitLength, creditLength, txLength);
+  }, [
+    viewMode,
+    forwardedBalance,
+    filteredDebitCreditTransactions?.length,
+    filteredDebitTransactions?.length,
+    filteredCreditTransactions?.length,
+    filteredTransactions?.length,
+  ]);
+
+  const paginatedStatementData = useMemo(() => {
+    if (viewMode !== LedgerView.STATEMENT_VIEW || !filteredDebitCreditTransactions) return null;
+    const list = filteredDebitCreditTransactions;
+    const hasForwarded = Boolean(forwardedBalance);
+    const start = currentPage === 1 ? 0 : (currentPage - 1) * itemsPerPage - (hasForwarded ? 1 : 0);
+    const end =
+      currentPage === 1
+        ? itemsPerPage - (hasForwarded ? 1 : 0)
+        : currentPage * itemsPerPage - (hasForwarded ? 1 : 0);
+    return list.slice(start, end);
+  }, [viewMode, filteredDebitCreditTransactions, forwardedBalance, currentPage, itemsPerPage]);
+
+  const paginatedTViewData = useMemo(() => {
+    if (viewMode !== LedgerView.T_VIEW) return null;
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = currentPage * itemsPerPage;
+    return {
+      transactions: filteredTransactions.slice(start, end),
+      debitTransactions: (filteredDebitTransactions ?? []).slice(start, end),
+      creditTransactions: (filteredCreditTransactions ?? []).slice(start, end),
+    };
+  }, [
+    viewMode,
+    filteredTransactions,
+    filteredDebitTransactions,
+    filteredCreditTransactions,
+    currentPage,
+    itemsPerPage,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalEntries / itemsPerPage));
+  const hasMultiplePages = totalEntries > itemsPerPage;
+
+  const summary = useMemo(
+    () =>
+      buildFooterSummary({
+        ledgerBalance,
+        forwardedBalance,
+        viewMode,
+        filteredDebitCreditTransactions,
+        filteredDebitTransactions,
+        filteredCreditTransactions,
+      }),
+    [
+      ledgerBalance,
+      forwardedBalance,
+      viewMode,
+      filteredDebitCreditTransactions,
+      filteredDebitTransactions,
+      filteredCreditTransactions,
+    ]
+  );
+
   const handlePrint = () => {
     window.print();
   };
@@ -360,29 +415,74 @@ export default function Magic() {
 
         <section className="mb-4 sm:mb-6">
           <LedgerTable
-            transactions={filteredTransactions}
+            transactions={
+              viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
+                ? paginatedTViewData.transactions
+                : filteredTransactions
+            }
             selectedCurrency={selectedCurrency}
             viewMode={viewMode}
             transactionCurrency={currencyData?.transactionCurrency}
             convertedCurrency={currencyData?.convertedCurrency}
             linkId={linkId}
             debitCreditTransactions={
-              filteredDebitCreditTransactions && filteredDebitCreditTransactions.length > 0
-                ? filteredDebitCreditTransactions
-                : undefined
+              viewMode === LedgerView.STATEMENT_VIEW && hasMultiplePages
+                ? (paginatedStatementData ?? undefined)
+                : filteredDebitCreditTransactions && filteredDebitCreditTransactions.length > 0
+                  ? filteredDebitCreditTransactions
+                  : undefined
             }
             debitTransactions={
-              filteredDebitTransactions && filteredDebitTransactions.length > 0
-                ? filteredDebitTransactions
-                : undefined
+              viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
+                ? paginatedTViewData.debitTransactions
+                : filteredDebitTransactions && filteredDebitTransactions.length > 0
+                  ? filteredDebitTransactions
+                  : undefined
             }
             creditTransactions={
-              filteredCreditTransactions && filteredCreditTransactions.length > 0
-                ? filteredCreditTransactions
+              viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
+                ? paginatedTViewData.creditTransactions
+                : filteredCreditTransactions && filteredCreditTransactions.length > 0
+                  ? filteredCreditTransactions
+                  : undefined
+            }
+            forwardedBalance={
+              viewMode === LedgerView.STATEMENT_VIEW && (!hasMultiplePages || currentPage === 1)
+                ? forwardedBalance
                 : undefined
             }
-            forwardedBalance={forwardedBalance}
+            pagination={
+              viewMode === LedgerView.T_VIEW && hasMultiplePages
+                ? {
+                    currentPage,
+                    totalPages,
+                    totalItems: totalEntries,
+                    itemsPerPage,
+                    onPageChange: setCurrentPage,
+                    onItemsPerPageChange: (size) => {
+                      setItemsPerPage(size);
+                      setCurrentPage(1);
+                    },
+                    pageSizeOptions: PAGE_SIZE_OPTIONS,
+                  }
+                : undefined
+            }
           />
+          {viewMode === LedgerView.STATEMENT_VIEW && hasMultiplePages && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalEntries}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={(size) => {
+                setItemsPerPage(size);
+                setCurrentPage(1);
+              }}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+            />
+          )}
+          <Footer summary={summary} companyCurrency={currencyData?.transactionCurrency} />
         </section>
       </main>
     </div>

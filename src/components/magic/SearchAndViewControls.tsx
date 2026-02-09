@@ -1,4 +1,12 @@
+import { LedgerView, LEDGER_VIEW_LABEL } from "@/constants/ledger";
+
+const LEDGER_VIEW_TOGGLE_LABEL: Record<LedgerView, string> = {
+  [LedgerView.STATEMENT_VIEW]: "Statement\u00A0View",
+  [LedgerView.T_VIEW]: "T View",
+};
 import { Currency, ViewMode, CurrencyInfo } from "./types";
+import { Input, InputGroup } from "@/components/ui/input";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 
 interface SearchAndViewControlsProps {
   searchQuery: string;
@@ -21,85 +29,106 @@ export function SearchAndViewControls({
   transactionCurrency,
   convertedCurrency,
 }: SearchAndViewControlsProps) {
-  // Determine if toggle should be shown (only if currencies are different)
-  const showCurrencyToggle =
-    transactionCurrency && convertedCurrency && transactionCurrency.code !== convertedCurrency.code;
+  const transactionCode = transactionCurrency?.code?.trim().toUpperCase();
+  const convertedCode = convertedCurrency?.code?.trim().toUpperCase();
+  const hasTwoDistinct = !!transactionCode && !!convertedCode && transactionCode !== convertedCode;
 
-  // Get available currencies for toggle
   const availableCurrencies =
-    transactionCurrency && convertedCurrency
+    transactionCurrency && convertedCurrency && hasTwoDistinct
       ? [
           { code: transactionCurrency.code, label: transactionCurrency.code },
           { code: convertedCurrency.code, label: convertedCurrency.code },
         ]
       : [];
+  const showCurrencyToggle = hasTwoDistinct && availableCurrencies.length === 2;
   return (
     <div className="w-full border-blue-900/20 bg-white">
       <div className="mx-auto max-w-7xl py-3 sm:py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <div className="relative w-full sm:max-w-xs">
-            <svg
-              className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-blue-900/60 sm:left-3 sm:h-4 sm:w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
+          <div className="w-full sm:max-w-xs">
+            <InputGroup
+              icon={<MagnifyingGlassIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-4.35-4.35m1.6-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+              <Input
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search transactions..."
+                aria-label="Search transactions"
               />
-            </svg>
-
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search transactions..."
-              className="w-full rounded-md border border-blue-900/30 py-1.5 pl-8 pr-3 text-xs text-blue-900 placeholder-blue-900/50 focus:border-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-900 sm:py-2 sm:pl-9 sm:text-sm"
-            />
+            </InputGroup>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {showCurrencyToggle && availableCurrencies.length > 0 && (
-              <div className="flex rounded-md bg-blue-900/5 p-0.5 sm:p-1">
-                {availableCurrencies.map((currency) => (
-                  <button
-                    key={currency.code}
-                    onClick={() => onCurrencyChange(currency.code)}
-                    className={`rounded-md px-2.5 py-1 text-xs font-medium transition sm:px-4 sm:py-1.5 sm:text-sm ${
-                      selectedCurrency === currency.code
-                        ? "bg-blue-900 text-white"
-                        : "text-blue-900"
-                    }`}
+            {showCurrencyToggle &&
+              (() => {
+                const currencySelectedIndex = availableCurrencies.findIndex(
+                  (c) => c.code === selectedCurrency
+                );
+                const segmentCount = availableCurrencies.length;
+                return (
+                  <div
+                    className="group relative inline-flex w-auto shrink-0 rounded-full bg-gray-200 p-0.5 shadow-inner outline-offset-2 outline-indigo-600 transition-colors duration-200 ease-in-out focus-within:outline-2 has-[:focus-visible]:outline-2"
+                    style={
+                      {
+                        "--segment-count": segmentCount,
+                        "--selected-index": currencySelectedIndex,
+                      } as React.CSSProperties
+                    }
                   >
-                    {currency.label}
-                  </button>
-                ))}
-              </div>
-            )}
+                    <span
+                      className="pointer-events-none absolute bottom-0.5 left-[0.125rem] top-0.5 w-[calc((100%-0.25rem)/var(--segment-count))] rounded-full bg-white transition-[transform] duration-200 ease-in-out"
+                      style={{
+                        transform: "translateX(calc(var(--selected-index) * 100%))",
+                      }}
+                      aria-hidden
+                    />
+                    {availableCurrencies.map((currency) => (
+                      <button
+                        key={currency.code}
+                        type="button"
+                        onClick={() => onCurrencyChange(currency.code)}
+                        aria-label={`Show amounts in ${currency.label}`}
+                        className="relative z-10 min-w-0 flex-1 rounded-full px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:outline-2 focus-visible:outline-indigo-600 sm:text-sm"
+                      >
+                        {currency.label}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
 
-            <div className="flex rounded-md bg-blue-900/5 p-0.5 sm:p-1">
-              {(
-                [
-                  { label: "Statement View", value: "statement" },
-                  { label: "T View", value: "t" },
-                ] as { label: string; value: ViewMode }[]
-              ).map((view) => (
-                <button
-                  key={view.value}
-                  onClick={() => onViewModeChange(view.value)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition sm:px-4 sm:py-1.5 sm:text-sm ${
-                    viewMode === view.value ? "bg-white text-blue-900 shadow-sm" : "text-blue-900"
-                  }`}
-                >
-                  <span className="hidden sm:inline">{view.label}</span>
-                  <span className="sm:hidden">
-                    {view.value === "statement" ? "Statement" : "T"}
-                  </span>
-                </button>
-              ))}
-            </div>
+            {(() => {
+              const ledgerValues = Object.values(LedgerView) as LedgerView[];
+              const viewChecked = viewMode === LedgerView.T_VIEW;
+              return (
+                <div className="group relative inline-flex w-auto min-w-[16rem] shrink-0 rounded-full bg-gray-200 p-0.5 shadow-inner outline-offset-2 outline-indigo-600 transition-colors duration-200 ease-in-out has-[:focus-visible]:outline-2">
+                  <span
+                    className="shadow-xs pointer-events-none absolute bottom-0.5 left-[0.125rem] top-0.5 w-[calc((100%-0.25rem)/2)] rounded-full bg-white ring-1 ring-gray-900/5 transition-transform duration-200 ease-in-out group-has-[:checked]:translate-x-full"
+                    aria-hidden
+                  />
+                  <input
+                    type="checkbox"
+                    checked={viewChecked}
+                    readOnly
+                    tabIndex={-1}
+                    aria-label="Toggle view"
+                    className="pointer-events-none absolute inset-0 size-full appearance-none focus:outline-none"
+                  />
+                  {ledgerValues.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => onViewModeChange(value)}
+                      aria-label={`View: ${LEDGER_VIEW_LABEL[value]}`}
+                      className={`relative z-10 flex-1 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:outline-2 focus-visible:outline-indigo-600 sm:px-3 sm:py-2 sm:text-sm ${
+                        value === LedgerView.STATEMENT_VIEW ? "min-w-[7.5rem]" : "min-w-0"
+                      }`}
+                    >
+                      {LEDGER_VIEW_TOGGLE_LABEL[value]}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

@@ -1,5 +1,14 @@
-import { LedgerTransaction } from "./getMagicLinkLedger";
+import {
+  BALANCE_TYPE_CR,
+  BALANCE_TYPE_DR,
+  DEFAULT_CLOSING_AMOUNT,
+  LEDGER_TYPE_CREDIT,
+  LEDGER_TYPE_DEBIT,
+  PARTICULAR_PREFIX_CREDIT,
+  PARTICULAR_PREFIX_DEBIT,
+} from "@/constants/ledger";
 import { Transaction } from "@/components/magic/types";
+import { LedgerTransaction } from "./getMagicLinkLedger";
 
 /**
  * Transforms a LedgerTransaction into a Transaction display format
@@ -13,20 +22,26 @@ import { Transaction } from "@/components/magic/types";
  * @param type - The transaction type (DEBIT or CREDIT)
  * @returns Formatted particular with prefix
  */
-export function formatParticularWithPrefix(particular: string, type: "DEBIT" | "CREDIT"): string {
-  if (type === "DEBIT") {
-    return `To ${particular}`;
-  } else {
-    return `By ${particular}`;
+export function formatParticularWithPrefix(
+  particular: string,
+  type: typeof LEDGER_TYPE_DEBIT | typeof LEDGER_TYPE_CREDIT
+): string {
+  if (type === LEDGER_TYPE_DEBIT) {
+    return `${PARTICULAR_PREFIX_DEBIT}${particular}`;
   }
+  return `${PARTICULAR_PREFIX_CREDIT}${particular}`;
 }
 
 export function transformLedgerTransactionToDisplay(
   tx: LedgerTransaction,
   includeOriginalTx: boolean = false
 ): Transaction & { tx?: LedgerTransaction } {
-  const isDebit = tx.type === "DEBIT";
-  const closing = tx.closing || { amount: 0, convertedAmount: 0, type: "DEBIT" as const };
+  const isDebit = tx.type === LEDGER_TYPE_DEBIT;
+  const closing = tx.closing || {
+    amount: DEFAULT_CLOSING_AMOUNT,
+    convertedAmount: DEFAULT_CLOSING_AMOUNT,
+    type: LEDGER_TYPE_DEBIT,
+  };
 
   const transaction: Transaction & { tx?: LedgerTransaction } = {
     date: tx.entryDate,
@@ -37,7 +52,7 @@ export function transformLedgerTransactionToDisplay(
     creditConverted: !isDebit && tx.convertedAmount ? tx.convertedAmount : null,
     closingBalance: closing.amount,
     closingBalanceConverted: closing.convertedAmount ?? closing.amount,
-    balanceType: closing.type === "DEBIT" ? "Dr" : "Cr",
+    balanceType: closing.type === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
     voucherGenerated: tx.voucherGenerated ?? false,
     voucherNumber: tx.voucherNumber,
     voucherName: tx.voucherName,

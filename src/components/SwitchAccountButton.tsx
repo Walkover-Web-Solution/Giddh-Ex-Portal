@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectAccountUniqueName } from "@/store/slices/companySlice";
 import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
+import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -12,8 +13,8 @@ import { ErrorMessage } from "@/components/ErrorMessage";
 import { logger } from "@/utils/logger";
 import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
-import { ChevronDown, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { mergeClassNames } from "@/lib/utils";
 
 export function SwitchAccountButton() {
   const params = useParams();
@@ -30,6 +31,13 @@ export function SwitchAccountButton() {
   const [fetchingAccounts, setFetchingAccounts] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isProcessing = useRef(false);
+
+  // Fetch accounts on mount to know if we should show the button (hide when single account)
+  useEffect(() => {
+    if (company) {
+      fetchAccounts();
+    }
+  }, [company]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -63,7 +71,7 @@ export function SwitchAccountButton() {
 
       const verifyResponse = await verifyPortalUser(email, company, proxyToken);
 
-      if (verifyResponse.status === "success" && verifyResponse.body?.length > 0) {
+      if (verifyResponse.status === ApiResponseStatus.SUCCESS && verifyResponse.body?.length > 0) {
         setAccounts(verifyResponse.body);
         if (verifyResponse.body.length === 1) {
           setError(null);
@@ -160,26 +168,38 @@ export function SwitchAccountButton() {
     }
   };
 
+  if (accounts.length === 1) {
+    return null;
+  }
+  if (fetchingAccounts && accounts.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative inline-block" ref={dropdownRef}>
       <button
         onClick={handleToggle}
         disabled={loading}
-        className={cn(
-          "flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50",
+        className={mergeClassNames(
+          "inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50",
           isOpen && "bg-gray-50"
         )}
       >
-        <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-        <span>Switch Account</span>
-        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+        <span className="text-xs sm:text-sm">Switch Account</span>
+        <ChevronDownIcon
+          aria-hidden
+          className={mergeClassNames(
+            "-mr-1 size-5 text-gray-400 transition-transform",
+            isOpen && "rotate-180"
+          )}
+        />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg">
-          <div className="p-2">
+        <div className="absolute right-0 z-10 mt-2 w-64 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none">
+          <div className="py-1">
             {error && (
-              <div className="mb-2">
+              <div className="px-4 py-2">
                 <ErrorMessage message={error} />
               </div>
             )}
@@ -189,7 +209,7 @@ export function SwitchAccountButton() {
                 <LoadingSpinner message="Loading accounts..." fullScreen={false} />
               </div>
             ) : accounts.length > 0 ? (
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {accounts.map((account, index) => {
                   const isCurrentAccount =
                     account.account.uniqueName === currentAccountUniqueName ||
@@ -202,29 +222,31 @@ export function SwitchAccountButton() {
                       key={index}
                       onClick={() => handleAccountSelect(account)}
                       disabled={loading || isCurrentAccount}
-                      className={cn(
-                        "w-full rounded-md px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                      className={mergeClassNames(
+                        "block w-full px-4 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50",
                         isCurrentAccount
-                          ? "bg-blue-50 font-medium text-blue-700"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-indigo-50 font-medium text-indigo-700"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none"
                       )}
                     >
                       <div className="flex items-center justify-between">
                         <span>{account.account.name}</span>
-                        {isCurrentAccount && <span className="text-xs text-blue-600">Current</span>}
+                        {isCurrentAccount && (
+                          <span className="text-xs text-indigo-600">Current</span>
+                        )}
                       </div>
                     </button>
                   );
                 })}
               </div>
             ) : (
-              <div className="py-4 text-center text-sm text-gray-500">
+              <div className="px-4 py-4 text-center text-sm text-gray-500">
                 {error ? "Error loading accounts" : "No accounts available"}
               </div>
             )}
 
             {loading && (
-              <div className="mt-2">
+              <div className="border-t border-gray-100 px-4 py-2">
                 <LoadingSpinner message="Switching account..." fullScreen={false} />
               </div>
             )}

@@ -1,7 +1,19 @@
+import { LedgerView } from "@/constants/ledger";
 import { Transaction, Currency, ViewMode, CurrencyInfo } from "./types";
 import { StatementViewTable } from "./StatementViewTable";
 import { TAccountViewTable } from "./TAccountViewTable";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
+import { Pagination } from "@/components/Pagination";
+
+export interface LedgerTablePaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (size: number) => void;
+  pageSizeOptions?: number[];
+}
 
 interface LedgerTableProps {
   transactions: Transaction[];
@@ -18,6 +30,7 @@ interface LedgerTableProps {
     type: "DEBIT" | "CREDIT";
     description?: string;
   };
+  pagination?: LedgerTablePaginationProps;
 }
 
 export function LedgerTable({
@@ -31,8 +44,9 @@ export function LedgerTable({
   debitTransactions,
   creditTransactions,
   forwardedBalance,
+  pagination,
 }: LedgerTableProps) {
-  if (viewMode === "statement") {
+  if (viewMode === LedgerView.STATEMENT_VIEW) {
     return (
       <StatementViewTable
         selectedCurrency={selectedCurrency}
@@ -46,14 +60,27 @@ export function LedgerTable({
   }
 
   return (
-    <TAccountViewTable
-      transactions={transactions}
-      selectedCurrency={selectedCurrency}
-      debitTransactions={debitTransactions}
-      creditTransactions={creditTransactions}
-      transactionCurrency={transactionCurrency}
-      convertedCurrency={convertedCurrency}
-      linkId={linkId}
-    />
+    <div className="flow-root">
+      <TAccountViewTable
+        transactions={transactions}
+        selectedCurrency={selectedCurrency}
+        debitTransactions={debitTransactions}
+        creditTransactions={creditTransactions}
+        transactionCurrency={transactionCurrency}
+        convertedCurrency={convertedCurrency}
+        linkId={linkId}
+      />
+      {pagination && (
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.totalItems}
+          itemsPerPage={pagination.itemsPerPage}
+          onPageChange={pagination.onPageChange}
+          onItemsPerPageChange={pagination.onItemsPerPageChange}
+          pageSizeOptions={pagination.pageSizeOptions}
+        />
+      )}
+    </div>
   );
 }

@@ -1,4 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
+import { DEFAULT_PAGE, PAGINATION_LIMIT } from "@/constants";
 
 export interface InvoiceVoucher {
   uniqueName: string;
@@ -42,15 +44,15 @@ export default async function getInvoiceList({
   companyUniqueName,
   accountUniqueName,
   type = "sales",
-  page = 1,
-  count = 100,
+  page = DEFAULT_PAGE,
+  count = PAGINATION_LIMIT,
   sort = "",
   sortBy = "voucherDate",
   balanceStatus = [],
   uniqueNames = [],
 }: GetInvoiceListParams): Promise<InvoiceListResponse> {
   const response = await apiClient.post(
-    `/portal/company/${companyUniqueName}/accounts/${accountUniqueName}/vouchers/get-all`,
+    API_PATHS.vouchersGetAll(companyUniqueName, accountUniqueName),
     {
       companyUniqueName,
       accountUniqueName,

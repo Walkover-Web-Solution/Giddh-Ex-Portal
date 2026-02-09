@@ -1,4 +1,5 @@
 import axios from "axios";
+import { PROXY_API_PATHS } from "@/constants/apiPaths";
 import { getConfig } from "@/config";
 
 interface SaveSessionRequest {
@@ -39,12 +40,7 @@ export const savePortalSession = async (
     subDomain,
   };
 
-  const response = await axios.post<SaveSessionResponse>(
-    `${baseUrl}/v2/portal-user/save-session`,
-    requestBody
-  );
-
-  console.log("⚡️ ~ savePortalSession ~ response:", response.data);
-
+  const url = `${baseUrl}/${PROXY_API_PATHS.SAVE_SESSION}`;
+  const response = await axios.post<SaveSessionResponse>(url, requestBody);
   return response.data;
 };

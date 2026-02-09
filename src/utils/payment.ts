@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
 
 export enum PAYMENT_METHODS_ENUM {
   RAZORPAY = "RAZORPAY",
@@ -82,7 +83,7 @@ export async function getPaymentMethods(
   }
 
   const response = await apiClient.get(
-    `/portal/company/${request.companyUniqueName}/accounts/${request.accountUniqueName}/payment-methods?voucherVersion=2`,
+    API_PATHS.paymentMethods(request.companyUniqueName, request.accountUniqueName),
     { headers }
   );
   return response.data;
@@ -110,7 +111,7 @@ export async function getVoucherPaymentDetails(
   }
 
   const response = await apiClient.post(
-    `/portal/company/${request.companyUniqueName}/accounts/${request.accountUniqueName}/invoice-pay-request?voucherVersion=2`,
+    API_PATHS.invoicePayRequest(request.companyUniqueName, request.accountUniqueName),
     payload,
     { headers }
   );
@@ -126,7 +127,7 @@ export async function updatePaymentStatus(
   };
 
   const response = await apiClient.post(
-    `/portal/company/${request.companyUniqueName}/accounts/${request.accountUniqueName}/invoices/${request.paymentId}/pay?voucherVersion=2`,
+    API_PATHS.invoicePay(request.companyUniqueName, request.accountUniqueName, request.paymentId),
     payload,
     { headers }
   );

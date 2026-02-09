@@ -1,6 +1,6 @@
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="overflow-hidden rounded-lg border bg-white">
+    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
       <div className="border-b bg-gray-50 p-4">
         <div className="flex gap-4">
           {[1, 2, 3, 4, 5].map((i) => (

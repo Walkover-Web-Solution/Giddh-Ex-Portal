@@ -2,7 +2,8 @@
 
 import { Menu } from "lucide-react";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { mergeClassNames } from "@/lib/utils";
 
 interface SidebarToggleButtonProps {
   className?: string;
@@ -12,18 +13,17 @@ export function SidebarToggleButton({ className }: SidebarToggleButtonProps) {
   const { isMobileOpen, openMobile } = useSidebar();
 
   return (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
       onClick={openMobile}
-      className={cn(
-        "rounded-md p-2 text-gray-700 transition-colors hover:bg-gray-100 md:hidden",
-        className
-      )}
+      className={mergeClassNames("md:hidden", className)}
       aria-controls="app-sidebar"
       aria-expanded={isMobileOpen}
       aria-label="Open sidebar"
-      type="button"
     >
       <Menu className="h-5 w-5" />
-    </button>
+    </Button>
   );
 }

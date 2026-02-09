@@ -12,8 +12,12 @@ import {
   PaymentDetailsResponse,
   PaymentMethodsResponse,
 } from "@/utils/payment";
+import { formatDateToAPI } from "@/utils/dateUtils";
 import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
+import { useToast } from "@/contexts/ToastContext";
+import { ApiResponseStatus } from "@/utils/proxy/types";
+import { Button } from "@/components/ui/button";
 
 interface PayNowProps {
   invoiceUniqueName: string;
@@ -46,6 +50,7 @@ export function PayNow({
 }: PayNowProps) {
   const params = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsResponse | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PAYMENT_METHODS_ENUM | null>(null);
@@ -96,31 +101,35 @@ export function PayNow({
         sessionId: sessionId || undefined,
       });
 
-      if (response.status === "success" && response.body) {
+      if (response && response.status === ApiResponseStatus.SUCCESS && response.body) {
         setPaymentMethods(response.body);
 
-        const hasAnyMethod = response.body.RAZORPAY || response.body.PAYPAL || response.body.PAYU;
-
+        const hasAnyMethod = Boolean(
+          response.body.RAZORPAY || response.body.PAYPAL || response.body.PAYU
+        );
         if (!hasAnyMethod) {
           setShowNoMethodsError(true);
           return null;
         }
 
-        if (response.body.RAZORPAY) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
-          return PAYMENT_METHODS_ENUM.RAZORPAY;
-        } else if (response.body.PAYPAL) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.PAYPAL);
-          return PAYMENT_METHODS_ENUM.PAYPAL;
-        } else if (response.body.PAYU) {
-          setSelectedMethod(PAYMENT_METHODS_ENUM.PAYU);
-          return PAYMENT_METHODS_ENUM.PAYU;
+        switch (true) {
+          case Boolean(response.body.RAZORPAY):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
+            return PAYMENT_METHODS_ENUM.RAZORPAY;
+          case Boolean(response.body.PAYPAL):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.PAYPAL);
+            return PAYMENT_METHODS_ENUM.PAYPAL;
+          case Boolean(response.body.PAYU):
+            setSelectedMethod(PAYMENT_METHODS_ENUM.PAYU);
+            return PAYMENT_METHODS_ENUM.PAYU;
+          default:
+            return null;
         }
       }
       return null;
     } catch (error) {
       logger.error("Error loading payment methods", error);
-      alert("Failed to load payment methods. Please try again.");
+      showToast("Failed to load payment methods. Please try again.", "error");
       return null;
     }
   };
@@ -132,7 +141,7 @@ export function PayNow({
 
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
     if (!companyUniqueName || !accountUniqueName) {
-      alert("Missing company or account information");
+      showToast("Missing company or account information", "error");
       setIsProcessing(false);
       return;
     }
@@ -212,15 +221,15 @@ export function PayNow({
 
       const response = await getVoucherPaymentDetails(request);
 
-      if (response.status === "success" && response.body) {
+      if (response.status === ApiResponseStatus.SUCCESS && response.body) {
         initializePaymentGateway(response.body);
       } else {
-        alert("Failed to initialize payment");
+        showToast("Failed to initialize payment", "error");
         setIsProcessing(false);
       }
     } catch (error) {
       logger.error("Error processing payment", error);
-      alert("Failed to process payment. Please try again.");
+      showToast("Failed to process payment. Please try again.", "error");
       setIsProcessing(false);
     }
   };
@@ -241,7 +250,7 @@ export function PayNow({
 
   const initializeRazorpay = (paymentDetails: PaymentDetailsResponse) => {
     if (!window.Razorpay) {
-      alert("Razorpay SDK not loaded");
+      showToast("Razorpay SDK not loaded", "error");
       setIsProcessing(false);
       return;
     }
@@ -273,7 +282,7 @@ export function PayNow({
     if (!companyUniqueName || !accountUniqueName) return;
 
     const today = new Date();
-    const date = `${String(today.getDate()).padStart(2, "0")}-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()}`;
+    const date = formatDateToAPI(today);
 
     try {
       const response = await updatePaymentStatus(
@@ -290,13 +299,13 @@ export function PayNow({
         }
       );
 
-      if (response.status === "success") {
-        alert("Payment successful!");
+      if (response.status === ApiResponseStatus.SUCCESS) {
+        showToast("Payment successful!", "success");
         onSuccess?.();
       }
     } catch (error) {
       logger.error("Error updating payment status", error);
-      alert("Payment completed but status update failed");
+      console.log("paymentKey is missing in the api response", error);
     }
   };
 
@@ -341,8 +350,8 @@ export function PayNow({
         }
       );
 
-      if (response.status === "success") {
-        alert("Payment successful!");
+      if (response.status === ApiResponseStatus.SUCCESS) {
+        showToast("Payment successful!", "success");
         onSuccess?.();
       }
     } catch (error) {
@@ -352,7 +361,7 @@ export function PayNow({
 
   const handlePayuFormSubmit = () => {
     if (!payuDetails.name || !payuDetails.email || !payuDetails.contactNo) {
-      alert("Please fill all fields");
+      showToast("Please fill all fields", "error");
       return;
     }
     setShowPayuForm(false);
@@ -366,30 +375,27 @@ export function PayNow({
     return null;
   }
 
-  const sizeClasses = {
-    sm: "px-3 py-1 text-xs",
-    md: "px-4 py-2 text-sm",
-    lg: "px-6 py-3 text-base",
-  };
-
   return (
     <>
       {variant === "link" ? (
-        <button
+        <Button
+          variant="link"
+          size={size === "lg" ? "lg" : size === "sm" ? "sm" : "md"}
           onClick={handlePayNow}
           disabled={isProcessing}
-          className={`font-medium text-green-600 hover:text-green-800 hover:underline disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+          className={className}
         >
           {isProcessing ? "Processing..." : "Pay Now"}
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
+          size={size === "lg" ? "lg" : size === "sm" ? "sm" : "md"}
           onClick={handlePayNow}
           disabled={isProcessing}
-          className={`rounded-md bg-green-600 font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${sizeClasses[size]} ${className}`}
+          className={className}
         >
           {isProcessing ? "Processing..." : "Pay Now"}
-        </button>
+        </Button>
       )}
 
       {showNoMethodsError && (
@@ -420,9 +426,13 @@ export function PayNow({
                   support to enable payment options.
                 </p>
               </div>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowNoMethodsError(false)}
-                className="ml-4 inline-flex flex-shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none"
+                className="ml-4 shrink-0 text-gray-400 hover:text-gray-600"
+                aria-label="Close"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                   <path
@@ -431,7 +441,7 @@ export function PayNow({
                     clipRule="evenodd"
                   />
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -474,18 +484,17 @@ export function PayNow({
                 />
               </div>
               <div className="flex gap-3">
-                <button
-                  onClick={handlePayuFormSubmit}
-                  className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
+                <Button size="lg" onClick={handlePayuFormSubmit} className="flex-1">
                   Proceed to Payment
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
                   onClick={() => setShowPayuForm(false)}
-                  className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -12,6 +12,8 @@ import {
 } from "@/utils/paymentPreview";
 import { ArrowLeft, Download, Printer } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function PaymentPreviewPage() {
   const params = useParams();
@@ -22,6 +24,8 @@ export default function PaymentPreviewPage() {
   const companyName = params?.company as string;
   const country = params?.country as string;
   const voucherUniqueName = searchParams.get("voucher") || "";
+  const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
+  const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
@@ -30,6 +34,7 @@ export default function PaymentPreviewPage() {
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [paymentVoucher, setPaymentVoucher] = useState<PaymentVoucher | null>(null);
   const [error, setError] = useState<string>("");
+  const { showToast } = useToast();
 
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -52,20 +57,34 @@ export default function PaymentPreviewPage() {
       }
     }
 
+    if (!companyUniqueName) companyUniqueName = companyUniqueNameFromUrl;
+    if (!accountUniqueName) accountUniqueName = accountUniqueNameFromUrl;
+
     return { companyUniqueName, accountUniqueName };
   };
 
   useEffect(() => {
-    if (voucherUniqueName) {
-      const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
-      if (companyUniqueName && accountUniqueName) {
-        loadPaymentData(companyUniqueName, accountUniqueName);
-      } else {
-        setError("Missing company or account information. Please log in again.");
-        setIsLoading(false);
-      }
+    if (!voucherUniqueName) {
+      setError("No payment specified.");
+      setIsLoading(false);
+      return;
     }
-  }, [voucherUniqueName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
+    if (companyUniqueName && accountUniqueName) {
+      setError("");
+      loadPaymentData(companyUniqueName, accountUniqueName);
+    } else {
+      setError("Missing company or account information. Please log in again.");
+      setIsLoading(false);
+    }
+  }, [
+    voucherUniqueName,
+    companyUniqueNameFromUrl,
+    accountUniqueNameFromUrl,
+    companyUniqueNameFromRedux,
+    accountUniqueNameFromRedux,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -106,8 +125,8 @@ export default function PaymentPreviewPage() {
       if (paymentListResponse.status === "success" && paymentListResponse.body.items.length > 0) {
         setPaymentVoucher(paymentListResponse.body.items[0]);
       }
-    } catch (error) {
-      console.error("Error loading payment data:", error);
+    } catch (err) {
+      console.error("Error loading payment data:", err);
       setError("An error occurred while loading the payment voucher. Please try again.");
     } finally {
       setIsLoading(false);
@@ -140,7 +159,7 @@ export default function PaymentPreviewPage() {
       }
     } catch (error) {
       console.error("Error downloading payment voucher:", error);
-      alert("Failed to download payment voucher");
+      showToast("Failed to download payment voucher", "error");
     }
   };
 
@@ -170,12 +189,9 @@ export default function PaymentPreviewPage() {
           {error ? (
             <div className="text-center">
               <p className="mb-4 text-red-600">{error}</p>
-              <button
-                onClick={handleBack}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
+              <Button size="lg" onClick={handleBack}>
                 Back to Payments
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
@@ -193,29 +209,20 @@ export default function PaymentPreviewPage() {
             <div className="flex items-center gap-2">
               <SidebarToggleButton />
 
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800"
-              >
+              <Button variant="link" size="sm" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sm:inline">Back</span>
-              </button>
+              </Button>
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={handlePrint}
-                className="flex flex-1 items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 md:flex-none"
-              >
+              <Button variant="outline" size="lg" onClick={handlePrint}>
                 <Printer className="h-4 w-4" />
                 <span className="sm:inline">Print</span>
-              </button>
-              <button
-                onClick={handleDownload}
-                className="flex flex-1 items-center justify-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 md:flex-none"
-              >
+              </Button>
+              <Button variant="outline" size="lg" onClick={handleDownload}>
                 <Download className="h-4 w-4" />
                 <span className="sm:inline">Download</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -224,13 +231,15 @@ export default function PaymentPreviewPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl">
           {pdfUrl ? (
-            <div className="rounded-lg border bg-white p-4">
-              <iframe
-                ref={pdfContainerRef}
-                src={pdfUrl}
-                className="h-[800px] w-full"
-                title="Payment Voucher PDF"
-              />
+            <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <iframe
+                  ref={pdfContainerRef}
+                  src={pdfUrl}
+                  className="h-[800px] w-full"
+                  title="Payment Voucher PDF"
+                />
+              </div>
             </div>
           ) : (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-red-600">

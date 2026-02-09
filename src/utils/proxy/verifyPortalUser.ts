@@ -1,21 +1,7 @@
 import axios from "axios";
+import { PROXY_API_PATHS } from "@/constants/apiPaths";
+import type { VerifyPortalUserResponse } from "./types";
 import { getConfig } from "@/config";
-
-interface VerifyPortalUserResponse {
-  status: string;
-  body: Array<{
-    email: string;
-    account: {
-      name: string;
-      uniqueName: string;
-    };
-    vendorContactUniqueName: string;
-    companyUniqueName: string;
-    session?: {
-      id: string;
-    };
-  }>;
-}
 
 export const verifyPortalUser = async (
   emailId: string,
@@ -24,9 +10,10 @@ export const verifyPortalUser = async (
 ): Promise<VerifyPortalUserResponse> => {
   const config = getConfig();
   const baseUrl = config.API_URL.replace(/\/$/, "");
+  const url = `${baseUrl}/${PROXY_API_PATHS.VERIFY_PORTAL_USER}`;
 
   const response = await axios.post<VerifyPortalUserResponse>(
-    `${baseUrl}/v2/verify-portal-user`,
+    url,
     {
       emailId,
       subDomain,
@@ -37,8 +24,6 @@ export const verifyPortalUser = async (
       },
     }
   );
-
-  console.log("⚡️ ~ verifyPortalUser ~ response:", response.data);
 
   return response.data;
 };

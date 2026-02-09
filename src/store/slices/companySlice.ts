@@ -1,10 +1,14 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
+import { API_PATHS } from "@/constants/apiPaths";
+import { PAGINATION_LIMIT } from "@/constants";
+import { SortOrder } from "@/constants/sort";
 import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
 import getAccountsList, { Account } from "@/utils/getAccountsList";
 import getLastPayment, { PaymentVoucher } from "@/utils/getLastPayment";
-import getCompanyDetails, { UserCompanyData } from "@/utils/getCompanyDetails";
+import { UserCompanyData } from "@/types/company";
+import getCompanyDetails from "@/utils/getCompanyDetails";
 import getInvoiceList, { InvoiceVoucher } from "@/utils/getInvoiceList";
 
 interface Currency {
@@ -196,7 +200,7 @@ export const fetchBalanceSummary = createAsyncThunk(
     uniqueName: string;
   }) => {
     const response = await apiClient.get(
-      `/portal/company/${companyUniqueName}/accounts/${uniqueName}/vouchers/balance-summary`,
+      API_PATHS.vouchersBalanceSummary(companyUniqueName, uniqueName),
       {
         params: {
           voucherVersion: 2,
@@ -246,7 +250,7 @@ export const fetchAllPayments = createAsyncThunk(
       accountUniqueName,
       type: "receipt",
       page: 1,
-      count: 100,
+      count: PAGINATION_LIMIT,
     });
     return { companyName, data: response.body.items || [] };
   },
@@ -275,9 +279,9 @@ export const fetchAllInvoices = createAsyncThunk(
       accountUniqueName,
       type: "sales",
       page: 1,
-      count: 100,
+      count: PAGINATION_LIMIT,
       sortBy: "voucherDate",
-      sort: "desc",
+      sort: SortOrder.DESC,
     });
     return { companyName, data: response.body.items || [] };
   },
