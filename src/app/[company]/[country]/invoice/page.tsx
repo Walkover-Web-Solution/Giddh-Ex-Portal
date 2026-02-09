@@ -67,15 +67,6 @@ export default function InvoicesPage() {
     }
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
 
-  const calculateOverdue = (dueDate: string): string => {
-    if (!dueDate) return "";
-    const due = new Date(dueDate);
-    const today = new Date();
-    const diffTime = today.getTime() - due.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? `Overdue by: ${diffDays} days` : "-";
-  };
-
   const handleInvoiceClick = (invoiceUniqueName: string) => {
     router.push(`/${companyName}/${country}/invoice/preview?voucher=${invoiceUniqueName}`);
   };
@@ -150,7 +141,7 @@ export default function InvoicesPage() {
           decimals: 0,
         }),
         status: invoice.balanceStatus?.toUpperCase() || "UNPAID",
-        overdue: invoice.balanceStatus !== "paid" ? calculateOverdue(invoice.dueDate) : "",
+        overdue: invoice.balanceStatus !== "paid" ? (invoice.overdueDays ?? "") : "",
       })),
     [allInvoices, currency]
   );
