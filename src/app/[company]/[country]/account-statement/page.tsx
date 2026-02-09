@@ -330,7 +330,11 @@ export default function AccountStatementPage() {
                     toDate={toDate}
                     onFromDateChange={handleFromDateChange}
                     onToDateChange={handleToDateChange}
+                    openDirection="top"
+                    position="left"
+                    compact
                   />
+
                   <Dropdown
                     trigger={
                       <>

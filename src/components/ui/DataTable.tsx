@@ -93,10 +93,10 @@ export function DataTable<T>({
                       key={index}
                       scope="col"
                       className={mergeClassNames(
-                        "py-3.5 text-left text-sm font-semibold text-gray-900",
+                        "whitespace-nowrap py-3.5 text-left text-sm font-semibold text-gray-900",
                         isFirst && "pl-4 pr-3 sm:pl-6",
                         !isFirst && !isLast && "px-3 py-3.5",
-                        isLast && "py-3.5 pl-3 pr-4 sm:pr-6",
+                        isLast && "py-3.5 pl-3 pr-4 text-center sm:pr-6",
                         column.headerClassName
                       )}
                     >

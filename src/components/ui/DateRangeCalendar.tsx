@@ -67,6 +67,16 @@ export interface DateRangeCalendarProps {
    * @default "w-[320px] sm:w-[360px]"
    */
   calendarWidth?: string;
+  /**
+   * Where the calendar popover opens relative to the trigger
+   * @default "bottom"
+   */
+  openDirection?: "top" | "bottom";
+  /**
+   * Use smaller spacing and cell size (very small / compact mode)
+   * @default false
+   */
+  compact?: boolean;
 }
 
 export function DateRangeCalendar({
@@ -82,7 +92,9 @@ export function DateRangeCalendar({
   minDate,
   maxDate,
   position = "right",
-  calendarWidth = "w-[calc(100vw-2rem)] max-w-[360px]",
+  calendarWidth = "w-[min(320px,calc(100vw-1rem))] max-w-[310px]",
+  openDirection = "bottom",
+  compact = false,
 }: DateRangeCalendarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(fromDate);
@@ -241,10 +253,12 @@ export function DateRangeCalendar({
   };
 
   const positionClasses = {
-    left: "left-0",
-    right: "right-0 sm:left-auto sm:right-0 left-1/2 -translate-x-1/2 sm:translate-x-0",
+    left: "left-[-20]",
+    right: "left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-0",
     center: "left-1/2 -translate-x-1/2",
   };
+
+  const directionClass = openDirection === "top" ? "bottom-full mb-2" : "top-full mt-2";
 
   const dateRangeFormatted = formatDateRange();
 
@@ -281,7 +295,7 @@ export function DateRangeCalendar({
 
       {isOpen && (
         <div
-          className={`absolute ${positionClasses[position]} top-full z-50 mt-2 ${calendarWidth} rounded-lg bg-white p-4 shadow-lg ring-1 ring-gray-200`}
+          className={`absolute ${positionClasses[position]} ${directionClass} z-50 ${calendarWidth} max-w-[calc(100vw-1rem)] rounded-lg bg-white ${compact ? "p-3" : "p-4"} shadow-lg ring-1 ring-gray-200`}
         >
           <div className="text-center">
             <div className="flex items-center text-gray-900">
@@ -305,7 +319,7 @@ export function DateRangeCalendar({
               </button>
             </div>
 
-            <div className="mt-6 grid grid-cols-7 text-xs font-medium leading-6 text-gray-500">
+            <div className="mt-3 grid grid-cols-7 text-[10px] font-medium leading-5 text-gray-500 sm:mt-6 sm:text-xs sm:leading-6">
               <div>S</div>
               <div>M</div>
               <div>T</div>
@@ -329,7 +343,7 @@ export function DateRangeCalendar({
                     type="button"
                     onClick={() => handleDateClick(day)}
                     disabled={!isCurrentMonth || isDisabled}
-                    className={`relative h-10 bg-white text-sm disabled:cursor-not-allowed disabled:text-gray-400 ${
+                    className={`relative h-7 bg-white text-xs disabled:cursor-not-allowed disabled:text-gray-400 sm:h-10 sm:text-sm ${
                       isCurrentMonth && !isDisabled ? "hover:bg-gray-50" : ""
                     }`}
                     aria-label={
@@ -360,7 +374,7 @@ export function DateRangeCalendar({
                     <time
                       dateTime={format(day, "yyyy-MM-dd")}
                       className={[
-                        "relative z-10 mx-auto flex h-7 w-7 items-center justify-center rounded-full",
+                        "relative z-10 mx-auto flex h-3 w-3 items-center justify-center rounded-full text-[11px] sm:h-7 sm:w-7 sm:text-xs",
                         (isStart || isEnd) && "bg-blue-900 font-semibold text-white",
                       ]
                         .filter(Boolean)
@@ -374,7 +388,7 @@ export function DateRangeCalendar({
             </div>
 
             {quickActionButtons.length > 0 && (
-              <div className="mt-4 flex max-h-24 flex-wrap gap-2 overflow-y-auto border-t border-gray-100 pt-3">
+              <div className="mt-3 flex max-h-16 flex-wrap gap-1.5 overflow-y-auto border-t border-gray-100 pt-2 sm:mt-4 sm:max-h-24 sm:gap-2 sm:pt-3">
                 {quickActionButtons.map((action, idx) => {
                   const selected = isQuickActionSelected(action);
                   return (
@@ -387,7 +401,7 @@ export function DateRangeCalendar({
                         setTempToDate(to);
                         setSelecting("from");
                       }}
-                      className={`rounded-md px-2.5 py-1.5 text-sm font-semibold shadow-sm transition-colors ${
+                      className={`rounded-md px-2 py-1 text-[11px] font-semibold shadow-sm transition-colors sm:text-xs ${
                         selected
                           ? "bg-blue-900 text-white ring-1 ring-blue-900 hover:bg-blue-800"
                           : "bg-white text-blue-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
@@ -405,7 +419,7 @@ export function DateRangeCalendar({
                 type="button"
                 onClick={handleApply}
                 disabled={!isBothDatesSelected}
-                className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:py-2 sm:text-sm ${
                   isBothDatesSelected
                     ? "bg-blue-900 text-white hover:bg-blue-800"
                     : "cursor-not-allowed bg-gray-200 text-gray-400"

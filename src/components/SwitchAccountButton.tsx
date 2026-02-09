@@ -14,7 +14,6 @@ import { logger } from "@/utils/logger";
 import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { RefreshCw } from "lucide-react";
 import { mergeClassNames } from "@/lib/utils";
 
 export function SwitchAccountButton() {
@@ -186,8 +185,7 @@ export function SwitchAccountButton() {
           isOpen && "bg-gray-50"
         )}
       >
-        <RefreshCw className={mergeClassNames("size-5 shrink-0", loading && "animate-spin")} />
-        <span>Switch Account</span>
+        <span className="text-xs sm:text-sm">Switch Account</span>
         <ChevronDownIcon
           aria-hidden
           className={mergeClassNames(
