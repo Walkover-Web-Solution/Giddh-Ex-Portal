@@ -13,7 +13,7 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     // Skip check for public routes
-    const publicRoutes = ["/auth", "/login", "/invoice/preview", "/payment/preview"];
+    const publicRoutes = ["/auth", "/login", "/invoice/preview", "/payment/preview", "/invoice-pay"];
     const isPublicRoute = publicRoutes.some((route) => pathname?.includes(route));
 
     if (isPublicRoute) {

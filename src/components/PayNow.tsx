@@ -255,6 +255,12 @@ export function PayNow({
       return;
     }
 
+    if (!paymentDetails.paymentKey?.trim()) {
+      showToast("Payment key not received. Please contact support.", "error");
+      setIsProcessing(false);
+      return;
+    }
+
     const options = {
       key: paymentDetails.paymentKey,
       order_id: paymentDetails.orderId,

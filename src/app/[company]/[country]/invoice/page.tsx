@@ -29,6 +29,7 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortOrder } from "@/constants/sort";
 import type { Invoice, InvoiceSortColumn } from "./types";
+import { InvoiceBalanceStatus } from "./types";
 
 export default function InvoicesPage() {
   const params = useParams();
@@ -78,7 +79,7 @@ export default function InvoicesPage() {
       accountUniqueNameFromRedux
     );
     const params = new URLSearchParams();
-    params.set("voucher", invoiceUniqueName);
+    params.set("voucherUniqueName", invoiceUniqueName);
     if (companyUniqueName) params.set("companyUniqueName", companyUniqueName);
     if (accountUniqueName) params.set("accountUniqueName", accountUniqueName);
     const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice/preview`;
@@ -145,19 +146,51 @@ export default function InvoicesPage() {
 
   const currency = balanceSummary?.currency || DEFAULT_CURRENCY;
 
+  const validBalanceStatuses = useMemo(
+    () => new Set(Object.values(InvoiceBalanceStatus)),
+    []
+  );
+
   const allInvoicesData: Invoice[] = useMemo(
     () =>
-      (allInvoices || []).map((invoice) => ({
-        id: invoice.uniqueName,
-        invoiceNo: invoice.voucherNumber,
-        date: invoice.voucherDate,
-        total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
-          decimals: 0,
+      (allInvoices || [])
+        .filter((invoice) => {
+          const status = (invoice.balanceStatus || "").toUpperCase().replace(/\s+/g, "-");
+          return validBalanceStatuses.has(status as InvoiceBalanceStatus);
+        })
+        .map((invoice) => {
+          const status = (invoice.balanceStatus || "").toUpperCase().replace(/\s+/g, "-");
+          const isPayableStatus =
+            status === InvoiceBalanceStatus.UNPAID || status === InvoiceBalanceStatus.PARTIAL_PAID;
+          const isHoldOrCancel =
+            status === InvoiceBalanceStatus.HOLD || status === InvoiceBalanceStatus.CANCEL;
+          const isPendingPayment =
+            (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
+          const showPayNow = isPayableStatus && !isHoldOrCancel && !isPendingPayment;
+          const rawOverdue =
+            (invoice as { overdueDays?: string }).overdueDays ?? calculateOverdue(invoice.dueDate);
+          const overdueFormatted =
+            rawOverdue && /\b1\s+days\b/i.test(rawOverdue)
+              ? rawOverdue.replace(/\b1\s+days\b/i, "1 day")
+              : rawOverdue;
+          return {
+            id: invoice.uniqueName ?? "",
+            invoiceNo: invoice.voucherNumber ?? "",
+            date: invoice.voucherDate ?? "",
+            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
+              decimals: 0,
+            }),
+            status: status || InvoiceBalanceStatus.UNKNOWN,
+            overdue:
+              status === InvoiceBalanceStatus.PAID ||
+              status === InvoiceBalanceStatus.HOLD ||
+              status === InvoiceBalanceStatus.CANCEL
+                ? "-"
+                : overdueFormatted,
+            showPayNow,
+          };
         }),
-        status: invoice.balanceStatus?.toUpperCase() || "UNPAID",
-        overdue: invoice.balanceStatus !== "paid" ? calculateOverdue(invoice.dueDate) : "",
-      })),
-    [allInvoices, currency]
+    [allInvoices, currency, validBalanceStatuses]
   );
 
   const filteredInvoices = useMemo(
@@ -276,7 +309,7 @@ export default function InvoicesPage() {
           <PayNow
             invoiceUniqueName={row.id}
             invoiceNumber={row.invoiceNo}
-            canPay={row.status !== "PAID"}
+            canPay={row.showPayNow ?? row.status !== "PAID"}
             size="sm"
           />
           <button

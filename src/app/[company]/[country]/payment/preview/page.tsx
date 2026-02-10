@@ -23,7 +23,7 @@ export default function PaymentPreviewPage() {
 
   const companyName = params?.company as string;
   const country = params?.country as string;
-  const voucherUniqueName = searchParams.get("voucher") || "";
+  const voucherUniqueName = searchParams.get("voucher") || searchParams.get("voucherUniqueName") || "";
   const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
   const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
 
@@ -178,26 +178,21 @@ export default function PaymentPreviewPage() {
 
   if (isLoading) {
     return (
-      <>
-        <header className="border-b bg-white px-6 py-4">
-          <div className="flex items-center gap-3">
-            <SidebarToggleButton />
-            <h1 className="text-xl font-semibold">Payments Made</h1>
+      <div className="flex min-h-[50vh] flex-1 items-center justify-center">
+        {error ? (
+          <div className="text-center">
+            <p className="mb-4 text-red-600">{error}</p>
+            <Button size="lg" onClick={handleBack}>
+              Back to Payments
+            </Button>
           </div>
-        </header>
-        <div className="flex flex-1 items-center justify-center p-6">
-          {error ? (
-            <div className="text-center">
-              <p className="mb-4 text-red-600">{error}</p>
-              <Button size="lg" onClick={handleBack}>
-                Back to Payments
-              </Button>
-            </div>
-          ) : (
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
-          )}
-        </div>
-      </>
+        ) : (
+          <div
+            className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"
+            aria-label="Loading"
+          />
+        )}
+      </div>
     );
   }
 

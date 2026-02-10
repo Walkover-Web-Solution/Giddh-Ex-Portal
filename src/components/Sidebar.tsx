@@ -171,17 +171,23 @@ export function Sidebar() {
                   {user?.name}
                 </span>
               </Link>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={handleLogout}
-                className="shrink-0 text-gray-400 hover:bg-gray-50 hover:text-blue-900"
-                title="Logout"
-                aria-label="Logout"
-              >
-                <ArrowRightOnRectangleIcon className="size-5" aria-hidden />
-              </Button>
+              <div className="group/logout relative shrink-0">
+                <span
+                  className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/logout:opacity-100"
+                  role="tooltip"
+                >
+                  Logout
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={handleLogout}
+                  className="shrink-0 text-gray-400 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
+                  aria-label="Logout"
+                >
+                  <ArrowRightOnRectangleIcon className="!h-[32px] !w-[24px]" aria-hidden />
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 px-2 pb-4">
@@ -193,17 +199,24 @@ export function Sidebar() {
               >
                 {initials}
               </Link>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={handleLogout}
-                className="text-gray-400 hover:bg-gray-50 hover:text-blue-900"
-                title="Logout"
-                aria-label="Logout"
-              >
-                <ArrowRightOnRectangleIcon className="size-4" aria-hidden />
-              </Button>
+              <div className="group/logout relative shrink-0">
+                <span
+                  className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/logout:opacity-100"
+                  role="tooltip"
+                >
+                  Logout
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLogout}
+                  className="!h-12 !w-12 shrink-0 text-gray-400 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
+                  aria-label="Logout"
+                >
+                  <ArrowRightOnRectangleIcon className="size-6" aria-hidden />
+                </Button>
+              </div>
             </div>
           )}
         </div>
