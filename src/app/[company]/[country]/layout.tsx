@@ -5,10 +5,12 @@ import { useParams, usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchCompanyDetails,
+  fetchCompanyAddress,
   fetchUserDetails,
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectUserDetails,
+  selectCompanyAddress,
+  selectCompanyGstin,
 } from "@/store/slices/companySlice";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Sidebar } from "@/components/Sidebar";
@@ -25,9 +27,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const isPreviewPage = pathname?.includes("/preview");
   const params = useParams();
   const companyName = params?.company as string;
-  const userDetails = useAppSelector(selectUserDetails(companyName));
-  const gstin = userDetails?.addresses?.[0]?.gstNumber as string;
-  const companyAddress = userDetails?.addresses?.[0]?.address as string;
+  const companyAddress = useAppSelector(selectCompanyAddress(companyName));
+  const gstin = useAppSelector(selectCompanyGstin(companyName));
 
   const [showSidebarOnPreview, setShowSidebarOnPreview] = useState(false);
 
@@ -55,9 +56,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       >
         <div className="flex-1">{children}</div>
         <Footer
-          companyName={companyName}
-          gstin={gstin}
-          companyAddress={companyAddress}
+          companyName={companyName ?? ""}
+          gstin={gstin ?? ""}
+          companyAddress={companyAddress ?? undefined}
           supportEmail="support@giddh.com"
           variant="full"
         />
@@ -98,6 +99,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
       hasCalledApis.current = true;
       dispatch(fetchCompanyDetails({ companyName, companyUniqueName, accountUniqueName }));
       dispatch(fetchUserDetails({ companyName, companyUniqueName, accountUniqueName }));
+      dispatch(fetchCompanyAddress({ companyName, companyUniqueName, accountUniqueName }));
     }
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 

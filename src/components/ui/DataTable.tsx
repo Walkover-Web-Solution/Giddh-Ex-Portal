@@ -29,8 +29,8 @@ export interface DataTableProps<T = unknown> {
   columns?: Column<T>[];
   /** Row data (ignored when children is provided) */
   data?: T[];
-  /** Key for each row (ignored when children is provided) */
-  keyExtractor?: (row: T) => string | number;
+  /** Key for each row (ignored when children is provided). Receives row and index for unique keys when rows share same field values. */
+  keyExtractor?: (row: T, index: number) => string | number;
 }
 
 const TableWrapper = ({
@@ -118,7 +118,7 @@ export function DataTable<T>({
                 </tr>
               ) : (
                 data.map((row, rowIndex) => (
-                  <tr key={keyExtractor!(row)}>
+                  <tr key={keyExtractor!(row, rowIndex)}>
                     {columns.map((column, colIndex) => {
                       const isFirst = colIndex === 0;
                       const isLast = colIndex === columns.length - 1;

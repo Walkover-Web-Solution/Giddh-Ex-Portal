@@ -10,6 +10,8 @@ import getLastPayment, { PaymentVoucher } from "@/utils/getLastPayment";
 import { UserCompanyData } from "@/types/company";
 import getCompanyDetails from "@/utils/getCompanyDetails";
 import getInvoiceList, { InvoiceVoucher } from "@/utils/getInvoiceList";
+import { getAccountStatement } from "@/utils/accountStatement";
+import { formatDateToAPI as formatDateToAPIUtil } from "@/utils/dateUtils";
 
 interface Currency {
   code: string;
@@ -79,6 +81,13 @@ interface AccountInfo {
   uniqueName: string;
 }
 
+interface CompanyAddressState {
+  data: string | null;
+  gstin: string | null;
+  loading: boolean;
+  error: string | null;
+}
+
 interface CompanyInfo {
   companyName: string;
   country: string;
@@ -92,6 +101,7 @@ interface CompanyInfo {
   allPayments?: AllPaymentsState;
   allInvoices?: AllInvoicesState;
   userDetails?: UserDetailsState;
+  companyAddress?: CompanyAddressState;
 }
 
 interface CompanyState {
@@ -156,6 +166,50 @@ export const fetchUserDetails = createAsyncThunk(
       const state = getState() as RootState;
       const existingData = state.companies[companyName]?.userDetails?.data;
       return !existingData;
+    },
+  }
+);
+
+export const fetchCompanyAddress = createAsyncThunk(
+  "companies/fetchCompanyAddress",
+  async ({
+    companyName,
+    companyUniqueName,
+    accountUniqueName,
+  }: {
+    companyName: string;
+    companyUniqueName: string;
+    accountUniqueName: string;
+  }) => {
+    const today = formatDateToAPIUtil(new Date());
+    const response = await getAccountStatement({
+      companyUniqueName,
+      accountUniqueName,
+      page: 1,
+      count: 1,
+      from: today,
+      to: today,
+      sort: SortOrder.ASC,
+    });
+    const companyGstAddress = response.body?.companyGstAddress;
+    if (!companyGstAddress) return { companyName, data: null, gstin: null };
+    const mainParts = [
+      companyGstAddress.address,
+      companyGstAddress.stateName,
+      companyGstAddress.countryName,
+    ].filter(Boolean);
+    const pinPart = companyGstAddress.pinCode?.trim()
+      ? (mainParts.length ? " - " : "") + companyGstAddress.pinCode.trim()
+      : "";
+    const addressString = [...mainParts, pinPart].filter(Boolean).join(", ").trim();
+    const gstin = companyGstAddress.taxNumber?.trim() || null;
+    return { companyName, data: addressString, gstin };
+  },
+  {
+    condition: ({ companyName }, { getState }) => {
+      const state = getState() as RootState;
+      const existing = state.companies[companyName]?.companyAddress?.data;
+      return existing == null;
     },
   }
 );
@@ -274,16 +328,28 @@ export const fetchAllInvoices = createAsyncThunk(
     companyUniqueName: string;
     accountUniqueName: string;
   }) => {
-    const response = await getInvoiceList({
-      companyUniqueName,
-      accountUniqueName,
-      type: "sales",
-      page: 1,
-      count: PAGINATION_LIMIT,
-      sortBy: "voucherDate",
-      sort: SortOrder.DESC,
-    });
-    return { companyName, data: response.body.items || [] };
+    const allItems: InvoiceVoucher[] = [];
+    let page = 1;
+    let totalItems = 0;
+
+    do {
+      const response = await getInvoiceList({
+        companyUniqueName,
+        accountUniqueName,
+        type: "sales",
+        page,
+        count: PAGINATION_LIMIT,
+        sortBy: "voucherDate",
+        sort: SortOrder.DESC,
+      });
+      const items = response.body.items || [];
+      totalItems = response.body.totalItems ?? 0;
+      allItems.push(...items);
+      if (items.length < PAGINATION_LIMIT || allItems.length >= totalItems) break;
+      page += 1;
+    } while (true);
+
+    return { companyName, data: allItems };
   },
   {
     condition: ({ companyName }, { getState }) => {
@@ -581,6 +647,45 @@ export const companySlice = createSlice({
           };
         }
       })
+      .addCase(fetchCompanyAddress.pending, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (!state[companyName]) {
+          state[companyName] = {
+            companyName,
+            country: "",
+            companyAddress: { data: null, gstin: null, loading: true, error: null },
+          };
+        } else {
+          state[companyName].companyAddress = {
+            data: state[companyName].companyAddress?.data ?? null,
+            gstin: state[companyName].companyAddress?.gstin ?? null,
+            loading: true,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchCompanyAddress.fulfilled, (state, action) => {
+        const { companyName, data, gstin } = action.payload;
+        if (state[companyName]) {
+          state[companyName].companyAddress = {
+            data,
+            gstin: gstin ?? null,
+            loading: false,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchCompanyAddress.rejected, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].companyAddress = {
+            data: state[companyName].companyAddress?.data ?? null,
+            gstin: state[companyName].companyAddress?.gstin ?? null,
+            loading: false,
+            error: action.error?.message ?? "Failed to fetch company address",
+          };
+        }
+      })
       .addCase(fetchCompanyDetails.fulfilled, (state, action) => {
         const { companyName, data } = action.payload;
         if (state[companyName]) {
@@ -663,6 +768,11 @@ export const selectUserDetailsLoading = (companyName: string) => (state: RootSta
   state.companies[companyName]?.userDetails?.loading || false;
 export const selectUserDetailsError = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.userDetails?.error || null;
+
+export const selectCompanyAddress = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.companyAddress?.data ?? null;
+export const selectCompanyGstin = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.companyAddress?.gstin ?? null;
 
 // Data freshness selectors (5 minutes TTL)
 const DATA_FRESHNESS_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds

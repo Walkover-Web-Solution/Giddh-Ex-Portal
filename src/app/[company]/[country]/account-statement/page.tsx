@@ -410,7 +410,9 @@ export default function AccountStatementPage() {
                 <DataTable
                   columns={statementColumns}
                   data={transactions}
-                  keyExtractor={(row) => `${row.date}-${row.voucherNumber}-${row.voucherType}`}
+                  keyExtractor={(row, index) =>
+                    `${row.date}-${row.voucherNumber}-${row.voucherType}-${index}`
+                  }
                 />
 
                 <div className="mt-4">
