@@ -123,21 +123,17 @@ export async function downloadVoucher(
   return response.data;
 }
 
-export function base64ToBlob(base64: string, contentType: string = "application/pdf"): Blob {
-  const byteCharacters = atob(base64);
-  const byteArrays = [];
+export function base64ToBlob(base64: string, mimeType: string): Blob {
+  const cleanedBase64 = base64.includes(",") ? base64.split(",")[1] : base64;
 
-  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-    const slice = byteCharacters.slice(offset, offset + 512);
-    const byteNumbers = new Array(slice.length);
+  const byteCharacters = atob(cleanedBase64);
+  const byteNumbers = new Array(byteCharacters.length);
 
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    byteArrays.push(byteArray);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
   }
 
-  return new Blob(byteArrays, { type: contentType });
+  const byteArray = new Uint8Array(byteNumbers);
+
+  return new Blob([byteArray], { type: mimeType });
 }

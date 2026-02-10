@@ -1,5 +1,3 @@
-import { FileType } from "@/constants";
-
 /**
  * Portal API path builders (used with apiClient; base URL is set in apiClient).
  * Company and account are encoded where required for query/URL safety.
@@ -70,7 +68,7 @@ export const API_PATHS = {
   ) =>
     `${portalAccount(company, account, true)}/view-statement?page=${page}&count=${count}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&sort=${encodeURIComponent(sort)}`,
 
-  /** GET export account statement (fileType: pdf | xlsx) */
+  /** GET export account statement (fileType: pdf | xlsx | xls) */
   exportAccountStatement: (
     company: string,
     account: string,
@@ -79,7 +77,7 @@ export const API_PATHS = {
     from: string,
     to: string,
     sort: string,
-    fileType: FileType = FileType.PDF
+    fileType: string
   ) =>
     `${portalAccount(company, account, true)}/export-account-statement?page=${page}&count=${count}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&sort=${encodeURIComponent(sort)}&fileType=${fileType}`,
 

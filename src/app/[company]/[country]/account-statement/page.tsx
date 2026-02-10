@@ -15,6 +15,7 @@ import {
   AccountAddress,
   Address,
 } from "@/utils/accountStatement";
+import { base64ToBlob } from "@/utils/invoicePreview";
 import { DataTable } from "@/components/DataTable";
 import { Dropdown } from "@/components/Dropdown";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
@@ -25,7 +26,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
-import { FileType, PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { FileType, EXPORT_FILE_CONFIG, PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { useToast } from "@/contexts/ToastContext";
 
@@ -145,23 +146,60 @@ export default function AccountStatementPage() {
 
       const response = await downloadAccountStatement(request, format);
 
-      if (response.status === "success" && response.body) {
-        const blob = new Blob([atob(response.body.data)], { type: response.body.type });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        const extension = response.body.type.includes(FileType.PDF) ? FileType.PDF : FileType.XLSX;
-        link.download =
-          response.body.name ||
-          `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.${extension}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+      if (response?.status !== "success") {
+        showToast(response?.message || "Export failed.", "error");
+        return;
       }
-    } catch (err) {
-      console.error("Error exporting statement:", err);
-      showToast("Failed to export statement", "error");
+
+      const body = response.body;
+
+      const base64Data = typeof body === "string" ? body : body?.data;
+
+      if (!base64Data || !base64Data.trim() || base64Data === "null") {
+        showToast("No file content found to download.", "error");
+        return;
+      }
+
+      if (typeof body !== "object" || typeof body.type !== "string") {
+        showToast("Invalid export response from server.", "error");
+        return;
+      }
+
+      const exportConfig = EXPORT_FILE_CONFIG[format];
+
+      if (!exportConfig) {
+        showToast("Unsupported export format.", "error");
+        return;
+      }
+
+      const { mime: exportMime, extension: exportType } = exportConfig;
+
+      const serverType = body.type.toLowerCase();
+
+      if (serverType !== exportType && serverType !== exportMime) {
+        showToast(`Export failed: server returned invalid file type (${body.type}).`, "error");
+        return;
+      }
+
+      const fileName =
+        body.name ||
+        `Account-statement-${convertDateToAPIFormat(fromDate)}-${convertDateToAPIFormat(toDate)}.${exportType}`;
+
+      const blob = base64ToBlob(base64Data, exportMime);
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting statement:", error);
+      showToast("Failed to export statement.", "error");
     } finally {
       setIsExporting(false);
     }
@@ -219,6 +257,11 @@ export default function AccountStatementPage() {
     ],
     [accountAddress?.currency?.symbol]
   );
+
+  const effectiveTotal =
+    transactions.length < itemsPerPage && transactions.length > 0
+      ? (currentPage - 1) * itemsPerPage + transactions.length
+      : totalItems;
 
   return (
     <>
@@ -359,7 +402,7 @@ export default function AccountStatementPage() {
                       onClick={() => handleExport(FileType.XLSX)}
                       disabled={isExporting}
                     >
-                      As XLS
+                      As XLSX
                     </Dropdown.Item>
                   </Dropdown>
                 </div>
@@ -373,8 +416,8 @@ export default function AccountStatementPage() {
                 <div className="mt-4">
                   <Pagination
                     currentPage={currentPage}
-                    totalPages={Math.max(1, Math.ceil(totalItems / itemsPerPage))}
-                    totalItems={totalItems}
+                    totalPages={Math.max(1, Math.ceil(effectiveTotal / itemsPerPage))}
+                    totalItems={effectiveTotal}
                     itemsPerPage={itemsPerPage}
                     pageSizeOptions={PAGE_SIZE_OPTIONS}
                     onPageChange={setCurrentPage}
