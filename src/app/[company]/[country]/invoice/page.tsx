@@ -145,6 +145,11 @@ export default function InvoicesPage() {
         const isPendingPayment =
           (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
         const showPayNow = isPayableStatus && !isHoldOrCancel && !isPendingPayment;
+        const rawOverdue = invoice.overdueDays ?? "";
+        const overdueFormatted =
+          rawOverdue && /\b1\s+days\b/i.test(rawOverdue)
+            ? rawOverdue.replace(/\b1\s+days\b/i, "1 day")
+            : rawOverdue;
         return {
           id: invoice.uniqueName ?? "",
           invoiceNo: invoice.voucherNumber ?? "",
@@ -154,9 +159,7 @@ export default function InvoicesPage() {
           }),
           status: status || "UNKNOWN",
           overdue:
-            status === "PAID" || status === "HOLD" || status === "CANCEL"
-              ? "-"
-              : (invoice.overdueDays ?? ""),
+            status === "PAID" || status === "HOLD" || status === "CANCEL" ? "-" : overdueFormatted,
           showPayNow,
         };
       }),
