@@ -56,7 +56,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       >
         <div className="flex-1">{children}</div>
         <Footer
-          companyName={companyName ?? ""}
+          companyName={companyName || ""}
           gstin={gstin ?? ""}
           companyAddress={companyAddress ?? undefined}
           supportEmail="support@giddh.com"

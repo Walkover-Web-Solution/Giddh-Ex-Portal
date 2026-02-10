@@ -28,6 +28,7 @@ import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortOrder } from "@/constants/sort";
+import { InvoiceBalanceStatus } from "@/constants/invoiceStatus";
 import type { Invoice, InvoiceSortColumn } from "./types";
 
 export default function InvoicesPage() {
@@ -140,8 +141,10 @@ export default function InvoicesPage() {
     () =>
       (allInvoices || []).map((invoice) => {
         const status = (invoice.balanceStatus || "").toUpperCase().replace(/\s+/g, "-");
-        const isPayableStatus = status === "UNPAID" || status === "PARTIAL-PAID";
-        const isHoldOrCancel = status === "HOLD" || status === "CANCEL";
+        const isPayableStatus =
+          status === InvoiceBalanceStatus.UNPAID || status === InvoiceBalanceStatus.PARTIAL_PAID;
+        const isHoldOrCancel =
+          status === InvoiceBalanceStatus.HOLD || status === InvoiceBalanceStatus.CANCEL;
         const isPendingPayment =
           (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
         const showPayNow = isPayableStatus && !isHoldOrCancel && !isPendingPayment;
@@ -157,9 +160,13 @@ export default function InvoicesPage() {
           total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
             decimals: 0,
           }),
-          status: status || "UNKNOWN",
+          status: status || InvoiceBalanceStatus.UNKNOWN,
           overdue:
-            status === "PAID" || status === "HOLD" || status === "CANCEL" ? "-" : overdueFormatted,
+            status === InvoiceBalanceStatus.PAID ||
+            status === InvoiceBalanceStatus.HOLD ||
+            status === InvoiceBalanceStatus.CANCEL
+              ? "-"
+              : overdueFormatted,
           showPayNow,
         };
       }),
@@ -170,11 +177,14 @@ export default function InvoicesPage() {
     () =>
       allInvoicesData.filter((invoice) => {
         if (statusFilter === "All Invoices") return true;
-        if (statusFilter === "Paid" && invoice.status !== "PAID") return false;
-        if (statusFilter === "Partial Paid" && invoice.status !== "PARTIAL-PAID") return false;
-        if (statusFilter === "Unpaid" && invoice.status !== "UNPAID") return false;
-        if (statusFilter === "Hold" && invoice.status !== "HOLD") return false;
-        if (statusFilter === "Cancel" && invoice.status !== "CANCEL") return false;
+        if (statusFilter === "Paid" && invoice.status !== InvoiceBalanceStatus.PAID) return false;
+        if (statusFilter === "Partial Paid" && invoice.status !== InvoiceBalanceStatus.PARTIAL_PAID)
+          return false;
+        if (statusFilter === "Unpaid" && invoice.status !== InvoiceBalanceStatus.UNPAID)
+          return false;
+        if (statusFilter === "Hold" && invoice.status !== InvoiceBalanceStatus.HOLD) return false;
+        if (statusFilter === "Cancel" && invoice.status !== InvoiceBalanceStatus.CANCEL)
+          return false;
         return true;
       }),
     [allInvoicesData, statusFilter]
@@ -264,7 +274,9 @@ export default function InvoicesPage() {
       accessor: (row: Invoice) => (
         <span
           className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-            row.status === "PAID" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"
+            row.status === InvoiceBalanceStatus.PAID
+              ? "bg-green-100 text-green-800"
+              : "bg-orange-100 text-orange-800"
           }`}
         >
           {row.status}
