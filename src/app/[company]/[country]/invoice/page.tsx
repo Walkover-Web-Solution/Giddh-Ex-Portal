@@ -138,16 +138,28 @@ export default function InvoicesPage() {
 
   const allInvoicesData: Invoice[] = useMemo(
     () =>
-      (allInvoices || []).map((invoice) => ({
-        id: invoice.uniqueName,
-        invoiceNo: invoice.voucherNumber,
-        date: invoice.voucherDate,
-        total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
-          decimals: 0,
-        }),
-        status: invoice.balanceStatus?.toUpperCase() || "UNPAID",
-        overdue: invoice.balanceStatus !== "paid" ? (invoice.overdueDays ?? "") : "",
-      })),
+      (allInvoices || []).map((invoice) => {
+        const status = (invoice.balanceStatus || "").toUpperCase().replace(/\s+/g, "-");
+        const isPayableStatus = status === "UNPAID" || status === "PARTIAL-PAID";
+        const isHoldOrCancel = status === "HOLD" || status === "CANCEL";
+        const isPendingPayment =
+          (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
+        const showPayNow = isPayableStatus && !isHoldOrCancel && !isPendingPayment;
+        return {
+          id: invoice.uniqueName ?? "",
+          invoiceNo: invoice.voucherNumber ?? "",
+          date: invoice.voucherDate ?? "",
+          total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
+            decimals: 0,
+          }),
+          status: status || "UNKNOWN",
+          overdue:
+            status === "PAID" || status === "HOLD" || status === "CANCEL"
+              ? "-"
+              : (invoice.overdueDays ?? ""),
+          showPayNow,
+        };
+      }),
     [allInvoices, currency]
   );
 
@@ -264,12 +276,9 @@ export default function InvoicesPage() {
       header: "Action",
       accessor: (row: Invoice) => (
         <div className="flex gap-2">
-          <PayNow
-            invoiceUniqueName={row.id}
-            invoiceNumber={row.invoiceNo}
-            canPay={row.status !== "PAID"}
-            size="sm"
-          />
+          {row.showPayNow && (
+            <PayNow invoiceUniqueName={row.id} invoiceNumber={row.invoiceNo} canPay size="sm" />
+          )}
           <button
             onClick={() => handleDownloadInvoice(row.id, row.invoiceNo)}
             disabled={downloadingInvoice === row.id}

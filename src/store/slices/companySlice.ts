@@ -307,13 +307,6 @@ export const fetchAllPayments = createAsyncThunk(
       count: PAGINATION_LIMIT,
     });
     return { companyName, data: response.body.items || [] };
-  },
-  {
-    condition: ({ companyName }, { getState }) => {
-      const state = getState() as RootState;
-      const existingData = state.companies[companyName]?.allPayments?.data;
-      return !existingData || existingData.length === 0;
-    },
   }
 );
 
@@ -444,6 +437,18 @@ export const companySlice = createSlice({
       if (state[companyName]) {
         state[companyName].userData = undefined;
         state[companyName].user = undefined;
+      }
+    },
+    invalidatePaymentsData: (state, action: PayloadAction<string>) => {
+      const companyName = action.payload;
+      if (state[companyName]?.allPayments) {
+        state[companyName].allPayments.lastFetchTimestamp = undefined;
+      }
+    },
+    invalidateInvoicesData: (state, action: PayloadAction<string>) => {
+      const companyName = action.payload;
+      if (state[companyName]?.allInvoices) {
+        state[companyName].allInvoices.lastFetchTimestamp = undefined;
       }
     },
   },
@@ -704,6 +709,8 @@ export const {
   clearAllCompanies,
   clearBalanceSummary,
   clearUserData,
+  invalidatePaymentsData,
+  invalidateInvoicesData,
 } = companySlice.actions;
 
 export { logoutCompany } from "@/utils/logout";
