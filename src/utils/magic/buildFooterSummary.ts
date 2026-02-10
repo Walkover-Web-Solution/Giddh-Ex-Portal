@@ -54,6 +54,7 @@ export function buildFooterSummary(params: {
   filteredDebitCreditTransactions: LedgerTransaction[] | undefined | null;
   filteredDebitTransactions: LedgerTransaction[] | undefined | null;
   filteredCreditTransactions: LedgerTransaction[] | undefined | null;
+  apiTotalTransactions?: number;
 }): FooterSummary {
   const {
     ledgerBalance,
@@ -62,15 +63,22 @@ export function buildFooterSummary(params: {
     filteredDebitCreditTransactions,
     filteredDebitTransactions,
     filteredCreditTransactions,
+    apiTotalTransactions,
   } = params;
 
-  const { totalTransactions, debitCount, creditCount } = getCounts(
+  const countsFromData = getCounts(
     viewMode,
     filteredDebitCreditTransactions,
     filteredDebitTransactions,
     filteredCreditTransactions,
     Boolean(forwardedBalance)
   );
+
+  const totalTransactions =
+    viewMode === LedgerView.STATEMENT_VIEW && apiTotalTransactions != null
+      ? apiTotalTransactions
+      : countsFromData.totalTransactions;
+  const { debitCount, creditCount } = countsFromData;
 
   if (ledgerBalance) {
     return {

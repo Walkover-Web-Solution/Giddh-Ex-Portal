@@ -35,6 +35,10 @@ export interface MagicLinkData {
     from: string;
     to: string;
   };
+  apiTotalItems?: number;
+  apiTotalPages?: number;
+  apiPage?: number;
+  apiCount?: number;
 }
 
 export interface GetMagicLinkDataResult {
@@ -198,6 +202,7 @@ export const getMagicLinkData = async (
       }
     }
 
+    const lt = response.body.ledgersTransactions;
     const result: MagicLinkData = {
       transactions: apiTransactions,
       // Include raw API response arrays
@@ -205,15 +210,19 @@ export const getMagicLinkData = async (
         viewMode === LedgerView.STATEMENT_VIEW ? debitCreditTransactions : undefined,
       debitTransactions: viewMode === LedgerView.T_VIEW ? debitTransactions : undefined,
       creditTransactions: viewMode === LedgerView.T_VIEW ? creditTransactions : undefined,
-      forwardedBalance: response.body.ledgersTransactions.forwardedBalance,
+      forwardedBalance: lt.forwardedBalance,
       companyName: response.body.companyName || "",
       accountName: response.body.account?.name || "",
       currencyData,
       defaultCurrency: transactionCurrency.code,
       dateRange: {
-        from: response.body.ledgersTransactions.from,
-        to: response.body.ledgersTransactions.to,
+        from: lt.from,
+        to: lt.to,
       },
+      apiTotalItems: lt.totalItems,
+      apiTotalPages: lt.totalPages,
+      apiPage: lt.page,
+      apiCount: lt.count,
     };
 
     return {
