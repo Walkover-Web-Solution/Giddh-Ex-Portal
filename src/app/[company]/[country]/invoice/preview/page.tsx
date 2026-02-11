@@ -25,7 +25,8 @@ export default function InvoicePreviewPage() {
 
   const companyName = params?.company as string;
   const country = params?.country as string;
-  const voucherUniqueName = searchParams.get("voucher") || "";
+  const voucherUniqueName =
+    searchParams.get("voucher") || searchParams.get("voucherUniqueName") || "";
   const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
   const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
 

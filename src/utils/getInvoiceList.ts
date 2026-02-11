@@ -16,7 +16,6 @@ export interface InvoiceVoucher {
     paymentStatus: string;
   };
   companyCurrencySymbol?: string;
-  overdueDays?: string;
 }
 
 export interface InvoiceListResponse {
