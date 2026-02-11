@@ -9,14 +9,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "rounded-md bg-blue-50 text-blue-600 shadow-sm hover:bg-blue-100",
+        default: "rounded-md bg-blue-50 text-blue-600 shadow-sm hover:bg-blue-100",
         outline:
           "rounded-md border border-gray-300 bg-white font-semibold text-gray-700 shadow-sm hover:bg-gray-50",
-        ghost:
-          "rounded-md bg-transparent text-blue-600 hover:bg-blue-50",
-        destructive:
-          "rounded-md bg-red-50 text-red-600 shadow-sm hover:bg-red-100",
+        ghost: "rounded-md bg-transparent text-blue-600 hover:bg-blue-50",
+        destructive: "rounded-md bg-red-50 text-red-600 shadow-sm hover:bg-red-100",
         link: "text-blue-600 underline-offset-4 hover:underline",
       },
       size: {

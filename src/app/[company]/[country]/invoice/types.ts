@@ -15,8 +15,7 @@ export interface Invoice {
   total: string;
   status: string;
   overdue: string;
-  /** When true, show and enable Pay Now; when false, hide or disable it (e.g. HOLD, CANCEL, PENDING) */
-  showPayNow?: boolean;
+  showPayNow: boolean;
 }
 
 /** Sortable column for invoice list */

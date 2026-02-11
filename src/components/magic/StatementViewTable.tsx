@@ -16,6 +16,7 @@ import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { transformLedgerTransactionToDisplay } from "@/utils/magic/transformLedgerTransaction";
 import { useToast } from "@/contexts/ToastContext";
 import { DataTable } from "@/components/ui/DataTable";
+import { ArrowDownTrayIcon, ArrowPathIcon } from "@heroicons/react/20/solid";
 
 interface Props {
   selectedCurrency: Currency;
@@ -157,9 +158,14 @@ export function StatementViewTable({
         <button
           onClick={onDownload}
           disabled={isDownloading}
-          className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-900/5 text-blue-900 hover:bg-blue-900/10 disabled:opacity-50"
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
+          title="Download voucher"
         >
-          {isDownloading ? "…" : "↓"}
+          {isDownloading ? (
+            <ArrowPathIcon className="h-3 w-3 animate-spin sm:h-3.5 sm:w-3.5" />
+          ) : (
+            <ArrowDownTrayIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+          )}
         </button>
       )}
     </div>

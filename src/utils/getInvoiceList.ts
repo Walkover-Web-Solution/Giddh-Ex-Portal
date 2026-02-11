@@ -10,7 +10,8 @@ export interface InvoiceVoucher {
     amountForAccount: number;
   };
   balanceStatus: string;
-  dueDate: string;
+  dueDate?: string;
+  overdueDays?: string;
   paymentInfo?: {
     paymentStatus: string;
   };

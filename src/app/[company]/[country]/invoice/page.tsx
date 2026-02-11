@@ -28,7 +28,8 @@ import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortOrder } from "@/constants/sort";
-import { InvoiceBalanceStatus, type Invoice, type InvoiceSortColumn } from "./types";
+import { InvoiceBalanceStatus } from "@/constants/invoiceStatus";
+import type { Invoice, InvoiceSortColumn } from "./types";
 
 export default function InvoicesPage() {
   const params = useParams();

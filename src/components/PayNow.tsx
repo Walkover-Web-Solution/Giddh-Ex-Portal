@@ -2,8 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAppSelector } from "@/store/hooks";
-import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  selectCompanyUniqueName,
+  selectAccountUniqueName,
+  invalidatePaymentsData,
+  invalidateInvoicesData,
+  fetchAllPayments,
+  fetchAllInvoices,
+} from "@/store/slices/companySlice";
 import {
   getPaymentMethods,
   getVoucherPaymentDetails,
@@ -50,6 +57,7 @@ export function PayNow({
 }: PayNowProps) {
   const params = useParams();
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { showToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsResponse | null>(null);
@@ -307,6 +315,10 @@ export function PayNow({
 
       if (response.status === ApiResponseStatus.SUCCESS) {
         showToast("Payment successful!", "success");
+        dispatch(invalidatePaymentsData(companyName));
+        dispatch(invalidateInvoicesData(companyName));
+        dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName })).unwrap();
+        dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName })).unwrap();
         onSuccess?.();
       }
     } catch (error) {
@@ -358,6 +370,10 @@ export function PayNow({
 
       if (response.status === ApiResponseStatus.SUCCESS) {
         showToast("Payment successful!", "success");
+        dispatch(invalidatePaymentsData(companyName));
+        dispatch(invalidateInvoicesData(companyName));
+        dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName })).unwrap();
+        dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName })).unwrap();
         onSuccess?.();
       }
     } catch (error) {
