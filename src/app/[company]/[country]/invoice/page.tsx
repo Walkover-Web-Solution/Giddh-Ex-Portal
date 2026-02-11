@@ -146,10 +146,7 @@ export default function InvoicesPage() {
 
   const currency = balanceSummary?.currency || DEFAULT_CURRENCY;
 
-  const validBalanceStatuses = useMemo(
-    () => new Set(Object.values(InvoiceBalanceStatus)),
-    []
-  );
+  const validBalanceStatuses = useMemo(() => new Set(Object.values(InvoiceBalanceStatus)), []);
 
   const allInvoicesData: Invoice[] = useMemo(
     () =>
@@ -453,7 +450,7 @@ export default function InvoicesPage() {
           ) : invoicesData.length === 0 ? (
             <div className="py-12 text-center text-gray-500">No invoices found</div>
           ) : (
-            <DataTable columns={columns} data={invoicesData} keyExtractor={(row) => row.id} />
+            <DataTable columns={columns} data={paginatedData} keyExtractor={(row) => row.id} />
           )}
 
           {invoicesData.length > 10 && (

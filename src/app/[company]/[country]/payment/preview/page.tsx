@@ -10,7 +10,7 @@ import {
   base64ToBlob,
   PaymentVoucher,
 } from "@/utils/paymentPreview";
-import { ArrowLeft, Download, Printer } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastContext";
@@ -222,11 +222,9 @@ export default function PaymentPreviewPage() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="lg" onClick={handlePrint}>
-                <Printer className="h-4 w-4" />
                 <span className="sm:inline">Print</span>
               </Button>
               <Button variant="outline" size="lg" onClick={handleDownload}>
-                <Download className="h-4 w-4" />
                 <span className="sm:inline">Download</span>
               </Button>
             </div>
