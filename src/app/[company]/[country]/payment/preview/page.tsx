@@ -14,6 +14,9 @@ import { ArrowLeft, Download, Printer } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastContext";
+import { getSessionCookie } from "@/utils/cookies";
+
+const EMPTY_PAYMENT_LIST = { status: "error" as const, body: { items: [], totalItems: 0 } };
 
 export default function PaymentPreviewPage() {
   const params = useParams();
@@ -23,7 +26,8 @@ export default function PaymentPreviewPage() {
 
   const companyName = params?.company as string;
   const country = params?.country as string;
-  const voucherUniqueName = searchParams.get("voucher") || searchParams.get("voucherUniqueName") || "";
+  const voucherUniqueName =
+    searchParams.get("voucher") || searchParams.get("voucherUniqueName") || "";
   const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
   const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
 
@@ -37,6 +41,8 @@ export default function PaymentPreviewPage() {
   const { showToast } = useToast();
 
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const hasSession =
+    typeof window !== "undefined" && (!!sessionId || !!getSessionCookie(companyName));
 
   const getCompanyAndAccountNames = () => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -106,13 +112,18 @@ export default function PaymentPreviewPage() {
         sessionId: sessionId || undefined,
       };
 
-      const [voucherResponse, paymentListResponse] = await Promise.all([
-        downloadPaymentVoucher(request),
-        getPaymentList(request).catch(() => ({
-          status: "error",
-          body: { items: [], totalItems: 0 },
-        })),
-      ]);
+      let voucherResponse: Awaited<ReturnType<typeof downloadPaymentVoucher>>;
+      let paymentListResponse: Awaited<ReturnType<typeof getPaymentList>>;
+
+      if (hasSession) {
+        [voucherResponse, paymentListResponse] = await Promise.all([
+          downloadPaymentVoucher(request),
+          getPaymentList(request).catch(() => EMPTY_PAYMENT_LIST),
+        ]);
+      } else {
+        voucherResponse = await downloadPaymentVoucher(request);
+        paymentListResponse = EMPTY_PAYMENT_LIST;
+      }
 
       if (voucherResponse.status === "success" && voucherResponse.body) {
         const blob = base64ToBlob(voucherResponse.body);

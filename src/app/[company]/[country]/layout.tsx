@@ -43,12 +43,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const invoicePayCompanyUnique = searchParams.get("companyUniqueName") ?? "";
   useEffect(() => {
     if (!isInvoicePayPage) return;
-    if (
-      !invoicePayCompany ||
-      !invoicePayCountry ||
-      !invoicePayAccount ||
-      !invoicePayVoucher
-    )
+    if (!invoicePayCompany || !invoicePayCountry || !invoicePayAccount || !invoicePayVoucher)
       return;
     const query = new URLSearchParams();
     query.set("voucher", invoicePayVoucher);
@@ -74,10 +69,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   }, [isPreviewPage, companyName]);
 
   const hideSidebar =
-    isLoginPage ||
-    isAuthPage ||
-    isInvoicePayPage ||
-    (isPreviewPage && !showSidebarOnPreview);
+    isLoginPage || isAuthPage || isInvoicePayPage || (isPreviewPage && !showSidebarOnPreview);
 
   // While redirecting from invoice-pay, show only a minimal spinner (no sidebar)
   if (isInvoicePayPage) {
@@ -129,17 +121,21 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (hasCalledApis.current) return;
+    if (typeof window === "undefined") return;
+
+    const sessionId = getSessionCookie(companyName);
+    if (!sessionId) return;
 
     let companyUniqueName = companyUniqueNameFromRedux;
     let accountUniqueName = accountUniqueNameFromRedux;
 
-    if (!companyUniqueName && typeof window !== "undefined") {
+    if (!companyUniqueName) {
       const userData = localStorage.getItem("userData");
       if (userData) {
         try {
           const parsedData = JSON.parse(userData);
           companyUniqueName = parsedData.companyUniqueName;
-          accountUniqueName = parsedData.account?.uniqueName;
+          accountUniqueName = parsedData.account?.uniqueName ?? accountUniqueName;
         } catch (e) {
           console.error("Error parsing userData:", e);
         }
@@ -148,8 +144,12 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
 
     if (companyName && companyUniqueName && accountUniqueName) {
       hasCalledApis.current = true;
-      dispatch(fetchCompanyDetails({ companyName, companyUniqueName, accountUniqueName }));
-      dispatch(fetchUserDetails({ companyName, companyUniqueName, accountUniqueName }));
+      dispatch(fetchCompanyDetails({ companyName, companyUniqueName, accountUniqueName })).catch(
+        () => {}
+      );
+      dispatch(fetchUserDetails({ companyName, companyUniqueName, accountUniqueName })).catch(
+        () => {}
+      );
     }
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
