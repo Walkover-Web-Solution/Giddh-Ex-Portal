@@ -115,7 +115,7 @@ export default function InvoicePreviewPage() {
         setPaymentDetails(voucherRes.body);
         const base64 = voucherRes.body.vouchers[0]?.content;
         if (base64) {
-          const blob = base64ToBlob(base64);
+          const blob = base64ToBlob(base64, "application/pdf");
           setPdfUrl(URL.createObjectURL(blob));
         }
       } else {
@@ -165,7 +165,7 @@ export default function InvoicePreviewPage() {
     });
 
     if (res.status === "success") {
-      const blob = base64ToBlob(res.body);
+      const blob = base64ToBlob(res.body, "application/pdf");
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
