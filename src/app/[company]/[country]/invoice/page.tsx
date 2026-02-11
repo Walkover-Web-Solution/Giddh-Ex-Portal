@@ -28,6 +28,7 @@ import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortOrder } from "@/constants/sort";
+import { InvoiceBalanceStatus } from "@/constants/invoiceStatus";
 import type { Invoice, InvoiceSortColumn } from "./types";
 
 export default function InvoicesPage() {
@@ -62,15 +63,6 @@ export default function InvoicesPage() {
       dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName }));
     }
   }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
-
-  const calculateOverdue = (dueDate: string): string => {
-    if (!dueDate) return "";
-    const due = new Date(dueDate);
-    const today = new Date();
-    const diffTime = today.getTime() - due.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? `Overdue by ${diffDays} day${diffDays > 1 ? "s" : ""}` : "";
-  };
 
   const handleInvoiceClick = (invoiceUniqueName: string) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
@@ -147,16 +139,37 @@ export default function InvoicesPage() {
 
   const allInvoicesData: Invoice[] = useMemo(
     () =>
-      (allInvoices || []).map((invoice) => ({
-        id: invoice.uniqueName,
-        invoiceNo: invoice.voucherNumber,
-        date: invoice.voucherDate,
-        total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
-          decimals: 0,
-        }),
-        status: invoice.balanceStatus?.toUpperCase() || "UNPAID",
-        overdue: invoice.balanceStatus !== "paid" ? calculateOverdue(invoice.dueDate) : "",
-      })),
+      (allInvoices || []).map((invoice) => {
+        const status = (invoice.balanceStatus || "").toUpperCase().replace(/\s+/g, "-");
+        const isPayableStatus =
+          status === InvoiceBalanceStatus.UNPAID || status === InvoiceBalanceStatus.PARTIAL_PAID;
+        const isHoldOrCancel =
+          status === InvoiceBalanceStatus.HOLD || status === InvoiceBalanceStatus.CANCEL;
+        const isPendingPayment =
+          (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
+        const showPayNow = isPayableStatus && !isHoldOrCancel && !isPendingPayment;
+        const rawOverdue = invoice.overdueDays ?? "";
+        const overdueFormatted =
+          rawOverdue && /\b1\s+days\b/i.test(rawOverdue)
+            ? rawOverdue.replace(/\b1\s+days\b/i, "1 day")
+            : rawOverdue;
+        return {
+          id: invoice.uniqueName ?? "",
+          invoiceNo: invoice.voucherNumber ?? "",
+          date: invoice.voucherDate ?? "",
+          total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
+            decimals: 0,
+          }),
+          status: status || InvoiceBalanceStatus.UNKNOWN,
+          overdue:
+            status === InvoiceBalanceStatus.PAID ||
+            status === InvoiceBalanceStatus.HOLD ||
+            status === InvoiceBalanceStatus.CANCEL
+              ? "-"
+              : overdueFormatted,
+          showPayNow,
+        };
+      }),
     [allInvoices, currency]
   );
 
@@ -164,11 +177,14 @@ export default function InvoicesPage() {
     () =>
       allInvoicesData.filter((invoice) => {
         if (statusFilter === "All Invoices") return true;
-        if (statusFilter === "Paid" && invoice.status !== "PAID") return false;
-        if (statusFilter === "Partial Paid" && invoice.status !== "PARTIAL-PAID") return false;
-        if (statusFilter === "Unpaid" && invoice.status !== "UNPAID") return false;
-        if (statusFilter === "Hold" && invoice.status !== "HOLD") return false;
-        if (statusFilter === "Cancel" && invoice.status !== "CANCEL") return false;
+        if (statusFilter === "Paid" && invoice.status !== InvoiceBalanceStatus.PAID) return false;
+        if (statusFilter === "Partial Paid" && invoice.status !== InvoiceBalanceStatus.PARTIAL_PAID)
+          return false;
+        if (statusFilter === "Unpaid" && invoice.status !== InvoiceBalanceStatus.UNPAID)
+          return false;
+        if (statusFilter === "Hold" && invoice.status !== InvoiceBalanceStatus.HOLD) return false;
+        if (statusFilter === "Cancel" && invoice.status !== InvoiceBalanceStatus.CANCEL)
+          return false;
         return true;
       }),
     [allInvoicesData, statusFilter]
@@ -258,7 +274,9 @@ export default function InvoicesPage() {
       accessor: (row: Invoice) => (
         <span
           className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-            row.status === "PAID" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"
+            row.status === InvoiceBalanceStatus.PAID
+              ? "bg-green-100 text-green-800"
+              : "bg-orange-100 text-orange-800"
           }`}
         >
           {row.status}
@@ -273,12 +291,9 @@ export default function InvoicesPage() {
       header: "Action",
       accessor: (row: Invoice) => (
         <div className="flex gap-2">
-          <PayNow
-            invoiceUniqueName={row.id}
-            invoiceNumber={row.invoiceNo}
-            canPay={row.status !== "PAID"}
-            size="sm"
-          />
+          {row.showPayNow && (
+            <PayNow invoiceUniqueName={row.id} invoiceNumber={row.invoiceNo} canPay size="sm" />
+          )}
           <button
             onClick={() => handleDownloadInvoice(row.id, row.invoiceNo)}
             disabled={downloadingInvoice === row.id}
@@ -420,10 +435,10 @@ export default function InvoicesPage() {
           ) : invoicesData.length === 0 ? (
             <div className="py-12 text-center text-gray-500">No invoices found</div>
           ) : (
-            <DataTable columns={columns} data={invoicesData} keyExtractor={(row) => row.id} />
+            <DataTable columns={columns} data={paginatedData} keyExtractor={(row) => row.id} />
           )}
 
-          {invoicesData.length > 10 && (
+          {invoicesData.length > itemsPerPage && (
             <Pagination
               currentPage={currentPage}
               totalPages={Math.ceil(invoicesData.length / itemsPerPage)}

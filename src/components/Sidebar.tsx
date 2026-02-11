@@ -84,13 +84,13 @@ export function Sidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleCollapsed}
-                className="hidden text-gray-400 hover:bg-gray-50 hover:text-blue-900 md:flex"
+                className="hidden text-black hover:bg-gray-50 hover:text-blue-900 md:flex"
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
                 {isCollapsed ? (
-                  <ChevronRightIcon className="size-5" aria-hidden />
+                  <ChevronRightIcon className="size-6" aria-hidden />
                 ) : (
-                  <ChevronLeftIcon className="size-5" aria-hidden />
+                  <ChevronLeftIcon className="size-6" aria-hidden />
                 )}
               </Button>
               <Button
@@ -125,7 +125,7 @@ export function Sidebar() {
                           className={mergeClassNames(
                             active
                               ? "bg-gray-50 text-blue-900"
-                              : "text-gray-500 hover:bg-gray-50 hover:text-blue-900",
+                              : "hover:bg-gray-50 hover:text-blue-900",
                             "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6",
                             isCollapsed && "md:justify-center md:px-2"
                           )}
@@ -134,7 +134,7 @@ export function Sidebar() {
                           <Icon
                             aria-hidden
                             className={mergeClassNames(
-                              active ? "text-blue-900" : "text-gray-400 group-hover:text-blue-900",
+                              active ? "text-blue-900" : "group-hover:text-blue-900",
                               "size-6 shrink-0"
                             )}
                           />

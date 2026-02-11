@@ -32,3 +32,15 @@ export enum FileType {
   PDF = "pdf",
   XLSX = "xlsx",
 }
+
+/** MIME and extension per FileType for exports (account statement, etc.). */
+export const EXPORT_FILE_CONFIG: Record<FileType, { mime: string; extension: string }> = {
+  [FileType.PDF]: {
+    mime: "application/pdf",
+    extension: "pdf",
+  },
+  [FileType.XLSX]: {
+    mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    extension: "xlsx",
+  },
+};

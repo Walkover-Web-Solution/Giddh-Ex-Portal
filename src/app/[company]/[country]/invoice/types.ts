@@ -5,6 +5,7 @@ export interface Invoice {
   total: string;
   status: string;
   overdue: string;
+  showPayNow: boolean;
 }
 
 /** Sortable column for invoice list */

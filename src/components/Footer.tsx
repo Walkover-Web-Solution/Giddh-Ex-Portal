@@ -20,9 +20,9 @@ export function Footer({
   if (variant === "minimal") {
     return (
       <footer className="bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
+        <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
           <div className="flex justify-center gap-x-6 md:order-2" />
-          <p className="mt-8 text-center text-sm/6 text-gray-600 md:order-1 md:mt-0">
+          <p className="mt-4 text-center text-xs text-gray-500 md:order-1 md:mt-0">
             &copy; {year} Giddh. All rights reserved.
           </p>
         </div>
@@ -32,23 +32,27 @@ export function Footer({
 
   return (
     <footer className="bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
-        <div className="flex justify-center gap-x-6 md:order-2">
-          <span className="text-lg font-bold tracking-wide text-blue-900">GIDDH</span>
+      <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
+        <div className="flex justify-center gap-x-6 md:order-1 md:justify-start">
+          <span className="text-xl font-bold tracking-wide text-blue-900">GIDDH</span>
         </div>
-        <div className="mt-8 text-center text-sm/6 text-gray-600 md:order-1 md:mt-0">
-          <p>&copy; {year} {companyName}</p>
+
+        <div className="text-md mt-4 text-center text-gray-600 md:order-2 md:mt-0">
+          <p className="font-semibold text-gray-800">{companyName}</p>
+
+          {companyAddress && <p className="mt-0.5 text-sm text-gray-500">{companyAddress}</p>}
+
+          {gstin && <p className="mt-0.5 text-xs text-gray-500">GSTIN: {gstin}</p>}
+        </div>
+        <div className="mt-4 text-center md:order-3 md:mt-0 md:text-right">
+          <p className="text-xs font-medium text-gray-700">Contact Us</p>
           <a
             href={`mailto:${supportEmail}`}
-            className="mt-1 flex items-center justify-center gap-1.5 text-xs hover:text-blue-600"
+            className="mt-1 inline-flex items-center justify-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 md:justify-end"
           >
-            <EnvelopeIcon className="h-3.5 w-3.5" />
+            <EnvelopeIcon className="h-4 w-4" />
             <span className="break-all sm:break-normal">{supportEmail}</span>
           </a>
-          {companyAddress && (
-            <p className="mt-1 max-w-xs break-words text-xs text-gray-500">{companyAddress}</p>
-          )}
-          {gstin && <p className="mt-1 text-xs text-gray-500">GSTIN: {gstin}</p>}
         </div>
       </div>
     </footer>

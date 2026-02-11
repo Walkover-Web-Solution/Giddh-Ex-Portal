@@ -86,10 +86,20 @@ export async function getAccountStatement(
   return response.data;
 }
 
+export interface DownloadAccountStatementResponse {
+  status: string;
+  message?: string;
+  body?: {
+    data: string;
+    type: string;
+    name?: string;
+  };
+}
+
 export async function downloadAccountStatement(
   request: AccountStatementRequest,
   fileType: FileType = FileType.PDF
-): Promise<{ status: string; body: { data: string; type: string; name: string } }> {
+): Promise<DownloadAccountStatementResponse> {
   const response = await apiClient.get(
     API_PATHS.exportAccountStatement(
       request.companyUniqueName,
