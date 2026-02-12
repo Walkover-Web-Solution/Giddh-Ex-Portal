@@ -227,7 +227,7 @@ export default function AccountStatementPage() {
         header: "Details",
         accessor: (row: Transaction) => row.voucherNumber,
         headerClassName: "hidden md:table-cell",
-        cellClassName: "hidden md:table-cell text-gray-600",
+        cellClassName: "hidden md:table-cell",
       },
       {
         header: "Amount",
@@ -328,11 +328,11 @@ export default function AccountStatementPage() {
                   <div className="mt-6 flex md:justify-end">
                     <div className="w-full md:max-w-sm">
                       <div className="rounded-lg bg-gray-100">
-                        <div className="bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700">
+                        <div className="bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-900">
                           Account Summary
                         </div>
                         <div className="space-y-2 px-4 py-3 text-sm">
-                          <div className="flex justify-between text-gray-600">
+                          <div className="flex justify-between text-gray-900">
                             <span>Opening Balance</span>
                             <span className="font-medium">
                               {formatCurrency(
@@ -341,13 +341,13 @@ export default function AccountStatementPage() {
                               )}
                             </span>
                           </div>
-                          <div className="flex justify-between text-gray-600">
+                          <div className="flex justify-between text-gray-900">
                             <span>Invoiced Amount</span>
                             <span className="font-medium">
                               {formatCurrency(summary.debitTotal, accountAddress?.currency?.symbol)}
                             </span>
                           </div>
-                          <div className="flex justify-between text-gray-600">
+                          <div className="flex justify-between text-gray-900">
                             <span>Amount Paid</span>
                             <span className="font-medium">
                               {formatCurrency(

@@ -190,7 +190,7 @@ export function TAccountViewTable({
                       <div className="whitespace-nowrap text-sm text-gray-900">
                         {isLedgerTransaction(dr) ? dr.entryDate : (dr as Transaction).date}
                       </div>
-                      <div className="line-clamp-2 text-sm text-gray-500">
+                      <div className="line-clamp-2 text-sm">
                         {isLedgerTransaction(dr)
                           ? formatParticularWithPrefix(dr.particular.name, dr.type)
                           : (dr as Transaction).particular}
@@ -258,7 +258,7 @@ export function TAccountViewTable({
                       <div className="whitespace-nowrap text-sm text-gray-900">
                         {isLedgerTransaction(cr) ? cr.entryDate : (cr as Transaction).date}
                       </div>
-                      <div className="line-clamp-2 text-sm text-gray-500">
+                      <div className="line-clamp-2 text-sm">
                         {isLedgerTransaction(cr)
                           ? formatParticularWithPrefix(cr.particular.name, cr.type)
                           : (cr as Transaction).particular}
