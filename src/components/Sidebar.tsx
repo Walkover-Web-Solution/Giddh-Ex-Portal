@@ -185,7 +185,10 @@ export function Sidebar() {
                   className="shrink-0 text-gray-400 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
                   aria-label="Logout"
                 >
-                  <ArrowRightOnRectangleIcon className="!h-[32px] !w-[24px]" aria-hidden />
+                  <ArrowRightOnRectangleIcon
+                    className="!h-[32px] !w-[24px] !text-gray-600"
+                    aria-hidden
+                  />
                 </Button>
               </div>
             </div>
@@ -211,10 +214,10 @@ export function Sidebar() {
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="!h-12 !w-12 shrink-0 text-gray-400 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
+                  className="!h-12 !w-12 shrink-0 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
                   aria-label="Logout"
                 >
-                  <ArrowRightOnRectangleIcon className="size-6" aria-hidden />
+                  <ArrowRightOnRectangleIcon className="size-6 !text-black" aria-hidden />
                 </Button>
               </div>
             </div>

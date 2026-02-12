@@ -253,7 +253,7 @@ export function DateRangeCalendar({
   };
 
   const positionClasses = {
-    left: "left-[-20]",
+    left: "left-[-20px] sm:left-[-10]",
     right: "left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-0",
     center: "left-1/2 -translate-x-1/2",
   };
@@ -343,7 +343,7 @@ export function DateRangeCalendar({
                     type="button"
                     onClick={() => handleDateClick(day)}
                     disabled={!isCurrentMonth || isDisabled}
-                    className={`relative h-7 bg-white text-xs disabled:cursor-not-allowed disabled:text-gray-400 sm:h-10 sm:text-sm ${
+                    className={`relative h-7 bg-white text-xs disabled:cursor-not-allowed disabled:text-gray-400 sm:h-7 sm:text-sm ${
                       isCurrentMonth && !isDisabled ? "hover:bg-gray-50" : ""
                     }`}
                     aria-label={

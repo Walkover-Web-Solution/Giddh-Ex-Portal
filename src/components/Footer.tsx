@@ -45,7 +45,7 @@ export function Footer({
           {gstin && <p className="mt-0.5 text-xs text-gray-500">GSTIN: {gstin}</p>}
         </div>
         <div className="mt-4 text-center md:order-3 md:mt-0 md:text-right">
-          <p className="text-xs font-medium text-gray-700">Contact Us</p>
+          <p className="text-xs font-medium text-gray-900">Contact Us</p>
           <a
             href={`mailto:${supportEmail}`}
             className="mt-1 inline-flex items-center justify-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 md:justify-end"
