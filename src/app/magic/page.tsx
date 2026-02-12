@@ -96,7 +96,7 @@ export default function Magic() {
           from: formatDateToAPI(fromDate),
           to: formatDateToAPI(toDate),
         };
-        if (viewMode === LedgerView.STATEMENT_VIEW) {
+        if (viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) {
           request.page = currentPage;
           request.count = itemsPerPage;
         }
@@ -117,13 +117,8 @@ export default function Magic() {
             apiTotalPages: responseApiTotalPages,
           } = result.data;
 
-          if (viewMode === LedgerView.STATEMENT_VIEW) {
-            setApiTotalItems(responseApiTotalItems);
-            setApiTotalPages(responseApiTotalPages);
-          } else {
-            setApiTotalItems(undefined);
-            setApiTotalPages(undefined);
-          }
+          setApiTotalItems(responseApiTotalItems);
+          setApiTotalPages(responseApiTotalPages);
 
           setTransactions(transformedTransactions);
           setCurrencyData(extractedCurrencyData);
@@ -194,14 +189,7 @@ export default function Magic() {
     };
 
     fetchMagicLinkData();
-  }, [
-    linkId,
-    viewMode,
-    fromDate.getTime(),
-    toDate.getTime(),
-    viewMode === LedgerView.STATEMENT_VIEW ? currentPage : 1,
-    viewMode === LedgerView.STATEMENT_VIEW ? itemsPerPage : PAGINATION_LIMIT,
-  ]);
+  }, [linkId, viewMode, fromDate.getTime(), toDate.getTime(), currentPage, itemsPerPage]);
 
   const filteredTransactions = useMemo(() => {
     const searchValue = searchQuery.toLowerCase().trim();
@@ -309,7 +297,7 @@ export default function Magic() {
   }, [linkId, viewMode, searchQuery, fromDate.getTime(), toDate.getTime()]);
 
   const totalEntries = useMemo(() => {
-    if (viewMode === LedgerView.STATEMENT_VIEW && apiTotalItems != null) {
+    if (apiTotalItems != null) {
       return apiTotalItems;
     }
     if (viewMode === LedgerView.STATEMENT_VIEW) {
@@ -354,6 +342,13 @@ export default function Magic() {
 
   const paginatedTViewData = useMemo(() => {
     if (viewMode !== LedgerView.T_VIEW) return null;
+    if (apiTotalPages != null && apiTotalPages > 1) {
+      return {
+        transactions: filteredTransactions,
+        debitTransactions: filteredDebitTransactions ?? [],
+        creditTransactions: filteredCreditTransactions ?? [],
+      };
+    }
     const start = (currentPage - 1) * itemsPerPage;
     const end = currentPage * itemsPerPage;
     return {
@@ -368,10 +363,11 @@ export default function Magic() {
     filteredCreditTransactions,
     currentPage,
     itemsPerPage,
+    apiTotalPages,
   ]);
 
   const totalPages =
-    viewMode === LedgerView.STATEMENT_VIEW && apiTotalPages != null
+    apiTotalPages != null
       ? Math.max(1, apiTotalPages)
       : Math.max(1, Math.ceil(totalEntries / itemsPerPage));
   const hasMultiplePages = totalPages > 1;
@@ -385,8 +381,7 @@ export default function Magic() {
         filteredDebitCreditTransactions,
         filteredDebitTransactions,
         filteredCreditTransactions,
-        apiTotalTransactions:
-          viewMode === LedgerView.STATEMENT_VIEW ? apiTotalItems : undefined,
+        apiTotalTransactions: viewMode === LedgerView.STATEMENT_VIEW ? apiTotalItems : undefined,
       }),
     [
       ledgerBalance,
