@@ -113,6 +113,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
 export default function CompanyLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
+  const pathname = usePathname();
   const dispatch = useAppDispatch();
   const hasCalledApis = useRef(false);
 
@@ -123,6 +124,9 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
   useEffect(() => {
     if (hasCalledApis.current) return;
     if (typeof window === "undefined") return;
+
+    const isLoginOrAuth = pathname?.includes("/login") || pathname?.includes("/auth");
+    if (isLoginOrAuth) return;
 
     const sessionId = getSessionCookie(companyName);
     if (!sessionId) return;
@@ -155,7 +159,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
         () => {}
       );
     }
-  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+  }, [dispatch, companyName, pathname, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
   return (
     <SessionGuard>
