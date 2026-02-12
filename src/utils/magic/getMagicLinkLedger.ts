@@ -34,6 +34,8 @@ export interface LedgerTransaction {
       name: string;
     };
   };
+  attachedFileName?: string;
+  attachedFileUniqueName?: string;
 }
 
 export interface MagicLinkLedgerResponse {

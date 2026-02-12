@@ -4,11 +4,19 @@ import { Transaction, Currency, CurrencyInfo } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { useMemo, useState } from "react";
-import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
+import {
+  downloadMagicLinkVoucher,
+  downloadMagicLinkAttachment,
+} from "@/utils/magic/downloadVoucher";
 import { formatParticularWithPrefix } from "@/utils/magic/transformLedgerTransaction";
+import {
+  hasAttachmentId,
+  getAttachmentTooltipTitle,
+  getAttachmentDisplayName,
+} from "@/utils/magic/attachmentUtils";
 import { useToast } from "@/contexts/ToastContext";
 import { DataTable } from "@/components/ui/DataTable";
-import { ArrowDownTrayIcon, ArrowPathIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon, ArrowPathIcon, PaperClipIcon } from "@heroicons/react/20/solid";
 
 interface Props {
   transactions: Transaction[];
@@ -32,6 +40,36 @@ export function TAccountViewTable({
   const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingVouchers, setDownloadingVouchers] = useState<Set<string>>(new Set());
+  const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<string | null>(null);
+
+  const handleDownloadAttachment = async (
+    tx: LedgerTransaction,
+    index: number,
+    side: "debit" | "credit"
+  ) => {
+    if (!hasAttachmentId(tx.attachedFileUniqueName)) return;
+
+    const attachmentId = `att-${side}-${index}-${tx.entryUniqueName ?? tx.attachedFileUniqueName}`;
+    if (downloadingAttachmentId === attachmentId) return;
+
+    setDownloadingAttachmentId(attachmentId);
+    try {
+      await downloadMagicLinkAttachment({
+        linkId,
+        attachedFileUniqueName: tx.attachedFileUniqueName!,
+        attachedFileName: tx.attachedFileName,
+        voucherName: tx.voucherName,
+        voucherUniqueName: tx.voucherUniqueName,
+        entryUniqueName: tx.entryUniqueName,
+        voucherVersion: 2,
+        onError: (msg) => showToast(msg, "error"),
+      });
+    } catch {
+      // Toast already shown via onError
+    } finally {
+      setDownloadingAttachmentId(null);
+    }
+  };
 
   const handleDownload = async (tx: LedgerTransaction, index: number, side: "debit" | "credit") => {
     if (!tx.voucherNumber || !tx.voucherName) {
@@ -179,8 +217,18 @@ export function TAccountViewTable({
               cr && isLedgerTransaction(cr)
                 ? `tx-credit-${i}-${cr.entryUniqueName || cr.voucherNumber || "tx"}`
                 : null;
+            const debitAttachmentId =
+              dr && isLedgerTransaction(dr) && hasAttachmentId(dr.attachedFileUniqueName)
+                ? `att-debit-${i}-${dr.entryUniqueName ?? dr.attachedFileUniqueName}`
+                : null;
+            const creditAttachmentId =
+              cr && isLedgerTransaction(cr) && hasAttachmentId(cr.attachedFileUniqueName)
+                ? `att-credit-${i}-${cr.entryUniqueName ?? cr.attachedFileUniqueName}`
+                : null;
             const isDownloadingDebit = downloadingTransactionId === debitTransactionId;
             const isDownloadingCredit = downloadingTransactionId === creditTransactionId;
+            const isDownloadingDebitAtt = downloadingAttachmentId === debitAttachmentId;
+            const isDownloadingCreditAtt = downloadingAttachmentId === creditAttachmentId;
 
             return (
               <div key={i} className="grid min-h-[48px] grid-cols-2 sm:min-h-[48px]">
@@ -234,6 +282,28 @@ export function TAccountViewTable({
                               </div>
                             )}
                         </div>
+                        {isLedgerTransaction(dr) && hasAttachmentId(dr.attachedFileUniqueName) && (
+                          <div className="group/attachment relative shrink-0">
+                            <span
+                              className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/attachment:opacity-100"
+                              role="tooltip"
+                            >
+                              {getAttachmentTooltipTitle(dr.attachedFileName)}
+                            </span>
+                            <button
+                              onClick={() => handleDownloadAttachment(dr, i, "debit")}
+                              disabled={isDownloadingDebitAtt}
+                              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
+                              aria-label={getAttachmentTooltipTitle(dr.attachedFileName)}
+                            >
+                              {isDownloadingDebitAtt ? (
+                                <ArrowPathIcon className="h-3 w-3 animate-spin sm:h-3.5 sm:w-3.5" />
+                              ) : (
+                                <PaperClipIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        )}
                         {isLedgerTransaction(dr) && dr.voucherGenerated && dr.voucherNumber && (
                           <button
                             onClick={() => handleDownload(dr, i, "debit")}
@@ -305,6 +375,28 @@ export function TAccountViewTable({
                               </div>
                             )}
                         </div>
+                        {isLedgerTransaction(cr) && hasAttachmentId(cr.attachedFileUniqueName) && (
+                          <div className="group/attachment relative shrink-0">
+                            <span
+                              className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/attachment:opacity-100"
+                              role="tooltip"
+                            >
+                              {getAttachmentTooltipTitle(cr.attachedFileName)}
+                            </span>
+                            <button
+                              onClick={() => handleDownloadAttachment(cr, i, "credit")}
+                              disabled={isDownloadingCreditAtt}
+                              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
+                              aria-label={getAttachmentTooltipTitle(cr.attachedFileName)}
+                            >
+                              {isDownloadingCreditAtt ? (
+                                <ArrowPathIcon className="h-3 w-3 animate-spin sm:h-3.5 sm:w-3.5" />
+                              ) : (
+                                <PaperClipIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        )}
                         {isLedgerTransaction(cr) && cr.voucherGenerated && cr.voucherNumber && (
                           <button
                             onClick={() => handleDownload(cr, i, "credit")}

@@ -9,14 +9,22 @@ import {
 } from "@/constants/ledger";
 import { Currency, CurrencyInfo, Transaction } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
-import { downloadMagicLinkVoucher } from "@/utils/magic/downloadVoucher";
+import {
+  downloadMagicLinkVoucher,
+  downloadMagicLinkAttachment,
+} from "@/utils/magic/downloadVoucher";
 import { useState, useMemo } from "react";
 import { getCurrencyConfig } from "./currencyUtils";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { transformLedgerTransactionToDisplay } from "@/utils/magic/transformLedgerTransaction";
+import {
+  hasAttachmentId,
+  getAttachmentTooltipTitle,
+  getAttachmentDisplayName,
+} from "@/utils/magic/attachmentUtils";
 import { useToast } from "@/contexts/ToastContext";
 import { DataTable } from "@/components/ui/DataTable";
-import { ArrowDownTrayIcon, ArrowPathIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon, ArrowPathIcon, PaperClipIcon } from "@heroicons/react/20/solid";
 
 interface Props {
   selectedCurrency: Currency;
@@ -41,6 +49,7 @@ export function StatementViewTable({
 }: Props) {
   const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
+  const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<string | null>(null);
 
   const { totalDebit, totalCredit } = useMemo(() => {
     if (!debitCreditTransactions?.length) {
@@ -79,6 +88,31 @@ export function StatementViewTable({
       showToast(e.message || `Invoice ${transaction.voucherNumber} cannot be downloaded`, "error");
     } finally {
       setDownloadingTransactionId(null);
+    }
+  };
+
+  const handleDownloadAttachment = async (transaction: LedgerTransaction, index: number) => {
+    if (!hasAttachmentId(transaction.attachedFileUniqueName)) return;
+
+    const attachmentId = `att-${index}-${transaction.entryUniqueName ?? transaction.attachedFileUniqueName}`;
+    if (downloadingAttachmentId === attachmentId) return;
+
+    setDownloadingAttachmentId(attachmentId);
+    try {
+      await downloadMagicLinkAttachment({
+        linkId,
+        attachedFileUniqueName: transaction.attachedFileUniqueName!,
+        attachedFileName: transaction.attachedFileName,
+        voucherName: transaction.voucherName,
+        voucherUniqueName: transaction.voucherUniqueName,
+        entryUniqueName: transaction.entryUniqueName,
+        voucherVersion: 2,
+        onError: (msg) => showToast(msg, "error"),
+      });
+    } catch {
+      // Toast already shown via onError
+    } finally {
+      setDownloadingAttachmentId(null);
     }
   };
 
@@ -133,6 +167,11 @@ export function StatementViewTable({
     showDownload,
     onDownload,
     isDownloading,
+    voucherDownloadTitle,
+    showAttachment,
+    onDownloadAttachment,
+    isDownloadingAttachment,
+    attachmentTitle,
   }: any) => (
     <div className="flex items-center justify-end gap-2">
       <div className="text-right">
@@ -154,19 +193,49 @@ export function StatementViewTable({
           )}
       </div>
 
+      {showAttachment && (
+        <div className="group/attachment relative shrink-0">
+          <span
+            className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/attachment:opacity-100"
+            role="tooltip"
+          >
+            {attachmentTitle ?? "Download file"}
+          </span>
+          <button
+            onClick={onDownloadAttachment}
+            disabled={isDownloadingAttachment}
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
+            aria-label={attachmentTitle ?? "Download file"}
+          >
+            {isDownloadingAttachment ? (
+              <ArrowPathIcon className="h-3 w-3 animate-spin sm:h-3.5 sm:w-3.5" />
+            ) : (
+              <PaperClipIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            )}
+          </button>
+        </div>
+      )}
       {showDownload && (
-        <button
-          onClick={onDownload}
-          disabled={isDownloading}
-          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
-          title="Download voucher"
-        >
-          {isDownloading ? (
-            <ArrowPathIcon className="h-3 w-3 animate-spin sm:h-3.5 sm:w-3.5" />
-          ) : (
-            <ArrowDownTrayIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-          )}
-        </button>
+        <div className="group/voucher relative shrink-0">
+          <span
+            className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/voucher:opacity-100"
+            role="tooltip"
+          >
+            {voucherDownloadTitle ?? "Download voucher"}
+          </span>
+          <button
+            onClick={onDownload}
+            disabled={isDownloading}
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
+            aria-label={voucherDownloadTitle ?? "Download voucher"}
+          >
+            {isDownloading ? (
+              <ArrowPathIcon className="h-3 w-3 animate-spin sm:h-3.5 sm:w-3.5" />
+            ) : (
+              <ArrowDownTrayIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            )}
+          </button>
+        </div>
       )}
     </div>
   );
@@ -203,7 +272,12 @@ export function StatementViewTable({
         <tbody className="divide-y divide-gray-200 bg-white">
           {displayTransactions.map((item, i) => {
             const txId = `tx-${i}-${item.entryUniqueName ?? ""}`;
+            const attachmentId = item.transaction
+              ? `att-${i}-${item.transaction.entryUniqueName ?? item.transaction.attachedFileUniqueName}`
+              : null;
             const downloading = downloadingTransactionId === txId;
+            const downloadingAtt = downloadingAttachmentId === attachmentId;
+            const hasAttachment = hasAttachmentId(item.transaction?.attachedFileUniqueName);
 
             return (
               <tr key={i}>
@@ -212,15 +286,28 @@ export function StatementViewTable({
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm">
                   {item.particular}
-                  {item.tx?.inventory?.stock?.name ? ` (${item.tx.inventory.stock.name})` : ""}
+                  {item.transaction?.inventory?.stock?.name
+                    ? ` (${item.transaction.inventory.stock.name})`
+                    : ""}
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm">
                   <AmountCell
                     amount={item.debit}
                     convertedAmount={item.debitConverted}
                     showDownload={item.debit !== null && item.voucherGenerated}
-                    onDownload={() => handleDownload(item.tx, i)}
+                    onDownload={() => handleDownload(item.transaction, i)}
                     isDownloading={downloading}
+                    voucherDownloadTitle={
+                      item.voucherNumber ? `DOWNLOAD INVOICE : ${item.voucherNumber}` : undefined
+                    }
+                    showAttachment={hasAttachment && item.debit !== null}
+                    onDownloadAttachment={
+                      item.transaction
+                        ? () => handleDownloadAttachment(item.transaction!, i)
+                        : undefined
+                    }
+                    isDownloadingAttachment={downloadingAtt}
+                    attachmentTitle={getAttachmentTooltipTitle(item.transaction?.attachedFileName)}
                   />
                 </td>
 
@@ -229,8 +316,19 @@ export function StatementViewTable({
                     amount={item.credit}
                     convertedAmount={item.creditConverted}
                     showDownload={item.credit !== null && item.voucherGenerated}
-                    onDownload={() => handleDownload(item.tx, i)}
+                    onDownload={() => handleDownload(item.transaction, i)}
                     isDownloading={downloading}
+                    voucherDownloadTitle={
+                      item.voucherNumber ? `DOWNLOAD INVOICE : ${item.voucherNumber}` : undefined
+                    }
+                    showAttachment={hasAttachment && item.credit !== null}
+                    onDownloadAttachment={
+                      item.transaction
+                        ? () => handleDownloadAttachment(item.transaction!, i)
+                        : undefined
+                    }
+                    isDownloadingAttachment={downloadingAtt}
+                    attachmentTitle={getAttachmentTooltipTitle(item.transaction?.attachedFileName)}
                   />
                 </td>
 

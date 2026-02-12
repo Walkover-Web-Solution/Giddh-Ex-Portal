@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getConfig } from "@/config";
+import { getAttachmentDisplayName, hasAttachmentId } from "./attachmentUtils";
 
 export interface DownloadVoucherRequest {
   linkId: string;
@@ -8,6 +9,17 @@ export interface DownloadVoucherRequest {
   voucherUniqueName?: string;
   entryUniqueName?: string;
   voucherVersion?: number;
+}
+
+export interface DownloadAttachmentRequest {
+  linkId: string;
+  attachedFileUniqueName: string;
+  attachedFileName?: string;
+  voucherName?: string;
+  voucherUniqueName?: string;
+  entryUniqueName?: string;
+  voucherVersion?: number;
+  onError?: (message: string) => void;
 }
 
 /**
@@ -99,6 +111,103 @@ export async function downloadMagicLinkVoucher(request: DownloadVoucherRequest):
       error.response?.data?.message ||
       error.message ||
       `Invoice for ${request.voucherNumber} cannot be downloaded now.`;
+    throw new Error(errorMessage);
+  }
+}
+
+/**
+ * Downloads an attached file for a magic link transaction.
+ * v2: POST with downloadOption=ATTACHMENT; v1: GET ledger/upload/{attachedFileUniqueName}
+ * @param request - Request parameters for downloading the attachment
+ * @returns Promise that resolves when download is complete
+ */
+export async function downloadMagicLinkAttachment(
+  request: DownloadAttachmentRequest
+): Promise<void> {
+  try {
+    const config = getConfig();
+    const baseURL = config.GIDDH_API_URL;
+    const voucherVersion = request.voucherVersion ?? 2;
+    const linkId = request.linkId;
+    const downloadFilename = getAttachmentDisplayName(request.attachedFileName);
+
+    if (!linkId || !hasAttachmentId(request.attachedFileUniqueName)) {
+      throw new Error("Magic link ID or attachment identifier not found.");
+    }
+
+    const headers = {
+      accept: "application/json, text/plain, */*",
+      "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+      origin: typeof window !== "undefined" ? window.location.origin : "",
+      referer: typeof window !== "undefined" ? window.location.origin + "/" : "",
+    };
+
+    if (voucherVersion === 2) {
+      const url = `${baseURL}/magic-link/${encodeURIComponent(linkId)}/download-voucher?voucherVersion=2&downloadOption=ATTACHMENT`;
+      const payload: Record<string, string> = {};
+      if (request.voucherName) payload.voucherType = request.voucherName;
+      if (request.voucherUniqueName) payload.uniqueName = request.voucherUniqueName;
+      else if (request.entryUniqueName) payload.entryUniqueName = request.entryUniqueName;
+
+      const response = await axios.post(url, payload, {
+        responseType: "blob",
+        headers,
+      });
+
+      const blob = response.data as Blob;
+      if (blob.type?.toLowerCase().includes("application/json")) {
+        const text = await blob.text();
+        const json = JSON.parse(text) as { status?: string };
+        if (json?.status === "error") {
+          throw new Error("Attachment cannot be downloaded now.");
+        }
+      }
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = downloadFilename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } else {
+      const url = `${baseURL}/magic-link/${encodeURIComponent(linkId)}/ledger/upload/${encodeURIComponent(request.attachedFileUniqueName)}`;
+      const response = await axios.get(url, {
+        responseType: "blob",
+        headers,
+      });
+
+      const blob = response.data as Blob;
+      if (blob.type?.toLowerCase().includes("application/json")) {
+        const text = await blob.text();
+        const json = JSON.parse(text) as { status?: string };
+        if (json?.status === "error") {
+          throw new Error("Attachment cannot be downloaded now.");
+        }
+      }
+      const nameFromHeader = response.headers["content-disposition"];
+      let filename = downloadFilename;
+      if (nameFromHeader) {
+        const match = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(nameFromHeader);
+        if (match?.[1]) {
+          filename = match[1].replace(/['"]/g, "").trim() || downloadFilename;
+        }
+      }
+
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    }
+  } catch (error: any) {
+    console.error("Error downloading attachment:", error);
+    const errorMessage =
+      error.response?.data?.message || error.message || "Attachment cannot be downloaded now.";
+    request.onError?.(errorMessage);
     throw new Error(errorMessage);
   }
 }

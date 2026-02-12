@@ -15,7 +15,9 @@ export interface Transaction {
   voucherName?: string;
   voucherUniqueName?: string;
   entryUniqueName?: string;
-  tx?: any; // Using any to avoid circular dependency, but should be LedgerTransaction
+  attachedFileName?: string;
+  attachedFileUniqueName?: string;
+  transaction?: any;
 }
 
 export type Currency = string;

@@ -58,6 +58,8 @@ export function transformLedgerTransactionToDisplay(
     voucherName: tx.voucherName,
     voucherUniqueName: tx.voucherUniqueName,
     entryUniqueName: tx.entryUniqueName,
+    attachedFileName: tx.attachedFileName,
+    attachedFileUniqueName: tx.attachedFileUniqueName,
   };
 
   if (includeOriginalTx) {
