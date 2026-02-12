@@ -1,13 +1,3 @@
-/** Balance status values for invoice filtering and display */
-export enum InvoiceBalanceStatus {
-  PAID = "PAID",
-  PARTIAL_PAID = "PARTIAL-PAID",
-  UNPAID = "UNPAID",
-  HOLD = "HOLD",
-  CANCEL = "CANCEL",
-  UNKNOWN = "UNKNOWN",
-}
-
 export interface Invoice {
   id: string;
   invoiceNo: string;

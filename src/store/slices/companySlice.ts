@@ -57,6 +57,9 @@ interface AllInvoicesState {
   loading: boolean;
   error: string | null;
   lastFetchTimestamp?: number;
+  sort?: string;
+  sortBy?: string;
+  balanceStatus?: string[];
 }
 
 interface UserDetailsState {
@@ -310,16 +313,36 @@ export const fetchAllPayments = createAsyncThunk(
   }
 );
 
+/** API sortBy values for vouchers get-all (matches backend) */
+export const invoiceSortBy = {
+  voucherDate: "voucherDate",
+  grandTotal: "grandTotal",
+} as const;
+
+function sameBalanceStatus(a: string[] | undefined, b: string[] | undefined): boolean {
+  const empty = (x: string[] | undefined) => !x || x.length === 0;
+  if (empty(a) && empty(b)) return true;
+  if (empty(a) || empty(b)) return false;
+  if (a!.length !== b!.length) return false;
+  return a!.every((v, i) => v === b![i]);
+}
+
 export const fetchAllInvoices = createAsyncThunk(
   "companies/fetchAllInvoices",
   async ({
     companyName,
     companyUniqueName,
     accountUniqueName,
+    sort = SortOrder.DESC,
+    sortBy = invoiceSortBy.grandTotal,
+    balanceStatus = [],
   }: {
     companyName: string;
     companyUniqueName: string;
     accountUniqueName: string;
+    sort?: string;
+    sortBy?: string;
+    balanceStatus?: string[];
   }) => {
     const allItems: InvoiceVoucher[] = [];
     let page = 1;
@@ -332,8 +355,9 @@ export const fetchAllInvoices = createAsyncThunk(
         type: "sales",
         page,
         count: PAGINATION_LIMIT,
-        sortBy: "voucherDate",
-        sort: SortOrder.DESC,
+        sort: sort as "" | "asc" | "desc",
+        sortBy,
+        balanceStatus,
       });
       const items = response.body.items || [];
       totalItems = response.body.totalItems ?? 0;
@@ -342,13 +366,17 @@ export const fetchAllInvoices = createAsyncThunk(
       page += 1;
     } while (true);
 
-    return { companyName, data: allItems };
+    return { companyName, data: allItems, sort, sortBy, balanceStatus };
   },
   {
-    condition: ({ companyName }, { getState }) => {
+    condition: ({ companyName, sort, sortBy, balanceStatus }, { getState }) => {
       const state = getState() as RootState;
-      const existingData = state.companies[companyName]?.allInvoices?.data;
-      return !existingData || existingData.length === 0;
+      const invoices = state.companies[companyName]?.allInvoices;
+      if (invoices?.loading) return false;
+      const existingData = invoices?.data;
+      const sameSort = invoices?.sort === sort && invoices?.sortBy === sortBy;
+      const sameStatus = sameBalanceStatus(invoices?.balanceStatus, balanceStatus);
+      return !existingData || existingData.length === 0 || !sameSort || !sameStatus;
     },
   }
 );
@@ -595,13 +623,16 @@ export const companySlice = createSlice({
         }
       })
       .addCase(fetchAllInvoices.fulfilled, (state, action) => {
-        const { companyName, data } = action.payload;
+        const { companyName, data, sort, sortBy, balanceStatus } = action.payload;
         if (state[companyName]) {
           state[companyName].allInvoices = {
             data,
             loading: false,
             error: null,
             lastFetchTimestamp: Date.now(),
+            sort,
+            sortBy,
+            balanceStatus,
           };
         }
       })

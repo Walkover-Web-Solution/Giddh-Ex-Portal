@@ -9,6 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchAllInvoices,
+  invoiceSortBy,
   selectAllInvoices,
   selectAllInvoicesLoading,
   selectAllInvoicesError,
@@ -28,14 +29,20 @@ import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortOrder } from "@/constants/sort";
-import { InvoiceBalanceStatus } from "@/constants/invoiceStatus";
+import { InvoiceBalanceStatus, INVOICE_BALANCE_STATUS_LABELS } from "@/constants/invoiceStatus";
 import type { Invoice, InvoiceSortColumn } from "./types";
+
+export type StatusFilterValue = "All Invoices" | InvoiceBalanceStatus;
+function statusFilterToBalanceStatus(statusFilter: StatusFilterValue): string[] {
+  if (statusFilter === "All Invoices") return [];
+  return [statusFilter];
+}
 
 export default function InvoicesPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [statusFilter, setStatusFilter] = useState("All Invoices");
+  const [statusFilter, setStatusFilter] = useState<StatusFilterValue>("All Invoices");
   const [sortBy, setSortBy] = useState<InvoiceSortColumn>("Total");
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,6 +60,8 @@ export default function InvoicesPage() {
   const isDataStale = useAppSelector(selectIsInvoicesDataStale(companyName));
   const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
+  const apiSortBy = sortBy === "Total" ? invoiceSortBy.grandTotal : invoiceSortBy.voucherDate;
+
   useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
       companyUniqueNameFromRedux,
@@ -60,9 +69,27 @@ export default function InvoicesPage() {
     );
 
     if (companyName && companyUniqueName && accountUniqueName && isDataStale) {
-      dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName }));
+      dispatch(
+        fetchAllInvoices({
+          companyName,
+          companyUniqueName,
+          accountUniqueName,
+          sort: sortDirection,
+          sortBy: apiSortBy,
+          balanceStatus: statusFilterToBalanceStatus(statusFilter),
+        })
+      );
     }
-  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
+  }, [
+    dispatch,
+    companyName,
+    companyUniqueNameFromRedux,
+    accountUniqueNameFromRedux,
+    isDataStale,
+    sortDirection,
+    apiSortBy,
+    statusFilter,
+  ]);
 
   const handleInvoiceClick = (invoiceUniqueName: string) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
@@ -82,16 +109,66 @@ export default function InvoicesPage() {
     setSortBy("Total");
     setSortDirection(SortOrder.DESC);
     setCurrentPage(1);
+    refetchInvoicesWithSort("Total", SortOrder.DESC, []);
+  };
+
+  const refetchInvoicesWithSort = (
+    newSortBy: InvoiceSortColumn,
+    newSortDirection: SortOrder,
+    balanceStatusOverride?: string[]
+  ) => {
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
+    if (companyName && companyUniqueName && accountUniqueName) {
+      dispatch(
+        fetchAllInvoices({
+          companyName,
+          companyUniqueName,
+          accountUniqueName,
+          sort: newSortDirection,
+          sortBy: newSortBy === "Total" ? invoiceSortBy.grandTotal : invoiceSortBy.voucherDate,
+          balanceStatus:
+            balanceStatusOverride !== undefined
+              ? balanceStatusOverride
+              : statusFilterToBalanceStatus(statusFilter),
+        })
+      );
+    }
+  };
+
+  const refetchInvoicesWithStatus = (newStatusFilter: StatusFilterValue) => {
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
+    if (companyName && companyUniqueName && accountUniqueName) {
+      dispatch(
+        fetchAllInvoices({
+          companyName,
+          companyUniqueName,
+          accountUniqueName,
+          sort: sortDirection,
+          sortBy: apiSortBy,
+          balanceStatus: statusFilterToBalanceStatus(newStatusFilter),
+        })
+      );
+    }
   };
 
   const handleSort = (column: InvoiceSortColumn) => {
-    if (sortBy === column) {
-      setSortDirection(sortDirection === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC);
-    } else {
-      setSortBy(column);
-      setSortDirection(SortOrder.DESC);
-    }
+    const newSortDirection =
+      sortBy === column
+        ? sortDirection === SortOrder.ASC
+          ? SortOrder.DESC
+          : SortOrder.ASC
+        : SortOrder.DESC;
+    const newSortBy = column;
+    setSortBy(newSortBy);
+    setSortDirection(newSortDirection);
     setCurrentPage(1);
+    refetchInvoicesWithSort(newSortBy, newSortDirection);
   };
 
   const hasActiveFilters = statusFilter !== "All Invoices" || sortBy !== "Total";
@@ -184,38 +261,13 @@ export default function InvoicesPage() {
 
   const filteredInvoices = useMemo(
     () =>
-      allInvoicesData.filter((invoice) => {
-        if (statusFilter === "All Invoices") return true;
-        if (statusFilter === "Paid" && invoice.status !== InvoiceBalanceStatus.PAID) return false;
-        if (statusFilter === "Partial Paid" && invoice.status !== InvoiceBalanceStatus.PARTIAL_PAID)
-          return false;
-        if (statusFilter === "Unpaid" && invoice.status !== InvoiceBalanceStatus.UNPAID)
-          return false;
-        if (statusFilter === "Hold" && invoice.status !== InvoiceBalanceStatus.HOLD) return false;
-        if (statusFilter === "Cancel" && invoice.status !== InvoiceBalanceStatus.CANCEL)
-          return false;
-        return true;
-      }),
+      allInvoicesData.filter(
+        (invoice) => statusFilter === "All Invoices" || invoice.status === statusFilter
+      ),
     [allInvoicesData, statusFilter]
   );
 
-  const invoicesData = useMemo(
-    () =>
-      [...filteredInvoices].sort((a, b) => {
-        let comparison = 0;
-        if (sortBy === "Total") {
-          const amountA = parseFloat(a.total.replace(/[^0-9.-]+/g, ""));
-          const amountB = parseFloat(b.total.replace(/[^0-9.-]+/g, ""));
-          comparison = amountB - amountA;
-        } else if (sortBy === "Date") {
-          const dateA = new Date(a.date.split("-").reverse().join("-")).getTime();
-          const dateB = new Date(b.date.split("-").reverse().join("-")).getTime();
-          comparison = dateB - dateA;
-        }
-        return sortDirection === SortOrder.ASC ? -comparison : comparison;
-      }),
-    [filteredInvoices, sortBy, sortDirection]
-  );
+  const invoicesData = filteredInvoices;
 
   const paginatedData = useMemo(
     () => invoicesData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
@@ -335,7 +387,11 @@ export default function InvoicesPage() {
               <Dropdown
                 trigger={
                   <>
-                    <span className="block truncate text-left">{statusFilter}</span>
+                    <span className="block truncate text-left">
+                      {statusFilter === "All Invoices"
+                        ? "All Invoices"
+                        : INVOICE_BALANCE_STATUS_LABELS[statusFilter]}
+                    </span>
                     <ChevronDownIcon aria-hidden className="-mr-1 size-5 shrink-0 text-gray-400" />
                   </>
                 }
@@ -347,49 +403,55 @@ export default function InvoicesPage() {
                   onClick={() => {
                     setStatusFilter("All Invoices");
                     setCurrentPage(1);
+                    refetchInvoicesWithStatus("All Invoices");
                   }}
                 >
                   All Invoices
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => {
-                    setStatusFilter("Paid");
+                    setStatusFilter(InvoiceBalanceStatus.PAID);
                     setCurrentPage(1);
+                    refetchInvoicesWithStatus(InvoiceBalanceStatus.PAID);
                   }}
                 >
-                  Paid
+                  {INVOICE_BALANCE_STATUS_LABELS[InvoiceBalanceStatus.PAID]}
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => {
-                    setStatusFilter("Partial Paid");
+                    setStatusFilter(InvoiceBalanceStatus.PARTIAL_PAID);
                     setCurrentPage(1);
+                    refetchInvoicesWithStatus(InvoiceBalanceStatus.PARTIAL_PAID);
                   }}
                 >
-                  Partial Paid
+                  {INVOICE_BALANCE_STATUS_LABELS[InvoiceBalanceStatus.PARTIAL_PAID]}
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => {
-                    setStatusFilter("Unpaid");
+                    setStatusFilter(InvoiceBalanceStatus.UNPAID);
                     setCurrentPage(1);
+                    refetchInvoicesWithStatus(InvoiceBalanceStatus.UNPAID);
                   }}
                 >
-                  Unpaid
+                  {INVOICE_BALANCE_STATUS_LABELS[InvoiceBalanceStatus.UNPAID]}
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => {
-                    setStatusFilter("Hold");
+                    setStatusFilter(InvoiceBalanceStatus.HOLD);
                     setCurrentPage(1);
+                    refetchInvoicesWithStatus(InvoiceBalanceStatus.HOLD);
                   }}
                 >
-                  Hold
+                  {INVOICE_BALANCE_STATUS_LABELS[InvoiceBalanceStatus.HOLD]}
                 </Dropdown.Item>
                 <Dropdown.Item
                   onClick={() => {
-                    setStatusFilter("Cancel");
+                    setStatusFilter(InvoiceBalanceStatus.CANCEL);
                     setCurrentPage(1);
+                    refetchInvoicesWithStatus(InvoiceBalanceStatus.CANCEL);
                   }}
                 >
-                  Cancel
+                  {INVOICE_BALANCE_STATUS_LABELS[InvoiceBalanceStatus.CANCEL]}
                 </Dropdown.Item>
               </Dropdown>
             </div>
@@ -409,7 +471,9 @@ export default function InvoicesPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortBy("Total");
+                    setSortDirection(SortOrder.DESC);
                     setCurrentPage(1);
+                    refetchInvoicesWithSort("Total", SortOrder.DESC);
                   }}
                 >
                   Total
@@ -417,7 +481,9 @@ export default function InvoicesPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortBy("Date");
+                    setSortDirection(SortOrder.DESC);
                     setCurrentPage(1);
+                    refetchInvoicesWithSort("Date", SortOrder.DESC);
                   }}
                 >
                   Date
