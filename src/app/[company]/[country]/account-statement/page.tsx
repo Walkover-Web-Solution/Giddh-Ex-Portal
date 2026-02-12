@@ -291,9 +291,16 @@ export default function AccountStatementPage() {
                     <h2 className="mb-1 font-bold text-black">{accountName}</h2>
                     {accountAddress && (
                       <>
-                        <p>{accountAddress.countryName}</p>
-                        <p>Email: {accountAddress.email}</p>
-                        <p>Mobile No: {accountAddress.mobileNo}</p>
+                        {accountAddress.address && <p>Address: {accountAddress.address}</p>}
+                        {accountAddress.stateName && <p>{accountAddress.stateName}</p>}
+                        {accountAddress.countryName && <p>{accountAddress.countryName}</p>}
+                        {accountAddress.pinCode && <p>{accountAddress.pinCode}</p>}
+                        {accountAddress.taxType && accountAddress.taxNumber && (
+                          <p>
+                            {accountAddress.taxType} : {accountAddress.taxNumber}
+                          </p>
+                        )}
+                        {accountAddress.mobileNo && <p>Mobile No: {accountAddress.mobileNo}</p>}
                       </>
                     )}
                   </div>
@@ -301,8 +308,8 @@ export default function AccountStatementPage() {
                     <h2 className="mb-1 font-bold text-black">{companyNameState}</h2>
                     {companyAddress && (
                       <>
-                        <p>{companyAddress.countryName}</p>
-                        <p>Mobile No: {companyAddress.mobileNo}</p>
+                        {companyAddress.countryName && <p>{companyAddress.countryName}</p>}
+                        {companyAddress.mobileNo && <p>Mobile No: {companyAddress.mobileNo}</p>}
                       </>
                     )}
                   </div>
