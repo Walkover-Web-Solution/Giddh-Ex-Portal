@@ -49,9 +49,9 @@ export function Footer({ summary, companyCurrency }: FooterProps) {
           </div>
 
           <div>
-            <p className="text-xs text-blue-900/70 sm:text-sm">Net Total Credit</p>
+            <p className="text-xs text-blue-900/70 sm:text-sm">Net Total</p>
             <p className="mt-1.5 text-lg font-semibold text-blue-900 sm:mt-2 sm:text-xl">
-              {formatAmount(summary.netTotalCredit)}
+              {formatAmount(summary.totalCredit - summary.totalDebit)}
             </p>
             <div className="mt-1 text-[10px] text-blue-900/60 sm:text-xs">
               <p>Dr Total {formatAmount(summary.totalDebit)}</p>
