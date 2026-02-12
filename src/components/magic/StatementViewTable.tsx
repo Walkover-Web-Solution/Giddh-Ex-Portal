@@ -210,8 +210,10 @@ export function StatementViewTable({
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                   {item.date}
                 </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm">{item.particular}</td>
-
+                <td className="whitespace-nowrap px-3 py-4 text-sm">
+                  {item.particular}
+                  {item.tx?.inventory?.stock?.name ? ` (${item.tx.inventory.stock.name})` : ""}
+                </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm">
                   <AmountCell
                     amount={item.debit}

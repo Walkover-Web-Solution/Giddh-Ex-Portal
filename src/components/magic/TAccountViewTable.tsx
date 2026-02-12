@@ -194,6 +194,9 @@ export function TAccountViewTable({
                         {isLedgerTransaction(dr)
                           ? formatParticularWithPrefix(dr.particular.name, dr.type)
                           : (dr as Transaction).particular}
+                        {isLedgerTransaction(dr) && dr.inventory?.stock?.name
+                          ? ` (${dr.inventory.stock.name})`
+                          : ""}
                       </div>
                       <div className="flex items-center justify-end gap-1.5">
                         <div className="text-right text-sm font-medium text-gray-900">
@@ -262,6 +265,9 @@ export function TAccountViewTable({
                         {isLedgerTransaction(cr)
                           ? formatParticularWithPrefix(cr.particular.name, cr.type)
                           : (cr as Transaction).particular}
+                        {isLedgerTransaction(cr) && cr.inventory?.stock?.name
+                          ? ` (${cr.inventory.stock.name})`
+                          : ""}
                       </div>
                       <div className="flex items-center justify-end gap-1.5">
                         <div className="text-right text-sm font-medium text-gray-900">

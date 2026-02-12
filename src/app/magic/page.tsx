@@ -191,6 +191,21 @@ export default function Magic() {
     fetchMagicLinkData();
   }, [linkId, viewMode, fromDate.getTime(), toDate.getTime(), currentPage, itemsPerPage]);
 
+  const normalizeSearchForAmount = (s: string) => {
+    const noCommas = s.replace(/,/g, "");
+    const commaAsDot = s.replace(/,/g, ".");
+    return { noCommas, commaAsDot };
+  };
+
+  const amountMatchesSearch = (amount: number | null | undefined, searchValue: string) => {
+    if (amount == null || !searchValue) return false;
+    const { noCommas, commaAsDot } = normalizeSearchForAmount(searchValue);
+    const amountStr = String(amount);
+    const amountRounded = Number(amount).toFixed(2);
+    const matches = (s: string) => s.includes(noCommas) || s.includes(commaAsDot);
+    return matches(amountStr) || matches(amountRounded);
+  };
+
   const filteredTransactions = useMemo(() => {
     const searchValue = searchQuery.toLowerCase().trim();
     const hasSearchQuery = searchValue.length > 0;
@@ -200,8 +215,8 @@ export default function Magic() {
       if (hasSearchQuery) {
         const matchesParticular = t.particular?.toLowerCase().includes(searchValue);
         const matchesAmount =
-          String(t.debit ?? "").includes(searchValue) ||
-          String(t.credit ?? "").includes(searchValue);
+          amountMatchesSearch(t.debit ?? null, searchValue) ||
+          amountMatchesSearch(t.credit ?? null, searchValue);
         if (!matchesParticular && !matchesAmount) return false;
       }
 
@@ -248,7 +263,7 @@ export default function Magic() {
 
     return debitCreditTransactions.filter((tx) => {
       const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
-      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      const matchesAmount = amountMatchesSearch(tx.amount, searchValue);
       return matchesParticular || matchesAmount;
     });
   }, [debitCreditTransactions, searchQuery]);
@@ -267,7 +282,7 @@ export default function Magic() {
 
     return debitTransactions.filter((tx) => {
       const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
-      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      const matchesAmount = amountMatchesSearch(tx.amount, searchValue);
       return matchesParticular || matchesAmount;
     });
   }, [debitTransactions, searchQuery]);
@@ -286,7 +301,7 @@ export default function Magic() {
 
     return creditTransactions.filter((tx) => {
       const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
-      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      const matchesAmount = amountMatchesSearch(tx.amount, searchValue);
       return matchesParticular || matchesAmount;
     });
   }, [creditTransactions, searchQuery]);

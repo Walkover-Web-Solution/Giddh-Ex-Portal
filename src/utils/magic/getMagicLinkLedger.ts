@@ -29,6 +29,11 @@ export interface LedgerTransaction {
     convertedAmount?: number;
     type: LedgerTransactionType;
   };
+  inventory?: {
+    stock?: {
+      name: string;
+    };
+  };
 }
 
 export interface MagicLinkLedgerResponse {
