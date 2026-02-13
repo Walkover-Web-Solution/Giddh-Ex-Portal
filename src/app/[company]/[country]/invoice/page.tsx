@@ -13,9 +13,10 @@ import {
   selectAllInvoices,
   selectAllInvoicesLoading,
   selectAllInvoicesError,
+  selectAllInvoicesTotalItems,
+  selectAllInvoicesTotalPages,
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectIsInvoicesDataStale,
   selectBalanceSummary,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
@@ -28,6 +29,7 @@ import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { INVOICE_PAGE_SIZE } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { InvoiceBalanceStatus, INVOICE_BALANCE_STATUS_LABELS } from "@/constants/invoiceStatus";
 import type { Invoice, InvoiceSortColumn } from "./types";
@@ -46,7 +48,6 @@ export default function InvoicesPage() {
   const [sortBy, setSortBy] = useState<InvoiceSortColumn>("Total");
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
 
   const companyName = params?.company as string;
@@ -57,7 +58,8 @@ export default function InvoicesPage() {
   const allInvoices = useAppSelector(selectAllInvoices(companyName));
   const loading = useAppSelector(selectAllInvoicesLoading(companyName));
   const error = useAppSelector(selectAllInvoicesError(companyName));
-  const isDataStale = useAppSelector(selectIsInvoicesDataStale(companyName));
+  const totalItems = useAppSelector(selectAllInvoicesTotalItems(companyName));
+  const totalPages = useAppSelector(selectAllInvoicesTotalPages(companyName));
   const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
   const apiSortBy = sortBy === "Total" ? invoiceSortBy.grandTotal : invoiceSortBy.voucherDate;
@@ -68,7 +70,7 @@ export default function InvoicesPage() {
       accountUniqueNameFromRedux
     );
 
-    if (companyName && companyUniqueName && accountUniqueName && isDataStale) {
+    if (companyName && companyUniqueName && accountUniqueName) {
       dispatch(
         fetchAllInvoices({
           companyName,
@@ -77,6 +79,8 @@ export default function InvoicesPage() {
           sort: sortDirection,
           sortBy: apiSortBy,
           balanceStatus: statusFilterToBalanceStatus(statusFilter),
+          page: currentPage,
+          count: INVOICE_PAGE_SIZE,
         })
       );
     }
@@ -85,7 +89,7 @@ export default function InvoicesPage() {
     companyName,
     companyUniqueNameFromRedux,
     accountUniqueNameFromRedux,
-    isDataStale,
+    currentPage,
     sortDirection,
     apiSortBy,
     statusFilter,
@@ -133,6 +137,8 @@ export default function InvoicesPage() {
             balanceStatusOverride !== undefined
               ? balanceStatusOverride
               : statusFilterToBalanceStatus(statusFilter),
+          page: 1,
+          count: INVOICE_PAGE_SIZE,
         })
       );
     }
@@ -152,6 +158,8 @@ export default function InvoicesPage() {
           sort: sortDirection,
           sortBy: apiSortBy,
           balanceStatus: statusFilterToBalanceStatus(newStatusFilter),
+          page: 1,
+          count: INVOICE_PAGE_SIZE,
         })
       );
     }
@@ -259,25 +267,13 @@ export default function InvoicesPage() {
     [allInvoices, currency, validBalanceStatuses]
   );
 
-  const filteredInvoices = useMemo(
-    () =>
-      allInvoicesData.filter(
-        (invoice) => statusFilter === "All Invoices" || invoice.status === statusFilter
-      ),
-    [allInvoicesData, statusFilter]
-  );
-
-  const invoicesData = filteredInvoices;
-
-  const paginatedData = useMemo(
-    () => invoicesData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
-    [invoicesData, currentPage, itemsPerPage]
-  );
+  const invoicesData = allInvoicesData;
+  const paginatedData = invoicesData;
 
   const columns = [
     {
       header: "S. No.",
-      accessor: (row: Invoice, index: number) => index + 1 + (currentPage - 1) * itemsPerPage,
+      accessor: (row: Invoice, index: number) => index + 1 + (currentPage - 1) * INVOICE_PAGE_SIZE,
     },
     {
       header: "Invoice No.",
@@ -504,7 +500,7 @@ export default function InvoicesPage() {
           </div>
 
           {loading ? (
-            <TableSkeleton rows={10} />
+            <TableSkeleton rows={INVOICE_PAGE_SIZE} />
           ) : error ? (
             <div className="py-12 text-center text-red-500">{error}</div>
           ) : invoicesData.length === 0 ? (
@@ -513,14 +509,14 @@ export default function InvoicesPage() {
             <DataTable columns={columns} data={paginatedData} keyExtractor={(row) => row.id} />
           )}
 
-          {invoicesData.length > itemsPerPage && (
+          {totalPages > 1 && (
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(invoicesData.length / itemsPerPage)}
-              totalItems={invoicesData.length}
-              itemsPerPage={itemsPerPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={INVOICE_PAGE_SIZE}
               onPageChange={setCurrentPage}
-              onItemsPerPageChange={setItemsPerPage}
+              onItemsPerPageChange={() => {}}
             />
           )}
         </div>

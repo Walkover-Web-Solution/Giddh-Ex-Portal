@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
-import { PAGINATION_LIMIT } from "@/constants";
+import { INVOICE_PAGE_SIZE } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
@@ -60,6 +60,10 @@ interface AllInvoicesState {
   sort?: string;
   sortBy?: string;
   balanceStatus?: string[];
+  totalItems?: number;
+  totalPages?: number;
+  page?: number;
+  count?: number;
 }
 
 interface UserDetailsState {
@@ -336,6 +340,8 @@ export const fetchAllInvoices = createAsyncThunk(
     sort = SortOrder.DESC,
     sortBy = invoiceSortBy.grandTotal,
     balanceStatus = [],
+    page = 1,
+    count = INVOICE_PAGE_SIZE,
   }: {
     companyName: string;
     companyUniqueName: string;
@@ -343,40 +349,45 @@ export const fetchAllInvoices = createAsyncThunk(
     sort?: string;
     sortBy?: string;
     balanceStatus?: string[];
+    page?: number;
+    count?: number;
   }) => {
-    const allItems: InvoiceVoucher[] = [];
-    let page = 1;
-    let totalItems = 0;
-
-    do {
-      const response = await getInvoiceList({
-        companyUniqueName,
-        accountUniqueName,
-        type: "sales",
-        page,
-        count: PAGINATION_LIMIT,
-        sort: sort as "" | "asc" | "desc",
-        sortBy,
-        balanceStatus,
-      });
-      const items = response.body.items || [];
-      totalItems = response.body.totalItems ?? 0;
-      allItems.push(...items);
-      if (items.length < PAGINATION_LIMIT || allItems.length >= totalItems) break;
-      page += 1;
-    } while (true);
-
-    return { companyName, data: allItems, sort, sortBy, balanceStatus };
+    const response = await getInvoiceList({
+      companyUniqueName,
+      accountUniqueName,
+      type: "sales",
+      page,
+      count,
+      sort: sort as "" | "asc" | "desc",
+      sortBy,
+      balanceStatus,
+    });
+    const items = response.body.items || [];
+    const totalItems = response.body.totalItems ?? 0;
+    const totalPages = response.body.totalPages ?? (count > 0 ? Math.ceil(totalItems / count) : 0);
+    return {
+      companyName,
+      data: items,
+      sort,
+      sortBy,
+      balanceStatus,
+      totalItems,
+      totalPages,
+      page: response.body.page ?? page,
+      count: response.body.count ?? count,
+    };
   },
   {
-    condition: ({ companyName, sort, sortBy, balanceStatus }, { getState }) => {
+    condition: ({ companyName, sort, sortBy, balanceStatus, page, count }, { getState }) => {
       const state = getState() as RootState;
       const invoices = state.companies[companyName]?.allInvoices;
       if (invoices?.loading) return false;
-      const existingData = invoices?.data;
       const sameSort = invoices?.sort === sort && invoices?.sortBy === sortBy;
       const sameStatus = sameBalanceStatus(invoices?.balanceStatus, balanceStatus);
-      return !existingData || existingData.length === 0 || !sameSort || !sameStatus;
+      const samePage =
+        invoices?.page === (page ?? 1) && invoices?.count === (count ?? INVOICE_PAGE_SIZE);
+      const hasCachedResult = sameSort && sameStatus && samePage;
+      return !hasCachedResult;
     },
   }
 );
@@ -623,7 +634,17 @@ export const companySlice = createSlice({
         }
       })
       .addCase(fetchAllInvoices.fulfilled, (state, action) => {
-        const { companyName, data, sort, sortBy, balanceStatus } = action.payload;
+        const {
+          companyName,
+          data,
+          sort,
+          sortBy,
+          balanceStatus,
+          totalItems,
+          totalPages,
+          page,
+          count,
+        } = action.payload;
         if (state[companyName]) {
           state[companyName].allInvoices = {
             data,
@@ -633,6 +654,10 @@ export const companySlice = createSlice({
             sort,
             sortBy,
             balanceStatus,
+            totalItems,
+            totalPages,
+            page,
+            count,
           };
         }
       })
@@ -799,6 +824,14 @@ export const selectAllInvoicesLoading = (companyName: string) => (state: RootSta
   state.companies[companyName]?.allInvoices?.loading || false;
 export const selectAllInvoicesError = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.allInvoices?.error || null;
+export const selectAllInvoicesTotalItems = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allInvoices?.totalItems ?? 0;
+export const selectAllInvoicesTotalPages = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allInvoices?.totalPages ?? 1;
+export const selectAllInvoicesPage = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allInvoices?.page ?? 1;
+export const selectAllInvoicesCount = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allInvoices?.count ?? INVOICE_PAGE_SIZE;
 
 export const selectUserDetails = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.userDetails?.data || null;
