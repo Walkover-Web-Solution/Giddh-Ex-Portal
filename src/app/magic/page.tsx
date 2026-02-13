@@ -502,8 +502,13 @@ export default function Magic() {
                   : undefined
             }
             forwardedBalance={
-              viewMode === LedgerView.STATEMENT_VIEW && (!hasMultiplePages || currentPage === 1)
-                ? forwardedBalance
+              !hasMultiplePages || currentPage === 1
+                ? (ledgerBalance?.forwardedBalance ?? forwardedBalance)
+                : undefined
+            }
+            convertedForwardedBalance={
+              (!hasMultiplePages || currentPage === 1) && ledgerBalance?.convertedForwardedBalance
+                ? ledgerBalance.convertedForwardedBalance
                 : undefined
             }
             pagination={

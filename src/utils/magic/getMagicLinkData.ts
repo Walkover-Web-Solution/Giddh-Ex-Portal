@@ -2,6 +2,7 @@ import {
   BALANCE_TYPE_CR,
   BALANCE_TYPE_DR,
   LEDGER_TYPE_DEBIT,
+  LedgerEntryType,
   LedgerView,
 } from "@/constants/ledger";
 import { parseDateToTimestamp } from "@/utils/dateUtils";
@@ -15,10 +16,10 @@ import {
   transformLedgerTransactionToDisplay,
   formatParticularWithPrefix,
 } from "./transformLedgerTransaction";
+import { getForwardedBalanceParticular, BalanceSide } from "./forwardedBalanceLabels";
 
 export interface MagicLinkData {
   transactions: Transaction[];
-  // Raw API response arrays for direct use in components
   debitCreditTransactions?: LedgerTransaction[];
   debitTransactions?: LedgerTransaction[];
   creditTransactions?: LedgerTransaction[];
@@ -109,16 +110,22 @@ export const getMagicLinkData = async (
       );
 
       const forwardedBalance = response.body.ledgersTransactions.forwardedBalance;
+      const convertedForwarded = response.body.ledgersTransactions.convertedForwardedBalance;
       if (forwardedBalance) {
+        const isCredit = forwardedBalance.type === LedgerEntryType.CREDIT;
+        const convertedAmount = convertedForwarded?.amount ?? forwardedBalance.amount;
         apiTransactions.unshift({
           date: response.body.ledgersTransactions.from || apiTransactions[0]?.date || "",
-          particular: forwardedBalance.description || "To Balance b/d",
-          debit: null,
-          debitConverted: null,
-          credit: null,
-          creditConverted: null,
+          particular: getForwardedBalanceParticular(
+            forwardedBalance.description,
+            BalanceSide.DEBIT
+          ),
+          debit: isCredit ? null : forwardedBalance.amount,
+          debitConverted: isCredit ? null : convertedAmount,
+          credit: isCredit ? forwardedBalance.amount : null,
+          creditConverted: isCredit ? convertedAmount : null,
           closingBalance: forwardedBalance.amount,
-          closingBalanceConverted: forwardedBalance.amount,
+          closingBalanceConverted: convertedAmount,
           balanceType:
             forwardedBalance.type === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
         });

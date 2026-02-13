@@ -52,6 +52,11 @@ export interface MagicLinkLedgerResponse {
         type: LedgerTransactionType;
         description?: string;
       };
+      convertedForwardedBalance?: {
+        amount: number;
+        type: LedgerTransactionType;
+        description?: string;
+      };
       debitTransactions: LedgerTransaction[];
       creditTransactions: LedgerTransaction[];
       debitCreditTransactions?: LedgerTransaction[];

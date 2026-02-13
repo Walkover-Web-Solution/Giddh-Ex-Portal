@@ -5,9 +5,8 @@ import {
   BALANCE_TYPE_CR,
   LEDGER_TYPE_DEBIT,
   LEDGER_TYPE_CREDIT,
-  type LedgerTransactionType,
 } from "@/constants/ledger";
-import { Currency, CurrencyInfo, Transaction } from "./types";
+import { Currency, CurrencyInfo, Transaction, ForwardedBalanceShape } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import {
   downloadMagicLinkVoucher,
@@ -17,23 +16,17 @@ import { useState, useMemo } from "react";
 import { getCurrencyConfig } from "./currencyUtils";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { transformLedgerTransactionToDisplay } from "@/utils/magic/transformLedgerTransaction";
-import {
-  hasAttachmentId,
-  getAttachmentTooltipTitle,
-  getAttachmentDisplayName,
-} from "@/utils/magic/attachmentUtils";
+import { hasAttachmentId, getAttachmentTooltipTitle } from "@/utils/magic/attachmentUtils";
 import { useToast } from "@/contexts/ToastContext";
 import { DataTable } from "@/components/ui/DataTable";
 import { ArrowDownTrayIcon, ArrowPathIcon, PaperClipIcon } from "@heroicons/react/20/solid";
+import { getForwardedBalanceParticular, BalanceSide } from "@/utils/magic/forwardedBalanceLabels";
 
 interface Props {
   selectedCurrency: Currency;
   debitCreditTransactions?: LedgerTransaction[];
-  forwardedBalance?: {
-    amount: number;
-    type: LedgerTransactionType;
-    description?: string;
-  };
+  forwardedBalance?: ForwardedBalanceShape;
+  convertedForwardedBalance?: ForwardedBalanceShape;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
   linkId: string;
@@ -43,6 +36,7 @@ export function StatementViewTable({
   selectedCurrency,
   debitCreditTransactions,
   forwardedBalance,
+  convertedForwardedBalance,
   transactionCurrency,
   convertedCurrency,
   linkId,
@@ -127,24 +121,28 @@ export function StatementViewTable({
     );
 
     if (forwardedBalance) {
-      rows.unshift({
+      const isCredit = forwardedBalance.type === LEDGER_TYPE_CREDIT;
+      const convertedAmount = convertedForwardedBalance?.amount ?? forwardedBalance.amount;
+      const openingBalanceRow = {
         date: "",
-        particular: forwardedBalance.description || "To Balance b/d",
-        debit: null,
-        debitConverted: null,
-        credit: null,
-        creditConverted: null,
+        particular: getForwardedBalanceParticular(forwardedBalance.description, BalanceSide.DEBIT),
+        debit: isCredit ? 0 : forwardedBalance.amount,
+        debitConverted: isCredit ? 0 : convertedAmount,
+        credit: isCredit ? forwardedBalance.amount : 0,
+        creditConverted: isCredit ? convertedAmount : 0,
         closingBalance: forwardedBalance.amount,
-        closingBalanceConverted: forwardedBalance.amount,
+        closingBalanceConverted: convertedAmount,
         balanceType:
           forwardedBalance.type === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
         voucherGenerated: false,
         transaction: {} as LedgerTransaction,
-      });
+        isForwardedBalanceRow: true,
+      };
+      rows.unshift(openingBalanceRow as (typeof rows)[0] & { isForwardedBalanceRow: true });
     }
 
     return rows;
-  }, [debitCreditTransactions, forwardedBalance]);
+  }, [debitCreditTransactions, forwardedBalance, convertedForwardedBalance]);
 
   const currencyConfig = getCurrencyConfig(
     selectedCurrency,
@@ -333,37 +331,43 @@ export function StatementViewTable({
                 </td>
 
                 <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <div className="flex items-center justify-end gap-1">
-                    <span className="font-medium text-gray-900">
-                      {format(
+                  {"isForwardedBalanceRow" in item && item.isForwardedBalanceRow ? (
+                    ""
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-end gap-1">
+                        <span className="font-medium text-gray-900">
+                          {format(
+                            getAmount(
+                              item.closingBalance,
+                              item.closingBalanceConverted,
+                              isConvertedCurrencySelected
+                            ),
+                            primaryCurrency?.symbol
+                          )}
+                        </span>
+                        <span className="text-[10px] text-gray-500">{item.balanceType}</span>
+                      </div>
+
+                      {hasMultipleCurrencies &&
                         getAmount(
                           item.closingBalance,
                           item.closingBalanceConverted,
-                          isConvertedCurrencySelected
-                        ),
-                        primaryCurrency?.symbol
-                      )}
-                    </span>
-                    <span className="text-[10px] text-gray-500">{item.balanceType}</span>
-                  </div>
-
-                  {hasMultipleCurrencies &&
-                    getAmount(
-                      item.closingBalance,
-                      item.closingBalanceConverted,
-                      !isConvertedCurrencySelected
-                    ) !== null && (
-                      <div className="text-right text-[10px] text-gray-500">
-                        {format(
-                          getAmount(
-                            item.closingBalance,
-                            item.closingBalanceConverted,
-                            !isConvertedCurrencySelected
-                          ),
-                          secondaryCurrency?.symbol
+                          !isConvertedCurrencySelected
+                        ) !== null && (
+                          <div className="text-right text-[10px] text-gray-500">
+                            {format(
+                              getAmount(
+                                item.closingBalance,
+                                item.closingBalanceConverted,
+                                !isConvertedCurrencySelected
+                              ),
+                              secondaryCurrency?.symbol
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
+                    </>
+                  )}
                 </td>
               </tr>
             );

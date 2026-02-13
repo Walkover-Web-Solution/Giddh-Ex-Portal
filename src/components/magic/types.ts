@@ -1,4 +1,10 @@
-import type { BalanceType } from "@/constants/ledger";
+import type { BalanceType, LedgerTransactionType } from "@/constants/ledger";
+
+export interface ForwardedBalanceShape {
+  amount: number;
+  type: LedgerTransactionType;
+  description?: string;
+}
 
 export interface Transaction {
   date: string;
