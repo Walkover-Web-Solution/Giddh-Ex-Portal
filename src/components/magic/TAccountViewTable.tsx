@@ -15,6 +15,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { DataTable } from "@/components/ui/DataTable";
 import { ArrowDownTrayIcon, ArrowPathIcon, PaperClipIcon } from "@heroicons/react/20/solid";
 import { getForwardedBalanceParticular, BalanceSide } from "@/utils/magic/forwardedBalanceLabels";
+import type { LedgerTotals } from "./StatementViewTable";
 
 export interface ForwardedBalanceRow {
   _isOpeningBalanceRow: true;
@@ -32,6 +33,7 @@ interface Props {
   creditTransactions?: LedgerTransaction[];
   forwardedBalance?: ForwardedBalanceShape;
   convertedForwardedBalance?: ForwardedBalanceShape;
+  ledgerTotals?: LedgerTotals;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
   linkId: string;
@@ -44,6 +46,7 @@ export function TAccountViewTable({
   creditTransactions,
   forwardedBalance,
   convertedForwardedBalance,
+  ledgerTotals,
   transactionCurrency,
   convertedCurrency,
   linkId,
@@ -206,31 +209,53 @@ export function TAccountViewTable({
 
   const maxRows = Math.max(debitTx.length, creditTx.length);
 
-  const { totalDebit, totalCredit } = useMemo(() => {
+  const { totalDebit, totalCredit, totalDebitConverted, totalCreditConverted } = useMemo(() => {
+    if (ledgerTotals) {
+      return {
+        totalDebit: ledgerTotals.totalDebit,
+        totalCredit: ledgerTotals.totalCredit,
+        totalDebitConverted: ledgerTotals.convertedTotalDebit ?? null,
+        totalCreditConverted: ledgerTotals.convertedTotalCredit ?? null,
+      };
+    }
     const useConverted = isConvertedCurrencySelected ?? false;
-    const getBFRowAmount = (tx: ForwardedBalanceRow) =>
-      useConverted ? tx.convertedAmount : tx.amount;
-    const getDebitAmount = (tx: LedgerTransaction | Transaction | ForwardedBalanceRow) => {
-      if (isForwardedBalanceRow(tx)) return getBFRowAmount(tx);
+    const getBFRowAmount = (tx: ForwardedBalanceRow, useConv: boolean) =>
+      useConv ? tx.convertedAmount : tx.amount;
+    const getDebitAmount = (
+      tx: LedgerTransaction | Transaction | ForwardedBalanceRow,
+      useConv: boolean
+    ) => {
+      if (isForwardedBalanceRow(tx)) return getBFRowAmount(tx, useConv);
       if (typeof (tx as LedgerTransaction).amount === "number")
-        return getAmount(tx as LedgerTransaction, useConverted);
-      return useConverted
-        ? ((tx as Transaction).debitConverted ?? 0)
-        : ((tx as Transaction).debit ?? 0);
+        return getAmount(tx as LedgerTransaction, useConv);
+      return useConv ? ((tx as Transaction).debitConverted ?? 0) : ((tx as Transaction).debit ?? 0);
     };
-    const getCreditAmount = (tx: LedgerTransaction | Transaction | ForwardedBalanceRow) => {
-      if (isForwardedBalanceRow(tx)) return getBFRowAmount(tx);
+    const getCreditAmount = (
+      tx: LedgerTransaction | Transaction | ForwardedBalanceRow,
+      useConv: boolean
+    ) => {
+      if (isForwardedBalanceRow(tx)) return getBFRowAmount(tx, useConv);
       if (typeof (tx as LedgerTransaction).amount === "number")
-        return getAmount(tx as LedgerTransaction, useConverted);
-      return useConverted
+        return getAmount(tx as LedgerTransaction, useConv);
+      return useConv
         ? ((tx as Transaction).creditConverted ?? 0)
         : ((tx as Transaction).credit ?? 0);
     };
+    const dr = debitTx.reduce((sum, tx) => sum + getDebitAmount(tx, useConverted), 0);
+    const cr = creditTx.reduce((sum, tx) => sum + getCreditAmount(tx, useConverted), 0);
+    const drConv = hasMultipleCurrencies
+      ? debitTx.reduce((sum, tx) => sum + getDebitAmount(tx, !useConverted), 0)
+      : null;
+    const crConv = hasMultipleCurrencies
+      ? creditTx.reduce((sum, tx) => sum + getCreditAmount(tx, !useConverted), 0)
+      : null;
     return {
-      totalDebit: debitTx.reduce((sum, tx) => sum + getDebitAmount(tx), 0),
-      totalCredit: creditTx.reduce((sum, tx) => sum + getCreditAmount(tx), 0),
+      totalDebit: dr,
+      totalCredit: cr,
+      totalDebitConverted: drConv,
+      totalCreditConverted: crConv,
     };
-  }, [debitTx, creditTx, isConvertedCurrencySelected]);
+  }, [ledgerTotals, debitTx, creditTx, isConvertedCurrencySelected, hasMultipleCurrencies]);
 
   return (
     <DataTable>
@@ -541,11 +566,43 @@ export function TAccountViewTable({
         <div className="grid grid-cols-2 border-t border-gray-200 bg-gray-50">
           <div className="grid grid-cols-[1fr_100px] px-4 py-4 font-semibold text-gray-900 sm:grid-cols-[1fr_160px] sm:pl-6 sm:pr-6">
             <span>Total</span>
-            <span className="text-right">{format(totalDebit, primaryCurrency?.symbol)}</span>
+            <span className="text-right">
+              <div>
+                {format(
+                  isConvertedCurrencySelected ? (totalDebitConverted ?? totalDebit) : totalDebit,
+                  primaryCurrency?.symbol
+                )}
+              </div>
+              {hasMultipleCurrencies &&
+                (isConvertedCurrencySelected ? totalDebit : totalDebitConverted) != null && (
+                  <div className="text-[10px] font-normal text-gray-600">
+                    {format(
+                      isConvertedCurrencySelected ? totalDebit : (totalDebitConverted ?? null),
+                      secondaryCurrency?.symbol
+                    )}
+                  </div>
+                )}
+            </span>
           </div>
           <div className="grid grid-cols-[1fr_100px] border-l border-gray-200 px-4 py-4 font-semibold text-gray-900 sm:grid-cols-[1fr_160px] sm:pr-6">
             <span>Total</span>
-            <span className="text-right">{format(totalCredit, primaryCurrency?.symbol)}</span>
+            <span className="text-right">
+              <div>
+                {format(
+                  isConvertedCurrencySelected ? (totalCreditConverted ?? totalCredit) : totalCredit,
+                  primaryCurrency?.symbol
+                )}
+              </div>
+              {hasMultipleCurrencies &&
+                (isConvertedCurrencySelected ? totalCredit : totalCreditConverted) != null && (
+                  <div className="text-[10px] font-normal text-gray-600">
+                    {format(
+                      isConvertedCurrencySelected ? totalCredit : (totalCreditConverted ?? null),
+                      secondaryCurrency?.symbol
+                    )}
+                  </div>
+                )}
+            </span>
           </div>
         </div>
       </div>

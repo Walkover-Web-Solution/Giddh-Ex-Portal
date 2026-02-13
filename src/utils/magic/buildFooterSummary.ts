@@ -19,6 +19,12 @@ export interface FooterSummary {
   totalCredit: number;
   closingBalance: number;
   closingBalanceType: BalanceType;
+  convertedTotalDebit?: number;
+  convertedTotalCredit?: number;
+  convertedClosingBalance?: number;
+  convertedClosingBalanceType?: BalanceType;
+  convertedOpeningBalance?: number;
+  convertedOpeningBalanceType?: BalanceType;
 }
 
 function toDrCr(type: LedgerTransactionType): BalanceType {
@@ -92,6 +98,12 @@ export function buildFooterSummary(params: {
       totalCredit: ledgerBalance.creditTotal,
       closingBalance: ledgerBalance.closingBalance.amount,
       closingBalanceType: toDrCr(ledgerBalance.closingBalance.type),
+      convertedTotalDebit: ledgerBalance.convertedDebitTotal,
+      convertedTotalCredit: ledgerBalance.convertedCreditTotal,
+      convertedClosingBalance: ledgerBalance.convertedClosingBalance.amount,
+      convertedClosingBalanceType: toDrCr(ledgerBalance.convertedClosingBalance.type),
+      convertedOpeningBalance: ledgerBalance.convertedForwardedBalance.amount,
+      convertedOpeningBalanceType: toDrCr(ledgerBalance.convertedForwardedBalance.type),
     };
   }
 

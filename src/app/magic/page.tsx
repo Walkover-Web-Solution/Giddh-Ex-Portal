@@ -511,6 +511,16 @@ export default function Magic() {
                 ? ledgerBalance.convertedForwardedBalance
                 : undefined
             }
+            ledgerTotals={
+              ledgerBalance
+                ? {
+                    totalDebit: ledgerBalance.debitTotal,
+                    totalCredit: ledgerBalance.creditTotal,
+                    convertedTotalDebit: ledgerBalance.convertedDebitTotal,
+                    convertedTotalCredit: ledgerBalance.convertedCreditTotal,
+                  }
+                : undefined
+            }
             pagination={
               viewMode === LedgerView.T_VIEW && hasMultiplePages
                 ? {
@@ -542,7 +552,11 @@ export default function Magic() {
               pageSizeOptions={PAGE_SIZE_OPTIONS}
             />
           )}
-          <Footer summary={summary} companyCurrency={currencyData?.transactionCurrency} />
+          <Footer
+            summary={summary}
+            companyCurrency={currencyData?.transactionCurrency}
+            convertedCurrency={currencyData?.convertedCurrency}
+          />
         </section>
       </main>
     </div>

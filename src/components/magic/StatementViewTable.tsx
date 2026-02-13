@@ -22,11 +22,19 @@ import { DataTable } from "@/components/ui/DataTable";
 import { ArrowDownTrayIcon, ArrowPathIcon, PaperClipIcon } from "@heroicons/react/20/solid";
 import { getForwardedBalanceParticular, BalanceSide } from "@/utils/magic/forwardedBalanceLabels";
 
+export interface LedgerTotals {
+  totalDebit: number;
+  totalCredit: number;
+  convertedTotalDebit?: number;
+  convertedTotalCredit?: number;
+}
+
 interface Props {
   selectedCurrency: Currency;
   debitCreditTransactions?: LedgerTransaction[];
   forwardedBalance?: ForwardedBalanceShape;
   convertedForwardedBalance?: ForwardedBalanceShape;
+  ledgerTotals?: LedgerTotals;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
   linkId: string;
@@ -37,6 +45,7 @@ export function StatementViewTable({
   debitCreditTransactions,
   forwardedBalance,
   convertedForwardedBalance,
+  ledgerTotals,
   transactionCurrency,
   convertedCurrency,
   linkId,
@@ -44,23 +53,6 @@ export function StatementViewTable({
   const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<string | null>(null);
-
-  const { totalDebit, totalCredit } = useMemo(() => {
-    if (!debitCreditTransactions?.length) {
-      return { totalDebit: 0, totalCredit: 0 };
-    }
-
-    return debitCreditTransactions.reduce(
-      (accumulator, transaction) => {
-        if (transaction.type === LEDGER_TYPE_DEBIT)
-          accumulator.totalDebit += transaction.amount || 0;
-        if (transaction.type === LEDGER_TYPE_CREDIT)
-          accumulator.totalCredit += transaction.amount || 0;
-        return accumulator;
-      },
-      { totalDebit: 0, totalCredit: 0 }
-    );
-  }, [debitCreditTransactions]);
 
   const handleDownload = async (transaction: LedgerTransaction, index: number) => {
     if (!transaction.voucherNumber || !transaction.voucherName) return;
@@ -152,6 +144,37 @@ export function StatementViewTable({
 
   const { hasMultipleCurrencies, isConvertedCurrencySelected, primaryCurrency, secondaryCurrency } =
     currencyConfig;
+
+  const { totalDebit, totalCredit, totalDebitConverted, totalCreditConverted } = useMemo(() => {
+    if (ledgerTotals) {
+      return {
+        totalDebit: ledgerTotals.totalDebit,
+        totalCredit: ledgerTotals.totalCredit,
+        totalDebitConverted: ledgerTotals.convertedTotalDebit ?? null,
+        totalCreditConverted: ledgerTotals.convertedTotalCredit ?? null,
+      };
+    }
+    let dr = 0;
+    let cr = 0;
+    let drConv: number | null = null;
+    let crConv: number | null = null;
+    for (const row of displayTransactions) {
+      const d = row.debit ?? 0;
+      const c = row.credit ?? 0;
+      dr += d;
+      cr += c;
+      if (row.debitConverted != null || row.creditConverted != null) {
+        drConv = (drConv ?? 0) + (row.debitConverted ?? 0);
+        crConv = (crConv ?? 0) + (row.creditConverted ?? 0);
+      }
+    }
+    return {
+      totalDebit: dr,
+      totalCredit: cr,
+      totalDebitConverted: drConv,
+      totalCreditConverted: crConv,
+    };
+  }, [ledgerTotals, displayTransactions]);
 
   const format = (amount: number | null, symbol?: string) =>
     amount === null ? "" : formatCurrencyAmount(amount, symbol || "₹", { decimals: 2 });
@@ -380,10 +403,40 @@ export function StatementViewTable({
               Total
             </td>
             <td className="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-900">
-              {format(totalDebit, primaryCurrency?.symbol)}
+              <div>
+                {format(
+                  getAmount(totalDebit, totalDebitConverted, isConvertedCurrencySelected),
+                  primaryCurrency?.symbol
+                )}
+              </div>
+              {hasMultipleCurrencies &&
+                getAmount(totalDebit, totalDebitConverted, !isConvertedCurrencySelected) !=
+                  null && (
+                  <div className="text-[10px] font-normal text-blue-900/60">
+                    {format(
+                      getAmount(totalDebit, totalDebitConverted, !isConvertedCurrencySelected),
+                      secondaryCurrency?.symbol
+                    )}
+                  </div>
+                )}
             </td>
             <td className="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-900">
-              {format(totalCredit, primaryCurrency?.symbol)}
+              <div>
+                {format(
+                  getAmount(totalCredit, totalCreditConverted, isConvertedCurrencySelected),
+                  primaryCurrency?.symbol
+                )}
+              </div>
+              {hasMultipleCurrencies &&
+                getAmount(totalCredit, totalCreditConverted, !isConvertedCurrencySelected) !=
+                  null && (
+                  <div className="text-[10px] font-normal text-blue-900/60">
+                    {format(
+                      getAmount(totalCredit, totalCreditConverted, !isConvertedCurrencySelected),
+                      secondaryCurrency?.symbol
+                    )}
+                  </div>
+                )}
             </td>
             <td className="py-4 pl-3 pr-4 sm:pr-6" />
           </tr>
