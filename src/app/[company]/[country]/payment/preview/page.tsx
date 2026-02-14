@@ -15,6 +15,20 @@ import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastContext";
 import { getSessionCookie } from "@/utils/cookies";
+import { useAppConfig } from "@/hooks/useAppConfig";
+import { DEFAULT_CONFIG } from "@/config/default";
+
+function AuthHeader({ referenceId }: { referenceId: string }) {
+  return (
+    <header
+      className="auth-header-preview flex flex-row items-center justify-center bg-blue-900 px-4 py-3"
+      aria-label="Auth"
+      data-auth-mount="payment-preview"
+    >
+      <div id={referenceId} className="auth-container min-h-[44px] w-full" />
+    </header>
+  );
+}
 
 const EMPTY_PAYMENT_LIST = { status: "error" as const, body: { items: [], totalItems: 0 } };
 
@@ -39,6 +53,9 @@ export default function PaymentPreviewPage() {
   const [paymentVoucher, setPaymentVoucher] = useState<PaymentVoucher | null>(null);
   const [error, setError] = useState<string>("");
   const { showToast } = useToast();
+
+  const { referenceId: configReferenceId } = useAppConfig();
+  const referenceId = configReferenceId?.trim() || DEFAULT_CONFIG.REFERENCE_ID;
 
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const hasSession =
@@ -91,6 +108,31 @@ export default function PaymentPreviewPage() {
     companyUniqueNameFromRedux,
     accountUniqueNameFromRedux,
   ]);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://proxy.msg91.com/assets/proxy-auth/proxy-auth.js";
+    script.type = "text/javascript";
+    script.defer = true;
+    script.onload = () => {
+      const runInit = () => {
+        const el = document.getElementById(referenceId);
+        if (!el) return;
+        (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
+          referenceId,
+          success: () => {},
+          failure: (err: unknown) => console.error("[PaymentPreview Auth] Login failed:", err),
+        });
+      };
+      if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(runInit);
+      else setTimeout(runInit, 0);
+    };
+    script.onerror = () => console.error("[PaymentPreview Auth] Failed to load proxy-auth.js");
+    document.body.appendChild(script);
+    return () => {
+      if (document.body.contains(script)) document.body.removeChild(script);
+    };
+  }, [referenceId]);
 
   useEffect(() => {
     return () => {
@@ -189,26 +231,30 @@ export default function PaymentPreviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[50vh] flex-1 items-center justify-center">
-        {error ? (
-          <div className="text-center">
-            <p className="mb-4 text-red-600">{error}</p>
-            <Button size="lg" onClick={handleBack}>
-              Back to Payments
-            </Button>
-          </div>
-        ) : (
-          <div
-            className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"
-            aria-label="Loading"
-          />
-        )}
-      </div>
+      <>
+        {!hasSession && <AuthHeader referenceId={referenceId} />}
+        <div className="flex min-h-[50vh] flex-1 items-center justify-center">
+          {error ? (
+            <div className="text-center">
+              <p className="mb-4 text-red-600">{error}</p>
+              <Button size="lg" onClick={handleBack}>
+                Back to Payments
+              </Button>
+            </div>
+          ) : (
+            <div
+              className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"
+              aria-label="Loading"
+            />
+          )}
+        </div>
+      </>
     );
   }
 
   return (
     <>
+      {!hasSession && <AuthHeader referenceId={referenceId} />}
       <header className="sticky top-0 z-20 border-b bg-white">
         <div className="mx-auto max-w-7xl px-3 py-2 md:px-6 md:py-4">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

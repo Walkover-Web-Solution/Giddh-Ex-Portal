@@ -12,8 +12,16 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
   const country = params?.country as string;
 
   useEffect(() => {
-    // Skip check for public routes
-    const publicRoutes = ["/auth", "/login", "/invoice/preview", "/payment/preview", "/invoice-pay"];
+    // Public routes: no redirect to login when no session (guests can open these)
+    // - invoice/preview, payment/preview, invoice-pay: view/prepay without auth
+    // - auth, login: auth flows
+    const publicRoutes = [
+      "/auth",
+      "/login",
+      "/invoice/preview",
+      "/payment/preview",
+      "/invoice-pay",
+    ];
     const isPublicRoute = publicRoutes.some((route) => pathname?.includes(route));
 
     if (isPublicRoute) {

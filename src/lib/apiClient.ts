@@ -63,12 +63,23 @@ class ApiClient {
           error.response?.status === HttpStatus.UNAUTHORIZED ||
           error.response?.status === HttpStatus.FORBIDDEN
         ) {
-          console.error("Unauthorized - Session expired");
+          // Do not show session-expired modal on public routes (guest view, no session expected)
+          const publicRoutes = [
+            "/invoice/preview",
+            "/payment/preview",
+            "/invoice-pay",
+            "/auth",
+            "/login",
+          ];
+          const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+          const isPublicRoute = publicRoutes.some((route) => pathname.includes(route));
 
-          // Emit custom event for session expiry
-          if (typeof window !== "undefined") {
-            const event = new CustomEvent("session-expired");
-            window.dispatchEvent(event);
+          if (!isPublicRoute) {
+            console.error("Unauthorized - Session expired");
+            if (typeof window !== "undefined") {
+              const event = new CustomEvent("session-expired");
+              window.dispatchEvent(event);
+            }
           }
         }
         return Promise.reject(error);

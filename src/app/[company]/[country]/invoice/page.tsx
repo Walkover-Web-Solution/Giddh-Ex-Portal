@@ -3,7 +3,7 @@
 import { DataTable } from "@/components/DataTable";
 import { Dropdown } from "@/components/Dropdown";
 import { Pagination } from "@/components/Pagination";
-import { PayNow } from "@/components/PayNow";
+import { Button } from "@/components/ui/button";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -25,6 +25,7 @@ import { downloadBase64AsPDF } from "@/utils/fileUtils";
 import downloadInvoice from "@/utils/downloadInvoice";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
+import { useToast } from "@/contexts/ToastContext";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
@@ -44,6 +45,7 @@ export default function InvoicesPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { showToast } = useToast();
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>("All Invoices");
   const [sortBy, setSortBy] = useState<InvoiceSortColumn>("Total");
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
@@ -106,6 +108,23 @@ export default function InvoicesPage() {
     if (accountUniqueName) params.set("accountUniqueName", accountUniqueName);
     const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice/preview`;
     router.push(`${path}?${params.toString()}`);
+  };
+
+  const handlePayNowClick = (e: React.MouseEvent, invoiceUniqueName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
+    if (!accountUniqueName) {
+      showToast("Account information is missing. Please refresh or log in again.", "error");
+      return;
+    }
+    const search = new URLSearchParams();
+    if (companyUniqueName) search.set("companyUniqueName", companyUniqueName);
+    const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice-pay/account/${encodeURIComponent(accountUniqueName)}/voucher/${encodeURIComponent(invoiceUniqueName)}`;
+    router.push(search.toString() ? `${path}?${search.toString()}` : path);
   };
 
   const handleClearFilters = () => {
@@ -342,14 +361,22 @@ export default function InvoicesPage() {
     },
     {
       header: "Over Due",
-      accessor: (row: Invoice) => <span className="text-orange-600">{row.overdue}</span>,
+      accessor: (row: Invoice) => <span className="text-orange-">{row.overdue}</span>,
     },
     {
       header: "Action",
       accessor: (row: Invoice) => (
         <div className="flex gap-2">
           {row.showPayNow && (
-            <PayNow invoiceUniqueName={row.id} invoiceNumber={row.invoiceNo} canPay size="sm" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(e) => handlePayNowClick(e, row.id)}
+              className="shrink-0"
+            >
+              Pay Now
+            </Button>
           )}
           <button
             onClick={() => handleDownloadInvoice(row.id, row.invoiceNo)}

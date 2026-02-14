@@ -625,7 +625,13 @@ export const companySlice = createSlice({
       })
       .addCase(fetchAllInvoices.pending, (state, action) => {
         const { companyName } = action.meta.arg;
-        if (state[companyName]) {
+        if (!state[companyName]) {
+          state[companyName] = {
+            companyName,
+            country: "",
+            allInvoices: { data: null, loading: true, error: null },
+          };
+        } else {
           state[companyName].allInvoices = {
             data: state[companyName].allInvoices?.data || null,
             loading: true,
@@ -645,6 +651,9 @@ export const companySlice = createSlice({
           page,
           count,
         } = action.payload;
+        if (!state[companyName]) {
+          state[companyName] = { companyName, country: "" };
+        }
         if (state[companyName]) {
           state[companyName].allInvoices = {
             data,
@@ -663,6 +672,9 @@ export const companySlice = createSlice({
       })
       .addCase(fetchAllInvoices.rejected, (state, action) => {
         const { companyName } = action.meta.arg;
+        if (!state[companyName]) {
+          state[companyName] = { companyName, country: "" };
+        }
         if (state[companyName]) {
           state[companyName].allInvoices = {
             data: state[companyName].allInvoices?.data || null,

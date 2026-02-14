@@ -36,7 +36,7 @@
   }
 }
 
-/* AUTH CONTAINER */
+/* AUTH CONTAINER – default: column (used on login page) */
 .auth-container {
   display: flex;
   flex-direction: column;
@@ -59,5 +59,24 @@
 
   button {
     min-width: 120px !important;
+  }
+}
+
+/* Invoice preview auth: row layout + white anchor and white button */
+.auth-header-preview {
+  .auth-container {
+    flex-direction: row;
+  }
+
+  .auth-container p {
+    color: #fff !important;
+    text-align: center !important;
+    align-self: flex-start !important;
+  }
+
+  .auth-container button {
+    background-color: #fff !important;
+    color: #1f2937 !important;
+    border-color: #e5e7eb !important;
   }
 }
