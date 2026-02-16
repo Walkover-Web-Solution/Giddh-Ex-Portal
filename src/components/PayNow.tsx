@@ -80,7 +80,6 @@ export function PayNow({
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsResponse | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PAYMENT_METHODS_ENUM | null>(null);
   const [showPayuForm, setShowPayuForm] = useState(false);
-  const [showNoMethodsError, setShowNoMethodsError] = useState(false);
   const [payuDetails, setPayuDetails] = useState({ name: "", email: "", contactNo: "" });
   const paypalFormRef = useRef<HTMLFormElement>(null);
   const razorpayInstance = useRef<any>(null);
@@ -99,15 +98,6 @@ export function PayNow({
   useEffect(() => {
     loadRazorpayScript();
   }, []);
-
-  useEffect(() => {
-    if (showNoMethodsError) {
-      const timer = setTimeout(() => {
-        setShowNoMethodsError(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showNoMethodsError]);
 
   const loadRazorpayScript = () => {
     if (typeof window !== "undefined" && !window.Razorpay) {
@@ -169,7 +159,10 @@ export function PayNow({
         const { methods, firstEnabled } = normalizePaymentMethods(rawBody);
 
         if (Object.keys(methods).length === 0) {
-          setShowNoMethodsError(true);
+          showToast(
+            "No payment methods are currently configured for your account. Please contact support to enable payment options.",
+            "error"
+          );
           return null;
         }
 
@@ -221,7 +214,12 @@ export function PayNow({
     }
 
     if (!method || !voucherUniqueNames.length) {
-      if (!invoicePayMode) setShowNoMethodsError(true);
+      if (!invoicePayMode) {
+        showToast(
+          "No payment methods are currently configured for your account. Please contact support to enable payment options.",
+          "error"
+        );
+      }
       setIsProcessing(false);
       return;
     }
@@ -531,55 +529,6 @@ export function PayNow({
       >
         {isProcessing ? "Processing..." : displayLabel}
       </Button>
-
-      {showNoMethodsError && (
-        <div className="fixed right-4 top-4 z-50 w-96 animate-slide-in-right">
-          <div className="rounded-lg border-l-4 border-red-500 bg-white p-4 shadow-lg">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-6 w-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3 flex-1">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  No Payment Methods Available
-                </h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  No payment methods are currently configured for your account. Please contact
-                  support to enable payment options.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowNoMethodsError(false)}
-                className="ml-4 shrink-0 text-gray-400 hover:text-gray-600"
-                aria-label="Close"
-              >
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showPayuForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
