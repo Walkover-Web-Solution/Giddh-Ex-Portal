@@ -51,15 +51,22 @@ export async function getPaymentList(request: PaymentPreviewRequest): Promise<Pa
     headers["Session-id"] = request.sessionId;
   }
 
-  const response = await apiClient.get(
-    API_PATHS.paymentVouchersList(
-      request.companyUniqueName,
-      request.accountUniqueName,
-      request.voucherUniqueName
-    ),
-    { headers }
-  );
-  return response.data;
+  try {
+    const response = await apiClient.get(
+      API_PATHS.paymentVouchersList(
+        request.companyUniqueName,
+        request.accountUniqueName,
+        request.voucherUniqueName
+      ),
+      { headers }
+    );
+    return response.data;
+  } catch {
+    return {
+      status: "error",
+      body: { items: [], totalItems: 0 },
+    };
+  }
 }
 
 export function base64ToBlob(

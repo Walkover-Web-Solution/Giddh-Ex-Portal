@@ -14,11 +14,13 @@ import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { logger } from "@/utils/logger";
 import { useConfig } from "@/contexts/ConfigContext";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function Auth() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
+  const { showToast } = useToast();
   const { isLoading: configLoading } = useConfig();
   const token = searchParams.get("proxy_auth_token");
   const companyParam = searchParams.get("company");
@@ -96,16 +98,34 @@ export default function Auth() {
 
               router.push(`/${companyName}/${country}/welcome`);
             } else {
-              setError("Failed to save session");
+              const msg =
+                (sessionResponse as { message?: string }).message ?? "Failed to save session";
+              showToast(msg, "error");
+              setError(msg);
             }
           } else {
-            setError("User verification failed");
+            const msg =
+              (verifyResponse as { message?: string }).message ?? "User verification failed";
+            showToast(msg, "error");
+            setError(msg);
           }
         } else {
-          setError("Failed to get user details");
+          const msg =
+            (detailsResponse as { message?: string }).message ?? "Failed to get user details";
+          showToast(msg, "error");
+          setError(msg);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         logger.error("Error during authentication", err);
+        const apiMessage =
+          (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
+            ?.message ??
+          (err instanceof Error
+            ? err.message
+            : typeof err === "string"
+              ? err
+              : "Authentication failed. Please try again.");
+        showToast(apiMessage, "error");
         setError("Authentication failed. Please try again.");
       }
     };

@@ -23,6 +23,7 @@ export interface InvoiceListResponse {
   body: {
     items: InvoiceVoucher[];
     totalItems: number;
+    totalPages?: number;
     page: number;
     count: number;
   };

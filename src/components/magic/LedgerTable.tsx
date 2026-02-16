@@ -1,6 +1,6 @@
 import { LedgerView } from "@/constants/ledger";
-import { Transaction, Currency, ViewMode, CurrencyInfo } from "./types";
-import { StatementViewTable } from "./StatementViewTable";
+import { Transaction, Currency, ViewMode, CurrencyInfo, ForwardedBalanceShape } from "./types";
+import { StatementViewTable, type LedgerTotals } from "./StatementViewTable";
 import { TAccountViewTable } from "./TAccountViewTable";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { Pagination } from "@/components/Pagination";
@@ -25,11 +25,9 @@ interface LedgerTableProps {
   debitCreditTransactions?: LedgerTransaction[];
   debitTransactions?: LedgerTransaction[];
   creditTransactions?: LedgerTransaction[];
-  forwardedBalance?: {
-    amount: number;
-    type: "DEBIT" | "CREDIT";
-    description?: string;
-  };
+  forwardedBalance?: ForwardedBalanceShape;
+  convertedForwardedBalance?: ForwardedBalanceShape;
+  ledgerTotals?: LedgerTotals;
   pagination?: LedgerTablePaginationProps;
 }
 
@@ -44,6 +42,8 @@ export function LedgerTable({
   debitTransactions,
   creditTransactions,
   forwardedBalance,
+  convertedForwardedBalance,
+  ledgerTotals,
   pagination,
 }: LedgerTableProps) {
   if (viewMode === LedgerView.STATEMENT_VIEW) {
@@ -52,6 +52,8 @@ export function LedgerTable({
         selectedCurrency={selectedCurrency}
         debitCreditTransactions={debitCreditTransactions}
         forwardedBalance={forwardedBalance}
+        convertedForwardedBalance={convertedForwardedBalance}
+        ledgerTotals={ledgerTotals}
         transactionCurrency={transactionCurrency}
         convertedCurrency={convertedCurrency}
         linkId={linkId}
@@ -66,6 +68,9 @@ export function LedgerTable({
         selectedCurrency={selectedCurrency}
         debitTransactions={debitTransactions}
         creditTransactions={creditTransactions}
+        forwardedBalance={forwardedBalance}
+        convertedForwardedBalance={convertedForwardedBalance}
+        ledgerTotals={ledgerTotals}
         transactionCurrency={transactionCurrency}
         convertedCurrency={convertedCurrency}
         linkId={linkId}

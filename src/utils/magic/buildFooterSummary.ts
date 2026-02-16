@@ -19,6 +19,12 @@ export interface FooterSummary {
   totalCredit: number;
   closingBalance: number;
   closingBalanceType: BalanceType;
+  convertedTotalDebit?: number;
+  convertedTotalCredit?: number;
+  convertedClosingBalance?: number;
+  convertedClosingBalanceType?: BalanceType;
+  convertedOpeningBalance?: number;
+  convertedOpeningBalanceType?: BalanceType;
 }
 
 function toDrCr(type: LedgerTransactionType): BalanceType {
@@ -54,6 +60,7 @@ export function buildFooterSummary(params: {
   filteredDebitCreditTransactions: LedgerTransaction[] | undefined | null;
   filteredDebitTransactions: LedgerTransaction[] | undefined | null;
   filteredCreditTransactions: LedgerTransaction[] | undefined | null;
+  apiTotalTransactions?: number;
 }): FooterSummary {
   const {
     ledgerBalance,
@@ -62,15 +69,22 @@ export function buildFooterSummary(params: {
     filteredDebitCreditTransactions,
     filteredDebitTransactions,
     filteredCreditTransactions,
+    apiTotalTransactions,
   } = params;
 
-  const { totalTransactions, debitCount, creditCount } = getCounts(
+  const countsFromData = getCounts(
     viewMode,
     filteredDebitCreditTransactions,
     filteredDebitTransactions,
     filteredCreditTransactions,
     Boolean(forwardedBalance)
   );
+
+  const totalTransactions =
+    viewMode === LedgerView.STATEMENT_VIEW && apiTotalTransactions != null
+      ? apiTotalTransactions
+      : countsFromData.totalTransactions;
+  const { debitCount, creditCount } = countsFromData;
 
   if (ledgerBalance) {
     return {
@@ -84,6 +98,12 @@ export function buildFooterSummary(params: {
       totalCredit: ledgerBalance.creditTotal,
       closingBalance: ledgerBalance.closingBalance.amount,
       closingBalanceType: toDrCr(ledgerBalance.closingBalance.type),
+      convertedTotalDebit: ledgerBalance.convertedDebitTotal,
+      convertedTotalCredit: ledgerBalance.convertedCreditTotal,
+      convertedClosingBalance: ledgerBalance.convertedClosingBalance.amount,
+      convertedClosingBalanceType: toDrCr(ledgerBalance.convertedClosingBalance.type),
+      convertedOpeningBalance: ledgerBalance.convertedForwardedBalance.amount,
+      convertedOpeningBalanceType: toDrCr(ledgerBalance.convertedForwardedBalance.type),
     };
   }
 

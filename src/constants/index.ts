@@ -19,6 +19,9 @@ export const DEFAULT_PAGE = 1;
 /** Default page size / items per page */
 export const PAGINATION_LIMIT = 50;
 
+/** Invoice list: items per page (synced with API) */
+export const INVOICE_PAGE_SIZE = 20;
+
 export const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 export enum PAYMENT_METHODS_ENUM {

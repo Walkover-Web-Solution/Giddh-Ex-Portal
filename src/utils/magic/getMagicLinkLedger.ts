@@ -29,6 +29,13 @@ export interface LedgerTransaction {
     convertedAmount?: number;
     type: LedgerTransactionType;
   };
+  inventory?: {
+    stock?: {
+      name: string;
+    };
+  };
+  attachedFileName?: string;
+  attachedFileUniqueName?: string;
 }
 
 export interface MagicLinkLedgerResponse {
@@ -45,11 +52,22 @@ export interface MagicLinkLedgerResponse {
         type: LedgerTransactionType;
         description?: string;
       };
+      convertedForwardedBalance?: {
+        amount: number;
+        type: LedgerTransactionType;
+        description?: string;
+      };
       debitTransactions: LedgerTransaction[];
       creditTransactions: LedgerTransaction[];
       debitCreditTransactions?: LedgerTransaction[];
       from: string;
       to: string;
+      totalItems?: number;
+      totalPages?: number;
+      page?: number;
+      count?: number;
+      creditTransactionsCount?: number;
+      debitTransactionsCount?: number;
     };
   };
   message?: string;
@@ -61,6 +79,8 @@ export interface GetMagicLinkLedgerRequest {
   viewMode?: LedgerView;
   from?: string;
   to?: string;
+  page?: number;
+  count?: number;
 }
 
 export const getMagicLinkLedger = async (
@@ -81,6 +101,12 @@ export const getMagicLinkLedger = async (
     }
     if (request.to) {
       queryParts.push(`to=${encodeURIComponent(request.to)}`);
+    }
+    if (request.page != null) {
+      queryParts.push(`page=${request.page}`);
+    }
+    if (request.count != null) {
+      queryParts.push(`count=${request.count}`);
     }
     const url = `${config.GIDDH_API_URL}${GIDDH_MAGIC_LINK_PATHS.ledger(request.linkId)}?${queryParts.join("&")}`;
 

@@ -109,10 +109,7 @@ export function DataTable<T>({
             <tbody className="divide-y divide-gray-200 bg-white">
               {data.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="px-4 py-8 text-center text-sm text-gray-500 sm:pl-6"
-                  >
+                  <td colSpan={columns.length} className="px-4 py-8 text-center text-sm sm:pl-6">
                     No data available
                   </td>
                 </tr>
@@ -132,7 +129,7 @@ export function DataTable<T>({
                           className={mergeClassNames(
                             "whitespace-nowrap py-4 text-sm",
                             isFirst && "py-4 pl-4 pr-3 font-medium text-gray-900 sm:pl-6",
-                            !isFirst && !isLast && "px-3 py-4 text-gray-500",
+                            !isFirst && !isLast && "px-3 py-4",
                             isLast && "py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6",
                             column.className,
                             column.cellClassName

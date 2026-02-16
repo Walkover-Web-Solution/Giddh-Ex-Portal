@@ -22,23 +22,15 @@ import { getSessionCookie } from "@/utils/cookies";
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
   const pathname = usePathname();
-  const isLoginPage = pathname?.includes("/login");
-  const isAuthPage = pathname?.includes("/auth");
-  const isPreviewPage = pathname?.includes("/preview");
   const params = useParams();
   const companyName = params?.company as string;
   const companyAddress = useAppSelector(selectCompanyAddress(companyName));
   const gstin = useAppSelector(selectCompanyGstin(companyName));
 
-  const [showSidebarOnPreview, setShowSidebarOnPreview] = useState(false);
+  const isLoginPage = pathname?.includes("/login");
+  const isAuthPage = pathname?.includes("/auth");
 
-  useEffect(() => {
-    if (isPreviewPage && companyName) {
-      setShowSidebarOnPreview(!!getSessionCookie(companyName));
-    }
-  }, [isPreviewPage, companyName]);
-
-  const hideSidebar = isLoginPage || isAuthPage || (isPreviewPage && !showSidebarOnPreview);
+  const hideSidebar = isLoginPage || isAuthPage;
 
   if (hideSidebar) {
     return <>{children}</>;
@@ -69,6 +61,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
 export default function CompanyLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
+  const pathname = usePathname();
   const dispatch = useAppDispatch();
   const hasCalledApis = useRef(false);
 
@@ -78,17 +71,24 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (hasCalledApis.current) return;
+    if (typeof window === "undefined") return;
+
+    const isLoginOrAuth = pathname?.includes("/login") || pathname?.includes("/auth");
+    if (isLoginOrAuth) return;
+
+    const sessionId = getSessionCookie(companyName);
+    if (!sessionId) return;
 
     let companyUniqueName = companyUniqueNameFromRedux;
     let accountUniqueName = accountUniqueNameFromRedux;
 
-    if (!companyUniqueName && typeof window !== "undefined") {
+    if (!companyUniqueName) {
       const userData = localStorage.getItem("userData");
       if (userData) {
         try {
           const parsedData = JSON.parse(userData);
           companyUniqueName = parsedData.companyUniqueName;
-          accountUniqueName = parsedData.account?.uniqueName;
+          accountUniqueName = parsedData.account?.uniqueName ?? accountUniqueName;
         } catch (e) {
           console.error("Error parsing userData:", e);
         }
@@ -97,11 +97,17 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
 
     if (companyName && companyUniqueName && accountUniqueName) {
       hasCalledApis.current = true;
-      dispatch(fetchCompanyDetails({ companyName, companyUniqueName, accountUniqueName }));
-      dispatch(fetchUserDetails({ companyName, companyUniqueName, accountUniqueName }));
-      dispatch(fetchCompanyAddress({ companyName, companyUniqueName, accountUniqueName }));
+      dispatch(fetchCompanyDetails({ companyName, companyUniqueName, accountUniqueName })).catch(
+        () => {}
+      );
+      dispatch(fetchUserDetails({ companyName, companyUniqueName, accountUniqueName })).catch(
+        () => {}
+      );
+      dispatch(fetchCompanyAddress({ companyName, companyUniqueName, accountUniqueName })).catch(
+        () => {}
+      );
     }
-  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+  }, [dispatch, companyName, pathname, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
   return (
     <SessionGuard>

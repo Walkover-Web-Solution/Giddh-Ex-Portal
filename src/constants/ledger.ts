@@ -5,6 +5,12 @@ export const LEDGER_TYPE_CREDIT = "CREDIT" as const;
 /** Type for DEBIT | CREDIT (ledger entry / transaction type) */
 export type LedgerTransactionType = typeof LEDGER_TYPE_DEBIT | typeof LEDGER_TYPE_CREDIT;
 
+/** Enum for ledger transaction type (DEBIT / CREDIT) */
+export enum LedgerEntryType {
+  DEBIT = "DEBIT",
+  CREDIT = "CREDIT",
+}
+
 /** Prefix for particular field in display */
 export const PARTICULAR_PREFIX_DEBIT = "To ";
 export const PARTICULAR_PREFIX_CREDIT = "By ";

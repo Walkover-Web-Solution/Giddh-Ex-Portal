@@ -28,9 +28,13 @@ export const API_PATHS = {
   paymentMethodsBase: (company: string, account: string) =>
     `${portalAccount(company, account)}/payment-methods`,
 
-  /** POST invoice pay request */
+  /** GET payment method list (gateway labels/images for invoice-pay UI) */
+  paymentMethodList: (company: string, account: string) =>
+    `${portalAccount(company, account)}/payment-method`,
+
+  /** POST invoice pay request (company/account encoded for URL safety) */
   invoicePayRequest: (company: string, account: string) =>
-    `${portalAccount(company, account)}/invoice-pay-request?voucherVersion=2`,
+    `${portalAccount(company, account, true)}/invoice-pay-request?voucherVersion=2`,
 
   /** POST update payment / pay */
   invoicePay: (company: string, account: string, paymentId: string) =>

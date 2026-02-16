@@ -54,11 +54,9 @@ export function getSecondaryAmount(
   isConvertedCurrencySelected: boolean
 ): number | null {
   if (!hasMultipleCurrencies) return null;
-
   if (isConvertedCurrencySelected) {
     return tx[field] ?? null;
   }
-
   if (field === "debit") return tx.debitConverted ?? null;
   if (field === "credit") return tx.creditConverted ?? null;
   return tx.closingBalanceConverted ?? null;

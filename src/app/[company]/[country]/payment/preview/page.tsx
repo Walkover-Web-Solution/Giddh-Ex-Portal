@@ -10,10 +10,27 @@ import {
   base64ToBlob,
   PaymentVoucher,
 } from "@/utils/paymentPreview";
-import { ArrowLeft, Download, Printer } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastContext";
+import { getSessionCookie } from "@/utils/cookies";
+import { useAppConfig } from "@/hooks/useAppConfig";
+import { DEFAULT_CONFIG } from "@/config/default";
+
+function AuthHeader({ referenceId }: { referenceId: string }) {
+  return (
+    <header
+      className="auth-header-preview flex flex-row items-center justify-center bg-blue-900 px-4 py-3"
+      aria-label="Auth"
+      data-auth-mount="payment-preview"
+    >
+      <div id={referenceId} className="auth-container min-h-[44px] w-full" />
+    </header>
+  );
+}
+
+const EMPTY_PAYMENT_LIST = { status: "error" as const, body: { items: [], totalItems: 0 } };
 
 export default function PaymentPreviewPage() {
   const params = useParams();
@@ -23,7 +40,8 @@ export default function PaymentPreviewPage() {
 
   const companyName = params?.company as string;
   const country = params?.country as string;
-  const voucherUniqueName = searchParams.get("voucher") || "";
+  const voucherUniqueName =
+    searchParams.get("voucher") || searchParams.get("voucherUniqueName") || "";
   const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
   const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
 
@@ -36,7 +54,12 @@ export default function PaymentPreviewPage() {
   const [error, setError] = useState<string>("");
   const { showToast } = useToast();
 
+  const { referenceId: configReferenceId } = useAppConfig();
+  const referenceId = configReferenceId?.trim() || DEFAULT_CONFIG.REFERENCE_ID;
+
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const hasSession =
+    typeof window !== "undefined" && (!!sessionId || !!getSessionCookie(companyName));
 
   const getCompanyAndAccountNames = () => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -87,6 +110,31 @@ export default function PaymentPreviewPage() {
   ]);
 
   useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://proxy.msg91.com/assets/proxy-auth/proxy-auth.js";
+    script.type = "text/javascript";
+    script.defer = true;
+    script.onload = () => {
+      const runInit = () => {
+        const el = document.getElementById(referenceId);
+        if (!el) return;
+        (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
+          referenceId,
+          success: () => {},
+          failure: (err: unknown) => console.error("[PaymentPreview Auth] Login failed:", err),
+        });
+      };
+      if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(runInit);
+      else setTimeout(runInit, 0);
+    };
+    script.onerror = () => console.error("[PaymentPreview Auth] Failed to load proxy-auth.js");
+    document.body.appendChild(script);
+    return () => {
+      if (document.body.contains(script)) document.body.removeChild(script);
+    };
+  }, [referenceId]);
+
+  useEffect(() => {
     return () => {
       if (pdfUrl) {
         URL.revokeObjectURL(pdfUrl);
@@ -106,13 +154,18 @@ export default function PaymentPreviewPage() {
         sessionId: sessionId || undefined,
       };
 
-      const [voucherResponse, paymentListResponse] = await Promise.all([
-        downloadPaymentVoucher(request),
-        getPaymentList(request).catch(() => ({
-          status: "error",
-          body: { items: [], totalItems: 0 },
-        })),
-      ]);
+      let voucherResponse: Awaited<ReturnType<typeof downloadPaymentVoucher>>;
+      let paymentListResponse: Awaited<ReturnType<typeof getPaymentList>>;
+
+      if (hasSession) {
+        [voucherResponse, paymentListResponse] = await Promise.all([
+          downloadPaymentVoucher(request),
+          getPaymentList(request).catch(() => EMPTY_PAYMENT_LIST),
+        ]);
+      } else {
+        voucherResponse = await downloadPaymentVoucher(request);
+        paymentListResponse = EMPTY_PAYMENT_LIST;
+      }
 
       if (voucherResponse.status === "success" && voucherResponse.body) {
         const blob = base64ToBlob(voucherResponse.body);
@@ -179,13 +232,8 @@ export default function PaymentPreviewPage() {
   if (isLoading) {
     return (
       <>
-        <header className="border-b bg-white px-6 py-4">
-          <div className="flex items-center gap-3">
-            <SidebarToggleButton />
-            <h1 className="text-xl font-semibold">Payments Made</h1>
-          </div>
-        </header>
-        <div className="flex flex-1 items-center justify-center p-6">
+        {!hasSession && <AuthHeader referenceId={referenceId} />}
+        <div className="flex min-h-[50vh] flex-1 items-center justify-center">
           {error ? (
             <div className="text-center">
               <p className="mb-4 text-red-600">{error}</p>
@@ -194,7 +242,10 @@ export default function PaymentPreviewPage() {
               </Button>
             </div>
           ) : (
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
+            <div
+              className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"
+              aria-label="Loading"
+            />
           )}
         </div>
       </>
@@ -203,6 +254,7 @@ export default function PaymentPreviewPage() {
 
   return (
     <>
+      {!hasSession && <AuthHeader referenceId={referenceId} />}
       <header className="sticky top-0 z-20 border-b bg-white">
         <div className="mx-auto max-w-7xl px-3 py-2 md:px-6 md:py-4">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -216,11 +268,9 @@ export default function PaymentPreviewPage() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="lg" onClick={handlePrint}>
-                <Printer className="h-4 w-4" />
                 <span className="sm:inline">Print</span>
               </Button>
               <Button variant="outline" size="lg" onClick={handleDownload}>
-                <Download className="h-4 w-4" />
                 <span className="sm:inline">Download</span>
               </Button>
             </div>

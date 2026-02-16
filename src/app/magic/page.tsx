@@ -54,18 +54,20 @@ export default function Magic() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
+  const [apiTotalItems, setApiTotalItems] = useState<number | undefined>(undefined);
+  const [apiTotalPages, setApiTotalPages] = useState<number | undefined>(undefined);
 
-  // Date range state
+  // Date range state — default to this month (1st to last day of current month)
   const today = new Date();
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 30);
-  const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
-  const [toDate, setToDate] = useState<Date>(today);
+  const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const endOfThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const [fromDate, setFromDate] = useState<Date>(startOfThisMonth);
+  const [toDate, setToDate] = useState<Date>(endOfThisMonth);
   const hasSetDatesFromAPI = useRef(false);
   const isUpdatingDatesFromAPI = useRef(false);
   const isInitialMount = useRef(true);
-  const prevFromDateRef = useRef<Date>(thirtyDaysAgo);
-  const prevToDateRef = useRef<Date>(today);
+  const prevFromDateRef = useRef<Date>(startOfThisMonth);
+  const prevToDateRef = useRef<Date>(endOfThisMonth);
 
   useEffect(() => {
     if (isUpdatingDatesFromAPI.current) {
@@ -88,15 +90,17 @@ export default function Magic() {
       setError(null);
 
       try {
-        const result = await getMagicLinkData(
-          {
-            linkId,
-            sort: SortOrder.ASC,
-            from: formatDateToAPI(fromDate),
-            to: formatDateToAPI(toDate),
-          },
-          viewMode
-        );
+        const request: Parameters<typeof getMagicLinkData>[0] = {
+          linkId,
+          sort: SortOrder.ASC,
+          from: formatDateToAPI(fromDate),
+          to: formatDateToAPI(toDate),
+        };
+        if (viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) {
+          request.page = currentPage;
+          request.count = itemsPerPage;
+        }
+        const result = await getMagicLinkData(request, viewMode);
 
         if (result.success && result.data) {
           const {
@@ -109,7 +113,12 @@ export default function Magic() {
             debitTransactions: apiDebitTransactions,
             creditTransactions: apiCreditTransactions,
             forwardedBalance: apiForwardedBalance,
+            apiTotalItems: responseApiTotalItems,
+            apiTotalPages: responseApiTotalPages,
           } = result.data;
+
+          setApiTotalItems(responseApiTotalItems);
+          setApiTotalPages(responseApiTotalPages);
 
           setTransactions(transformedTransactions);
           setCurrencyData(extractedCurrencyData);
@@ -161,6 +170,8 @@ export default function Magic() {
           setCreditTransactions([]);
           setForwardedBalance(undefined);
           setLedgerBalance(undefined);
+          setApiTotalItems(undefined);
+          setApiTotalPages(undefined);
         }
       } catch (err) {
         setError("Failed to load ledger data");
@@ -170,13 +181,30 @@ export default function Magic() {
         setCreditTransactions([]);
         setForwardedBalance(undefined);
         setLedgerBalance(undefined);
+        setApiTotalItems(undefined);
+        setApiTotalPages(undefined);
       } finally {
         setLoading(false);
       }
     };
 
     fetchMagicLinkData();
-  }, [linkId, viewMode, fromDate.getTime(), toDate.getTime()]);
+  }, [linkId, viewMode, fromDate.getTime(), toDate.getTime(), currentPage, itemsPerPage]);
+
+  const normalizeSearchForAmount = (s: string) => {
+    const noCommas = s.replace(/,/g, "");
+    const commaAsDot = s.replace(/,/g, ".");
+    return { noCommas, commaAsDot };
+  };
+
+  const amountMatchesSearch = (amount: number | null | undefined, searchValue: string) => {
+    if (amount == null || !searchValue) return false;
+    const { noCommas, commaAsDot } = normalizeSearchForAmount(searchValue);
+    const amountStr = String(amount);
+    const amountRounded = Number(amount).toFixed(2);
+    const matches = (s: string) => s.includes(noCommas) || s.includes(commaAsDot);
+    return matches(amountStr) || matches(amountRounded);
+  };
 
   const filteredTransactions = useMemo(() => {
     const searchValue = searchQuery.toLowerCase().trim();
@@ -187,8 +215,8 @@ export default function Magic() {
       if (hasSearchQuery) {
         const matchesParticular = t.particular?.toLowerCase().includes(searchValue);
         const matchesAmount =
-          String(t.debit ?? "").includes(searchValue) ||
-          String(t.credit ?? "").includes(searchValue);
+          amountMatchesSearch(t.debit ?? null, searchValue) ||
+          amountMatchesSearch(t.credit ?? null, searchValue);
         if (!matchesParticular && !matchesAmount) return false;
       }
 
@@ -235,7 +263,7 @@ export default function Magic() {
 
     return debitCreditTransactions.filter((tx) => {
       const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
-      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      const matchesAmount = amountMatchesSearch(tx.amount, searchValue);
       return matchesParticular || matchesAmount;
     });
   }, [debitCreditTransactions, searchQuery]);
@@ -254,7 +282,7 @@ export default function Magic() {
 
     return debitTransactions.filter((tx) => {
       const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
-      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      const matchesAmount = amountMatchesSearch(tx.amount, searchValue);
       return matchesParticular || matchesAmount;
     });
   }, [debitTransactions, searchQuery]);
@@ -273,7 +301,7 @@ export default function Magic() {
 
     return creditTransactions.filter((tx) => {
       const matchesParticular = tx.particular?.name?.toLowerCase().includes(searchValue) ?? false;
-      const matchesAmount = String(tx.amount ?? "").includes(searchValue);
+      const matchesAmount = amountMatchesSearch(tx.amount, searchValue);
       return matchesParticular || matchesAmount;
     });
   }, [creditTransactions, searchQuery]);
@@ -284,6 +312,9 @@ export default function Magic() {
   }, [linkId, viewMode, searchQuery, fromDate.getTime(), toDate.getTime()]);
 
   const totalEntries = useMemo(() => {
+    if (apiTotalItems != null) {
+      return apiTotalItems;
+    }
     if (viewMode === LedgerView.STATEMENT_VIEW) {
       const count = filteredDebitCreditTransactions?.length ?? 0;
       return (forwardedBalance ? 1 : 0) + count;
@@ -294,6 +325,7 @@ export default function Magic() {
     return Math.max(debitLength, creditLength, txLength);
   }, [
     viewMode,
+    apiTotalItems,
     forwardedBalance,
     filteredDebitCreditTransactions?.length,
     filteredDebitTransactions?.length,
@@ -303,6 +335,9 @@ export default function Magic() {
 
   const paginatedStatementData = useMemo(() => {
     if (viewMode !== LedgerView.STATEMENT_VIEW || !filteredDebitCreditTransactions) return null;
+    if (apiTotalPages != null && apiTotalPages > 1) {
+      return filteredDebitCreditTransactions;
+    }
     const list = filteredDebitCreditTransactions;
     const hasForwarded = Boolean(forwardedBalance);
     const start = currentPage === 1 ? 0 : (currentPage - 1) * itemsPerPage - (hasForwarded ? 1 : 0);
@@ -311,10 +346,24 @@ export default function Magic() {
         ? itemsPerPage - (hasForwarded ? 1 : 0)
         : currentPage * itemsPerPage - (hasForwarded ? 1 : 0);
     return list.slice(start, end);
-  }, [viewMode, filteredDebitCreditTransactions, forwardedBalance, currentPage, itemsPerPage]);
+  }, [
+    viewMode,
+    filteredDebitCreditTransactions,
+    forwardedBalance,
+    currentPage,
+    itemsPerPage,
+    apiTotalPages,
+  ]);
 
   const paginatedTViewData = useMemo(() => {
     if (viewMode !== LedgerView.T_VIEW) return null;
+    if (apiTotalPages != null && apiTotalPages > 1) {
+      return {
+        transactions: filteredTransactions,
+        debitTransactions: filteredDebitTransactions ?? [],
+        creditTransactions: filteredCreditTransactions ?? [],
+      };
+    }
     const start = (currentPage - 1) * itemsPerPage;
     const end = currentPage * itemsPerPage;
     return {
@@ -329,10 +378,14 @@ export default function Magic() {
     filteredCreditTransactions,
     currentPage,
     itemsPerPage,
+    apiTotalPages,
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(totalEntries / itemsPerPage));
-  const hasMultiplePages = totalEntries > itemsPerPage;
+  const totalPages =
+    apiTotalPages != null
+      ? Math.max(1, apiTotalPages)
+      : Math.max(1, Math.ceil(totalEntries / itemsPerPage));
+  const hasMultiplePages = totalPages > 1;
 
   const summary = useMemo(
     () =>
@@ -343,6 +396,7 @@ export default function Magic() {
         filteredDebitCreditTransactions,
         filteredDebitTransactions,
         filteredCreditTransactions,
+        apiTotalTransactions: viewMode === LedgerView.STATEMENT_VIEW ? apiTotalItems : undefined,
       }),
     [
       ledgerBalance,
@@ -351,6 +405,7 @@ export default function Magic() {
       filteredDebitCreditTransactions,
       filteredDebitTransactions,
       filteredCreditTransactions,
+      apiTotalItems,
     ]
   );
 
@@ -447,8 +502,23 @@ export default function Magic() {
                   : undefined
             }
             forwardedBalance={
-              viewMode === LedgerView.STATEMENT_VIEW && (!hasMultiplePages || currentPage === 1)
-                ? forwardedBalance
+              !hasMultiplePages || currentPage === 1
+                ? (ledgerBalance?.forwardedBalance ?? forwardedBalance)
+                : undefined
+            }
+            convertedForwardedBalance={
+              (!hasMultiplePages || currentPage === 1) && ledgerBalance?.convertedForwardedBalance
+                ? ledgerBalance.convertedForwardedBalance
+                : undefined
+            }
+            ledgerTotals={
+              ledgerBalance
+                ? {
+                    totalDebit: ledgerBalance.debitTotal,
+                    totalCredit: ledgerBalance.creditTotal,
+                    convertedTotalDebit: ledgerBalance.convertedDebitTotal,
+                    convertedTotalCredit: ledgerBalance.convertedCreditTotal,
+                  }
                 : undefined
             }
             pagination={
@@ -482,7 +552,11 @@ export default function Magic() {
               pageSizeOptions={PAGE_SIZE_OPTIONS}
             />
           )}
-          <Footer summary={summary} companyCurrency={currencyData?.transactionCurrency} />
+          <Footer
+            summary={summary}
+            companyCurrency={currencyData?.transactionCurrency}
+            convertedCurrency={currencyData?.convertedCurrency}
+          />
         </section>
       </main>
     </div>

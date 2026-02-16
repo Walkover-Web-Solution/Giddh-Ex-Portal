@@ -10,7 +10,11 @@ import {
   invalidateInvoicesData,
   fetchAllPayments,
   fetchAllInvoices,
+  invoiceSortBy,
 } from "@/store/slices/companySlice";
+import { INVOICE_PAGE_SIZE } from "@/constants";
+import { SortOrder } from "@/constants/sort";
+import { InvoiceBalanceStatus } from "@/constants/invoiceStatus";
 import {
   getPaymentMethods,
   getVoucherPaymentDetails,
@@ -18,6 +22,7 @@ import {
   PAYMENT_METHODS_ENUM,
   PaymentDetailsResponse,
   PaymentMethodsResponse,
+  InvoicePayVoucherDetailsResponse,
 } from "@/utils/payment";
 import { formatDateToAPI } from "@/utils/dateUtils";
 import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
@@ -27,15 +32,26 @@ import { ApiResponseStatus } from "@/utils/proxy/types";
 import { Button } from "@/components/ui/button";
 
 interface PayNowProps {
-  invoiceUniqueName: string;
-  invoiceNumber: string;
+  /** Single-invoice mode: voucher unique name (required when not invoicePayMode). */
+  invoiceUniqueName?: string;
+  invoiceNumber?: string;
   amount?: number;
   currency?: string;
   canPay?: boolean;
   className?: string;
   variant?: "button" | "link";
+  /** Button visual style when variant is "button" */
+  buttonVariant?: "default" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   onSuccess?: () => void;
+  /** Invoice-pay page mode: parent provides payment details and selected method. */
+  invoicePayMode?: boolean;
+  /** When invoicePayMode: voucher details (single or multiple) from getInvoicePayVoucherDetails. */
+  paymentDetails?: InvoicePayVoucherDetailsResponse | PaymentDetailsResponse;
+  /** When invoicePayMode: currently selected gateway (RAZORPAY / PAYPAL / PAYU). */
+  selectedPaymentMethod?: PAYMENT_METHODS_ENUM | null;
+  /** When invoicePayMode: custom button label. */
+  buttonText?: string;
 }
 
 declare global {
@@ -52,8 +68,13 @@ export function PayNow({
   canPay = true,
   className = "",
   variant = "button",
+  buttonVariant = "default",
   size = "md",
   onSuccess,
+  invoicePayMode = false,
+  paymentDetails: paymentDetailsFromParent,
+  selectedPaymentMethod: selectedPaymentMethodFromParent,
+  buttonText: buttonTextProp,
 }: PayNowProps) {
   const params = useParams();
   const router = useRouter();
@@ -63,7 +84,6 @@ export function PayNow({
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodsResponse | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PAYMENT_METHODS_ENUM | null>(null);
   const [showPayuForm, setShowPayuForm] = useState(false);
-  const [showNoMethodsError, setShowNoMethodsError] = useState(false);
   const [payuDetails, setPayuDetails] = useState({ name: "", email: "", contactNo: "" });
   const paypalFormRef = useRef<HTMLFormElement>(null);
   const razorpayInstance = useRef<any>(null);
@@ -83,15 +103,6 @@ export function PayNow({
     loadRazorpayScript();
   }, []);
 
-  useEffect(() => {
-    if (showNoMethodsError) {
-      const timer = setTimeout(() => {
-        setShowNoMethodsError(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showNoMethodsError]);
-
   const loadRazorpayScript = () => {
     if (typeof window !== "undefined" && !window.Razorpay) {
       const script = document.createElement("script");
@@ -99,6 +110,44 @@ export function PayNow({
       script.async = true;
       document.body.appendChild(script);
     }
+  };
+
+  /** API can return booleans (RAZORPAY: true) or objects ({ key, enabled }). Treat as enabled when true or when object.enabled !== false. Priority: Razorpay > PayPal > PayU. */
+  const isMethodEnabled = (val: unknown): boolean => {
+    if (val === true) return true;
+    if (val === false) return false;
+    if (val && typeof val === "object" && (val as { enabled?: boolean }).enabled !== false)
+      return true;
+    return false;
+  };
+
+  const normalizePaymentMethods = (
+    body: Record<string, unknown> | null
+  ): { methods: PaymentMethodsResponse; firstEnabled: PAYMENT_METHODS_ENUM | null } => {
+    const normalized: PaymentMethodsResponse = {};
+    const keys: Array<{ variants: string[]; our: keyof PaymentMethodsResponse }> = [
+      { variants: ["RAZORPAY", "Razorpay", "razorpay"], our: "RAZORPAY" },
+      { variants: ["PAYPAL", "Paypal", "paypal"], our: "PAYPAL" },
+      { variants: ["PAYU", "Payu", "payu"], our: "PAYU" },
+    ];
+    for (const { variants, our } of keys) {
+      for (const k of variants) {
+        const val = body?.[k];
+        if (isMethodEnabled(val)) {
+          (normalized as Record<string, unknown>)[our] =
+            typeof val === "object" && val !== null ? val : { enabled: true };
+          break;
+        }
+      }
+    }
+    const firstEnabled = normalized.RAZORPAY
+      ? PAYMENT_METHODS_ENUM.RAZORPAY
+      : normalized.PAYPAL
+        ? PAYMENT_METHODS_ENUM.PAYPAL
+        : normalized.PAYU
+          ? PAYMENT_METHODS_ENUM.PAYU
+          : null;
+    return { methods: normalized, firstEnabled };
   };
 
   const loadPaymentMethods = async (companyUniqueName: string, accountUniqueName: string) => {
@@ -110,29 +159,23 @@ export function PayNow({
       });
 
       if (response && response.status === ApiResponseStatus.SUCCESS && response.body) {
-        setPaymentMethods(response.body);
+        const rawBody = (response.body as Record<string, unknown>) ?? {};
+        const { methods, firstEnabled } = normalizePaymentMethods(rawBody);
 
-        const hasAnyMethod = Boolean(
-          response.body.RAZORPAY || response.body.PAYPAL || response.body.PAYU
-        );
-        if (!hasAnyMethod) {
-          setShowNoMethodsError(true);
+        if (Object.keys(methods).length === 0) {
+          showToast(
+            "No payment methods are currently configured for your account. Please contact support to enable payment options.",
+            "error"
+          );
           return null;
         }
 
-        switch (true) {
-          case Boolean(response.body.RAZORPAY):
-            setSelectedMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
-            return PAYMENT_METHODS_ENUM.RAZORPAY;
-          case Boolean(response.body.PAYPAL):
-            setSelectedMethod(PAYMENT_METHODS_ENUM.PAYPAL);
-            return PAYMENT_METHODS_ENUM.PAYPAL;
-          case Boolean(response.body.PAYU):
-            setSelectedMethod(PAYMENT_METHODS_ENUM.PAYU);
-            return PAYMENT_METHODS_ENUM.PAYU;
-          default:
-            return null;
+        setPaymentMethods(methods);
+        if (firstEnabled) {
+          setSelectedMethod(firstEnabled);
+          return firstEnabled;
         }
+        return null;
       }
       return null;
     } catch (error) {
@@ -154,17 +197,33 @@ export function PayNow({
       return;
     }
 
-    let method = selectedMethod;
-    if (!paymentMethods) {
-      method = await loadPaymentMethods(companyUniqueName, accountUniqueName);
-      if (!method) {
-        setIsProcessing(false);
-        return;
+    let method: PAYMENT_METHODS_ENUM | null = selectedMethod;
+    let voucherUniqueNames: string[] = invoiceUniqueName ? [invoiceUniqueName] : [];
+
+    if (
+      invoicePayMode &&
+      paymentDetailsFromParent?.vouchers?.length &&
+      selectedPaymentMethodFromParent
+    ) {
+      method = selectedPaymentMethodFromParent;
+      voucherUniqueNames = paymentDetailsFromParent.vouchers.map((v) => v.uniqueName);
+    } else if (!invoicePayMode) {
+      if (!paymentMethods) {
+        method = await loadPaymentMethods(companyUniqueName, accountUniqueName);
+        if (!method) {
+          setIsProcessing(false);
+          return;
+        }
       }
     }
 
-    if (!method) {
-      setShowNoMethodsError(true);
+    if (!method || !voucherUniqueNames.length) {
+      if (!invoicePayMode) {
+        showToast(
+          "No payment methods are currently configured for your account. Please contact support to enable payment options.",
+          "error"
+        );
+      }
       setIsProcessing(false);
       return;
     }
@@ -200,15 +259,25 @@ export function PayNow({
       }
     }
 
-    await processPayment(companyUniqueName, accountUniqueName, method);
+    await processPayment(companyUniqueName, accountUniqueName, method, voucherUniqueNames);
   };
 
   const processPayment = async (
     companyUniqueName: string,
     accountUniqueName: string,
-    method: PAYMENT_METHODS_ENUM
+    method: PAYMENT_METHODS_ENUM,
+    voucherIds: string[] = invoiceUniqueName ? [invoiceUniqueName] : []
   ) => {
     if (!method) {
+      setIsProcessing(false);
+      return;
+    }
+    const voucherUniqueNames = voucherIds.length
+      ? voucherIds
+      : invoiceUniqueName
+        ? [invoiceUniqueName]
+        : [];
+    if (!voucherUniqueNames.length) {
       setIsProcessing(false);
       return;
     }
@@ -218,7 +287,7 @@ export function PayNow({
         accountUniqueName,
         sessionId: sessionId || undefined,
         paymentGatewayType: method,
-        voucherUniqueNames: [invoiceUniqueName],
+        voucherUniqueNames,
       };
 
       if (method === PAYMENT_METHODS_ENUM.PAYU) {
@@ -259,6 +328,12 @@ export function PayNow({
   const initializeRazorpay = (paymentDetails: PaymentDetailsResponse) => {
     if (!window.Razorpay) {
       showToast("Razorpay SDK not loaded", "error");
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!paymentDetails.paymentKey?.trim()) {
+      showToast("Payment key not received. Please contact support.", "error");
       setIsProcessing(false);
       return;
     }
@@ -308,11 +383,38 @@ export function PayNow({
       );
 
       if (response.status === ApiResponseStatus.SUCCESS) {
-        showToast("Payment successful!", "success");
+        const successMessage =
+          typeof response.body === "string" && response.body.trim()
+            ? response.body.trim()
+            : "Payment successful!";
+        showToast(successMessage, "success");
         dispatch(invalidatePaymentsData(companyName));
         dispatch(invalidateInvoicesData(companyName));
-        dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName })).unwrap();
-        dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName })).unwrap();
+        // Catch ConditionError when thunk condition skips the request (e.g. another refetch in flight)
+        const ignoreConditionError = (err: unknown) => {
+          if (err != null && (err as { name?: string }).name === "ConditionError") return;
+          throw err;
+        };
+        void dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }))
+          .unwrap()
+          .catch(ignoreConditionError);
+        void dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName }))
+          .unwrap()
+          .catch(ignoreConditionError);
+        void dispatch(
+          fetchAllInvoices({
+            companyName,
+            companyUniqueName,
+            accountUniqueName,
+            balanceStatus: [InvoiceBalanceStatus.UNPAID],
+            page: 1,
+            count: INVOICE_PAGE_SIZE,
+            sort: SortOrder.DESC,
+            sortBy: invoiceSortBy.grandTotal,
+          })
+        )
+          .unwrap()
+          .catch(ignoreConditionError);
         onSuccess?.();
       }
     } catch (error) {
@@ -322,9 +424,54 @@ export function PayNow({
   };
 
   const initializePayPal = (paymentDetails: PaymentDetailsResponse) => {
-    setTimeout(() => {
-      paypalFormRef.current?.submit();
-    }, 100);
+    if (!paymentDetails.paymentKey?.trim()) {
+      showToast("PayPal payment key not received. Please contact support.", "error");
+      setIsProcessing(false);
+      return;
+    }
+
+    const returnUrl =
+      typeof window !== "undefined"
+        ? window.location.href.indexOf("payment_id") === -1
+          ? window.location.href +
+            (window.location.href.indexOf("?") > -1 ? "&" : "?") +
+            "payment_id=" +
+            paymentDetails.paymentId
+          : window.location.href
+        : "";
+
+    const form = typeof document !== "undefined" ? document.createElement("form") : null;
+    if (!form) {
+      setIsProcessing(false);
+      return;
+    }
+
+    form.setAttribute("action", "https://www.paypal.com/cgi-bin/webscr");
+    form.setAttribute("method", "post");
+    form.style.display = "none";
+
+    const fields: Array<{ name: string; value: string }> = [
+      { name: "cmd", value: "_xclick" },
+      { name: "business", value: paymentDetails.paymentKey },
+      { name: "item_name", value: paymentDetails.vouchers?.[0]?.number ?? "" },
+      { name: "amount", value: String(paymentDetails.totalAmount) },
+      { name: "currency_code", value: paymentDetails.currency?.code ?? "USD" },
+      { name: "return", value: returnUrl },
+      { name: "cancel_return", value: typeof window !== "undefined" ? window.location.href : "" },
+    ];
+
+    fields.forEach(({ name, value }) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    setIsProcessing(false);
   };
 
   const initializePayU = (paymentDetails: PaymentDetailsResponse) => {
@@ -363,11 +510,37 @@ export function PayNow({
       );
 
       if (response.status === ApiResponseStatus.SUCCESS) {
-        showToast("Payment successful!", "success");
+        const successMessage =
+          typeof response.body === "string" && response.body.trim()
+            ? response.body.trim()
+            : "Payment successful!";
+        showToast(successMessage, "success");
         dispatch(invalidatePaymentsData(companyName));
         dispatch(invalidateInvoicesData(companyName));
-        dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName })).unwrap();
-        dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName })).unwrap();
+        const ignoreConditionError = (err: unknown) => {
+          if (err != null && (err as { name?: string }).name === "ConditionError") return;
+          throw err;
+        };
+        void dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }))
+          .unwrap()
+          .catch(ignoreConditionError);
+        void dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName }))
+          .unwrap()
+          .catch(ignoreConditionError);
+        void dispatch(
+          fetchAllInvoices({
+            companyName,
+            companyUniqueName,
+            accountUniqueName,
+            balanceStatus: [InvoiceBalanceStatus.UNPAID],
+            page: 1,
+            count: INVOICE_PAGE_SIZE,
+            sort: SortOrder.DESC,
+            sortBy: invoiceSortBy.grandTotal,
+          })
+        )
+          .unwrap()
+          .catch(ignoreConditionError);
         onSuccess?.();
       }
     } catch (error) {
@@ -382,86 +555,37 @@ export function PayNow({
     }
     setShowPayuForm(false);
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
-    if (companyUniqueName && accountUniqueName && selectedMethod) {
-      processPayment(companyUniqueName, accountUniqueName, selectedMethod);
+    const method = invoicePayMode ? selectedPaymentMethodFromParent : selectedMethod;
+    const vIds =
+      invoicePayMode && paymentDetailsFromParent?.vouchers?.length
+        ? paymentDetailsFromParent.vouchers.map((v) => v.uniqueName)
+        : invoiceUniqueName
+          ? [invoiceUniqueName]
+          : [];
+    if (companyUniqueName && accountUniqueName && method && vIds.length) {
+      processPayment(companyUniqueName, accountUniqueName, method, vIds);
     }
   };
 
-  if (!canPay) {
+  if (!canPay && !invoicePayMode) {
     return null;
   }
 
+  const sizeProp = size === "lg" ? "lg" : size === "sm" ? "sm" : "md";
+  const buttonVariantProp = variant === "link" ? "link" : buttonVariant;
+  const displayLabel = buttonTextProp ?? (invoicePayMode ? "Proceed to Payment" : "Pay Now");
+
   return (
     <>
-      {variant === "link" ? (
-        <Button
-          variant="link"
-          size={size === "lg" ? "lg" : size === "sm" ? "sm" : "md"}
-          onClick={handlePayNow}
-          disabled={isProcessing}
-          className={className}
-        >
-          {isProcessing ? "Processing..." : "Pay Now"}
-        </Button>
-      ) : (
-        <Button
-          size={size === "lg" ? "lg" : size === "sm" ? "sm" : "md"}
-          onClick={handlePayNow}
-          disabled={isProcessing}
-          className={className}
-        >
-          {isProcessing ? "Processing..." : "Pay Now"}
-        </Button>
-      )}
-
-      {showNoMethodsError && (
-        <div className="fixed right-4 top-4 z-50 w-96 animate-slide-in-right">
-          <div className="rounded-lg border-l-4 border-red-500 bg-white p-4 shadow-lg">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-6 w-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3 flex-1">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  No Payment Methods Available
-                </h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  No payment methods are currently configured for your account. Please contact
-                  support to enable payment options.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowNoMethodsError(false)}
-                className="ml-4 shrink-0 text-gray-400 hover:text-gray-600"
-                aria-label="Close"
-              >
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Button
+        variant={buttonVariantProp}
+        size={sizeProp}
+        onClick={handlePayNow}
+        disabled={isProcessing}
+        className={className}
+      >
+        {isProcessing ? "Processing..." : displayLabel}
+      </Button>
 
       {showPayuForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

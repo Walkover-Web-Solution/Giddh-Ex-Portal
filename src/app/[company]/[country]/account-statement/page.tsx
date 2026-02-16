@@ -48,11 +48,11 @@ export default function AccountStatementPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const today = new Date();
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const endOfThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-  const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
-  const [toDate, setToDate] = useState<Date>(today);
+  const [fromDate, setFromDate] = useState<Date>(startOfThisMonth);
+  const [toDate, setToDate] = useState<Date>(endOfThisMonth);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [totalItems, setTotalItems] = useState(0);
@@ -227,7 +227,7 @@ export default function AccountStatementPage() {
         header: "Details",
         accessor: (row: Transaction) => row.voucherNumber,
         headerClassName: "hidden md:table-cell",
-        cellClassName: "hidden md:table-cell text-gray-600",
+        cellClassName: "hidden md:table-cell",
       },
       {
         header: "Amount",
@@ -287,22 +287,29 @@ export default function AccountStatementPage() {
             <Card>
               <CardHeader className="border-b">
                 <div className="flex flex-col gap-6 py-2 md:flex-row md:justify-between">
-                  <div className="text-sm text-gray-600">
-                    <h2 className="mb-1 font-bold text-black">{accountName}</h2>
+                  <div className="text-md text-gray-600">
+                    <h2 className="text- mb-1 font-bold text-black">{accountName}</h2>
                     {accountAddress && (
                       <>
-                        <p>{accountAddress.countryName}</p>
-                        <p>Email: {accountAddress.email}</p>
-                        <p>Mobile No: {accountAddress.mobileNo}</p>
+                        {accountAddress.address && <p>Address: {accountAddress.address}</p>}
+                        {accountAddress.stateName && <p>{accountAddress.stateName}</p>}
+                        {accountAddress.countryName && <p>{accountAddress.countryName}</p>}
+                        {accountAddress.pinCode && <p>{accountAddress.pinCode}</p>}
+                        {accountAddress.taxType && accountAddress.taxNumber && (
+                          <p>
+                            {accountAddress.taxType} : {accountAddress.taxNumber}
+                          </p>
+                        )}
+                        {accountAddress.mobileNo && <p>Mobile No: {accountAddress.mobileNo}</p>}
                       </>
                     )}
                   </div>
-                  <div className="text-sm text-gray-600 md:text-right">
+                  <div className="text-md text-gray-600 md:text-right">
                     <h2 className="mb-1 font-bold text-black">{companyNameState}</h2>
                     {companyAddress && (
                       <>
-                        <p>{companyAddress.countryName}</p>
-                        <p>Mobile No: {companyAddress.mobileNo}</p>
+                        {companyAddress.countryName && <p>{companyAddress.countryName}</p>}
+                        {companyAddress.mobileNo && <p>Mobile No: {companyAddress.mobileNo}</p>}
                       </>
                     )}
                   </div>
@@ -321,11 +328,11 @@ export default function AccountStatementPage() {
                   <div className="mt-6 flex md:justify-end">
                     <div className="w-full md:max-w-sm">
                       <div className="rounded-lg bg-gray-100">
-                        <div className="bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700">
+                        <div className="bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-900">
                           Account Summary
                         </div>
                         <div className="space-y-2 px-4 py-3 text-sm">
-                          <div className="flex justify-between text-gray-600">
+                          <div className="flex justify-between text-gray-900">
                             <span>Opening Balance</span>
                             <span className="font-medium">
                               {formatCurrency(
@@ -334,13 +341,13 @@ export default function AccountStatementPage() {
                               )}
                             </span>
                           </div>
-                          <div className="flex justify-between text-gray-600">
+                          <div className="flex justify-between text-gray-900">
                             <span>Invoiced Amount</span>
                             <span className="font-medium">
                               {formatCurrency(summary.debitTotal, accountAddress?.currency?.symbol)}
                             </span>
                           </div>
-                          <div className="flex justify-between text-gray-600">
+                          <div className="flex justify-between text-gray-900">
                             <span>Amount Paid</span>
                             <span className="font-medium">
                               {formatCurrency(

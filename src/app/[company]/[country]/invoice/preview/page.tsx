@@ -16,6 +16,21 @@ import {
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAppConfig } from "@/hooks/useAppConfig";
+import { DEFAULT_CONFIG } from "@/config/default";
+import { getSessionCookie } from "@/utils/cookies";
+
+function AuthHeader({ referenceId }: { referenceId: string }) {
+  return (
+    <header
+      className="auth-header-preview flex flex-row items-center justify-center bg-blue-900 px-4 py-3"
+      aria-label="Auth"
+      data-auth-mount="invoice-preview"
+    >
+      <div id={referenceId} className="auth-container min-h-[44px] w-full" />
+    </header>
+  );
+}
 
 export default function InvoicePreviewPage() {
   const params = useParams();
@@ -25,12 +40,16 @@ export default function InvoicePreviewPage() {
 
   const companyName = params?.company as string;
   const country = params?.country as string;
-  const voucherUniqueName = searchParams.get("voucher") || "";
+  const voucherUniqueName =
+    searchParams.get("voucher") || searchParams.get("voucherUniqueName") || "";
   const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
   const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
+
+  const { referenceId: configReferenceId } = useAppConfig();
+  const referenceId = configReferenceId?.trim() || DEFAULT_CONFIG.REFERENCE_ID;
 
   const [isLoading, setIsLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetailsResponse | null>(null);
@@ -41,7 +60,39 @@ export default function InvoicePreviewPage() {
   const [pdfUrl, setPdfUrl] = useState("");
   const [error, setError] = useState("");
 
-  const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://proxy.msg91.com/assets/proxy-auth/proxy-auth.js";
+    script.type = "text/javascript";
+    script.defer = true;
+
+    script.onload = () => {
+      const runInit = () => {
+        const authContainerElement = document.getElementById(referenceId);
+        if (!authContainerElement) return;
+        (window as any).initVerification?.({
+          referenceId,
+          success: () => console.log("[Preview Auth] Login initialized successfully"),
+          failure: (err: unknown) => console.error("[Preview Auth] Login failed:", err),
+        });
+      };
+      if (typeof requestAnimationFrame !== "undefined") {
+        requestAnimationFrame(() => runInit());
+      } else {
+        setTimeout(runInit, 0);
+      }
+    };
+
+    script.onerror = () => console.error("[Preview Auth] Failed to load proxy-auth.js");
+    document.body.appendChild(script);
+    return () => {
+      if (document.body.contains(script)) document.body.removeChild(script);
+    };
+  }, [referenceId]);
+  const sessionId =
+    typeof window !== "undefined"
+      ? localStorage.getItem("token") || getSessionCookie(companyName) || null
+      : null;
 
   const getNames = () => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -138,6 +189,15 @@ export default function InvoicePreviewPage() {
     router.push(`/${companyName}/${country}/invoice`);
   };
 
+  const handlePayNowClick = () => {
+    const { companyUniqueName, accountUniqueName } = getNames();
+    if (!accountUniqueName) return;
+    const search = new URLSearchParams();
+    if (companyUniqueName) search.set("companyUniqueName", companyUniqueName);
+    const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice-pay/account/${encodeURIComponent(accountUniqueName)}/voucher/${encodeURIComponent(voucherUniqueName)}`;
+    router.push(search.toString() ? `${path}?${search.toString()}` : path);
+  };
+
   const handlePrint = () => {
     if (pdfRef.current?.contentWindow) {
       pdfRef.current.contentWindow.print();
@@ -227,14 +287,18 @@ export default function InvoicePreviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-      </div>
+      <>
+        {!sessionId && <AuthHeader referenceId={referenceId} />}
+        <div className="flex flex-1 flex-row items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+        </div>
+      </>
     );
   }
 
   return (
     <>
+      {!sessionId && <AuthHeader referenceId={referenceId} />}
       <header className="sticky top-0 z-30 border-b bg-white">
         <div className="mx-auto max-w-7xl py-2 md:py-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -247,6 +311,11 @@ export default function InvoicePreviewPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              {voucher?.canPay && (
+                <Button type="button" variant="outline" size="md" onClick={handlePayNowClick}>
+                  Pay Now
+                </Button>
+              )}
               <Button variant="outline" size="md" onClick={handlePrint}>
                 Print
               </Button>
