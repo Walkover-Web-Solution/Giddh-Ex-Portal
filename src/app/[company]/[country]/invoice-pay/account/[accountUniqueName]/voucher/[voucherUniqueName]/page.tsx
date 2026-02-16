@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
@@ -89,6 +89,7 @@ export default function InvoicePayPage() {
   const [paidInvoiceMessage, setPaidInvoiceMessage] = useState("");
   const [panelOpenState, setPanelOpenState] = useState(true);
   const [returnInvoicePay, setReturnInvoicePay] = useState("");
+  const isRefetchingAfterPaymentRef = useRef(false);
 
   const getNames = useCallback(() => {
     return getStorageNames(companyUniqueNameFromRedux, accountUniqueNameFromRedux);
@@ -211,81 +212,119 @@ export default function InvoicePayPage() {
     }
   }, [companyUniqueName, accountUniqueName, sessionId]);
 
-  const loadVoucherDetails = useCallback(async () => {
-    if (!companyUniqueName || !accountUniqueName || !voucherUniqueNameParam) {
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    const voucherUniqueNameArray = voucherUniqueNameParam.split("|").filter(Boolean);
-    try {
-      const response = await getInvoicePayVoucherDetails({
-        companyUniqueName,
-        accountUniqueName,
-        sessionId: sessionId || undefined,
-        voucherUniqueNames: voucherUniqueNameArray,
-      });
-      setIsLoading(false);
-      if (response?.status === ApiResponseStatus.SUCCESS && response.body) {
-        let details = response.body;
-
-        const hasPaidVouchers = details.vouchers?.filter((v) => v.status === "PAID") ?? [];
-        if (hasPaidVouchers.length === 0) {
-          setCanPayInvoice(true);
-        } else {
-          setCanPayInvoice(false);
-          const paidNumbers = hasPaidVouchers.map((v) => v.number);
-          const paidMessage = paidNumbers.length > 1 ? " are" : " is";
-          setPaidInvoiceMessage(paidNumbers.join(", ") + paidMessage + " successfully paid.");
-        }
-
-        const hasPayerID = searchParams.get("PayerID");
-        if (hasPayerID) {
-          setCanPayInvoice(false);
-          setPaidInvoiceMessage("Invoice payment is being processed.");
-          if (details.vouchers?.[0]) {
-            details = {
-              ...details,
-              vouchers: [
-                {
-                  ...details.vouchers[0],
-                  canPay: false,
-                  message: "Invoice payment is being processed.",
-                },
-                ...details.vouchers.slice(1),
-              ],
-            };
-          }
-        }
-
-        setPaymentDetails(details);
-      } else {
-        showToast((response as { message?: string })?.message ?? "Failed to load voucher details");
+  const loadVoucherDetails = useCallback(
+    async (skipFullPageLoading?: boolean) => {
+      if (!companyUniqueName || !accountUniqueName || !voucherUniqueNameParam) {
+        setIsLoading(false);
+        return;
       }
-    } catch (err: unknown) {
-      setIsLoading(false);
-      const axiosErr = err as {
-        response?: { data?: { message?: string }; status?: number };
-        message?: string;
-      };
-      const status = axiosErr?.response?.status;
-      const msg =
-        status === 403
-          ? "Access denied. Your session may have expired—please sign in again."
-          : axiosErr?.response?.data?.message ||
-            axiosErr?.message ||
-            "Failed to fetch voucher details";
-      console.error("[InvoicePay] Voucher details error:", err);
-      showToast(msg);
-    }
-  }, [
-    companyUniqueName,
-    accountUniqueName,
-    voucherUniqueNameParam,
-    sessionId,
-    searchParams,
-    showToast,
-  ]);
+      if (!skipFullPageLoading) {
+        setIsLoading(true);
+      }
+      const voucherUniqueNameArray = voucherUniqueNameParam.split("|").filter(Boolean);
+      try {
+        const response = await getInvoicePayVoucherDetails({
+          companyUniqueName,
+          accountUniqueName,
+          sessionId: sessionId || undefined,
+          voucherUniqueNames: voucherUniqueNameArray,
+        });
+        setIsLoading(false);
+        if (response?.status === ApiResponseStatus.SUCCESS && response.body) {
+          let details = response.body;
+
+          const hasPaidVouchers = details.vouchers?.filter((v) => v.status === "PAID") ?? [];
+          const isRefetchAfterPayment = isRefetchingAfterPaymentRef.current;
+          if (isRefetchAfterPayment) {
+            isRefetchingAfterPaymentRef.current = false;
+          }
+
+          if (hasPaidVouchers.length === 0) {
+            // Don't revert to "can pay" when we just completed payment and API hasn't updated yet
+            if (!isRefetchAfterPayment) {
+              setCanPayInvoice(true);
+            } else {
+              setCanPayInvoice(false);
+              setPaidInvoiceMessage("Invoice payment is being processed.");
+              if (details.vouchers?.length === 1 && details.vouchers[0]) {
+                const v = details.vouchers[0];
+                details = {
+                  ...details,
+                  vouchers: [
+                    { ...v, canPay: false, message: "Invoice payment is being processed." },
+                  ],
+                };
+              }
+            }
+          } else {
+            setCanPayInvoice(false);
+            const paidNumbers = hasPaidVouchers.map((v) => v.number);
+            const paidMessage = paidNumbers.length > 1 ? " are" : " is";
+            const messageText = paidNumbers.join(", ") + paidMessage + " successfully paid.";
+            setPaidInvoiceMessage(messageText);
+            // Ensure single-voucher view shows the paid message when API doesn't set voucher.message
+            if (details.vouchers?.length === 1 && details.vouchers[0]) {
+              const v = details.vouchers[0];
+              if (v.status === "PAID" && !v.message) {
+                details = {
+                  ...details,
+                  vouchers: [{ ...v, canPay: false, message: messageText }],
+                };
+              }
+            }
+          }
+
+          const hasPayerID = searchParams.get("PayerID");
+          if (hasPayerID) {
+            setCanPayInvoice(false);
+            setPaidInvoiceMessage("Invoice payment is being processed.");
+            if (details.vouchers?.[0]) {
+              details = {
+                ...details,
+                vouchers: [
+                  {
+                    ...details.vouchers[0],
+                    canPay: false,
+                    message: "Invoice payment is being processed.",
+                  },
+                  ...details.vouchers.slice(1),
+                ],
+              };
+            }
+          }
+
+          setPaymentDetails(details);
+        } else {
+          showToast(
+            (response as { message?: string })?.message ?? "Failed to load voucher details"
+          );
+        }
+      } catch (err: unknown) {
+        setIsLoading(false);
+        const axiosErr = err as {
+          response?: { data?: { message?: string }; status?: number };
+          message?: string;
+        };
+        const status = axiosErr?.response?.status;
+        const msg =
+          status === 403
+            ? "Access denied. Your session may have expired—please sign in again."
+            : axiosErr?.response?.data?.message ||
+              axiosErr?.message ||
+              "Failed to fetch voucher details";
+        console.error("[InvoicePay] Voucher details error:", err);
+        showToast(msg);
+      }
+    },
+    [
+      companyUniqueName,
+      accountUniqueName,
+      voucherUniqueNameParam,
+      sessionId,
+      searchParams,
+      showToast,
+    ]
+  );
 
   useEffect(() => {
     if (canLoadApis) {
@@ -312,7 +351,22 @@ export default function InvoicePayPage() {
   };
 
   const onInvoicePaySuccess = () => {
-    loadVoucherDetails();
+    // Optimistic update: show "payment done" immediately so user sees change on same URL
+    isRefetchingAfterPaymentRef.current = true;
+    setCanPayInvoice(false);
+    setPaidInvoiceMessage("Invoice payment is being processed.");
+    setPaymentDetails((prev) => {
+      if (!prev?.vouchers?.length) return prev;
+      const processingMessage = "Invoice payment is being processed.";
+      if (prev.vouchers.length === 1) {
+        return {
+          ...prev,
+          vouchers: [{ ...prev.vouchers[0], canPay: false, message: processingMessage }],
+        };
+      }
+      return prev;
+    });
+    loadVoucherDetails(true);
   };
 
   const vouchers = paymentDetails?.vouchers ?? [];

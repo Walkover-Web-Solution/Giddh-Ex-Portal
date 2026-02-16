@@ -10,7 +10,11 @@ import {
   invalidateInvoicesData,
   fetchAllPayments,
   fetchAllInvoices,
+  invoiceSortBy,
 } from "@/store/slices/companySlice";
+import { INVOICE_PAGE_SIZE } from "@/constants";
+import { SortOrder } from "@/constants/sort";
+import { InvoiceBalanceStatus } from "@/constants/invoiceStatus";
 import {
   getPaymentMethods,
   getVoucherPaymentDetails,
@@ -379,11 +383,38 @@ export function PayNow({
       );
 
       if (response.status === ApiResponseStatus.SUCCESS) {
-        showToast("Payment successful!", "success");
+        const successMessage =
+          typeof response.body === "string" && response.body.trim()
+            ? response.body.trim()
+            : "Payment successful!";
+        showToast(successMessage, "success");
         dispatch(invalidatePaymentsData(companyName));
         dispatch(invalidateInvoicesData(companyName));
-        dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName })).unwrap();
-        dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName })).unwrap();
+        // Catch ConditionError when thunk condition skips the request (e.g. another refetch in flight)
+        const ignoreConditionError = (err: unknown) => {
+          if (err != null && (err as { name?: string }).name === "ConditionError") return;
+          throw err;
+        };
+        void dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }))
+          .unwrap()
+          .catch(ignoreConditionError);
+        void dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName }))
+          .unwrap()
+          .catch(ignoreConditionError);
+        void dispatch(
+          fetchAllInvoices({
+            companyName,
+            companyUniqueName,
+            accountUniqueName,
+            balanceStatus: [InvoiceBalanceStatus.UNPAID],
+            page: 1,
+            count: INVOICE_PAGE_SIZE,
+            sort: SortOrder.DESC,
+            sortBy: invoiceSortBy.grandTotal,
+          })
+        )
+          .unwrap()
+          .catch(ignoreConditionError);
         onSuccess?.();
       }
     } catch (error) {
@@ -479,11 +510,37 @@ export function PayNow({
       );
 
       if (response.status === ApiResponseStatus.SUCCESS) {
-        showToast("Payment successful!", "success");
+        const successMessage =
+          typeof response.body === "string" && response.body.trim()
+            ? response.body.trim()
+            : "Payment successful!";
+        showToast(successMessage, "success");
         dispatch(invalidatePaymentsData(companyName));
         dispatch(invalidateInvoicesData(companyName));
-        dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName })).unwrap();
-        dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName })).unwrap();
+        const ignoreConditionError = (err: unknown) => {
+          if (err != null && (err as { name?: string }).name === "ConditionError") return;
+          throw err;
+        };
+        void dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }))
+          .unwrap()
+          .catch(ignoreConditionError);
+        void dispatch(fetchAllInvoices({ companyName, companyUniqueName, accountUniqueName }))
+          .unwrap()
+          .catch(ignoreConditionError);
+        void dispatch(
+          fetchAllInvoices({
+            companyName,
+            companyUniqueName,
+            accountUniqueName,
+            balanceStatus: [InvoiceBalanceStatus.UNPAID],
+            page: 1,
+            count: INVOICE_PAGE_SIZE,
+            sort: SortOrder.DESC,
+            sortBy: invoiceSortBy.grandTotal,
+          })
+        )
+          .unwrap()
+          .catch(ignoreConditionError);
         onSuccess?.();
       }
     } catch (error) {

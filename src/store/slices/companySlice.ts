@@ -382,6 +382,7 @@ export const fetchAllInvoices = createAsyncThunk(
       const state = getState() as RootState;
       const invoices = state.companies[companyName]?.allInvoices;
       if (invoices?.loading) return false;
+      if (invoices?.data != null && invoices?.lastFetchTimestamp == null) return true;
       const sameSort = invoices?.sort === sort && invoices?.sortBy === sortBy;
       const sameStatus = sameBalanceStatus(invoices?.balanceStatus, balanceStatus);
       const samePage =
