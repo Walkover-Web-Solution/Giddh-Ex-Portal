@@ -68,8 +68,8 @@ export default function InvoicePreviewPage() {
 
     script.onload = () => {
       const runInit = () => {
-        const el = document.getElementById(referenceId);
-        if (!el) return;
+        const authContainerElement = document.getElementById(referenceId);
+        if (!authContainerElement) return;
         (window as any).initVerification?.({
           referenceId,
           success: () => console.log("[Preview Auth] Login initialized successfully"),

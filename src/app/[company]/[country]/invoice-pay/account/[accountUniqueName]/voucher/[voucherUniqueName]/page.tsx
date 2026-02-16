@@ -153,20 +153,19 @@ export default function InvoicePayPage() {
       });
       if (response?.status === ApiResponseStatus.SUCCESS && response.body) {
         const body = response.body as Record<string, unknown>;
+        const isEnabled = (key: PAYMENT_METHODS_ENUM) =>
+          body[key] === true || (body[key] && typeof body[key] === "object");
         const hasAny =
-          body.RAZORPAY === true ||
-          body.PAYPAL === true ||
-          body.PAYU === true ||
-          (body.RAZORPAY && typeof body.RAZORPAY === "object") ||
-          (body.PAYPAL && typeof body.PAYPAL === "object") ||
-          (body.PAYU && typeof body.PAYU === "object");
+          isEnabled(PAYMENT_METHODS_ENUM.RAZORPAY) ||
+          isEnabled(PAYMENT_METHODS_ENUM.PAYPAL) ||
+          isEnabled(PAYMENT_METHODS_ENUM.PAYU);
         if (hasAny) {
           setPaymentMethods(response.body as PaymentMethodsResponse);
-          if (body.RAZORPAY === true || (body.RAZORPAY && typeof body.RAZORPAY === "object")) {
+          if (isEnabled(PAYMENT_METHODS_ENUM.RAZORPAY)) {
             setSelectedPaymentMethod(PAYMENT_METHODS_ENUM.RAZORPAY);
-          } else if (body.PAYPAL === true || (body.PAYPAL && typeof body.PAYPAL === "object")) {
+          } else if (isEnabled(PAYMENT_METHODS_ENUM.PAYPAL)) {
             setSelectedPaymentMethod(PAYMENT_METHODS_ENUM.PAYPAL);
-          } else if (body.PAYU === true || (body.PAYU && typeof body.PAYU === "object")) {
+          } else if (isEnabled(PAYMENT_METHODS_ENUM.PAYU)) {
             setSelectedPaymentMethod(PAYMENT_METHODS_ENUM.PAYU);
           }
           loadVoucherDetails();
