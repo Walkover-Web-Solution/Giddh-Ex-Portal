@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
-import { INVOICE_PAGE_SIZE } from "@/constants";
+import { INVOICE_PAGE_SIZE, PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
@@ -193,7 +193,7 @@ export const fetchCompanyAddress = createAsyncThunk(
       companyUniqueName,
       accountUniqueName,
       page: 1,
-      count: 1,
+      count: PAGINATION_LIMIT,
       from: today,
       to: today,
       sort: SortOrder.ASC,

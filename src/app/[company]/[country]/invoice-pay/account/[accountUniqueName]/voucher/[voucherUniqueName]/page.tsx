@@ -13,6 +13,7 @@ import {
   PaymentMethodListResponse,
   InvoicePayVoucherDetailsResponse,
 } from "@/utils/payment";
+import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { DEFAULT_CONFIG } from "@/config/default";
@@ -34,7 +35,6 @@ function AuthHeader({ referenceId }: { referenceId: string }) {
   );
 }
 
-/** Map payment method type key to image path (only public/icons exist; no /images/ folder). */
 function getImageForType(type: string): string {
   const images: Record<string, string> = {
     paypal: "/icons/paypal.svg",
@@ -44,7 +44,6 @@ function getImageForType(type: string): string {
   return images[type] ?? "";
 }
 
-/** Gateway + methods for radio list (debitcard filtered out). */
 interface MappedGateway {
   value: PAYMENT_METHODS_ENUM;
   methods: Array<{ typeKey: string; label: string; image: string }>;
@@ -172,7 +171,7 @@ export default function InvoicePayPage() {
           }
           loadVoucherDetails();
         } else {
-          showToast("No payment method is integrated", ToastType.WARNING);
+          showToast("No payment method is integrated");
           setIsLoading(false);
         }
       } else {
@@ -341,10 +340,10 @@ export default function InvoicePayPage() {
   return (
     <>
       {!sessionId && <AuthHeader referenceId={referenceId} />}
-      <div className="w-full">
+      <div className="mx-auto w-full max-w-7xl">
         <div className="px-4 py-6">
           <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-            <h2 className="text-2xl font-light text-gray-900">
+            <h2 className="font-light= text-2xl">
               {vouchers.length === 1
                 ? `Payment for ${singleVoucher?.number ?? ""}`
                 : "Payment All Invoices"}
@@ -362,26 +361,22 @@ export default function InvoicePayPage() {
           {vouchers.length === 1 && singleVoucher && (
             <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
               <div className="flex items-center justify-between rounded-xl bg-white px-5 py-4">
-                {/* Left Section - Voucher Info */}
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                    Voucher No.
-                  </span>
-                  <span className="mt-1 text-sm font-semibold text-gray-800">
-                    {singleVoucher.number}
-                  </span>
-
-                  {singleVoucher.dueDate && (
-                    <span className="mt-2 text-xs text-gray-500">
-                      Due on {singleVoucher.dueDate}
+                <div className="flex flex-row items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-1 rounded bg-gray-100 px-2 py-2">
+                    <ClipboardDocumentListIcon className="h-8 w-8 text-blue-500" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="mt-1 text-2xl font-semibold text-gray-800">
+                      {singleVoucher.number}
                     </span>
-                  )}
+                    {singleVoucher.dueDate && (
+                      <span className="text-md text-gray-500">{singleVoucher.dueDate}</span>
+                    )}
+                  </div>
                 </div>
 
-                {/* Divider */}
                 <div className="mx-4 hidden h-10 w-px bg-gray-200 sm:block" />
 
-                {/* Right Section - Balance */}
                 <div className="text-right">
                   <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
                     Balance Due
@@ -455,56 +450,47 @@ export default function InvoicePayPage() {
               </div>
             </div>
           )}
-
           {canPayInvoice && (
             <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="space-y-4 pl-4">
-                {mappedPaymentMethodsFlat.map((gateway) => (
-                  <div
-                    key={gateway.value}
-                    className={gateway.value !== PAYMENT_METHODS_ENUM.PAYPAL ? "py-2" : ""}
-                  >
-                    <label className="flex cursor-pointer items-center gap-4">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        checked={selectedPaymentMethod === gateway.value}
-                        onChange={() => setSelectedPaymentMethod(gateway.value)}
-                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <img
-                        src={
-                          gateway.value === PAYMENT_METHODS_ENUM.RAZORPAY
-                            ? "/icons/razorpay.svg"
-                            : gateway.value === PAYMENT_METHODS_ENUM.PAYPAL
-                              ? "/icons/paypal.svg"
-                              : "/icons/payu.svg"
-                        }
-                        alt={gateway.value}
-                        title={gateway.value}
-                        className="h-12 w-20 object-contain"
-                      />
-                    </label>
-                    <div
-                      className={
-                        gateway.value !== PAYMENT_METHODS_ENUM.PAYPAL
-                          ? "mt-2 border-b border-gray-200"
-                          : ""
-                      }
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 pl-4">
-                <PayNow
-                  invoicePayMode
-                  paymentDetails={paymentDetails}
-                  selectedPaymentMethod={selectedPaymentMethod}
-                  canPay={canPayInvoice}
-                  buttonText="Proceed to Payment"
-                  onSuccess={onInvoicePaySuccess}
-                  className="mt-2"
-                />
+              <div className="flex flex-row gap-8 pl-4">
+                {mappedPaymentMethodsFlat.map((gateway) => {
+                  const isSelected = selectedPaymentMethod === gateway.value;
+                  return (
+                    <div key={gateway.value} className="flex flex-col items-center">
+                      <label className="flex cursor-pointer items-center gap-3">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          checked={isSelected}
+                          onChange={() => setSelectedPaymentMethod(gateway.value)}
+                          className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <img
+                          src={
+                            gateway.value === PAYMENT_METHODS_ENUM.RAZORPAY
+                              ? "/icons/razorpay.svg"
+                              : gateway.value === PAYMENT_METHODS_ENUM.PAYPAL
+                                ? "/icons/paypal.svg"
+                                : "/icons/payu.svg"
+                          }
+                          alt={gateway.value}
+                          className="h-12 w-20 object-contain"
+                        />
+                      </label>
+                      <div className="mt-4 w-full">
+                        <PayNow
+                          invoicePayMode
+                          paymentDetails={paymentDetails}
+                          selectedPaymentMethod={gateway.value}
+                          canPay={canPayInvoice && isSelected}
+                          buttonText="Pay Now"
+                          onSuccess={onInvoicePaySuccess}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

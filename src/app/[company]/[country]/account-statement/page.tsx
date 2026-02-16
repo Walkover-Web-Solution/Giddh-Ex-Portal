@@ -48,11 +48,11 @@ export default function AccountStatementPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const today = new Date();
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const endOfThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-  const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
-  const [toDate, setToDate] = useState<Date>(today);
+  const [fromDate, setFromDate] = useState<Date>(startOfThisMonth);
+  const [toDate, setToDate] = useState<Date>(endOfThisMonth);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [totalItems, setTotalItems] = useState(0);

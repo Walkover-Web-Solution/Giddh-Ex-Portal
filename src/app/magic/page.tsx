@@ -57,17 +57,17 @@ export default function Magic() {
   const [apiTotalItems, setApiTotalItems] = useState<number | undefined>(undefined);
   const [apiTotalPages, setApiTotalPages] = useState<number | undefined>(undefined);
 
-  // Date range state
+  // Date range state — default to this month (1st to last day of current month)
   const today = new Date();
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 30);
-  const [fromDate, setFromDate] = useState<Date>(thirtyDaysAgo);
-  const [toDate, setToDate] = useState<Date>(today);
+  const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const endOfThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const [fromDate, setFromDate] = useState<Date>(startOfThisMonth);
+  const [toDate, setToDate] = useState<Date>(endOfThisMonth);
   const hasSetDatesFromAPI = useRef(false);
   const isUpdatingDatesFromAPI = useRef(false);
   const isInitialMount = useRef(true);
-  const prevFromDateRef = useRef<Date>(thirtyDaysAgo);
-  const prevToDateRef = useRef<Date>(today);
+  const prevFromDateRef = useRef<Date>(startOfThisMonth);
+  const prevToDateRef = useRef<Date>(endOfThisMonth);
 
   useEffect(() => {
     if (isUpdatingDatesFromAPI.current) {
