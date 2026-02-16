@@ -287,8 +287,8 @@ export default function AccountStatementPage() {
             <Card>
               <CardHeader className="border-b">
                 <div className="flex flex-col gap-6 py-2 md:flex-row md:justify-between">
-                  <div className="text-sm text-gray-600">
-                    <h2 className="mb-1 font-bold text-black">{accountName}</h2>
+                  <div className="text-md text-gray-600">
+                    <h2 className="text- mb-1 font-bold text-black">{accountName}</h2>
                     {accountAddress && (
                       <>
                         {accountAddress.address && <p>Address: {accountAddress.address}</p>}
@@ -304,7 +304,7 @@ export default function AccountStatementPage() {
                       </>
                     )}
                   </div>
-                  <div className="text-sm text-gray-600 md:text-right">
+                  <div className="text-md text-gray-600 md:text-right">
                     <h2 className="mb-1 font-bold text-black">{companyNameState}</h2>
                     {companyAddress && (
                       <>

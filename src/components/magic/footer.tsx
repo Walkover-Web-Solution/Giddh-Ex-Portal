@@ -47,7 +47,7 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
       <div className="px-4 py-5 sm:p-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           <div>
-            <p className="text-xs text-blue-900/70 sm:text-sm">
+            <p className="text-xs text-blue-900 sm:text-sm">
               Total Transactions {summary.totalTransactions}
             </p>
             <p className="mt-1.5 text-base font-semibold text-blue-900 sm:mt-2 sm:text-lg">
@@ -57,7 +57,7 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
           </div>
 
           <div>
-            <p className="text-xs text-blue-900/70 sm:text-sm">Opening Balance</p>
+            <p className="text-xs text-blue-900 sm:text-sm">Opening Balance</p>
             <p className="mt-1.5 text-base font-semibold text-blue-900 sm:mt-2 sm:text-lg">
               {formatAmount(summary.openingBalance)} {summary.openingBalanceType}
             </p>
@@ -73,7 +73,7 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
 
           <div className="flex flex-col">
             <div>
-              <p className="text-xs text-blue-900/70 sm:text-sm">Net Total</p>
+              <p className="text-xs text-blue-900 sm:text-sm">Net Total</p>
               <p className="mt-1.5 text-lg font-semibold text-blue-900 sm:mt-2 sm:text-xl">
                 {summary.totalCredit > summary.totalDebit &&
                   formatAmount(summary.totalCredit - summary.totalDebit)}
@@ -86,7 +86,7 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
               {hasConverted &&
                 summary.convertedTotalDebit !== undefined &&
                 summary.convertedTotalCredit !== undefined && (
-                  <p className="mt-0.5 text-sm font-semibold text-blue-900/80">
+                  <p className="mt-0.5 text-sm font-semibold text-blue-900">
                     {summary.convertedTotalCredit > summary.convertedTotalDebit &&
                       formatAmount(
                         summary.convertedTotalCredit - summary.convertedTotalDebit,
@@ -104,7 +104,7 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
                   </p>
                 )}
             </div>
-            <div className="mt-1 w-full text-[10px] text-blue-900/60 sm:text-xs">
+            <div className="mt-1 w-full text-[10px] text-blue-900 sm:text-xs">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1 text-left">
                   <p className="font-semibold">Debit</p>
@@ -145,7 +145,7 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
           </div>
 
           <div className="flex flex-col">
-            <p className="text-xs text-blue-900/70 sm:text-sm">Closing Balance</p>
+            <p className="text-xs text-blue-900 sm:text-sm">Closing Balance</p>
             <p className="mt-1.5 text-lg font-semibold text-blue-900 sm:mt-2 sm:text-xl">
               {formatAmount(summary.closingBalance)} {summary.closingBalanceType}
             </p>

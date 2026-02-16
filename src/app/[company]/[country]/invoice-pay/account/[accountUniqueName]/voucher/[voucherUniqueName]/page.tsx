@@ -264,11 +264,17 @@ export default function InvoicePayPage() {
       }
     } catch (err: unknown) {
       setIsLoading(false);
+      const axiosErr = err as {
+        response?: { data?: { message?: string }; status?: number };
+        message?: string;
+      };
+      const status = axiosErr?.response?.status;
       const msg =
-        (err as { response?: { data?: { message?: string }; status?: number } })?.response?.data
-          ?.message ||
-        (err as { message?: string })?.message ||
-        "Failed to fetch voucher details";
+        status === 403
+          ? "Access denied. Your session may have expired—please sign in again."
+          : axiosErr?.response?.data?.message ||
+            axiosErr?.message ||
+            "Failed to fetch voucher details";
       console.error("[InvoicePay] Voucher details error:", err);
       showToast(msg);
     }
@@ -451,46 +457,46 @@ export default function InvoicePayPage() {
           )}
           {canPayInvoice && (
             <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="flex flex-row gap-8 pl-4">
+              <div className="flex flex-row flex-wrap gap-8 pl-4">
                 {mappedPaymentMethodsFlat.map((gateway) => {
                   const isSelected = selectedPaymentMethod === gateway.value;
                   return (
-                    <div key={gateway.value} className="flex flex-col items-center">
-                      <label className="flex cursor-pointer items-center gap-3">
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          checked={isSelected}
-                          onChange={() => setSelectedPaymentMethod(gateway.value)}
-                          className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <img
-                          src={
-                            gateway.value === PAYMENT_METHODS_ENUM.RAZORPAY
-                              ? "/icons/razorpay.svg"
-                              : gateway.value === PAYMENT_METHODS_ENUM.PAYPAL
-                                ? "/icons/paypal.svg"
-                                : "/icons/payu.svg"
-                          }
-                          alt={gateway.value}
-                          className="h-12 w-20 object-contain"
-                        />
-                      </label>
-                      <div className="mt-4 w-full">
-                        <PayNow
-                          invoicePayMode
-                          paymentDetails={paymentDetails}
-                          selectedPaymentMethod={gateway.value}
-                          canPay={canPayInvoice && isSelected}
-                          buttonText="Pay Now"
-                          onSuccess={onInvoicePaySuccess}
-                          className="w-full"
-                        />
-                      </div>
-                    </div>
+                    <label key={gateway.value} className="flex cursor-pointer items-center gap-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={isSelected}
+                        onChange={() => setSelectedPaymentMethod(gateway.value)}
+                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <img
+                        src={
+                          gateway.value === PAYMENT_METHODS_ENUM.RAZORPAY
+                            ? "/icons/razorpay.svg"
+                            : gateway.value === PAYMENT_METHODS_ENUM.PAYPAL
+                              ? "/icons/paypal.svg"
+                              : "/icons/payu.svg"
+                        }
+                        alt={gateway.value}
+                        className="h-12 w-20 object-contain"
+                      />
+                    </label>
                   );
                 })}
               </div>
+              {selectedPaymentMethod && (
+                <div className="mt-6 pl-4">
+                  <PayNow
+                    invoicePayMode
+                    paymentDetails={paymentDetails}
+                    selectedPaymentMethod={selectedPaymentMethod}
+                    canPay={canPayInvoice}
+                    buttonText="Proceed to Payment"
+                    onSuccess={onInvoicePaySuccess}
+                    className="w-48"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
