@@ -12,11 +12,13 @@ import { Button } from "@/components/ui/button";
 import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
 import { logger } from "@/utils/logger";
+import { useConfig } from "@/contexts/ConfigContext";
 
 export default function AuthPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { config } = useConfig();
   const company = params?.company as string;
   const country = params?.country as string;
 
@@ -138,7 +140,9 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-gray-500">Secure access to your Giddh portal</p>
+        <p className="mt-6 text-center text-xs text-gray-500">
+          Secure access to your {config.BRAND_NAME} portal
+        </p>
       </div>
     </div>
   );

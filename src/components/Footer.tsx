@@ -1,3 +1,4 @@
+import { config } from "@/config";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 
 interface FooterProps {
@@ -23,7 +24,7 @@ export function Footer({
         <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
           <div className="flex justify-center gap-x-6 md:order-2" />
           <p className="mt-4 text-center text-xs text-gray-500 md:order-1 md:mt-0">
-            &copy; {year} Giddh. All rights reserved.
+            &copy; {year} {config.BRAND_NAME}. All rights reserved.
           </p>
         </div>
       </footer>
@@ -34,7 +35,9 @@ export function Footer({
     <footer className="bg-white">
       <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center gap-x-6 md:order-1 md:justify-start">
-          <span className="text-xl font-bold tracking-wide text-blue-900">GIDDH</span>
+          <span className="text-xl font-bold uppercase tracking-wide text-blue-900">
+            {config.BRAND_NAME}
+          </span>
         </div>
 
         <div className="text-md mt-4 text-center text-gray-600 md:order-2 md:mt-0">
