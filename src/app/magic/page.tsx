@@ -335,11 +335,11 @@ export default function Magic() {
 
   const paginatedStatementData = useMemo(() => {
     if (viewMode !== LedgerView.STATEMENT_VIEW || !filteredDebitCreditTransactions) return null;
-    if (apiTotalPages != null && apiTotalPages > 1) {
-      return filteredDebitCreditTransactions;
-    }
     const list = filteredDebitCreditTransactions;
     const hasForwarded = Boolean(forwardedBalance);
+    if (apiTotalPages != null && apiTotalPages > 1) {
+      return list;
+    }
     const start = currentPage === 1 ? 0 : (currentPage - 1) * itemsPerPage - (hasForwarded ? 1 : 0);
     const end =
       currentPage === 1

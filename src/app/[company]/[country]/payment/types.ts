@@ -7,5 +7,5 @@ export interface Payment {
   unusedAmount: string;
 }
 
-/** Sortable column for payment list (includes Payment ID from sort dropdown) */
-export type PaymentSortColumn = "Date" | "Amount" | "Payment ID";
+/** Sortable column for payment list */
+export type PaymentSortColumn = "Date" | "Amount";

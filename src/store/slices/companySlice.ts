@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
-import { INVOICE_PAGE_SIZE, PAGINATION_LIMIT } from "@/constants";
+import { INVOICE_PAGE_SIZE, PAGINATION_LIMIT, PAYMENT_PAGE_SIZE } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
@@ -50,6 +50,12 @@ interface AllPaymentsState {
   loading: boolean;
   error: string | null;
   lastFetchTimestamp?: number;
+  sort?: string;
+  sortBy?: string;
+  page?: number;
+  count?: number;
+  totalItems?: number;
+  totalPages?: number;
 }
 
 interface AllInvoicesState {
@@ -301,19 +307,54 @@ export const fetchAllPayments = createAsyncThunk(
     companyName,
     companyUniqueName,
     accountUniqueName,
+    sort = SortOrder.DESC,
+    sortBy = "grandTotal",
+    page = 1,
+    count = PAYMENT_PAGE_SIZE,
   }: {
     companyName: string;
     companyUniqueName: string;
     accountUniqueName: string;
+    sort?: string;
+    sortBy?: string;
+    page?: number;
+    count?: number;
   }) => {
     const response = await getLastPayment({
       companyUniqueName,
       accountUniqueName,
       type: "receipt",
-      page: 1,
-      count: PAGINATION_LIMIT,
+      page,
+      count,
+      sort: sort as "" | "asc" | "desc",
+      sortBy,
     });
-    return { companyName, data: response.body.items || [] };
+    const items = response.body.items || [];
+    const totalItems = response.body.totalItems ?? 0;
+    const totalPages = response.body.totalPages ?? (count > 0 ? Math.ceil(totalItems / count) : 0);
+    return {
+      companyName,
+      data: items,
+      sort,
+      sortBy,
+      totalItems,
+      totalPages,
+      page: response.body.page ?? page,
+      count: response.body.count ?? count,
+    };
+  },
+  {
+    condition: ({ companyName, sort, sortBy, page, count }, { getState }) => {
+      const state = getState() as RootState;
+      const payments = state.companies[companyName]?.allPayments;
+      if (payments?.loading) return false;
+      if (payments?.data != null && payments?.lastFetchTimestamp == null) return true;
+      const sameSort = payments?.sort === sort && payments?.sortBy === sortBy;
+      const samePage =
+        payments?.page === (page ?? 1) && payments?.count === (count ?? PAYMENT_PAGE_SIZE);
+      const hasCachedResult = sameSort && samePage;
+      return !hasCachedResult;
+    },
   }
 );
 
@@ -604,13 +645,20 @@ export const companySlice = createSlice({
         }
       })
       .addCase(fetchAllPayments.fulfilled, (state, action) => {
-        const { companyName, data } = action.payload;
+        const { companyName, data, sort, sortBy, totalItems, totalPages, page, count } =
+          action.payload;
         if (state[companyName]) {
           state[companyName].allPayments = {
             data,
             loading: false,
             error: null,
             lastFetchTimestamp: Date.now(),
+            sort,
+            sortBy,
+            totalItems,
+            totalPages,
+            page,
+            count,
           };
         }
       })
@@ -830,6 +878,10 @@ export const selectAllPaymentsLoading = (companyName: string) => (state: RootSta
   state.companies[companyName]?.allPayments?.loading || false;
 export const selectAllPaymentsError = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.allPayments?.error || null;
+export const selectAllPaymentsTotalItems = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allPayments?.totalItems ?? 0;
+export const selectAllPaymentsTotalPages = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allPayments?.totalPages ?? 1;
 
 export const selectAllInvoices = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.allInvoices?.data || null;

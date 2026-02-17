@@ -295,6 +295,7 @@ export default function AccountStatementPage() {
                         {accountAddress.stateName && <p>{accountAddress.stateName}</p>}
                         {accountAddress.countryName && <p>{accountAddress.countryName}</p>}
                         {accountAddress.pinCode && <p>{accountAddress.pinCode}</p>}
+                        {accountAddress.email && <p>Email: {accountAddress.email}</p>}
                         {accountAddress.taxType && accountAddress.taxNumber && (
                           <p>
                             {accountAddress.taxType} : {accountAddress.taxNumber}

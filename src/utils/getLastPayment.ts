@@ -21,6 +21,9 @@ export interface LastPaymentResponse {
   body: {
     items: PaymentVoucher[];
     totalItems: number;
+    totalPages?: number;
+    page?: number;
+    count?: number;
   };
 }
 
@@ -32,6 +35,8 @@ export interface GetLastPaymentParams {
   count?: number;
   sort?: "" | "asc" | "desc";
   sortBy?: string;
+  balanceStatus?: string[];
+  uniqueNames?: string[];
 }
 
 export default async function getLastPayment({
@@ -40,12 +45,19 @@ export default async function getLastPayment({
   type = "receipt",
   page = DEFAULT_PAGE,
   count = PAGINATION_LIMIT,
-  sort = "",
-  sortBy = "DESC",
+  sort = "desc",
+  sortBy = "grandTotal",
+  balanceStatus = [],
+  uniqueNames = [],
 }: GetLastPaymentParams): Promise<LastPaymentResponse> {
   const response = await apiClient.post(
     API_PATHS.vouchersGetAll(companyUniqueName, accountUniqueName),
-    {},
+    {
+      companyUniqueName,
+      accountUniqueName,
+      balanceStatus,
+      uniqueNames,
+    },
     {
       params: {
         voucherVersion: 2,

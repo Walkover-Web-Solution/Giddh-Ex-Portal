@@ -105,12 +105,13 @@ export function StatementViewTable({
   const displayTransactions = useMemo(() => {
     if (!debitCreditTransactions?.length) return [];
 
-    const rows = debitCreditTransactions.map(
-      (transaction) =>
-        transformLedgerTransactionToDisplay(transaction, true) as Transaction & {
-          transaction: LedgerTransaction;
-        }
-    );
+    const rows = debitCreditTransactions.map((tx) => {
+      const row = transformLedgerTransactionToDisplay(tx, true) as Transaction & {
+        transaction: LedgerTransaction;
+      };
+      (row as Transaction & { transaction: LedgerTransaction }).transaction = tx;
+      return row;
+    });
 
     if (forwardedBalance) {
       const isCredit = forwardedBalance.type === LEDGER_TYPE_CREDIT;

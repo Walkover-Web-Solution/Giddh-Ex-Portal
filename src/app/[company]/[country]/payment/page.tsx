@@ -8,12 +8,14 @@ import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchAllPayments,
+  invoiceSortBy,
   selectAllPayments,
   selectAllPaymentsLoading,
   selectAllPaymentsError,
+  selectAllPaymentsTotalItems,
+  selectAllPaymentsTotalPages,
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectIsPaymentsDataStale,
   selectBalanceSummary,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
@@ -25,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SortOrder } from "@/constants/sort";
+import { PAYMENT_PAGE_SIZE } from "@/constants";
 import type { Payment, PaymentSortColumn } from "./types";
 
 export default function PaymentsPage() {
@@ -34,7 +37,6 @@ export default function PaymentsPage() {
   const [sortFilter, setSortFilter] = useState<PaymentSortColumn>("Amount");
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const companyName = params?.company as string;
   const country = params?.country as string;
@@ -44,8 +46,11 @@ export default function PaymentsPage() {
   const allPayments = useAppSelector(selectAllPayments(companyName));
   const loading = useAppSelector(selectAllPaymentsLoading(companyName));
   const error = useAppSelector(selectAllPaymentsError(companyName));
-  const isDataStale = useAppSelector(selectIsPaymentsDataStale(companyName));
+  const totalItems = useAppSelector(selectAllPaymentsTotalItems(companyName));
+  const totalPages = useAppSelector(selectAllPaymentsTotalPages(companyName));
   const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
+
+  const apiSortBy = sortFilter === "Amount" ? invoiceSortBy.grandTotal : invoiceSortBy.voucherDate;
 
   useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
@@ -53,10 +58,28 @@ export default function PaymentsPage() {
       accountUniqueNameFromRedux
     );
 
-    if (companyName && companyUniqueName && accountUniqueName && isDataStale) {
-      dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }));
+    if (companyName && companyUniqueName && accountUniqueName) {
+      dispatch(
+        fetchAllPayments({
+          companyName,
+          companyUniqueName,
+          accountUniqueName,
+          sort: sortDirection,
+          sortBy: apiSortBy,
+          page: currentPage,
+          count: PAYMENT_PAGE_SIZE,
+        })
+      );
     }
-  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, isDataStale]);
+  }, [
+    dispatch,
+    companyName,
+    companyUniqueNameFromRedux,
+    accountUniqueNameFromRedux,
+    currentPage,
+    sortDirection,
+    apiSortBy,
+  ]);
 
   const handlePaymentClick = (voucherUniqueName: string) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
@@ -102,29 +125,6 @@ export default function PaymentsPage() {
         unusedAmount: "",
       })),
     [allPayments, currency]
-  );
-
-  const sortedPaymentsData = useMemo(
-    () =>
-      [...paymentsData].sort((a, b) => {
-        let comparison = 0;
-        if (sortFilter === "Amount") {
-          const amountA = parseFloat(a.amount.replace(/[^0-9.-]+/g, ""));
-          const amountB = parseFloat(b.amount.replace(/[^0-9.-]+/g, ""));
-          comparison = amountB - amountA;
-        } else if (sortFilter === "Date") {
-          comparison = new Date(b.date).getTime() - new Date(a.date).getTime();
-        } else if (sortFilter === "Payment ID") {
-          comparison = a.paymentId.localeCompare(b.paymentId);
-        }
-        return sortDirection === SortOrder.ASC ? -comparison : comparison;
-      }),
-    [paymentsData, sortFilter, sortDirection]
-  );
-
-  const paginatedData = useMemo(
-    () => sortedPaymentsData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
-    [sortedPaymentsData, currentPage, itemsPerPage]
   );
 
   const columns = useMemo(
@@ -174,7 +174,7 @@ export default function PaymentsPage() {
       { header: "Payment Account", accessor: "paymentAccount" as keyof Payment },
       { header: "Unused Amount", accessor: "unusedAmount" as keyof Payment },
     ],
-    [currency]
+    [currency, sortFilter, sortDirection]
   );
 
   return (
@@ -216,18 +216,11 @@ export default function PaymentsPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortFilter("Date");
-                    setCurrentPage(1);
+                    setCurrentP;
+                    age(1);
                   }}
                 >
                   Date
-                </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => {
-                    setSortFilter("Payment ID");
-                    setCurrentPage(1);
-                  }}
-                >
-                  Payment ID
                 </Dropdown.Item>
               </Dropdown>
             </div>
@@ -245,20 +238,20 @@ export default function PaymentsPage() {
             <TableSkeleton rows={10} />
           ) : error ? (
             <div className="py-12 text-center text-red-500">{error}</div>
-          ) : sortedPaymentsData.length === 0 ? (
+          ) : paymentsData.length === 0 ? (
             <div className="py-12 text-center text-gray-500">No payments found</div>
           ) : (
-            <DataTable columns={columns} data={paginatedData} keyExtractor={(row) => row.id} />
+            <DataTable columns={columns} data={paymentsData} keyExtractor={(row) => row.id} />
           )}
 
-          {!loading && !error && sortedPaymentsData.length > 10 && (
+          {!loading && !error && totalItems > PAYMENT_PAGE_SIZE && (
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(sortedPaymentsData.length / itemsPerPage)}
-              totalItems={sortedPaymentsData.length}
-              itemsPerPage={itemsPerPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={PAYMENT_PAGE_SIZE}
               onPageChange={setCurrentPage}
-              onItemsPerPageChange={setItemsPerPage}
+              onItemsPerPageChange={() => {}}
             />
           )}
         </div>
