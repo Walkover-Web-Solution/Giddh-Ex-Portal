@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, User } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
+import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 
 export default function DetailsPage() {
   const params = useParams();
@@ -24,9 +25,12 @@ export default function DetailsPage() {
     return (
       <>
         <header className="border-b bg-white px-6 py-4">
-          <div className="flex items-center gap-3">
-            <SidebarToggleButton />
-            <h1 className="text-xl font-semibold">Hello!</h1>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <SidebarToggleButton />
+              <h1 className="text-xl font-semibold">Hello!</h1>
+            </div>
+            <SwitchAccountButton />
           </div>
         </header>
         <div className="flex-1 p-6">
@@ -45,9 +49,12 @@ export default function DetailsPage() {
   return (
     <>
       <header className="border-b bg-white px-6 py-4">
-        <div className="flex items-center gap-3">
-          <SidebarToggleButton />
-          <h1 className="text-xl font-semibold">Hello!</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <SidebarToggleButton />
+            <h1 className="text-xl font-semibold">Hello!</h1>
+          </div>
+          <SwitchAccountButton />
         </div>
       </header>
 
@@ -64,17 +71,18 @@ export default function DetailsPage() {
                 <CardTitle className="text-lg font-semibold">Account Details</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-5 text-sm">
-                  <div>
-                    <p className="font-medium text-gray-500">Name</p>
-                    <p className="mt-1 break-words font-semibold text-gray-900">
-                      {data?.name ?? ""}
-                    </p>
-                  </div>
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="py-2">
+                    {data?.name && (
+                      <p className="break-words font-semibold text-gray-900">{data?.name ?? ""}</p>
+                    )}
 
-                  <div>
-                    <p className="font-medium text-gray-500">Email</p>
-                    <p className="mt-1 break-words text-gray-900">{data?.email ?? ""}</p>
+                    {data?.email && (
+                      <p className="break-words text-gray-900">{data?.email ?? ""}</p>
+                    )}
+                    {data?.mobileNo && (
+                      <p className="break-words text-gray-900">{data?.mobileNo ?? ""}</p>
+                    )}
                   </div>
 
                   {data?.addresses && data.addresses.length > 0 && (
@@ -86,6 +94,9 @@ export default function DetailsPage() {
                           <p className="break-words">{data.email}</p>
                           {data.addresses[0]?.address && (
                             <p className="break-words">{data.addresses[0].address}</p>
+                          )}
+                          {data.addresses[0]?.pincode && (
+                            <p className="break-words">{data.addresses[0].pincode}</p>
                           )}
                           {data.addresses[0]?.state?.name && (
                             <p>
@@ -134,8 +145,15 @@ export default function DetailsPage() {
                           <User className="h-5 w-5 text-gray-600" />
                         </div>
                         <div className="min-w-0">
-                          <p className="break-words font-medium text-gray-900">{contact.name}</p>
-                          <p className="break-words text-sm text-gray-600">{contact.email}</p>
+                          {contact.name && (
+                            <p className="break-words font-medium text-gray-900">{contact.name}</p>
+                          )}
+                          {contact.contactNo && (
+                            <p className="break-words text-sm text-gray-600">{contact.contactNo}</p>
+                          )}
+                          {contact.email && (
+                            <p className="break-words text-sm text-gray-600">{contact.email}</p>
+                          )}
                         </div>
                       </div>
                     ))}

@@ -10,7 +10,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={mergeClassNames("overflow-hidden bg-white shadow-sm sm:rounded-lg", className)}
+      className={mergeClassNames("overflow-hidden bg-white p-4 shadow-sm sm:rounded-lg", className)}
       {...props}
     />
   )
@@ -19,7 +19,7 @@ Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={mergeClassNames("px-4 py-5 sm:p-6", className)} {...props} />
+    <div ref={ref} className={mergeClassNames(" ", className)} {...props} />
   )
 );
 CardHeader.displayName = "CardHeader";
@@ -48,18 +48,14 @@ CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={mergeClassNames("px-4 py-5 sm:p-6", className)} {...props} />
+    <div ref={ref} className={mergeClassNames("", className)} {...props} />
   )
 );
 CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={mergeClassNames("flex items-center px-4 py-5 sm:p-6", className)}
-      {...props}
-    />
+    <div ref={ref} className={mergeClassNames("flex items-center", className)} {...props} />
   )
 );
 CardFooter.displayName = "CardFooter";

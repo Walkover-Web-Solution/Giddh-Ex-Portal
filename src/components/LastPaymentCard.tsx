@@ -33,10 +33,10 @@ export function LastPaymentCard() {
 
   return (
     <Card>
-      <CardHeader className="p-4">
+      <CardHeader>
         <CardTitle>Last Payment</CardTitle>
       </CardHeader>
-      <CardContent className="px-4">
+      <CardContent>
         <div className="border-b py-1">
           <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
             <span className="text-sm text-gray-600">Amount</span>

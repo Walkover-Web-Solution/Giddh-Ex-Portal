@@ -216,8 +216,7 @@ export default function PaymentsPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortFilter("Date");
-                    setCurrentP;
-                    age(1);
+                    setCurrentPage(1);
                   }}
                 >
                   Date
