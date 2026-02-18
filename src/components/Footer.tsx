@@ -1,6 +1,6 @@
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { getConfig } from "@/config";
+import { config } from "@/config";
 
 interface FooterProps {
   companyName: string;
@@ -11,8 +11,7 @@ interface FooterProps {
 }
 
 function getLogoSrc(): string {
-  const primary = getConfig().LOGOS?.primary;
-
+  const primary = config.LOGOS?.primary;
   if (primary && (primary.startsWith("http") || primary.startsWith("/"))) {
     return primary;
   }

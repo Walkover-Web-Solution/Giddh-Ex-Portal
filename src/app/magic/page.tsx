@@ -154,8 +154,14 @@ export default function Magic() {
             setLedgerBalance(undefined);
           }
 
-          // Set initial selected currency to transaction currency
-          if (extractedCurrencyData.transactionCurrency) {
+          // Set selected currency from API: initial load uses transaction currency; refetch keeps user choice if still valid
+          const tCode = extractedCurrencyData.transactionCurrency?.code?.trim().toUpperCase();
+          const cCode = extractedCurrencyData.convertedCurrency?.code?.trim().toUpperCase();
+          const selectedNorm = (selectedCurrency ?? "").trim().toUpperCase();
+          const isValidSelection = selectedNorm === tCode || selectedNorm === cCode;
+          if (isInitialMount.current && extractedCurrencyData.transactionCurrency) {
+            setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
+          } else if (!isValidSelection && extractedCurrencyData.transactionCurrency) {
             setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
           }
 
@@ -480,6 +486,15 @@ export default function Magic() {
     setFetchTrigger((t) => t + 1);
   };
 
+  const handleCurrencyChange = (currency: Currency) => {
+    setSelectedCurrency(currency);
+    setRequestPaginationToken(null);
+    setPrevToken(null);
+    setNextToken(null);
+    setCurrentPage(1);
+    setFetchTrigger((t) => t + 1);
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -519,7 +534,7 @@ export default function Magic() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             selectedCurrency={selectedCurrency}
-            onCurrencyChange={setSelectedCurrency}
+            onCurrencyChange={handleCurrencyChange}
             viewMode={viewMode}
             onViewModeChange={handleViewModeChange}
             transactionCurrency={currencyData?.transactionCurrency}
