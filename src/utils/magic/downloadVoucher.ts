@@ -29,14 +29,16 @@ export interface DownloadAttachmentRequest {
  */
 export async function downloadMagicLinkVoucher(request: DownloadVoucherRequest): Promise<void> {
   try {
+    if (!request?.linkId) {
+      throw new Error("Magic link ID not found.");
+    }
+    if (!request.voucherNumber || !request.voucherName) {
+      throw new Error("Voucher information is missing; cannot download.");
+    }
     const config = getConfig();
     const baseURL = config.GIDDH_API_URL;
     const voucherVersion = request.voucherVersion || 2;
     const linkId = request.linkId;
-
-    if (!linkId) {
-      throw new Error("Magic link ID not found.");
-    }
 
     let apiObservable;
 

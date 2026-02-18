@@ -1,4 +1,5 @@
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 
 interface FooterProps {
   companyName: string;
@@ -34,7 +35,7 @@ export function Footer({
     <footer className="bg-white">
       <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center gap-x-6 md:order-1 md:justify-start">
-          <span className="text-xl font-bold tracking-wide text-blue-900">GIDDH</span>
+          <Image src="/icons/giddh_text_icon.svg" alt="Giddh Logo" width={100} height={100} />
         </div>
 
         <div className="text-md mt-4 text-center text-gray-600 md:order-2 md:mt-0">

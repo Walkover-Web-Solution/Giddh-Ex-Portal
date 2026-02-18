@@ -5,13 +5,12 @@ import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
 import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectAllCompanies } from "@/store/slices/companySlice";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { sessionManager } from "@/utils/sessionManager";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { ErrorMessage } from "@/components/ErrorMessage";
 import { logger } from "@/utils/logger";
 import { useConfig } from "@/contexts/ConfigContext";
 import { useToast } from "@/contexts/ToastContext";
@@ -37,7 +36,6 @@ export default function Auth() {
     Object.values(allCompanies)[0]?.country ||
     (typeof window !== "undefined" ? sessionStorage.getItem("country") : null);
 
-  const [error, setError] = useState<string | null>(null);
   const hasCalledRef = useRef(false);
 
   useEffect(() => {
@@ -45,6 +43,14 @@ export default function Auth() {
       if (!token || !companyName || hasCalledRef.current || configLoading) return;
 
       hasCalledRef.current = true;
+
+      const goToLogin = () => {
+        if (companyName && country) {
+          router.push(`/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/login`);
+        } else {
+          router.push("/");
+        }
+      };
 
       try {
         const detailsResponse = await getDetails(token);
@@ -101,19 +107,19 @@ export default function Auth() {
               const msg =
                 (sessionResponse as { message?: string }).message ?? "Failed to save session";
               showToast(msg, "error");
-              setError(msg);
+              goToLogin();
             }
           } else {
             const msg =
               (verifyResponse as { message?: string }).message ?? "User verification failed";
             showToast(msg, "error");
-            setError(msg);
+            goToLogin();
           }
         } else {
           const msg =
             (detailsResponse as { message?: string }).message ?? "Failed to get user details";
           showToast(msg, "error");
-          setError(msg);
+          goToLogin();
         }
       } catch (err: unknown) {
         logger.error("Error during authentication", err);
@@ -126,16 +132,10 @@ export default function Auth() {
               ? err
               : "Authentication failed. Please try again.");
         showToast(apiMessage, "error");
-        setError("Authentication failed. Please try again.");
+        goToLogin();
       }
     };
 
     authenticateUser();
-  }, [token, companyName, country, router, configLoading]);
-
-  if (error) {
-    return <ErrorMessage message={error} onRetry={() => router.push("/")} variant="page" />;
-  }
-
-  return <LoadingSpinner message="Authenticating..." variant="brand" />;
+  }, [token, companyName, country, router, configLoading, showToast]);
 }

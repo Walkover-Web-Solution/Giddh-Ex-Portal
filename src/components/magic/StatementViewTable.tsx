@@ -55,7 +55,7 @@ export function StatementViewTable({
   const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<string | null>(null);
 
   const handleDownload = async (transaction: LedgerTransaction, index: number) => {
-    if (!transaction.voucherNumber || !transaction.voucherName) return;
+    if (!transaction?.voucherNumber || !transaction?.voucherName) return;
 
     const transactionId = `tx-${index}-${transaction.entryUniqueName ?? transaction.voucherNumber}`;
     if (downloadingTransactionId === transactionId) return;

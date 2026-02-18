@@ -86,7 +86,7 @@ export function TAccountViewTable({
   };
 
   const handleDownload = async (tx: LedgerTransaction, index: number, side: "debit" | "credit") => {
-    if (!tx.voucherNumber || !tx.voucherName) {
+    if (!tx?.voucherNumber || !tx?.voucherName) {
       console.error("Missing voucher information for download");
       return;
     }

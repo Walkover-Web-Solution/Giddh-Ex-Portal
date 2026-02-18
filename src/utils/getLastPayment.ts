@@ -14,6 +14,8 @@ export interface PaymentVoucher {
     name: string;
     uniqueName: string;
   };
+  invoiceNumber?: string;
+  invoiceUniqueName?: string;
 }
 
 export interface LastPaymentResponse {
@@ -69,5 +71,29 @@ export default async function getLastPayment({
       },
     }
   );
-  return response.data;
+  const body = response.data?.body;
+  const rawItems = (body?.items ?? []) as (PaymentVoucher & {
+    referenceVouchers?: Array<{ uniqueName?: string; voucherNumber?: string }>;
+    linkedInvoice?: { uniqueName?: string; voucherNumber?: string };
+  })[];
+  const items: PaymentVoucher[] = rawItems.map((item) => {
+    const ref = item.referenceVouchers?.[0];
+    const linked = item.linkedInvoice;
+    return {
+      ...item,
+      invoiceNumber: item.invoiceNumber ?? ref?.voucherNumber ?? linked?.voucherNumber,
+      invoiceUniqueName: item.invoiceUniqueName ?? ref?.uniqueName ?? linked?.uniqueName,
+    };
+  });
+  return {
+    ...response.data,
+    body: {
+      ...body,
+      items,
+      totalItems: body?.totalItems ?? 0,
+      totalPages: body?.totalPages,
+      page: body?.page,
+      count: body?.count,
+    },
+  };
 }
