@@ -21,7 +21,8 @@ export default function Home() {
           </h1>
 
           <p className="mt-3 text-sm text-indigo-200 sm:text-base md:mt-4">
-            Manage your books with confidence. Giddh provides powerful tools for modern businesses.
+            Manage your books with confidence. {config.BRAND_NAME} provides powerful tools for
+            modern businesses.
           </p>
         </div>
       </section>

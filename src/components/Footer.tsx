@@ -1,6 +1,6 @@
+import { config } from "@/config";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { config } from "@/config";
 
 interface FooterProps {
   companyName: string;
@@ -33,7 +33,7 @@ export function Footer({
         <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
           <div className="flex justify-center gap-x-6 md:order-2" />
           <p className="mt-4 text-center text-xs text-gray-500 md:order-1 md:mt-0">
-            &copy; {year} Giddh. All rights reserved.
+            &copy; {year} {config.BRAND_NAME}. All rights reserved.
           </p>
         </div>
       </footer>
