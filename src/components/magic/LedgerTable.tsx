@@ -18,7 +18,7 @@ export interface LedgerTablePaginationProps {
 interface LedgerTableProps {
   transactions: Transaction[];
   selectedCurrency: Currency;
-  viewMode: ViewMode;
+  viewMode?: ViewMode;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
   linkId: string;

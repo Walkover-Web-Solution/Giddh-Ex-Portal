@@ -130,15 +130,12 @@ export function TAccountViewTable({
     }
   };
 
-  const hasMultipleCurrencies: boolean = Boolean(
-    transactionCurrency?.code &&
-    convertedCurrency?.code &&
-    transactionCurrency.code !== convertedCurrency.code
-  );
+  const tCode = (transactionCurrency?.code ?? "").trim().toUpperCase();
+  const cCode = (convertedCurrency?.code ?? "").trim().toUpperCase();
+  const hasMultipleCurrencies = tCode.length > 0 && cCode.length > 0 && tCode !== cCode;
 
-  const isConvertedCurrencySelected: boolean = Boolean(
-    hasMultipleCurrencies && selectedCurrency === convertedCurrency?.code
-  );
+  const selectedNorm = (selectedCurrency ?? "").trim().toUpperCase();
+  const isConvertedCurrencySelected = hasMultipleCurrencies && selectedNorm === cCode;
 
   const primaryCurrency = isConvertedCurrencySelected ? convertedCurrency : transactionCurrency;
 
@@ -408,6 +405,7 @@ export function TAccountViewTable({
                                     {getAttachmentTooltipTitle(dr.attachedFileName)}
                                   </span>
                                   <button
+                                    type="button"
                                     onClick={() => handleDownloadAttachment(dr, i, "debit")}
                                     disabled={isDownloadingDebitAtt}
                                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"
@@ -527,12 +525,13 @@ export function TAccountViewTable({
                               hasAttachmentId(cr.attachedFileUniqueName) && (
                                 <div className="group/attachment relative shrink-0">
                                   <span
-                                    className="pointer-events-none absolute bottom-full left-[-100px] mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/attachment:opacity-100"
+                                    className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/attachment:opacity-100"
                                     role="tooltip"
                                   >
                                     {getAttachmentTooltipTitle(cr.attachedFileName)}
                                   </span>
                                   <button
+                                    type="button"
                                     onClick={() => handleDownloadAttachment(cr, i, "credit")}
                                     disabled={isDownloadingCreditAtt}
                                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6"

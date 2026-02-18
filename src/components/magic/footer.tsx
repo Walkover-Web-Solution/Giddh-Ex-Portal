@@ -36,9 +36,12 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
     return formatCurrencyAmount(amount, sym, { decimals: 2 });
   };
 
+  const primaryCode = (companyCurrency?.code ?? "").trim().toUpperCase();
+  const convertedCode = (convertedCurrency?.code ?? "").trim().toUpperCase();
+  const hasTwoCurrencies =
+    primaryCode.length > 0 && convertedCode.length > 0 && primaryCode !== convertedCode;
   const hasConverted =
-    convertedCurrency &&
-    companyCurrency?.code !== convertedCurrency?.code &&
+    hasTwoCurrencies &&
     summary.convertedTotalDebit !== undefined &&
     summary.convertedTotalCredit !== undefined;
 
@@ -107,9 +110,9 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
             <div className="mt-1 w-full text-[10px] text-blue-900 sm:text-xs">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1 text-left">
-                  <p className="font-semibold">Debit</p>
+                  <p className="text-sm font-semibold">Debit</p>
 
-                  <p>{formatAmount(summary.totalDebit)}</p>
+                  <p className="text-sm">{formatAmount(summary.totalDebit)}</p>
 
                   {hasConverted && (
                     <p>
@@ -123,9 +126,9 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
                 </div>
 
                 <div className="flex flex-col space-y-1 text-left">
-                  <p className="font-semibold">Credit</p>
+                  <p className="text-sm font-semibold">Credit</p>
 
-                  <p>{formatAmount(summary.totalCredit)}</p>
+                  <p className="text-sm">{formatAmount(summary.totalCredit)}</p>
 
                   {hasConverted && (
                     <p>

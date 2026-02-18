@@ -146,7 +146,9 @@ export async function downloadMagicLinkAttachment(
 
     if (voucherVersion === 2) {
       const url = `${baseURL}/magic-link/${encodeURIComponent(linkId)}/download-voucher?voucherVersion=2&downloadOption=ATTACHMENT`;
-      const payload: Record<string, string> = {};
+      const payload: Record<string, string> = {
+        attachedFileUniqueName: request.attachedFileUniqueName,
+      };
       if (request.voucherName) payload.voucherType = request.voucherName;
       if (request.voucherUniqueName) payload.uniqueName = request.voucherUniqueName;
       else if (request.entryUniqueName) payload.entryUniqueName = request.entryUniqueName;

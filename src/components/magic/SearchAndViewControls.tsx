@@ -13,7 +13,7 @@ interface SearchAndViewControlsProps {
   onSearchChange: (query: string) => void;
   selectedCurrency: Currency;
   onCurrencyChange: (currency: Currency) => void;
-  viewMode: ViewMode;
+  viewMode?: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;

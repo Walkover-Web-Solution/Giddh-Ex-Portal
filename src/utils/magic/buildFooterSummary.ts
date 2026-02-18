@@ -32,7 +32,7 @@ function toDrCr(type: LedgerTransactionType): BalanceType {
 }
 
 function getCounts(
-  viewMode: LedgerView,
+  viewMode: LedgerView | undefined,
   statement: LedgerTransaction[] | undefined | null,
   debitList: LedgerTransaction[] | undefined | null,
   creditList: LedgerTransaction[] | undefined | null,
@@ -56,7 +56,7 @@ function getCounts(
 export function buildFooterSummary(params: {
   ledgerBalance: MagicLinkLedgerBalanceBody | undefined | null;
   forwardedBalance: { amount: number; type: LedgerTransactionType } | undefined | null;
-  viewMode: LedgerView;
+  viewMode?: LedgerView;
   filteredDebitCreditTransactions: LedgerTransaction[] | undefined | null;
   filteredDebitTransactions: LedgerTransaction[] | undefined | null;
   filteredCreditTransactions: LedgerTransaction[] | undefined | null;

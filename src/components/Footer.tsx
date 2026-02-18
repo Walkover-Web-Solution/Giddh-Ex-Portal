@@ -1,5 +1,6 @@
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import { getConfig } from "@/config";
 
 interface FooterProps {
   companyName: string;
@@ -7,6 +8,15 @@ interface FooterProps {
   companyAddress?: string;
   supportEmail: string;
   variant?: "full" | "minimal";
+}
+
+function getLogoSrc(): string {
+  const primary = getConfig().LOGOS?.primary;
+
+  if (primary && (primary.startsWith("http") || primary.startsWith("/"))) {
+    return primary;
+  }
+  return "/icons/giddh_text_icon.svg";
 }
 
 export function Footer({
@@ -35,7 +45,7 @@ export function Footer({
     <footer className="bg-white">
       <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center gap-x-6 md:order-1 md:justify-start">
-          <Image src="/icons/giddh_text_icon.svg" alt="Giddh Logo" width={100} height={100} />
+          <Image src={getLogoSrc()} alt="Giddh Logo" width={100} height={100} />
         </div>
 
         <div className="text-md mt-4 text-center text-gray-600 md:order-2 md:mt-0">
