@@ -56,6 +56,12 @@ export default function Magic() {
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [apiTotalItems, setApiTotalItems] = useState<number | undefined>(undefined);
   const [apiTotalPages, setApiTotalPages] = useState<number | undefined>(undefined);
+  const [apiDebitTransactionsCount, setApiDebitTransactionsCount] = useState<number | undefined>(
+    undefined
+  );
+  const [apiCreditTransactionsCount, setApiCreditTransactionsCount] = useState<number | undefined>(
+    undefined
+  );
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const [prevToken, setPrevToken] = useState<string | null>(null);
   const [nextToken, setNextToken] = useState<string | null>(null);
@@ -76,6 +82,9 @@ export default function Magic() {
   const isInitialMount = useRef(true);
   const prevFromDateRef = useRef<Date>(startOfThisMonth);
   const prevToDateRef = useRef<Date>(endOfThisMonth);
+  // Load ledger data: on initial load (linkId + viewMode) and when date range changes.
+  // Same as old magic-link: getMagicLinkData(id, from?, to?) → magic-link-ledger + magic-link-ledger-balance.
+  // Search does NOT trigger this effect; it only filters already-loaded data client-side.
   useEffect(() => {
     if (isUpdatingDatesFromAPI.current) {
       isUpdatingDatesFromAPI.current = false;
@@ -127,6 +136,8 @@ export default function Magic() {
             forwardedBalance: apiForwardedBalance,
             apiTotalItems: responseApiTotalItems,
             apiTotalPages: responseApiTotalPages,
+            apiDebitTransactionsCount: responseApiDebitTransactionsCount,
+            apiCreditTransactionsCount: responseApiCreditTransactionsCount,
             apiPrevToken: responseApiPrevToken,
             apiNextToken: responseApiNextToken,
             apiPage: responseApiPage,
@@ -134,6 +145,8 @@ export default function Magic() {
 
           setApiTotalItems(responseApiTotalItems);
           setApiTotalPages(responseApiTotalPages);
+          setApiDebitTransactionsCount(responseApiDebitTransactionsCount);
+          setApiCreditTransactionsCount(responseApiCreditTransactionsCount);
           setCurrentPage(responseApiPage ?? 1);
           setPrevToken(responseApiPrevToken ?? null);
           setNextToken(responseApiNextToken ?? null);
@@ -201,6 +214,8 @@ export default function Magic() {
           setLedgerBalance(undefined);
           setApiTotalItems(undefined);
           setApiTotalPages(undefined);
+          setApiDebitTransactionsCount(undefined);
+          setApiCreditTransactionsCount(undefined);
           setPrevToken(null);
           setNextToken(null);
         }
@@ -214,6 +229,8 @@ export default function Magic() {
         setLedgerBalance(undefined);
         setApiTotalItems(undefined);
         setApiTotalPages(undefined);
+        setApiDebitTransactionsCount(undefined);
+        setApiCreditTransactionsCount(undefined);
         setPrevToken(null);
         setNextToken(null);
       } finally {
@@ -248,6 +265,8 @@ export default function Magic() {
     return matches(amountStr) || matches(amountRounded);
   };
 
+  // Search is client-side only (no API call on type), matching old magic-link behavior:
+  // input → searchQuery → filter already-loaded transactions by particular + amount.
   const filteredTransactions = useMemo(() => {
     const searchValue = searchQuery.toLowerCase().trim();
     const hasSearchQuery = searchValue.length > 0;
@@ -442,7 +461,9 @@ export default function Magic() {
         filteredDebitCreditTransactions,
         filteredDebitTransactions,
         filteredCreditTransactions,
-        apiTotalTransactions: viewMode === LedgerView.STATEMENT_VIEW ? apiTotalItems : undefined,
+        apiTotalTransactions: apiTotalItems,
+        apiDebitCount: apiDebitTransactionsCount,
+        apiCreditCount: apiCreditTransactionsCount,
       }),
     [
       ledgerBalance,
@@ -452,6 +473,8 @@ export default function Magic() {
       filteredDebitTransactions,
       filteredCreditTransactions,
       apiTotalItems,
+      apiDebitTransactionsCount,
+      apiCreditTransactionsCount,
     ]
   );
 

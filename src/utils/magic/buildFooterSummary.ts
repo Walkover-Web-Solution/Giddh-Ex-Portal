@@ -61,6 +61,8 @@ export function buildFooterSummary(params: {
   filteredDebitTransactions: LedgerTransaction[] | undefined | null;
   filteredCreditTransactions: LedgerTransaction[] | undefined | null;
   apiTotalTransactions?: number;
+  apiDebitCount?: number;
+  apiCreditCount?: number;
 }): FooterSummary {
   const {
     ledgerBalance,
@@ -70,6 +72,8 @@ export function buildFooterSummary(params: {
     filteredDebitTransactions,
     filteredCreditTransactions,
     apiTotalTransactions,
+    apiDebitCount,
+    apiCreditCount,
   } = params;
 
   const countsFromData = getCounts(
@@ -80,11 +84,11 @@ export function buildFooterSummary(params: {
     Boolean(forwardedBalance)
   );
 
+  // Use API counts when available so footer stays same when user changes pagination
   const totalTransactions =
-    viewMode === LedgerView.STATEMENT_VIEW && apiTotalTransactions != null
-      ? apiTotalTransactions
-      : countsFromData.totalTransactions;
-  const { debitCount, creditCount } = countsFromData;
+    apiTotalTransactions != null ? apiTotalTransactions : countsFromData.totalTransactions;
+  const debitCount = apiDebitCount != null ? apiDebitCount : countsFromData.debitCount;
+  const creditCount = apiCreditCount != null ? apiCreditCount : countsFromData.creditCount;
 
   if (ledgerBalance) {
     return {

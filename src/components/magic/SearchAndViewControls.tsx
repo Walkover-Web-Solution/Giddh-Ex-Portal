@@ -52,8 +52,8 @@ export function SearchAndViewControls({
               <Input
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search transactions..."
-                aria-label="Search transactions"
+                placeholder="Search Ledger"
+                aria-label="Search Ledger"
               />
             </InputGroup>
           </div>

@@ -40,6 +40,8 @@ export interface MagicLinkData {
   apiTotalPages?: number;
   apiPage?: number;
   apiCount?: number;
+  apiDebitTransactionsCount?: number;
+  apiCreditTransactionsCount?: number;
   apiPrevToken?: string | null;
   apiNextToken?: string | null;
   inferredView?: LedgerView;
@@ -261,6 +263,8 @@ export const getMagicLinkData = async (
       apiTotalPages: lt.totalPages ?? body.totalPages,
       apiPage: lt.page ?? body.page,
       apiCount: lt.count ?? body.count,
+      apiDebitTransactionsCount: lt.debitTransactionsCount,
+      apiCreditTransactionsCount: lt.creditTransactionsCount,
       apiPrevToken,
       apiNextToken,
     };
