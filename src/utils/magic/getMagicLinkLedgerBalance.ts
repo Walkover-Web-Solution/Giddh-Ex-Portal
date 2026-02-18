@@ -35,6 +35,10 @@ export interface MagicLinkLedgerBalanceResponse {
 
 export interface GetMagicLinkLedgerBalanceRequest {
   linkId: string;
+  q?: string;
+  from?: string;
+  to?: string;
+  accountCurrency?: boolean;
 }
 
 /**
@@ -46,7 +50,21 @@ export const getMagicLinkLedgerBalance = async (
 ): Promise<MagicLinkLedgerBalanceResponse> => {
   try {
     const config = getConfig();
-    const url = `${config.GIDDH_API_URL}${GIDDH_MAGIC_LINK_PATHS.ledgerBalance(request.linkId)}`;
+    const baseUrl = `${config.GIDDH_API_URL}${GIDDH_MAGIC_LINK_PATHS.ledgerBalance(request.linkId)}`;
+    const queryParts: string[] = [];
+    if (request.q != null && request.q !== "") {
+      queryParts.push(`q=${encodeURIComponent(request.q)}`);
+    }
+    if (request.from) {
+      queryParts.push(`from=${encodeURIComponent(request.from)}`);
+    }
+    if (request.to) {
+      queryParts.push(`to=${encodeURIComponent(request.to)}`);
+    }
+    if (request.accountCurrency === true) {
+      queryParts.push("accountCurrency=true");
+    }
+    const url = queryParts.length > 0 ? `${baseUrl}?${queryParts.join("&")}` : baseUrl;
 
     const origin = typeof window !== "undefined" ? window.location.origin : "";
 

@@ -32,6 +32,7 @@ export default function Magic() {
   const [viewMode, setViewMode] = useState<ViewMode>();
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>("INR");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [companyName, setCompanyName] = useState("");
   const [accountName, setAccountName] = useState("");
@@ -82,7 +83,16 @@ export default function Magic() {
   const isInitialMount = useRef(true);
   const prevFromDateRef = useRef<Date>(startOfThisMonth);
   const prevToDateRef = useRef<Date>(endOfThisMonth);
-  // Load ledger data: on initial load (linkId + viewMode) and when date range changes.
+  /** Only show full-page loader on first load for current link; skip for refetches (search, pagination, etc.) */
+  const loadedLinkIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+    return () => window.clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   // Same as old magic-link: getMagicLinkData(id, from?, to?) → magic-link-ledger + magic-link-ledger-balance.
   // Search does NOT trigger this effect; it only filters already-loaded data client-side.
   useEffect(() => {
@@ -100,7 +110,10 @@ export default function Magic() {
     }
 
     const fetchMagicLinkData = async () => {
-      setLoading(true);
+      const isFirstLoadForLink = loadedLinkIdRef.current !== linkId;
+      if (isFirstLoadForLink) {
+        setLoading(true);
+      }
       setError(null);
 
       try {
@@ -112,7 +125,22 @@ export default function Magic() {
           request.from = formatDateToAPI(fromDate);
           request.to = formatDateToAPI(toDate);
         }
-        if (viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) {
+        const searchValue = debouncedSearchQuery.trim();
+        if (searchValue) {
+          request.q = searchValue;
+        }
+        // Workaround: when viewMode is undefined (backend not yet sending it), still send pagination
+        // and default to T_VIEW so the first request returns paginated data with prev/next tokens.
+        const effectiveViewForRequest =
+          viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW
+            ? viewMode
+            : LedgerView.T_VIEW;
+        if (
+          viewMode === LedgerView.STATEMENT_VIEW ||
+          viewMode === LedgerView.T_VIEW ||
+          viewMode === undefined
+        ) {
+          request.viewMode = effectiveViewForRequest;
           request.count = itemsPerPage;
           if (requestPaginationToken) {
             request.paginationToken = requestPaginationToken;
@@ -152,7 +180,12 @@ export default function Magic() {
           setNextToken(responseApiNextToken ?? null);
 
           setTransactions(transformedTransactions);
-          setCurrencyData(extractedCurrencyData);
+          // Preserve currency when API returns no data (no transactions → empty currency); keep toggle visible
+          const hasValidExtractedCurrency =
+            !!extractedCurrencyData.transactionCurrency?.code?.trim();
+          if (hasValidExtractedCurrency) {
+            setCurrencyData(extractedCurrencyData);
+          }
           setCompanyName(apiCompanyName);
           setAccountName(apiAccountName);
           setDebitCreditTransactions(apiDebitCreditTransactions || []);
@@ -160,7 +193,14 @@ export default function Magic() {
           setCreditTransactions(apiCreditTransactions || []);
           setForwardedBalance(apiForwardedBalance);
 
-          const balanceRes = await getMagicLinkLedgerBalance({ linkId });
+          const balanceRes = await getMagicLinkLedgerBalance({
+            linkId,
+            accountCurrency: true,
+            ...(searchValue ? { q: searchValue } : {}),
+            ...(hasSetDatesFromAPI.current
+              ? { from: formatDateToAPI(fromDate), to: formatDateToAPI(toDate) }
+              : {}),
+          });
           if (balanceRes.status === "success" && balanceRes.body) {
             setLedgerBalance(balanceRes.body);
           } else {
@@ -168,14 +208,17 @@ export default function Magic() {
           }
 
           // Set selected currency from API: initial load uses transaction currency; refetch keeps user choice if still valid
-          const tCode = extractedCurrencyData.transactionCurrency?.code?.trim().toUpperCase();
-          const cCode = extractedCurrencyData.convertedCurrency?.code?.trim().toUpperCase();
-          const selectedNorm = (selectedCurrency ?? "").trim().toUpperCase();
-          const isValidSelection = selectedNorm === tCode || selectedNorm === cCode;
-          if (isInitialMount.current && extractedCurrencyData.transactionCurrency) {
-            setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
-          } else if (!isValidSelection && extractedCurrencyData.transactionCurrency) {
-            setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
+          // Only when we have valid extracted currency (skip when no data so we don't set selectedCurrency to "")
+          if (hasValidExtractedCurrency) {
+            const tCode = extractedCurrencyData.transactionCurrency?.code?.trim().toUpperCase();
+            const cCode = extractedCurrencyData.convertedCurrency?.code?.trim().toUpperCase();
+            const selectedNorm = (selectedCurrency ?? "").trim().toUpperCase();
+            const isValidSelection = selectedNorm === tCode || selectedNorm === cCode;
+            if (isInitialMount.current && extractedCurrencyData.transactionCurrency) {
+              setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
+            } else if (!isValidSelection && extractedCurrencyData.transactionCurrency) {
+              setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
+            }
           }
 
           // Initial state from API: set from/to and view from response
@@ -199,6 +242,7 @@ export default function Magic() {
           if (isInitialMount.current) {
             isInitialMount.current = false;
           }
+          loadedLinkIdRef.current = linkId;
 
           // Initial state from API: set view from response.ledgerView (or infer from data if backend doesn't send it yet)
           if (viewMode === undefined && result.data.inferredView != null) {
@@ -233,6 +277,7 @@ export default function Magic() {
         setApiCreditTransactionsCount(undefined);
         setPrevToken(null);
         setNextToken(null);
+        loadedLinkIdRef.current = null;
       } finally {
         setLoading(false);
       }
@@ -248,6 +293,7 @@ export default function Magic() {
     requestPaginationToken,
     requestReversePage,
     fetchTrigger,
+    debouncedSearchQuery,
   ]);
 
   const normalizeSearchForAmount = (s: string) => {
@@ -657,6 +703,7 @@ export default function Magic() {
               summary={summary}
               companyCurrency={currencyData?.transactionCurrency}
               convertedCurrency={currencyData?.convertedCurrency}
+              hideOpeningClosingBalance={!!debouncedSearchQuery.trim()}
             />
           </section>
         )}

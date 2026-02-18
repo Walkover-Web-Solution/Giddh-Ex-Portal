@@ -27,9 +27,16 @@ interface FooterProps {
   summary: FooterSummaryProps;
   companyCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
+  /** When true, Opening and Closing balance blocks are hidden (e.g. when search/filters applied). */
+  hideOpeningClosingBalance?: boolean;
 }
 
-export function Footer({ summary, companyCurrency, convertedCurrency }: FooterProps) {
+export function Footer({
+  summary,
+  companyCurrency,
+  convertedCurrency,
+  hideOpeningClosingBalance = false,
+}: FooterProps) {
   const formatAmount = (amount: number | null, symbol?: string) => {
     if (amount === null) return "";
     const sym = symbol ?? companyCurrency?.symbol;
@@ -48,7 +55,13 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
   return (
     <div className="my-4 overflow-hidden rounded-lg bg-white shadow-sm">
       <div className="px-4 py-5 sm:p-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        <div
+          className={
+            hideOpeningClosingBalance
+              ? "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6"
+              : "grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4"
+          }
+        >
           <div>
             <p className="text-xs text-blue-900 sm:text-sm">
               Total Transactions {summary.totalTransactions}
@@ -59,20 +72,22 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
             </p>
           </div>
 
-          <div>
-            <p className="text-xs text-blue-900 sm:text-sm">Opening Balance</p>
-            <p className="mt-1.5 text-base font-semibold text-blue-900 sm:mt-2 sm:text-lg">
-              {formatAmount(summary.openingBalance)} {summary.openingBalanceType}
-            </p>
-            {hasConverted &&
-              summary.convertedOpeningBalance !== undefined &&
-              summary.convertedOpeningBalanceType !== undefined && (
-                <p className="mt-0.5 text-sm text-blue-900/70">
-                  {formatAmount(summary.convertedOpeningBalance, convertedCurrency?.symbol)}{" "}
-                  {summary.convertedOpeningBalanceType}
-                </p>
-              )}
-          </div>
+          {!hideOpeningClosingBalance && (
+            <div>
+              <p className="text-xs text-blue-900 sm:text-sm">Opening Balance</p>
+              <p className="mt-1.5 text-base font-semibold text-blue-900 sm:mt-2 sm:text-lg">
+                {formatAmount(summary.openingBalance)} {summary.openingBalanceType}
+              </p>
+              {hasConverted &&
+                summary.convertedOpeningBalance !== undefined &&
+                summary.convertedOpeningBalanceType !== undefined && (
+                  <p className="mt-0.5 text-sm text-blue-900/70">
+                    {formatAmount(summary.convertedOpeningBalance, convertedCurrency?.symbol)}{" "}
+                    {summary.convertedOpeningBalanceType}
+                  </p>
+                )}
+            </div>
+          )}
 
           <div className="flex flex-col">
             <div>
@@ -147,20 +162,22 @@ export function Footer({ summary, companyCurrency, convertedCurrency }: FooterPr
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <p className="text-xs text-blue-900 sm:text-sm">Closing Balance</p>
-            <p className="mt-1.5 text-lg font-semibold text-blue-900 sm:mt-2 sm:text-xl">
-              {formatAmount(summary.closingBalance)} {summary.closingBalanceType}
-            </p>
-            {hasConverted &&
-              summary.convertedClosingBalance !== undefined &&
-              summary.convertedClosingBalanceType !== undefined && (
-                <p className="mt-0.5 text-sm text-blue-900/70">
-                  {formatAmount(summary.convertedClosingBalance, convertedCurrency?.symbol)}{" "}
-                  {summary.convertedClosingBalanceType}
-                </p>
-              )}
-          </div>
+          {!hideOpeningClosingBalance && (
+            <div className="flex flex-col">
+              <p className="text-xs text-blue-900 sm:text-sm">Closing Balance</p>
+              <p className="mt-1.5 text-lg font-semibold text-blue-900 sm:mt-2 sm:text-xl">
+                {formatAmount(summary.closingBalance)} {summary.closingBalanceType}
+              </p>
+              {hasConverted &&
+                summary.convertedClosingBalance !== undefined &&
+                summary.convertedClosingBalanceType !== undefined && (
+                  <p className="mt-0.5 text-sm text-blue-900/70">
+                    {formatAmount(summary.convertedClosingBalance, convertedCurrency?.symbol)}{" "}
+                    {summary.convertedClosingBalanceType}
+                  </p>
+                )}
+            </div>
+          )}
         </div>
       </div>
     </div>
