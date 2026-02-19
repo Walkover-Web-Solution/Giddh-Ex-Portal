@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCompanyData, logoutCompany, selectUserDetails } from "@/store/slices/companySlice";
+import { getSessionCookie } from "@/utils/cookies";
 
 const navItems = [
   { name: "Home", path: "welcome", icon: HomeIcon },
@@ -47,6 +48,8 @@ export function Sidebar() {
 
   const guestRoutes = ["/invoice/preview", "/payment/preview", "/invoice-pay"];
   const isGuestRoute = guestRoutes.some((route) => pathname?.includes(route));
+  const hasSession = company ? !!getSessionCookie(company) : false;
+  const showUserBlock = !isGuestRoute || hasSession;
 
   const handleLogout = () => {
     logoutCompany(company);
@@ -155,7 +158,7 @@ export function Sidebar() {
         </div>
 
         <div className={mergeClassNames("-mx-6 mt-auto", isCollapsed && "md:mx-0")}>
-          {!isGuestRoute &&
+          {showUserBlock &&
             (!isCollapsed || isMobileOpen ? (
               <div className="flex items-center gap-x-2 px-6 py-3 md:gap-x-4">
                 <Link

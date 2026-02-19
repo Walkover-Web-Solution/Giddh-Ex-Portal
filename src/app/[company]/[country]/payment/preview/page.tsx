@@ -64,6 +64,12 @@ export default function PaymentPreviewPage() {
     router.replace(cleanAuthUrl);
   }, [companyName, country, router, searchParams]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !companyName || !country) return;
+    sessionStorage.setItem("companyName", companyName);
+    sessionStorage.setItem("country", country);
+  }, [companyName, country]);
+
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const hasSession =
     typeof window !== "undefined" && (!!sessionId || !!getSessionCookie(companyName));

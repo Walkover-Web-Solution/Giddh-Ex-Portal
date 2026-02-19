@@ -65,6 +65,12 @@ export default function InvoicePreviewPage() {
     router.replace(cleanAuthUrl);
   }, [companyName, country, router, searchParams]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !companyName || !country) return;
+    sessionStorage.setItem("companyName", companyName);
+    sessionStorage.setItem("country", country);
+  }, [companyName, country]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetailsResponse | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);

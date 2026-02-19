@@ -95,7 +95,7 @@ export default function AuthPage() {
   };
 
   if (accounts.length === 0) {
-    return <LoadingSpinner message="Loading..." />;
+    return <LoadingSpinner message="Signing you in..." />;
   }
 
   return (
@@ -130,11 +130,7 @@ export default function AuthPage() {
 
             {loading && (
               <div className="mt-6">
-                <LoadingSpinner
-                  message="Setting up your account..."
-                  variant="brand"
-                  fullScreen={false}
-                />
+                <LoadingSpinner message="Signing you in..." variant="brand" fullScreen={false} />
               </div>
             )}
           </div>

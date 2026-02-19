@@ -75,6 +75,12 @@ export default function InvoicePayPage() {
     router.replace(cleanAuthUrl);
   }, [companyName, country, router, searchParams]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !companyName || !country) return;
+    sessionStorage.setItem("companyName", companyName);
+    sessionStorage.setItem("country", country);
+  }, [companyName, country]);
+
   const sessionId =
     typeof window !== "undefined"
       ? localStorage.getItem("token") || getSessionCookie(companyName) || null
