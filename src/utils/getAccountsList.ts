@@ -5,6 +5,8 @@ export interface Account {
   name: string;
   uniqueName: string;
   email?: string;
+  contactNo?: string;
+  mobileNo?: string;
 }
 
 export interface AccountsListResponse {

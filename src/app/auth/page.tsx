@@ -39,18 +39,48 @@ export default function Auth() {
   const hasCalledRef = useRef(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const search = window.location.search || "";
+    const hasDuplicateAuth = search.includes("/auth?");
+    if (!hasDuplicateAuth) return;
+    const tokenFromUrl = searchParams.get("proxy_auth_token");
+    const companyFromUrl = searchParams.get("company");
+    const countryFromUrl = searchParams.get("country");
+    if (!tokenFromUrl) return;
+    const params = new URLSearchParams();
+    params.set("proxy_auth_token", tokenFromUrl);
+    if (companyFromUrl) params.set("company", companyFromUrl);
+    if (countryFromUrl) params.set("country", countryFromUrl);
+    const cleanQuery = params.toString();
+    if (window.location.search !== `?${cleanQuery}`) {
+      router.replace(`/auth?${cleanQuery}`, { scroll: false });
+    }
+  }, [router, searchParams]);
+
+  useEffect(() => {
+    const goToLogin = () => {
+      if (companyName && country) {
+        router.push(`/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/login`);
+      } else {
+        router.push("/");
+      }
+    };
+
+    // Token present but company/country missing (e.g. link from Giddh without company param)
+    if (token && !configLoading && !companyName && !hasCalledRef.current) {
+      hasCalledRef.current = true;
+      showToast(
+        "This sign-in link is incomplete. Please use the portal link from your invitation (it should open from your company's portal URL).",
+        "error"
+      );
+      router.replace("/");
+      return;
+    }
+
     const authenticateUser = async () => {
       if (!token || !companyName || hasCalledRef.current || configLoading) return;
 
       hasCalledRef.current = true;
-
-      const goToLogin = () => {
-        if (companyName && country) {
-          router.push(`/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/login`);
-        } else {
-          router.push("/");
-        }
-      };
 
       try {
         const detailsResponse = await getDetails(token);
@@ -123,14 +153,19 @@ export default function Auth() {
         }
       } catch (err: unknown) {
         logger.error("Error during authentication", err);
+        const error = err as {
+          response?: { status?: number; data?: { message?: string } };
+          message?: string;
+        };
         const apiMessage =
-          (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
-            ?.message ??
-          (err instanceof Error
-            ? err.message
-            : typeof err === "string"
-              ? err
-              : "Authentication failed. Please try again.");
+          error.response?.status === 406
+            ? "Server could not return data in the expected format. Please try again or contact support."
+            : (error.response?.data?.message ??
+              (err instanceof Error
+                ? err.message
+                : typeof err === "string"
+                  ? err
+                  : "Authentication failed. Please try again."));
         showToast(apiMessage, "error");
         goToLogin();
       }
@@ -138,4 +173,10 @@ export default function Auth() {
 
     authenticateUser();
   }, [token, companyName, country, router, configLoading, showToast]);
+
+  if (token) {
+    return <LoadingSpinner message="Signing you in..." />;
+  }
+
+  return null;
 }

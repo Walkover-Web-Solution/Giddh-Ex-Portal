@@ -11,6 +11,7 @@ import {
   selectAccountUniqueName,
   selectCompanyAddress,
   selectCompanyGstin,
+  selectCompanyDisplayName,
 } from "@/store/slices/companySlice";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Sidebar } from "@/components/Sidebar";
@@ -24,6 +25,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const params = useParams();
   const companyName = params?.company as string;
+  const companyDisplayName = useAppSelector(selectCompanyDisplayName(companyName)) ?? "";
   const companyAddress = useAppSelector(selectCompanyAddress(companyName));
   const gstin = useAppSelector(selectCompanyGstin(companyName));
 
@@ -48,7 +50,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       >
         <div className="flex-1">{children}</div>
         <Footer
-          companyName={companyName || ""}
+          companyName={companyDisplayName}
           gstin={gstin ?? ""}
           companyAddress={companyAddress ?? undefined}
           supportEmail="support@giddh.com"

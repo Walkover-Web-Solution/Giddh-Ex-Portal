@@ -104,6 +104,7 @@ interface CompanyAddressState {
 interface CompanyInfo {
   companyName: string;
   country: string;
+  companyDisplayName?: string | null;
   companyUniqueName?: string;
   user?: UserCompanyData;
   userData?: UserData;
@@ -205,7 +206,8 @@ export const fetchCompanyAddress = createAsyncThunk(
       sort: SortOrder.ASC,
     });
     const companyGstAddress = response.body?.companyGstAddress;
-    if (!companyGstAddress) return { companyName, data: null, gstin: null };
+    const companyDisplayName = response.body?.companyName?.trim() || null;
+    if (!companyGstAddress) return { companyName, data: null, gstin: null, companyDisplayName };
     const mainParts = [
       companyGstAddress.address,
       companyGstAddress.stateName,
@@ -216,7 +218,7 @@ export const fetchCompanyAddress = createAsyncThunk(
       : "";
     const addressString = [...mainParts, pinPart].filter(Boolean).join(", ").trim();
     const gstin = companyGstAddress.taxNumber?.trim() || null;
-    return { companyName, data: addressString, gstin };
+    return { companyName, data: addressString, gstin, companyDisplayName };
   },
   {
     condition: ({ companyName }, { getState }) => {
@@ -787,7 +789,7 @@ export const companySlice = createSlice({
         }
       })
       .addCase(fetchCompanyAddress.fulfilled, (state, action) => {
-        const { companyName, data, gstin } = action.payload;
+        const { companyName, data, gstin, companyDisplayName } = action.payload;
         if (state[companyName]) {
           state[companyName].companyAddress = {
             data,
@@ -795,6 +797,9 @@ export const companySlice = createSlice({
             loading: false,
             error: null,
           };
+          if (companyDisplayName != null) {
+            state[companyName].companyDisplayName = companyDisplayName;
+          }
         }
       })
       .addCase(fetchCompanyAddress.rejected, (state, action) => {
@@ -812,6 +817,10 @@ export const companySlice = createSlice({
         const { companyName, data } = action.payload;
         if (state[companyName]) {
           state[companyName].user = data;
+          const displayName = data?.currentCompany?.name?.trim();
+          if (displayName) {
+            state[companyName].companyDisplayName = displayName;
+          }
         }
       });
   },
@@ -845,6 +854,12 @@ export const selectBalanceSummaryError = (companyName: string) => (state: RootSt
 
 export const selectUser = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.user || null;
+
+/** Display name from API (view-statement companyName or get-company-details currentCompany.name), fallback to URL param */
+export const selectCompanyDisplayName = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.companyDisplayName ??
+  state.companies[companyName]?.user?.currentCompany?.name ??
+  null;
 export const selectUserData = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.userData || null;
 export const selectUserEmail = (companyName: string) => (state: RootState) =>

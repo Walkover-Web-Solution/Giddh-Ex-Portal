@@ -74,55 +74,46 @@ export default function DetailsPage() {
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="py-2">
                     {data?.name && (
-                      <p className="break-words font-semibold text-gray-900">{data?.name ?? ""}</p>
+                      <p className="break-words font-semibold text-gray-900">{data.name}</p>
                     )}
-
-                    {data?.email && (
-                      <p className="break-words text-gray-900">{data?.email ?? ""}</p>
-                    )}
-                    {data?.mobileNo && (
-                      <p className="break-words text-gray-900">{data?.mobileNo ?? ""}</p>
-                    )}
+                    {data?.email && <p className="break-words text-gray-900">{data.email}</p>}
                   </div>
 
                   {data?.addresses && data.addresses.length > 0 && (
                     <div className="space-y-4">
                       <div>
                         <p className="font-medium uppercase text-gray-500">Billing Address</p>
-                        <div className="mt-2 space-y-1 rounded-md bg-gray-50 p-3">
-                          <p className="font-medium">{data.name}</p>
-                          <p className="break-words">{data.email}</p>
-                          {data.addresses[0]?.address && (
-                            <p className="break-words">{data.addresses[0].address}</p>
+                        <div className="mt-2 space-y-1 break-words rounded-md bg-gray-50 p-3 text-sm text-gray-900">
+                          {data.addresses[0]?.address && <p>{data.addresses[0].address}</p>}
+                          {(data.addresses[0]?.stateName ?? data.addresses[0]?.state?.name) && (
+                            <p>{data.addresses[0].stateName ?? data.addresses[0].state?.name}</p>
                           )}
-                          {data.addresses[0]?.pincode && (
-                            <p className="break-words">{data.addresses[0].pincode}</p>
+                          {data?.countryName && <p>{data.countryName}</p>}
+                          {data.addresses[0]?.pincode && <p>{data.addresses[0].pincode}</p>}
+                          {data.addresses[0]?.gstNumber && (
+                            <p>GSTIN: {data.addresses[0].gstNumber}</p>
                           )}
-                          {data.addresses[0]?.state?.name && (
-                            <p>
-                              {data.addresses[0].state.name}, {data.addresses[0].stateCode}
-                            </p>
-                          )}
+                          {data?.email && <p>Email: {data.email}</p>}
+                          {data?.mobileNo && <p>Mobile: {data.mobileNo}</p>}
                         </div>
                       </div>
 
-                      {data.addresses.length > 0 && data.addresses[0] && (
-                        <div>
-                          <p className="font-medium uppercase text-gray-500">Shipping Address</p>
-                          <div className="mt-2 space-y-1 rounded-md bg-gray-50 p-3">
-                            <p className="font-medium">{data.name}</p>
-                            <p className="break-words">{data.email}</p>
-                            {data.addresses[0]?.address && (
-                              <p className="break-words">{data.addresses[0].address}</p>
-                            )}
-                            {data.addresses[0]?.state?.name && (
-                              <p>
-                                {data.addresses[0].state.name}, {data.addresses[0].stateCode}
-                              </p>
-                            )}
-                          </div>
+                      <div>
+                        <p className="font-medium uppercase text-gray-500">Shipping Address</p>
+                        <div className="mt-2 space-y-1 break-words rounded-md bg-gray-50 p-3 text-sm text-gray-900">
+                          {data.addresses[0]?.address && <p>{data.addresses[0].address}</p>}
+                          {(data.addresses[0]?.stateName ?? data.addresses[0]?.state?.name) && (
+                            <p>{data.addresses[0].stateName ?? data.addresses[0].state?.name}</p>
+                          )}
+                          {data?.countryName && <p>{data.countryName}</p>}
+                          {data.addresses[0]?.pincode && <p>{data.addresses[0].pincode}</p>}
+                          {data.addresses[0]?.gstNumber && (
+                            <p>GSTIN: {data.addresses[0].gstNumber}</p>
+                          )}
+                          {data?.email && <p>Email: {data.email}</p>}
+                          {data?.mobileNo && <p>Mobile: {data.mobileNo}</p>}
                         </div>
-                      )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -136,27 +127,30 @@ export default function DetailsPage() {
               <CardContent>
                 {data?.contacts && data.contacts.length > 0 ? (
                   <div className="space-y-3">
-                    {data.contacts.map((contact, index) => (
-                      <div
-                        key={index}
-                        className="flex items-start gap-3 rounded-lg border p-3 sm:p-4"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100">
-                          <User className="h-5 w-5 text-gray-600" />
+                    {data.contacts.map((contact, index) => {
+                      const phone = contact.contactNo ?? contact.mobileNo;
+                      return (
+                        <div
+                          key={contact.uniqueName ?? index}
+                          className="flex items-start gap-3 rounded-lg border p-3 sm:p-4"
+                        >
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100">
+                            <User className="h-5 w-5 text-gray-600" />
+                          </div>
+                          <div className="min-w-0">
+                            {contact.name && (
+                              <p className="break-words font-medium text-gray-900">
+                                {contact.name}
+                              </p>
+                            )}
+                            {phone && <p className="break-words text-sm text-gray-600">{phone}</p>}
+                            {contact.email && (
+                              <p className="break-words text-sm text-gray-600">{contact.email}</p>
+                            )}
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          {contact.name && (
-                            <p className="break-words font-medium text-gray-900">{contact.name}</p>
-                          )}
-                          {contact.contactNo && (
-                            <p className="break-words text-sm text-gray-600">{contact.contactNo}</p>
-                          )}
-                          {contact.email && (
-                            <p className="break-words text-sm text-gray-600">{contact.email}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="py-8 text-center text-sm text-gray-500">

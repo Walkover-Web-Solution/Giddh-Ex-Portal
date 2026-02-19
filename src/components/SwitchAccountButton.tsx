@@ -86,6 +86,10 @@ export function SwitchAccountButton() {
         setError("Request timed out. Please check your connection and try again.");
       } else if (err.response?.status === 401 || err.response?.status === 403) {
         setError("Session expired. Please log in again.");
+      } else if (err.response?.status === 406) {
+        setError(
+          "Server could not return data in the expected format. Please try again or contact support."
+        );
       } else {
         setError("Failed to fetch accounts. Please try again.");
       }

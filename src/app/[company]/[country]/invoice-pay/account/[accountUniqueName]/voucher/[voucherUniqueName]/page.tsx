@@ -68,6 +68,13 @@ export default function InvoicePayPage() {
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
 
+  useEffect(() => {
+    const token = searchParams.get("proxy_auth_token");
+    if (!token || !companyName || !country) return;
+    const cleanAuthUrl = `/auth?proxy_auth_token=${encodeURIComponent(token)}&company=${encodeURIComponent(companyName)}&country=${encodeURIComponent(country)}`;
+    router.replace(cleanAuthUrl);
+  }, [companyName, country, router, searchParams]);
+
   const sessionId =
     typeof window !== "undefined"
       ? localStorage.getItem("token") || getSessionCookie(companyName) || null
@@ -429,7 +436,9 @@ export default function InvoicePayPage() {
                       {singleVoucher.number}
                     </span>
                     {singleVoucher.dueDate && (
-                      <span className="text-lg font-medium text-gray-600">{singleVoucher.dueDate}</span>
+                      <span className="text-lg font-medium text-gray-600">
+                        {singleVoucher.dueDate}
+                      </span>
                     )}
                   </div>
                 </div>

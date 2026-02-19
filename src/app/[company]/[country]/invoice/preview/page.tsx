@@ -41,15 +41,28 @@ export default function InvoicePreviewPage() {
   const companyName = params?.company as string;
   const country = params?.country as string;
   const voucherUniqueName =
-    searchParams.get("voucher") || searchParams.get("voucherUniqueName") || "";
-  const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
-  const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
+    searchParams.get("voucher") ||
+    searchParams.get("voucherUniqueName") ||
+    searchParams.get("invoice") ||
+    searchParams.get("invoiceUniqueName") ||
+    "";
+  const companyUniqueNameFromUrl =
+    searchParams.get("companyUniqueName") || searchParams.get("company") || "";
+  const accountUniqueNameFromUrl =
+    searchParams.get("accountUniqueName") || searchParams.get("account") || "";
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
 
   const { referenceId: configReferenceId } = useAppConfig();
   const referenceId = configReferenceId?.trim() || DEFAULT_CONFIG.REFERENCE_ID;
+
+  useEffect(() => {
+    const token = searchParams.get("proxy_auth_token");
+    if (!token || !companyName || !country) return;
+    const cleanAuthUrl = `/auth?proxy_auth_token=${encodeURIComponent(token)}&company=${encodeURIComponent(companyName)}&country=${encodeURIComponent(country)}`;
+    router.replace(cleanAuthUrl);
+  }, [companyName, country, router, searchParams]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetailsResponse | null>(null);
@@ -95,6 +108,13 @@ export default function InvoicePreviewPage() {
       : null;
 
   const getNames = () => {
+    if (companyUniqueNameFromUrl && accountUniqueNameFromUrl) {
+      return {
+        companyUniqueName: companyUniqueNameFromUrl,
+        accountUniqueName: accountUniqueNameFromUrl,
+      };
+    }
+
     let companyUniqueName = companyUniqueNameFromRedux;
     let accountUniqueName = accountUniqueNameFromRedux;
 
@@ -291,6 +311,20 @@ export default function InvoicePreviewPage() {
         {!sessionId && <AuthHeader referenceId={referenceId} />}
         <div className="flex flex-1 flex-row items-center justify-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+        </div>
+      </>
+    );
+  }
+
+  if (error && !paymentDetails) {
+    return (
+      <>
+        {!sessionId && <AuthHeader referenceId={referenceId} />}
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
+          <p className="max-w-md text-center text-gray-700">{error}</p>
+          <Button variant="outline" onClick={handleBack}>
+            ← Back to Invoices
+          </Button>
         </div>
       </>
     );
