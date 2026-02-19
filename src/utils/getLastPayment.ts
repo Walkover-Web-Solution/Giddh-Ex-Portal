@@ -10,12 +10,14 @@ export interface PaymentVoucher {
     amountForAccount: number;
   };
   companyCurrencySymbol?: string;
+  accountCurrencySymbol?: string;
   account?: {
     name: string;
     uniqueName: string;
   };
   invoiceNumber?: string;
   invoiceUniqueName?: string;
+  balanceStatus?: string;
 }
 
 export interface LastPaymentResponse {
