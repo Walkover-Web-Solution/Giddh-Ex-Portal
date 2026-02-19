@@ -574,8 +574,8 @@ export default function Magic() {
 
   if (error && transactions.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <ErrorMessage message={error} onRetry={() => window.location.reload()} variant="page" />
+      <div className="flex min-h-screen text-2xl items-center justify-center">
+        Magic link not found. The link may be invalid or expired. Please request a new statement link from the account owner.
       </div>
     );
   }

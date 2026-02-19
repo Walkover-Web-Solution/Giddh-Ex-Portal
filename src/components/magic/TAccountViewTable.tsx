@@ -525,7 +525,7 @@ export function TAccountViewTable({
                               hasAttachmentId(cr.attachedFileUniqueName) && (
                                 <div className="group/attachment relative shrink-0">
                                   <span
-                                    className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/attachment:opacity-100"
+                                    className="pointer-events-none absolute bottom-full left-[-110px] mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/attachment:opacity-100"
                                     role="tooltip"
                                   >
                                     {getAttachmentTooltipTitle(cr.attachedFileName)}

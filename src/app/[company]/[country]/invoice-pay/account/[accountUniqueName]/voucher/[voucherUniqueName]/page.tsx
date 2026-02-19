@@ -402,7 +402,7 @@ export default function InvoicePayPage() {
       <div className="mx-auto w-full max-w-7xl">
         <div className="px-4 py-6">
           <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-            <h2 className="font-light= text-2xl">
+            <h2 className="text-2xl font-semibold text-gray-900">
               {vouchers.length === 1
                 ? `Payment for ${singleVoucher?.number ?? ""}`
                 : "Payment All Invoices"}
@@ -410,7 +410,7 @@ export default function InvoicePayPage() {
             <button
               type="button"
               onClick={backToInvoice}
-              className="cursor-pointer text-3xl leading-none text-gray-500 hover:text-gray-700"
+              className="cursor-pointer text-3xl leading-none text-gray-900 hover:text-gray-700"
               aria-label="Close"
             >
               ×
@@ -422,14 +422,14 @@ export default function InvoicePayPage() {
               <div className="flex items-center justify-between rounded-xl bg-white px-5 py-4">
                 <div className="flex flex-row items-center justify-center gap-2">
                   <div className="flex items-center justify-center gap-1 rounded bg-gray-100 px-2 py-2">
-                    <ClipboardDocumentListIcon className="h-8 w-8 text-blue-500" />
+                    <ClipboardDocumentListIcon className="h-12 w-12 text-blue-500" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="mt-1 text-2xl font-semibold text-gray-800">
+                    <span className="mt-1 text-2xl font-semibold text-gray-900">
                       {singleVoucher.number}
                     </span>
                     {singleVoucher.dueDate && (
-                      <span className="text-md text-gray-500">{singleVoucher.dueDate}</span>
+                      <span className="text-lg font-medium text-gray-600">{singleVoucher.dueDate}</span>
                     )}
                   </div>
                 </div>
@@ -437,10 +437,10 @@ export default function InvoicePayPage() {
                 <div className="mx-4 hidden h-10 w-px bg-gray-200 sm:block" />
 
                 <div className="text-right">
-                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  <span className="text-sm font-medium uppercase tracking-wide text-gray-600">
                     Balance Due
                   </span>
-                  <p className="mt-1 text-xl font-bold text-gray-900">
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
                     {currency}{" "}
                     {Number(singleVoucher.amount).toLocaleString("en-IN", {
                       maximumFractionDigits: 0,
@@ -476,7 +476,7 @@ export default function InvoicePayPage() {
               <div className="mt-4 border-t border-dashed border-gray-200 pt-4">
                 {panelOpenState && (
                   <>
-                    <div className="grid grid-cols-3 gap-4 border-b border-gray-200 pb-2 text-xs font-medium uppercase text-gray-500">
+                    <div className="grid grid-cols-3 gap-4 border-b border-gray-200 pb-2 text-xs font-medium uppercase">
                       <span>Invoice #</span>
                       <span>Due on</span>
                       <span className="text-right">Balance Due</span>

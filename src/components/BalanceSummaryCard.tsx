@@ -35,7 +35,7 @@ export function BalanceSummaryCard() {
         ) : (
           <>
             <div className="flex items-center justify-between border-b pb-3">
-              <span className="text-sm text-gray-600">Currency</span>
+              <span className="text-sm text-gray-600 font-medium">Currency</span>
               <span className="text-sm font-medium text-orange-500 sm:flex-row sm:items-start sm:justify-between">
                 Balance Payable
               </span>
@@ -46,7 +46,7 @@ export function BalanceSummaryCard() {
                 <div className="break-all text-xl font-bold md:break-normal">
                   {formatCurrencyAmount(data?.balancePayable, data?.currency, { decimals: 0 })}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 font-medium">
                   Number of Invoices: {data?.noOfInvoices || 0}
                 </div>
               </div>

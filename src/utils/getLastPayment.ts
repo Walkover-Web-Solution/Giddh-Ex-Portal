@@ -75,14 +75,24 @@ export default async function getLastPayment({
   const rawItems = (body?.items ?? []) as (PaymentVoucher & {
     referenceVouchers?: Array<{ uniqueName?: string; voucherNumber?: string }>;
     linkedInvoice?: { uniqueName?: string; voucherNumber?: string };
+    adjustments?: Array<{ voucherNumber?: string; uniqueName?: string }>;
   })[];
   const items: PaymentVoucher[] = rawItems.map((item) => {
     const ref = item.referenceVouchers?.[0];
     const linked = item.linkedInvoice;
+    const firstAdjustment = item.adjustments?.[0];
     return {
       ...item,
-      invoiceNumber: item.invoiceNumber ?? ref?.voucherNumber ?? linked?.voucherNumber,
-      invoiceUniqueName: item.invoiceUniqueName ?? ref?.uniqueName ?? linked?.uniqueName,
+      invoiceNumber:
+        item.invoiceNumber ??
+        ref?.voucherNumber ??
+        linked?.voucherNumber ??
+        firstAdjustment?.voucherNumber,
+      invoiceUniqueName:
+        item.invoiceUniqueName ??
+        ref?.uniqueName ??
+        linked?.uniqueName ??
+        firstAdjustment?.uniqueName,
     };
   });
   return {

@@ -39,17 +39,17 @@ export function Footer({
         </div>
 
         <div className="text-md mt-4 text-center text-gray-600 md:order-2 md:mt-0">
-          <p className="font-semibold text-gray-800">{companyName}</p>
+          <p className="font-semibold text-xl text-gray-800">{companyName}</p>
 
-          {companyAddress && <p className="mt-0.5 text-sm text-gray-500">{companyAddress}</p>}
+          {companyAddress && <p className="mt-0.5 text-sm text-gray-600 font-medium">{companyAddress}</p>}
 
-          {gstin && <p className="mt-0.5 text-xs text-gray-500">GSTIN: {gstin}</p>}
+          {gstin && <p className="mt-0.5 text-sm text-gray-600 font-medium">GSTIN: {gstin}</p>}
         </div>
         <div className="mt-4 text-center md:order-3 md:mt-0 md:text-right">
-          <p className="text-xs font-medium text-gray-900">Contact Us</p>
+          <p className="text-md font-medium text-gray-900">Contact Us</p>
           <a
             href={`mailto:${supportEmail}`}
-            className="mt-1 inline-flex items-center justify-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 md:justify-end"
+            className="mt-1 inline-flex items-center justify-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 md:justify-end"
           >
             <EnvelopeIcon className="h-4 w-4" />
             <span className="break-all sm:break-normal">{supportEmail}</span>
