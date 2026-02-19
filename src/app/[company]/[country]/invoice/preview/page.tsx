@@ -13,6 +13,7 @@ import {
   PaymentDetailsResponse,
   Comment,
 } from "@/utils/invoicePreview";
+import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -364,34 +365,41 @@ export default function InvoicePreviewPage() {
       <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="mx-auto max-w-7xl space-y-4 md:space-y-6">
           {voucher && (
-            <Card>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                  <div>
-                    <p className="text-xs text-gray-500">Invoice Number</p>
-                    <p className="text-lg font-semibold">{voucher.number}</p>
+            <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between rounded-xl bg-white px-5 py-4">
+                <div className="flex flex-row items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-1 rounded bg-gray-100 px-2 py-2">
+                    <ClipboardDocumentListIcon className="h-12 w-12 text-blue-500" />
                   </div>
-
-                  <div>
-                    <p className="text-xs text-gray-500">Due Date</p>
-                    <p className="text-lg font-semibold">{voucher.dueDate}</p>
-                  </div>
-
-                  <div className="sm:col-span-2 md:col-span-1">
-                    <p className="text-xs text-gray-500">Balance Due</p>
-                    <p className="text-xl font-bold text-blue-900">
-                      {paymentDetails?.currency?.symbol} {voucher.amount}
-                    </p>
+                  <div className="flex flex-col">
+                    <span className="mt-1 text-2xl font-semibold text-gray-900">
+                      {voucher.number}
+                    </span>
+                    {voucher.dueDate && (
+                      <span className="text-lg font-medium text-gray-600">{voucher.dueDate}</span>
+                    )}
                   </div>
                 </div>
 
-                {!voucher.canPay && voucher.message && (
-                  <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
-                    {voucher.message}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                <div className="mx-4 hidden h-10 w-px bg-gray-200 sm:block" />
+
+                <div className="text-right">
+                  <span className="text-sm font-medium uppercase tracking-wide text-gray-600">
+                    Balance Due
+                  </span>
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {paymentDetails?.currency?.symbol}{" "}
+                    {Number(voucher.amount).toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {!voucher.canPay && voucher.message && (
+                <p className="mt-4 text-sm text-red-600">{voucher.message}</p>
+              )}
+            </div>
           )}
 
           <Card>

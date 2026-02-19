@@ -34,6 +34,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   const hideSidebar = isLoginPage || isAuthPage;
 
+  const isInvoicePreview = pathname?.includes("/invoice/preview");
+  const isInvoicePay = pathname?.includes("/invoice-pay");
+  const isPaymentPreview = pathname?.includes("/payment/preview");
+  const isNoSessionFooterRoute = isInvoicePreview || isInvoicePay || isPaymentPreview;
+  const hasSession = companyName ? !!getSessionCookie(companyName) : false;
+  const showFooter = !(isNoSessionFooterRoute && !hasSession);
+
   if (hideSidebar) {
     return <>{children}</>;
   }
@@ -49,13 +56,15 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         style={{ willChange: "margin-left" }}
       >
         <div className="flex-1">{children}</div>
-        <Footer
-          companyName={companyDisplayName}
-          gstin={gstin ?? ""}
-          companyAddress={companyAddress ?? undefined}
-          supportEmail="support@giddh.com"
-          variant="full"
-        />
+        {showFooter && (
+          <Footer
+            companyName={companyDisplayName}
+            gstin={gstin ?? ""}
+            companyAddress={companyAddress ?? undefined}
+            supportEmail="support@giddh.com"
+            variant="full"
+          />
+        )}
       </main>
     </div>
   );

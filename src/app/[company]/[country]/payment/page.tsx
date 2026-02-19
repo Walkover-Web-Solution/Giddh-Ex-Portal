@@ -250,7 +250,6 @@ export default function PaymentsPage() {
               totalItems={totalItems}
               itemsPerPage={PAYMENT_PAGE_SIZE}
               onPageChange={setCurrentPage}
-              onItemsPerPageChange={() => {}}
             />
           )}
         </div>

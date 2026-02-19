@@ -55,8 +55,6 @@ export default function Magic() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
-  const [apiTotalItems, setApiTotalItems] = useState<number | undefined>(undefined);
-  const [apiTotalPages, setApiTotalPages] = useState<number | undefined>(undefined);
   const [apiDebitTransactionsCount, setApiDebitTransactionsCount] = useState<number | undefined>(
     undefined
   );
@@ -129,18 +127,9 @@ export default function Magic() {
         if (searchValue) {
           request.q = searchValue;
         }
-        // Workaround: when viewMode is undefined (backend not yet sending it), still send pagination
-        // and default to T_VIEW so the first request returns paginated data with prev/next tokens.
-        const effectiveViewForRequest =
-          viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW
-            ? viewMode
-            : LedgerView.T_VIEW;
-        if (
-          viewMode === LedgerView.STATEMENT_VIEW ||
-          viewMode === LedgerView.T_VIEW ||
-          viewMode === undefined
-        ) {
-          request.viewMode = effectiveViewForRequest;
+
+        if (viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) {
+          request.viewMode = viewMode;
           request.count = itemsPerPage;
           if (requestPaginationToken) {
             request.paginationToken = requestPaginationToken;
@@ -162,8 +151,6 @@ export default function Magic() {
             debitTransactions: apiDebitTransactions,
             creditTransactions: apiCreditTransactions,
             forwardedBalance: apiForwardedBalance,
-            apiTotalItems: responseApiTotalItems,
-            apiTotalPages: responseApiTotalPages,
             apiDebitTransactionsCount: responseApiDebitTransactionsCount,
             apiCreditTransactionsCount: responseApiCreditTransactionsCount,
             apiPrevToken: responseApiPrevToken,
@@ -171,8 +158,6 @@ export default function Magic() {
             apiPage: responseApiPage,
           } = result.data;
 
-          setApiTotalItems(responseApiTotalItems);
-          setApiTotalPages(responseApiTotalPages);
           setApiDebitTransactionsCount(responseApiDebitTransactionsCount);
           setApiCreditTransactionsCount(responseApiCreditTransactionsCount);
           setCurrentPage(responseApiPage ?? 1);
@@ -210,10 +195,15 @@ export default function Magic() {
           // Set selected currency from API: initial load uses transaction currency; refetch keeps user choice if still valid
           // Only when we have valid extracted currency (skip when no data so we don't set selectedCurrency to "")
           if (hasValidExtractedCurrency) {
-            const tCode = extractedCurrencyData.transactionCurrency?.code?.trim().toUpperCase();
-            const cCode = extractedCurrencyData.convertedCurrency?.code?.trim().toUpperCase();
+            const transactionCurrencyCode = extractedCurrencyData.transactionCurrency?.code
+              ?.trim()
+              .toUpperCase();
+            const convertedCurrencyCode = extractedCurrencyData.convertedCurrency?.code
+              ?.trim()
+              .toUpperCase();
             const selectedNorm = (selectedCurrency ?? "").trim().toUpperCase();
-            const isValidSelection = selectedNorm === tCode || selectedNorm === cCode;
+            const isValidSelection =
+              selectedNorm === transactionCurrencyCode || selectedNorm === convertedCurrencyCode;
             if (isInitialMount.current && extractedCurrencyData.transactionCurrency) {
               setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
             } else if (!isValidSelection && extractedCurrencyData.transactionCurrency) {
@@ -256,8 +246,6 @@ export default function Magic() {
           setCreditTransactions([]);
           setForwardedBalance(undefined);
           setLedgerBalance(undefined);
-          setApiTotalItems(undefined);
-          setApiTotalPages(undefined);
           setApiDebitTransactionsCount(undefined);
           setApiCreditTransactionsCount(undefined);
           setPrevToken(null);
@@ -271,8 +259,6 @@ export default function Magic() {
         setCreditTransactions([]);
         setForwardedBalance(undefined);
         setLedgerBalance(undefined);
-        setApiTotalItems(undefined);
-        setApiTotalPages(undefined);
         setApiDebitTransactionsCount(undefined);
         setApiCreditTransactionsCount(undefined);
         setPrevToken(null);
@@ -422,81 +408,7 @@ export default function Magic() {
     setRequestReversePage(false);
   }, [linkId, viewMode, searchQuery, fromDate.getTime(), toDate.getTime()]);
 
-  const totalEntries = useMemo(() => {
-    if (apiTotalItems != null) {
-      return apiTotalItems;
-    }
-    if (viewMode === LedgerView.STATEMENT_VIEW) {
-      const count = filteredDebitCreditTransactions?.length ?? 0;
-      return (forwardedBalance ? 1 : 0) + count;
-    }
-    const debitLength = filteredDebitTransactions?.length ?? 0;
-    const creditLength = filteredCreditTransactions?.length ?? 0;
-    const txLength = filteredTransactions?.length ?? 0;
-    return Math.max(debitLength, creditLength, txLength);
-  }, [
-    viewMode,
-    apiTotalItems,
-    forwardedBalance,
-    filteredDebitCreditTransactions?.length,
-    filteredDebitTransactions?.length,
-    filteredCreditTransactions?.length,
-    filteredTransactions?.length,
-  ]);
-
-  const paginatedStatementData = useMemo(() => {
-    if (viewMode !== LedgerView.STATEMENT_VIEW || !filteredDebitCreditTransactions) return null;
-    const list = filteredDebitCreditTransactions;
-    const hasForwarded = Boolean(forwardedBalance);
-    if (apiTotalPages != null && apiTotalPages > 1) {
-      return list;
-    }
-    const start = currentPage === 1 ? 0 : (currentPage - 1) * itemsPerPage - (hasForwarded ? 1 : 0);
-    const end =
-      currentPage === 1
-        ? itemsPerPage - (hasForwarded ? 1 : 0)
-        : currentPage * itemsPerPage - (hasForwarded ? 1 : 0);
-    return list.slice(start, end);
-  }, [
-    viewMode,
-    filteredDebitCreditTransactions,
-    forwardedBalance,
-    currentPage,
-    itemsPerPage,
-    apiTotalPages,
-  ]);
-
-  const paginatedTViewData = useMemo(() => {
-    if (viewMode !== LedgerView.T_VIEW) return null;
-    if (apiTotalPages != null && apiTotalPages > 1) {
-      return {
-        transactions: filteredTransactions,
-        debitTransactions: filteredDebitTransactions ?? [],
-        creditTransactions: filteredCreditTransactions ?? [],
-      };
-    }
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = currentPage * itemsPerPage;
-    return {
-      transactions: filteredTransactions.slice(start, end),
-      debitTransactions: (filteredDebitTransactions ?? []).slice(start, end),
-      creditTransactions: (filteredCreditTransactions ?? []).slice(start, end),
-    };
-  }, [
-    viewMode,
-    filteredTransactions,
-    filteredDebitTransactions,
-    filteredCreditTransactions,
-    currentPage,
-    itemsPerPage,
-    apiTotalPages,
-  ]);
-
-  const totalPages =
-    apiTotalPages != null
-      ? Math.max(1, apiTotalPages)
-      : Math.max(1, Math.ceil(totalEntries / itemsPerPage));
-  const hasMultiplePages = totalPages > 1;
+  const hasMultiplePages = !!(prevToken || nextToken);
 
   const summary = useMemo(
     () =>
@@ -507,7 +419,6 @@ export default function Magic() {
         filteredDebitCreditTransactions,
         filteredDebitTransactions,
         filteredCreditTransactions,
-        apiTotalTransactions: apiTotalItems,
         apiDebitCount: apiDebitTransactionsCount,
         apiCreditCount: apiCreditTransactionsCount,
       }),
@@ -518,7 +429,6 @@ export default function Magic() {
       filteredDebitCreditTransactions,
       filteredDebitTransactions,
       filteredCreditTransactions,
-      apiTotalItems,
       apiDebitTransactionsCount,
       apiCreditTransactionsCount,
     ]
@@ -574,8 +484,9 @@ export default function Magic() {
 
   if (error && transactions.length === 0) {
     return (
-      <div className="flex min-h-screen text-2xl items-center justify-center">
-        Magic link not found. The link may be invalid or expired. Please request a new statement link from the account owner.
+      <div className="flex min-h-screen items-center justify-center text-2xl">
+        Magic link not found. The link may be invalid or expired. Please request a new statement
+        link from the account owner.
       </div>
     );
   }
@@ -611,102 +522,84 @@ export default function Magic() {
           />
         </section>
 
-        {viewMode == null ? (
-          <section className="mb-4 flex min-h-[200px] items-center justify-center rounded-lg border border-gray-200 bg-gray-50/80 p-6 text-center sm:mb-6">
-            <p className="text-sm text-gray-600 sm:text-base">
-              Choose <strong>Statement View</strong> or <strong>T View</strong> above to display the
-              ledger.
-            </p>
-          </section>
-        ) : (
-          <section className="mb-4 sm:mb-6">
-            <LedgerTable
-              transactions={
-                viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
-                  ? paginatedTViewData.transactions
-                  : filteredTransactions
-              }
-              selectedCurrency={selectedCurrency}
-              viewMode={viewMode}
-              transactionCurrency={currencyData?.transactionCurrency}
-              convertedCurrency={currencyData?.convertedCurrency}
-              linkId={linkId}
-              debitCreditTransactions={
-                viewMode === LedgerView.STATEMENT_VIEW && hasMultiplePages
-                  ? (paginatedStatementData ?? undefined)
-                  : filteredDebitCreditTransactions && filteredDebitCreditTransactions.length > 0
-                    ? filteredDebitCreditTransactions
-                    : undefined
-              }
-              debitTransactions={
-                viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
-                  ? paginatedTViewData.debitTransactions
-                  : filteredDebitTransactions && filteredDebitTransactions.length > 0
-                    ? filteredDebitTransactions
-                    : undefined
-              }
-              creditTransactions={
-                viewMode === LedgerView.T_VIEW && hasMultiplePages && paginatedTViewData
-                  ? paginatedTViewData.creditTransactions
-                  : filteredCreditTransactions && filteredCreditTransactions.length > 0
-                    ? filteredCreditTransactions
-                    : undefined
-              }
-              forwardedBalance={
-                !hasMultiplePages || currentPage === 1
-                  ? (ledgerBalance?.forwardedBalance ?? forwardedBalance)
-                  : undefined
-              }
-              convertedForwardedBalance={
-                (!hasMultiplePages || currentPage === 1) && ledgerBalance?.convertedForwardedBalance
-                  ? ledgerBalance.convertedForwardedBalance
-                  : undefined
-              }
-              ledgerTotals={
-                ledgerBalance
-                  ? {
-                      totalDebit: ledgerBalance.debitTotal,
-                      totalCredit: ledgerBalance.creditTotal,
-                      convertedTotalDebit: ledgerBalance.convertedDebitTotal,
-                      convertedTotalCredit: ledgerBalance.convertedCreditTotal,
-                    }
-                  : undefined
-              }
-              pagination={undefined}
-            />
-            {hasMultiplePages &&
-              (viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) && (
-                <MagicPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalItems={totalEntries}
-                  itemsPerPage={itemsPerPage}
-                  hasPrevious={!!prevToken}
-                  hasNext={!!nextToken}
-                  onPrevious={() => {
-                    const token = prevTokenRef.current;
-                    if (token != null && token !== "") {
-                      setRequestReversePage(true);
-                      setRequestPaginationToken(token);
-                    }
-                  }}
-                  onNext={() => {
-                    const token = nextTokenRef.current;
-                    if (token != null && token !== "") {
-                      setRequestReversePage(false);
-                      setRequestPaginationToken(token);
-                    }
-                  }}
-                />
-              )}
-            <Footer
-              summary={summary}
-              companyCurrency={currencyData?.transactionCurrency}
-              convertedCurrency={currencyData?.convertedCurrency}
-              hideOpeningClosingBalance={!!debouncedSearchQuery.trim()}
-            />
-          </section>
-        )}
+        <section className="mb-4 sm:mb-6">
+          <LedgerTable
+            transactions={filteredTransactions}
+            selectedCurrency={selectedCurrency}
+            viewMode={viewMode}
+            transactionCurrency={currencyData?.transactionCurrency}
+            convertedCurrency={currencyData?.convertedCurrency}
+            linkId={linkId}
+            debitCreditTransactions={
+              viewMode === LedgerView.STATEMENT_VIEW &&
+              filteredDebitCreditTransactions &&
+              filteredDebitCreditTransactions.length > 0
+                ? filteredDebitCreditTransactions
+                : undefined
+            }
+            debitTransactions={
+              (viewMode === LedgerView.T_VIEW || viewMode === undefined) &&
+              (filteredDebitTransactions?.length ?? 0) > 0
+                ? (filteredDebitTransactions ?? [])
+                : undefined
+            }
+            creditTransactions={
+              (viewMode === LedgerView.T_VIEW || viewMode === undefined) &&
+              (filteredCreditTransactions?.length ?? 0) > 0
+                ? (filteredCreditTransactions ?? [])
+                : undefined
+            }
+            forwardedBalance={
+              !hasMultiplePages || currentPage === 1
+                ? (ledgerBalance?.forwardedBalance ?? forwardedBalance)
+                : undefined
+            }
+            convertedForwardedBalance={
+              (!hasMultiplePages || currentPage === 1) && ledgerBalance?.convertedForwardedBalance
+                ? ledgerBalance.convertedForwardedBalance
+                : undefined
+            }
+            ledgerTotals={
+              ledgerBalance
+                ? {
+                    totalDebit: ledgerBalance.debitTotal,
+                    totalCredit: ledgerBalance.creditTotal,
+                    convertedTotalDebit: ledgerBalance.convertedDebitTotal,
+                    convertedTotalCredit: ledgerBalance.convertedCreditTotal,
+                  }
+                : undefined
+            }
+            pagination={undefined}
+          />
+          {hasMultiplePages &&
+            (viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) && (
+              <MagicPagination
+                currentPage={currentPage}
+                hasPrevious={!!prevToken}
+                hasNext={!!nextToken}
+                onPrevious={() => {
+                  const token = prevTokenRef.current;
+                  if (token != null && token !== "") {
+                    setRequestReversePage(true);
+                    setRequestPaginationToken(token);
+                  }
+                }}
+                onNext={() => {
+                  const token = nextTokenRef.current;
+                  if (token != null && token !== "") {
+                    setRequestReversePage(false);
+                    setRequestPaginationToken(token);
+                  }
+                }}
+              />
+            )}
+          <Footer
+            summary={summary}
+            companyCurrency={currencyData?.transactionCurrency}
+            convertedCurrency={currencyData?.convertedCurrency}
+            hideOpeningClosingBalance={!!debouncedSearchQuery.trim()}
+          />
+        </section>
       </main>
     </div>
   );

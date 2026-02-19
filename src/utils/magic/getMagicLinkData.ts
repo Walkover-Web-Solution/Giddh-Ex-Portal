@@ -259,8 +259,6 @@ export const getMagicLinkData = async (
         from: lt.from,
         to: lt.to,
       },
-      apiTotalItems: lt.totalItems ?? body.totalItems,
-      apiTotalPages: lt.totalPages ?? body.totalPages,
       apiPage: lt.page ?? body.page,
       apiCount: lt.count ?? body.count,
       apiDebitTransactionsCount: lt.debitTransactionsCount,

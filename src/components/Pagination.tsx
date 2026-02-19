@@ -10,7 +10,7 @@ export interface PaginationProps {
   totalItems: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
-  onItemsPerPageChange: (items: number) => void;
+  onItemsPerPageChange?: (items: number) => void;
   pageSizeOptions?: number[];
 }
 
@@ -27,7 +27,6 @@ export function Pagination({
   totalItems,
   itemsPerPage,
   onPageChange,
-  onItemsPerPageChange,
   pageSizeOptions = PAGE_SIZE_OPTIONS,
 }: PaginationProps) {
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
