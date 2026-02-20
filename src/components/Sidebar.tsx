@@ -16,7 +16,12 @@ import { mergeClassNames } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { clearCompanyData, logoutCompany, selectUserDetails } from "@/store/slices/companySlice";
+import {
+  clearCompanyData,
+  logoutCompany,
+  selectUserDetails,
+  selectCompanyDisplayName,
+} from "@/store/slices/companySlice";
 import { getSessionCookie } from "@/utils/cookies";
 
 const navItems = [
@@ -38,6 +43,7 @@ export function Sidebar() {
   const country = params?.country as string;
 
   const user = useAppSelector(selectUserDetails(company));
+  const companyDisplayName = useAppSelector(selectCompanyDisplayName(company));
   const initials =
     user?.name
       ?.split(" ")
@@ -75,40 +81,57 @@ export function Sidebar() {
         <div className="relative flex grow flex-col">
           <div
             className={mergeClassNames(
-              "relative flex h-16 shrink-0 items-center",
-              isCollapsed && "md:justify-center"
+              "relative flex shrink-0 flex-col gap-1",
+              isCollapsed && "md:items-center"
             )}
           >
             <div
               className={mergeClassNames(
-                "flex shrink-0 items-center gap-1",
-                !isCollapsed && "md:ml-auto"
+                "flex h-16 shrink-0 items-center",
+                isCollapsed ? "md:justify-center" : "justify-between"
               )}
             >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={toggleCollapsed}
-                className="hidden text-black hover:bg-gray-50 hover:text-blue-900 md:flex"
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              >
-                {isCollapsed ? (
-                  <ChevronRightIcon className="size-6" aria-hidden />
-                ) : (
-                  <ChevronLeftIcon className="size-6" aria-hidden />
+              {hasSession && companyDisplayName && (!isCollapsed || isMobileOpen) && (
+                <p
+                  className="text-md truncate font-medium text-gray-700"
+                  title={companyDisplayName}
+                >
+                  {companyDisplayName}
+                </p>
+              )}
+
+              <div
+                className={mergeClassNames(
+                  "flex shrink-0 items-center gap-1",
+                  !isCollapsed && "md:ml-auto"
                 )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={closeMobile}
-                className="md:hidden"
-                aria-label="Close sidebar"
               >
-                <XMarkIcon className="size-5" aria-hidden />
-              </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleCollapsed}
+                  className="hidden text-black hover:bg-gray-50 hover:text-blue-900 md:flex"
+                  aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  {isCollapsed ? (
+                    <ChevronRightIcon className="size-6" aria-hidden />
+                  ) : (
+                    <ChevronLeftIcon className="size-6" aria-hidden />
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeMobile}
+                  className="md:hidden"
+                  aria-label="Close sidebar"
+                >
+                  <XMarkIcon className="size-5" aria-hidden />
+                </Button>
+              </div>
             </div>
           </div>
 

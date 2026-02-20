@@ -152,21 +152,17 @@ export default function Auth() {
           goToLogin();
         }
       } catch (err: unknown) {
-        logger.error("Error during authentication", err);
         const error = err as {
           response?: { status?: number; data?: { message?: string } };
           message?: string;
         };
         const apiMessage =
-          error.response?.status === 406
-            ? "Server could not return data in the expected format. Please try again or contact support."
-            : (error.response?.data?.message ??
-              (err instanceof Error
-                ? err.message
-                : typeof err === "string"
-                  ? err
-                  : "Authentication failed. Please try again."));
-        showToast(apiMessage, "error");
+          error.response?.data?.message ??
+          (err instanceof Error ? err.message : typeof err === "string" ? err : null);
+        if (!error.response?.data?.message) {
+          logger.error("Error during authentication", err);
+        }
+        if (apiMessage) showToast(apiMessage, "error");
         goToLogin();
       }
     };
