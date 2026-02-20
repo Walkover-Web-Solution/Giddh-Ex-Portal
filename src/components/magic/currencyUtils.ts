@@ -7,20 +7,22 @@ export interface CurrencyConfig {
   secondaryCurrency?: CurrencyInfo;
 }
 
+export function normalizeCode(code: string | undefined): string {
+  return (code ?? "").trim().toUpperCase();
+}
+
 export function getCurrencyConfig(
   selectedCurrency: Currency,
   transactionCurrency?: CurrencyInfo,
   convertedCurrency?: CurrencyInfo
 ): CurrencyConfig {
-  const hasMultipleCurrencies: boolean = !!(
-    transactionCurrency?.code &&
-    convertedCurrency?.code &&
-    transactionCurrency.code !== convertedCurrency.code
-  );
+  const transactionCode = normalizeCode(transactionCurrency?.code);
+  const convertedCode = normalizeCode(convertedCurrency?.code);
+  const hasMultipleCurrencies =
+    transactionCode.length > 0 && convertedCode.length > 0 && transactionCode !== convertedCode;
 
-  const isConvertedCurrencySelected: boolean = !!(
-    hasMultipleCurrencies && selectedCurrency === convertedCurrency?.code
-  );
+  const selectedNorm = normalizeCode(selectedCurrency);
+  const isConvertedCurrencySelected = hasMultipleCurrencies && selectedNorm === convertedCode;
 
   const primaryCurrency = isConvertedCurrencySelected ? convertedCurrency : transactionCurrency;
 

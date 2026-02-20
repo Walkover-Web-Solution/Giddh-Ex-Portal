@@ -55,7 +55,7 @@ export function StatementViewTable({
   const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<string | null>(null);
 
   const handleDownload = async (transaction: LedgerTransaction, index: number) => {
-    if (!transaction.voucherNumber || !transaction.voucherName) return;
+    if (!transaction?.voucherNumber || !transaction?.voucherName) return;
 
     const transactionId = `tx-${index}-${transaction.entryUniqueName ?? transaction.voucherNumber}`;
     if (downloadingTransactionId === transactionId) return;
@@ -105,12 +105,13 @@ export function StatementViewTable({
   const displayTransactions = useMemo(() => {
     if (!debitCreditTransactions?.length) return [];
 
-    const rows = debitCreditTransactions.map(
-      (transaction) =>
-        transformLedgerTransactionToDisplay(transaction, true) as Transaction & {
-          transaction: LedgerTransaction;
-        }
-    );
+    const rows = debitCreditTransactions.map((tx) => {
+      const row = transformLedgerTransactionToDisplay(tx, true) as Transaction & {
+        transaction: LedgerTransaction;
+      };
+      (row as Transaction & { transaction: LedgerTransaction }).transaction = tx;
+      return row;
+    });
 
     if (forwardedBalance) {
       const isCredit = forwardedBalance.type === LEDGER_TYPE_CREDIT;
@@ -195,7 +196,7 @@ export function StatementViewTable({
     attachmentTitle,
   }: any) => (
     <div className="flex items-center justify-end gap-2">
-      <div className="text-right">
+      <div className="whitespace-nowrap text-right">
         <div className="font-medium">
           {format(
             getAmount(amount, convertedAmount, isConvertedCurrencySelected),
@@ -205,7 +206,7 @@ export function StatementViewTable({
 
         {hasMultipleCurrencies &&
           getAmount(amount, convertedAmount, !isConvertedCurrencySelected) !== null && (
-            <div className="text-[10px] text-blue-900/60">
+            <div className="whitespace-nowrap text-[10px] text-blue-900/60">
               {format(
                 getAmount(amount, convertedAmount, !isConvertedCurrencySelected),
                 secondaryCurrency?.symbol
@@ -359,7 +360,7 @@ export function StatementViewTable({
                   ) : (
                     <>
                       <div className="flex items-center justify-end gap-1">
-                        <span className="font-medium text-gray-900">
+                        <span className="whitespace-nowrap font-medium text-gray-900">
                           {format(
                             getAmount(
                               item.closingBalance,
@@ -378,7 +379,7 @@ export function StatementViewTable({
                           item.closingBalanceConverted,
                           !isConvertedCurrencySelected
                         ) !== null && (
-                          <div className="text-right text-[10px] text-gray-500">
+                          <div className="whitespace-nowrap text-right text-[10px] text-gray-500">
                             {format(
                               getAmount(
                                 item.closingBalance,
@@ -403,7 +404,7 @@ export function StatementViewTable({
               Total
             </td>
             <td className="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-900">
-              <div>
+              <div className="whitespace-nowrap">
                 {format(
                   getAmount(totalDebit, totalDebitConverted, isConvertedCurrencySelected),
                   primaryCurrency?.symbol
@@ -412,7 +413,7 @@ export function StatementViewTable({
               {hasMultipleCurrencies &&
                 getAmount(totalDebit, totalDebitConverted, !isConvertedCurrencySelected) !=
                   null && (
-                  <div className="text-[10px] font-normal text-blue-900/60">
+                  <div className="whitespace-nowrap text-[10px] font-normal text-blue-900/60">
                     {format(
                       getAmount(totalDebit, totalDebitConverted, !isConvertedCurrencySelected),
                       secondaryCurrency?.symbol
@@ -421,7 +422,7 @@ export function StatementViewTable({
                 )}
             </td>
             <td className="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-900">
-              <div>
+              <div className="whitespace-nowrap">
                 {format(
                   getAmount(totalCredit, totalCreditConverted, isConvertedCurrencySelected),
                   primaryCurrency?.symbol
@@ -430,7 +431,7 @@ export function StatementViewTable({
               {hasMultipleCurrencies &&
                 getAmount(totalCredit, totalCreditConverted, !isConvertedCurrencySelected) !=
                   null && (
-                  <div className="text-[10px] font-normal text-blue-900/60">
+                  <div className="whitespace-nowrap text-[10px] font-normal text-blue-900/60">
                     {format(
                       getAmount(totalCredit, totalCreditConverted, !isConvertedCurrencySelected),
                       secondaryCurrency?.symbol

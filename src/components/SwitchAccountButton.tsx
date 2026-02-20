@@ -82,7 +82,10 @@ export function SwitchAccountButton() {
       }
     } catch (err: any) {
       logger.error("Error fetching accounts", err);
-      if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
+      const apiMessage = err.response?.data?.message;
+      if (apiMessage) {
+        setError(apiMessage);
+      } else if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
         setError("Request timed out. Please check your connection and try again.");
       } else if (err.response?.status === 401 || err.response?.status === 403) {
         setError("Session expired. Please log in again.");
@@ -150,13 +153,17 @@ export function SwitchAccountButton() {
         router.refresh();
         window.location.reload();
       } else {
-        setError("Failed to switch account");
+        const msg = (sessionResponse as { message?: string }).message ?? "Failed to switch account";
+        setError(msg);
         setLoading(false);
         isProcessing.current = false;
       }
     } catch (err: any) {
       logger.error("Error during account switch", err);
-      if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
+      const apiMessage = err.response?.data?.message;
+      if (apiMessage) {
+        setError(apiMessage);
+      } else if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
         setError("Request timed out. Please check your connection and try again.");
       } else if (err.response?.status === 401 || err.response?.status === 403) {
         setError("Session expired. Please log in again.");

@@ -56,6 +56,7 @@ export interface AccountStatementResponse {
     accountSummary: AccountSummary;
     transactionDetailList: Transaction[];
     totalItems: number;
+    totalPages?: number;
   };
 }
 

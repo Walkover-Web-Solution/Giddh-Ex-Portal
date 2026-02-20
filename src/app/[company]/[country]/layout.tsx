@@ -11,6 +11,7 @@ import {
   selectAccountUniqueName,
   selectCompanyAddress,
   selectCompanyGstin,
+  selectCompanyDisplayName,
 } from "@/store/slices/companySlice";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { Sidebar } from "@/components/Sidebar";
@@ -24,6 +25,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const params = useParams();
   const companyName = params?.company as string;
+  const companyDisplayName = useAppSelector(selectCompanyDisplayName(companyName)) ?? "";
   const companyAddress = useAppSelector(selectCompanyAddress(companyName));
   const gstin = useAppSelector(selectCompanyGstin(companyName));
 
@@ -31,6 +33,13 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const isAuthPage = pathname?.includes("/auth");
 
   const hideSidebar = isLoginPage || isAuthPage;
+
+  const isInvoicePreview = pathname?.includes("/invoice/preview");
+  const isInvoicePay = pathname?.includes("/invoice-pay");
+  const isPaymentPreview = pathname?.includes("/payment/preview");
+  const isNoSessionFooterRoute = isInvoicePreview || isInvoicePay || isPaymentPreview;
+  const hasSession = companyName ? !!getSessionCookie(companyName) : false;
+  const showFooter = !(isNoSessionFooterRoute && !hasSession);
 
   if (hideSidebar) {
     return <>{children}</>;
@@ -47,13 +56,15 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         style={{ willChange: "margin-left" }}
       >
         <div className="flex-1">{children}</div>
-        <Footer
-          companyName={companyName || ""}
-          gstin={gstin ?? ""}
-          companyAddress={companyAddress ?? undefined}
-          supportEmail="support@giddh.com"
-          variant="full"
-        />
+        {showFooter && (
+          <Footer
+            companyName={companyDisplayName}
+            gstin={gstin ?? ""}
+            companyAddress={companyAddress ?? undefined}
+            supportEmail="support@giddh.com"
+            variant="full"
+          />
+        )}
       </main>
     </div>
   );

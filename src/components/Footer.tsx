@@ -35,23 +35,25 @@ export function Footer({
     <footer className="bg-white">
       <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center gap-x-6 md:order-1 md:justify-start">
-          <span className="text-xl font-bold uppercase tracking-wide text-blue-900">
-            {config.BRAND_NAME}
-          </span>
+          <img src={config?.LOGOS?.primary} alt="Giddh Logo" className="h-8 w-auto" />
         </div>
 
         <div className="text-md mt-4 text-center text-gray-600 md:order-2 md:mt-0">
-          <p className="font-semibold text-gray-800">{companyName}</p>
+          {companyName ? (
+            <p className="text-xl font-semibold text-gray-800">{companyName}</p>
+          ) : null}
 
-          {companyAddress && <p className="mt-0.5 text-sm text-gray-500">{companyAddress}</p>}
+          {companyAddress && (
+            <p className="mt-0.5 text-sm font-medium text-gray-600">{companyAddress}</p>
+          )}
 
-          {gstin && <p className="mt-0.5 text-xs text-gray-500">GSTIN: {gstin}</p>}
+          {gstin && <p className="mt-0.5 text-sm font-medium text-gray-600">GSTIN: {gstin}</p>}
         </div>
         <div className="mt-4 text-center md:order-3 md:mt-0 md:text-right">
-          <p className="text-xs font-medium text-gray-900">Contact Us</p>
+          <p className="text-md font-medium text-gray-900">Contact Us</p>
           <a
             href={`mailto:${supportEmail}`}
-            className="mt-1 inline-flex items-center justify-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 md:justify-end"
+            className="mt-1 inline-flex items-center justify-center gap-1.5 text-sm text-gray-600 hover:text-blue-600 md:justify-end"
           >
             <EnvelopeIcon className="h-4 w-4" />
             <span className="break-all sm:break-normal">{supportEmail}</span>

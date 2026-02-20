@@ -9,8 +9,9 @@ import PersistGateLoading from "@/components/PersistGateLoading";
 function ConditionalPersistGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isMagicPage = pathname?.startsWith("/magic");
+  const isRootAuthPage = pathname === "/auth";
 
-  if (isMagicPage) {
+  if (isMagicPage || isRootAuthPage) {
     return (
       <PersistGate loading={null} persistor={persistor}>
         {children}

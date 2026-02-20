@@ -6,6 +6,7 @@ export interface AccountAddress {
   address: string;
   stateCode: string;
   pincode: string;
+  stateName?: string;
   state: {
     stateGstCode: string;
     name: string;
@@ -19,6 +20,7 @@ export interface AccountDetailsResponse {
     name: string;
     email: string;
     countryName: string;
+    country?: { countryName: string; countryCode: string };
     addresses: AccountAddress[];
     attentionTo: string;
     mobileNo: string;

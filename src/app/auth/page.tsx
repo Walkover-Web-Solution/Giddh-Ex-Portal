@@ -5,13 +5,12 @@ import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
 import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectAllCompanies } from "@/store/slices/companySlice";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { sessionManager } from "@/utils/sessionManager";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { ErrorMessage } from "@/components/ErrorMessage";
 import { logger } from "@/utils/logger";
 import { useConfig } from "@/contexts/ConfigContext";
 import { useToast } from "@/contexts/ToastContext";
@@ -37,10 +36,47 @@ export default function Auth() {
     Object.values(allCompanies)[0]?.country ||
     (typeof window !== "undefined" ? sessionStorage.getItem("country") : null);
 
-  const [error, setError] = useState<string | null>(null);
   const hasCalledRef = useRef(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const search = window.location.search || "";
+    const hasDuplicateAuth = search.includes("/auth?");
+    if (!hasDuplicateAuth) return;
+    const tokenFromUrl = searchParams.get("proxy_auth_token");
+    const companyFromUrl = searchParams.get("company");
+    const countryFromUrl = searchParams.get("country");
+    if (!tokenFromUrl) return;
+    const params = new URLSearchParams();
+    params.set("proxy_auth_token", tokenFromUrl);
+    if (companyFromUrl) params.set("company", companyFromUrl);
+    if (countryFromUrl) params.set("country", countryFromUrl);
+    const cleanQuery = params.toString();
+    if (window.location.search !== `?${cleanQuery}`) {
+      router.replace(`/auth?${cleanQuery}`, { scroll: false });
+    }
+  }, [router, searchParams]);
+
+  useEffect(() => {
+    const goToLogin = () => {
+      if (companyName && country) {
+        router.push(`/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/login`);
+      } else {
+        router.push("/");
+      }
+    };
+
+    // Token present but company/country missing (e.g. link from Giddh without company param)
+    if (token && !configLoading && !companyName && !hasCalledRef.current) {
+      hasCalledRef.current = true;
+      showToast(
+        "This sign-in link is incomplete. Please use the portal link from your invitation (it should open from your company's portal URL).",
+        "error"
+      );
+      router.replace("/");
+      return;
+    }
+
     const authenticateUser = async () => {
       if (!token || !companyName || hasCalledRef.current || configLoading) return;
 
@@ -101,41 +137,42 @@ export default function Auth() {
               const msg =
                 (sessionResponse as { message?: string }).message ?? "Failed to save session";
               showToast(msg, "error");
-              setError(msg);
+              goToLogin();
             }
           } else {
             const msg =
               (verifyResponse as { message?: string }).message ?? "User verification failed";
             showToast(msg, "error");
-            setError(msg);
+            goToLogin();
           }
         } else {
           const msg =
             (detailsResponse as { message?: string }).message ?? "Failed to get user details";
           showToast(msg, "error");
-          setError(msg);
+          goToLogin();
         }
       } catch (err: unknown) {
-        logger.error("Error during authentication", err);
+        const error = err as {
+          response?: { status?: number; data?: { message?: string } };
+          message?: string;
+        };
         const apiMessage =
-          (err as { response?: { data?: { message?: string } }; message?: string }).response?.data
-            ?.message ??
-          (err instanceof Error
-            ? err.message
-            : typeof err === "string"
-              ? err
-              : "Authentication failed. Please try again.");
-        showToast(apiMessage, "error");
-        setError("Authentication failed. Please try again.");
+          error.response?.data?.message ??
+          (err instanceof Error ? err.message : typeof err === "string" ? err : null);
+        if (!error.response?.data?.message) {
+          logger.error("Error during authentication", err);
+        }
+        if (apiMessage) showToast(apiMessage, "error");
+        goToLogin();
       }
     };
 
     authenticateUser();
-  }, [token, companyName, country, router, configLoading]);
+  }, [token, companyName, country, router, configLoading, showToast]);
 
-  if (error) {
-    return <ErrorMessage message={error} onRetry={() => router.push("/")} variant="page" />;
+  if (token) {
+    return <LoadingSpinner message="Signing you in..." />;
   }
 
-  return <LoadingSpinner message="Authenticating..." variant="brand" />;
+  return null;
 }

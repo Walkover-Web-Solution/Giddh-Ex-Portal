@@ -26,7 +26,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
-import { FileType, EXPORT_FILE_CONFIG, PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { FileType, EXPORT_FILE_CONFIG, PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { useToast } from "@/contexts/ToastContext";
 
@@ -56,6 +56,7 @@ export default function AccountStatementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);
   const { showToast } = useToast();
 
@@ -116,7 +117,12 @@ export default function AccountStatementPage() {
         setCompanyAddress(response.body.companyGstAddress);
         setAccountName(response.body.accountName);
         setCompanyNameState(response.body.companyName);
-        setTotalItems(response.body.totalItems);
+        const items = response.body.totalItems ?? 0;
+        setTotalItems(items);
+        const pages =
+          response.body.totalPages ??
+          (itemsPerPage > 0 ? Math.max(1, Math.ceil(items / itemsPerPage)) : 1);
+        setTotalPages(pages);
       } else {
         setError("Failed to load account statement");
       }
@@ -258,11 +264,6 @@ export default function AccountStatementPage() {
     [accountAddress?.currency?.symbol]
   );
 
-  const effectiveTotal =
-    transactions.length < itemsPerPage && transactions.length > 0
-      ? (currentPage - 1) * itemsPerPage + transactions.length
-      : totalItems;
-
   return (
     <>
       <header className="border-b bg-white px-6 py-4">
@@ -286,7 +287,7 @@ export default function AccountStatementPage() {
           ) : (
             <Card>
               <CardHeader className="border-b">
-                <div className="flex flex-col gap-6 py-2 md:flex-row md:justify-between">
+                <div className="flex flex-col gap-4 md:flex-row md:justify-between">
                   <div className="text-md text-gray-600">
                     <h2 className="text- mb-1 font-bold text-black">{accountName}</h2>
                     {accountAddress && (
@@ -300,6 +301,7 @@ export default function AccountStatementPage() {
                             {accountAddress.taxType} : {accountAddress.taxNumber}
                           </p>
                         )}
+                        {accountAddress.email && <p>Email: {accountAddress.email}</p>}
                         {accountAddress.mobileNo && <p>Mobile No: {accountAddress.mobileNo}</p>}
                       </>
                     )}
@@ -308,7 +310,16 @@ export default function AccountStatementPage() {
                     <h2 className="mb-1 font-bold text-black">{companyNameState}</h2>
                     {companyAddress && (
                       <>
+                        {companyAddress.address && <p>Address: {companyAddress.address}</p>}
+                        {companyAddress.stateName && <p>{companyAddress.stateName}</p>}
                         {companyAddress.countryName && <p>{companyAddress.countryName}</p>}
+                        {companyAddress.pinCode && <p>{companyAddress.pinCode}</p>}
+                        {companyAddress.taxType && companyAddress.taxNumber && (
+                          <p>
+                            {companyAddress.taxType} : {companyAddress.taxNumber}
+                          </p>
+                        )}
+                        {companyAddress.email && <p>Email: {companyAddress.email}</p>}
                         {companyAddress.mobileNo && <p>Mobile No: {companyAddress.mobileNo}</p>}
                       </>
                     )}
@@ -326,7 +337,7 @@ export default function AccountStatementPage() {
 
                 {summary && (
                   <div className="mt-6 flex md:justify-end">
-                    <div className="w-full md:max-w-sm">
+                    <div className="w-full py-2 md:max-w-sm">
                       <div className="rounded-lg bg-gray-100">
                         <div className="bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-900">
                           Account Summary
@@ -374,7 +385,7 @@ export default function AccountStatementPage() {
               </CardHeader>
 
               <CardContent>
-                <div className="mb-4 flex flex-row items-center justify-between gap-3">
+                <div className="mb-4 flex flex-row items-center justify-between gap-3 py-4">
                   <DateRangeCalendar
                     fromDate={fromDate}
                     toDate={toDate}
@@ -422,20 +433,17 @@ export default function AccountStatementPage() {
                   }
                 />
 
-                <div className="mt-4">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={Math.max(1, Math.ceil(effectiveTotal / itemsPerPage))}
-                    totalItems={effectiveTotal}
-                    itemsPerPage={itemsPerPage}
-                    pageSizeOptions={PAGE_SIZE_OPTIONS}
-                    onPageChange={setCurrentPage}
-                    onItemsPerPageChange={(newSize) => {
-                      setItemsPerPage(newSize);
-                      setCurrentPage(1);
-                    }}
-                  />
-                </div>
+                {totalPages > 1 && (
+                  <div className="mt-4">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalItems={totalItems}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setCurrentPage}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

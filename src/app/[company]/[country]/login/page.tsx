@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { setCompanyData } from "@/store/slices/companySlice";
@@ -11,6 +11,7 @@ import { useAppConfig } from "@/hooks/useAppConfig";
 export default function LoginPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const { referenceId } = useAppConfig();
   const company = params?.company as string;
@@ -22,6 +23,13 @@ export default function LoginPage() {
       sessionManager.setCompanyData(company, country);
     }
   }, [company, country, dispatch]);
+
+  useEffect(() => {
+    const token = searchParams.get("proxy_auth_token");
+    if (!token || !company || !country) return;
+    const authUrl = `/auth?proxy_auth_token=${encodeURIComponent(token)}&company=${encodeURIComponent(company)}&country=${encodeURIComponent(country)}`;
+    router.replace(authUrl);
+  }, [company, country, router, searchParams]);
 
   useEffect(() => {
     if (company && country) {

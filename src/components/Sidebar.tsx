@@ -16,7 +16,13 @@ import { mergeClassNames } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { clearCompanyData, logoutCompany, selectUserDetails } from "@/store/slices/companySlice";
+import {
+  clearCompanyData,
+  logoutCompany,
+  selectUserDetails,
+  selectCompanyDisplayName,
+} from "@/store/slices/companySlice";
+import { getSessionCookie } from "@/utils/cookies";
 
 const navItems = [
   { name: "Home", path: "welcome", icon: HomeIcon },
@@ -37,6 +43,7 @@ export function Sidebar() {
   const country = params?.country as string;
 
   const user = useAppSelector(selectUserDetails(company));
+  const companyDisplayName = useAppSelector(selectCompanyDisplayName(company));
   const initials =
     user?.name
       ?.split(" ")
@@ -44,6 +51,11 @@ export function Sidebar() {
       .slice(0, 2)
       .join("")
       .toUpperCase() || "U";
+
+  const guestRoutes = ["/invoice/preview", "/payment/preview", "/invoice-pay"];
+  const isGuestRoute = guestRoutes.some((route) => pathname?.includes(route));
+  const hasSession = company ? !!getSessionCookie(company) : false;
+  const showUserBlock = !isGuestRoute || hasSession;
 
   const handleLogout = () => {
     logoutCompany(company);
@@ -66,43 +78,60 @@ export function Sidebar() {
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
-        <div className="relative flex grow flex-col gap-y-5">
+        <div className="relative flex grow flex-col">
           <div
             className={mergeClassNames(
-              "relative flex h-16 shrink-0 items-center",
-              isCollapsed && "md:justify-center"
+              "relative flex shrink-0 flex-col gap-1",
+              isCollapsed && "md:items-center"
             )}
           >
-            {(!isCollapsed || isMobileOpen) && (
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-blue-900">
-                {company}
-              </span>
-            )}
-            <div className="flex shrink-0 items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={toggleCollapsed}
-                className="hidden text-black hover:bg-gray-50 hover:text-blue-900 md:flex"
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              >
-                {isCollapsed ? (
-                  <ChevronRightIcon className="size-6" aria-hidden />
-                ) : (
-                  <ChevronLeftIcon className="size-6" aria-hidden />
+            <div
+              className={mergeClassNames(
+                "flex h-16 shrink-0 items-center",
+                isCollapsed ? "md:justify-center" : "justify-between"
+              )}
+            >
+              {hasSession && companyDisplayName && (!isCollapsed || isMobileOpen) && (
+                <p
+                  className="text-md truncate font-medium text-gray-700"
+                  title={companyDisplayName}
+                >
+                  {companyDisplayName}
+                </p>
+              )}
+
+              <div
+                className={mergeClassNames(
+                  "flex shrink-0 items-center gap-1",
+                  !isCollapsed && "md:ml-auto"
                 )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={closeMobile}
-                className="md:hidden"
-                aria-label="Close sidebar"
               >
-                <XMarkIcon className="size-5" aria-hidden />
-              </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleCollapsed}
+                  className="hidden text-black hover:bg-gray-50 hover:text-blue-900 md:flex"
+                  aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  {isCollapsed ? (
+                    <ChevronRightIcon className="size-6" aria-hidden />
+                  ) : (
+                    <ChevronLeftIcon className="size-6" aria-hidden />
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeMobile}
+                  className="md:hidden"
+                  aria-label="Close sidebar"
+                >
+                  <XMarkIcon className="size-5" aria-hidden />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -152,76 +181,77 @@ export function Sidebar() {
         </div>
 
         <div className={mergeClassNames("-mx-6 mt-auto", isCollapsed && "md:mx-0")}>
-          {!isCollapsed || isMobileOpen ? (
-            <div className="flex items-center gap-x-2 px-6 py-3 md:gap-x-4">
-              <Link
-                href={`/${company}/${country}/details`}
-                onClick={closeMobile}
-                className="flex min-w-0 flex-1 items-center gap-x-4 rounded-md py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
-              >
-                <span
-                  className={mergeClassNames(
-                    "flex size-8 shrink-0 items-center justify-center rounded-full border bg-white text-xs font-medium outline -outline-offset-1 outline-black/5",
-                    "border-gray-200 text-gray-600"
-                  )}
+          {showUserBlock &&
+            (!isCollapsed || isMobileOpen ? (
+              <div className="flex items-center gap-x-2 px-6 py-3 md:gap-x-4">
+                <Link
+                  href={`/${company}/${country}/details`}
+                  onClick={closeMobile}
+                  className="flex min-w-0 flex-1 items-center gap-x-4 rounded-md py-2 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+                >
+                  <span
+                    className={mergeClassNames(
+                      "flex size-8 shrink-0 items-center justify-center rounded-full border bg-white text-xs font-medium outline -outline-offset-1 outline-black/5",
+                      "border-gray-200 text-gray-600"
+                    )}
+                  >
+                    {initials}
+                  </span>
+                  <span className="truncate" aria-hidden>
+                    {user?.name}
+                  </span>
+                </Link>
+                <div className="group/logout relative shrink-0">
+                  <span
+                    className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/logout:opacity-100"
+                    role="tooltip"
+                  >
+                    Logout
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleLogout}
+                    className="shrink-0 text-gray-400 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
+                    aria-label="Logout"
+                  >
+                    <ArrowRightOnRectangleIcon
+                      className="!h-[32px] !w-[24px] !text-gray-600"
+                      aria-hidden
+                    />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2 px-2 pb-4">
+                <Link
+                  href={`/${company}/${country}/details`}
+                  onClick={closeMobile}
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-xs font-medium text-gray-600 outline -outline-offset-1 outline-black/5 transition-opacity hover:border-blue-900 hover:text-blue-900 hover:opacity-80"
+                  title={user?.name}
                 >
                   {initials}
-                </span>
-                <span className="truncate" aria-hidden>
-                  {user?.name}
-                </span>
-              </Link>
-              <div className="group/logout relative shrink-0">
-                <span
-                  className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/logout:opacity-100"
-                  role="tooltip"
-                >
-                  Logout
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={handleLogout}
-                  className="shrink-0 text-gray-400 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
-                  aria-label="Logout"
-                >
-                  <ArrowRightOnRectangleIcon
-                    className="!h-[32px] !w-[24px] !text-gray-600"
-                    aria-hidden
-                  />
-                </Button>
+                </Link>
+                <div className="group/logout relative shrink-0">
+                  <span
+                    className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/logout:opacity-100"
+                    role="tooltip"
+                  >
+                    Logout
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="!h-12 !w-12 shrink-0 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
+                    aria-label="Logout"
+                  >
+                    <ArrowRightOnRectangleIcon className="size-6 !text-black" aria-hidden />
+                  </Button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2 px-2 pb-4">
-              <Link
-                href={`/${company}/${country}/details`}
-                onClick={closeMobile}
-                className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-xs font-medium text-gray-600 outline -outline-offset-1 outline-black/5 transition-opacity hover:border-blue-900 hover:text-blue-900 hover:opacity-80"
-                title={user?.name}
-              >
-                {initials}
-              </Link>
-              <div className="group/logout relative shrink-0">
-                <span
-                  className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover/logout:opacity-100"
-                  role="tooltip"
-                >
-                  Logout
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleLogout}
-                  className="!h-12 !w-12 shrink-0 transition-transform duration-200 hover:scale-110 hover:bg-gray-50 hover:text-blue-900"
-                  aria-label="Logout"
-                >
-                  <ArrowRightOnRectangleIcon className="size-6 !text-black" aria-hidden />
-                </Button>
-              </div>
-            </div>
-          )}
+            ))}
         </div>
       </aside>
     </>

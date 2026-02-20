@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
-import { INVOICE_PAGE_SIZE, PAGINATION_LIMIT } from "@/constants";
+import { INVOICE_PAGE_SIZE, PAGINATION_LIMIT, PAYMENT_PAGE_SIZE } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
@@ -50,6 +50,12 @@ interface AllPaymentsState {
   loading: boolean;
   error: string | null;
   lastFetchTimestamp?: number;
+  sort?: string;
+  sortBy?: string;
+  page?: number;
+  count?: number;
+  totalItems?: number;
+  totalPages?: number;
 }
 
 interface AllInvoicesState {
@@ -98,6 +104,7 @@ interface CompanyAddressState {
 interface CompanyInfo {
   companyName: string;
   country: string;
+  companyDisplayName?: string | null;
   companyUniqueName?: string;
   user?: UserCompanyData;
   userData?: UserData;
@@ -199,7 +206,8 @@ export const fetchCompanyAddress = createAsyncThunk(
       sort: SortOrder.ASC,
     });
     const companyGstAddress = response.body?.companyGstAddress;
-    if (!companyGstAddress) return { companyName, data: null, gstin: null };
+    const companyDisplayName = response.body?.companyName?.trim() || null;
+    if (!companyGstAddress) return { companyName, data: null, gstin: null, companyDisplayName };
     const mainParts = [
       companyGstAddress.address,
       companyGstAddress.stateName,
@@ -210,7 +218,7 @@ export const fetchCompanyAddress = createAsyncThunk(
       : "";
     const addressString = [...mainParts, pinPart].filter(Boolean).join(", ").trim();
     const gstin = companyGstAddress.taxNumber?.trim() || null;
-    return { companyName, data: addressString, gstin };
+    return { companyName, data: addressString, gstin, companyDisplayName };
   },
   {
     condition: ({ companyName }, { getState }) => {
@@ -301,19 +309,56 @@ export const fetchAllPayments = createAsyncThunk(
     companyName,
     companyUniqueName,
     accountUniqueName,
+    sort = SortOrder.DESC,
+    sortBy = "grandTotal",
+    page = 1,
+    count,
   }: {
     companyName: string;
     companyUniqueName: string;
     accountUniqueName: string;
+    sort?: "" | "asc" | "desc";
+    sortBy?: string;
+    page?: number;
+    count?: number;
   }) => {
     const response = await getLastPayment({
       companyUniqueName,
       accountUniqueName,
       type: "receipt",
-      page: 1,
-      count: PAGINATION_LIMIT,
+      page,
+      count: count ?? PAYMENT_PAGE_SIZE,
+      sort,
+      sortBy,
     });
-    return { companyName, data: response.body.items || [] };
+    const items = response.body.items || [];
+    const totalItems = response.body.totalItems ?? 0;
+    const totalPages =
+      response.body.totalPages ??
+      ((count ?? PAYMENT_PAGE_SIZE) > 0 ? Math.ceil(totalItems / (count ?? PAYMENT_PAGE_SIZE)) : 0);
+    return {
+      companyName,
+      data: items,
+      sort,
+      sortBy,
+      totalItems,
+      totalPages,
+      page: response.body.page ?? page,
+      count: response.body.count ?? count ?? PAYMENT_PAGE_SIZE,
+    };
+  },
+  {
+    condition: ({ companyName, sort, sortBy, page, count }, { getState }) => {
+      const state = getState() as RootState;
+      const payments = state.companies[companyName]?.allPayments;
+      if (payments?.loading) return false;
+      if (payments?.data != null && payments?.lastFetchTimestamp == null) return true;
+      const sameSort = payments?.sort === sort && payments?.sortBy === sortBy;
+      const samePage =
+        payments?.page === (page ?? 1) && payments?.count === (count ?? PAYMENT_PAGE_SIZE);
+      const hasCachedResult = sameSort && samePage;
+      return !hasCachedResult;
+    },
   }
 );
 
@@ -346,7 +391,7 @@ export const fetchAllInvoices = createAsyncThunk(
     companyName: string;
     companyUniqueName: string;
     accountUniqueName: string;
-    sort?: string;
+    sort?: "" | "asc" | "desc";
     sortBy?: string;
     balanceStatus?: string[];
     page?: number;
@@ -358,7 +403,7 @@ export const fetchAllInvoices = createAsyncThunk(
       type: "sales",
       page,
       count,
-      sort: sort as "" | "asc" | "desc",
+      sort,
       sortBy,
       balanceStatus,
     });
@@ -604,13 +649,20 @@ export const companySlice = createSlice({
         }
       })
       .addCase(fetchAllPayments.fulfilled, (state, action) => {
-        const { companyName, data } = action.payload;
+        const { companyName, data, sort, sortBy, totalItems, totalPages, page, count } =
+          action.payload;
         if (state[companyName]) {
           state[companyName].allPayments = {
             data,
             loading: false,
             error: null,
             lastFetchTimestamp: Date.now(),
+            sort,
+            sortBy,
+            totalItems,
+            totalPages,
+            page,
+            count,
           };
         }
       })
@@ -739,7 +791,7 @@ export const companySlice = createSlice({
         }
       })
       .addCase(fetchCompanyAddress.fulfilled, (state, action) => {
-        const { companyName, data, gstin } = action.payload;
+        const { companyName, data, gstin, companyDisplayName } = action.payload;
         if (state[companyName]) {
           state[companyName].companyAddress = {
             data,
@@ -747,6 +799,9 @@ export const companySlice = createSlice({
             loading: false,
             error: null,
           };
+          if (companyDisplayName != null) {
+            state[companyName].companyDisplayName = companyDisplayName;
+          }
         }
       })
       .addCase(fetchCompanyAddress.rejected, (state, action) => {
@@ -764,6 +819,10 @@ export const companySlice = createSlice({
         const { companyName, data } = action.payload;
         if (state[companyName]) {
           state[companyName].user = data;
+          const displayName = data?.currentCompany?.name?.trim();
+          if (displayName) {
+            state[companyName].companyDisplayName = displayName;
+          }
         }
       });
   },
@@ -797,6 +856,12 @@ export const selectBalanceSummaryError = (companyName: string) => (state: RootSt
 
 export const selectUser = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.user || null;
+
+/** Display name from API (view-statement companyName or get-company-details currentCompany.name), fallback to URL param */
+export const selectCompanyDisplayName = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.companyDisplayName ??
+  state.companies[companyName]?.user?.currentCompany?.name ??
+  null;
 export const selectUserData = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.userData || null;
 export const selectUserEmail = (companyName: string) => (state: RootState) =>
@@ -830,6 +895,10 @@ export const selectAllPaymentsLoading = (companyName: string) => (state: RootSta
   state.companies[companyName]?.allPayments?.loading || false;
 export const selectAllPaymentsError = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.allPayments?.error || null;
+export const selectAllPaymentsTotalItems = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allPayments?.totalItems ?? 0;
+export const selectAllPaymentsTotalPages = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.allPayments?.totalPages ?? 1;
 
 export const selectAllInvoices = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.allInvoices?.data || null;

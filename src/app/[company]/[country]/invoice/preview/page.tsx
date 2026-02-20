@@ -13,6 +13,7 @@ import {
   PaymentDetailsResponse,
   Comment,
 } from "@/utils/invoicePreview";
+import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,15 +42,34 @@ export default function InvoicePreviewPage() {
   const companyName = params?.company as string;
   const country = params?.country as string;
   const voucherUniqueName =
-    searchParams.get("voucher") || searchParams.get("voucherUniqueName") || "";
-  const companyUniqueNameFromUrl = searchParams.get("companyUniqueName") || "";
-  const accountUniqueNameFromUrl = searchParams.get("accountUniqueName") || "";
+    searchParams.get("voucher") ||
+    searchParams.get("voucherUniqueName") ||
+    searchParams.get("invoice") ||
+    searchParams.get("invoiceUniqueName") ||
+    "";
+  const companyUniqueNameFromUrl =
+    searchParams.get("companyUniqueName") || searchParams.get("company") || "";
+  const accountUniqueNameFromUrl =
+    searchParams.get("accountUniqueName") || searchParams.get("account") || "";
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
 
   const { referenceId: configReferenceId } = useAppConfig();
   const referenceId = configReferenceId?.trim() || DEFAULT_CONFIG.REFERENCE_ID;
+
+  useEffect(() => {
+    const token = searchParams.get("proxy_auth_token");
+    if (!token || !companyName || !country) return;
+    const cleanAuthUrl = `/auth?proxy_auth_token=${encodeURIComponent(token)}&company=${encodeURIComponent(companyName)}&country=${encodeURIComponent(country)}`;
+    router.replace(cleanAuthUrl);
+  }, [companyName, country, router, searchParams]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !companyName || !country) return;
+    sessionStorage.setItem("companyName", companyName);
+    sessionStorage.setItem("country", country);
+  }, [companyName, country]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetailsResponse | null>(null);
@@ -95,6 +115,13 @@ export default function InvoicePreviewPage() {
       : null;
 
   const getNames = () => {
+    if (companyUniqueNameFromUrl && accountUniqueNameFromUrl) {
+      return {
+        companyUniqueName: companyUniqueNameFromUrl,
+        accountUniqueName: accountUniqueNameFromUrl,
+      };
+    }
+
     let companyUniqueName = companyUniqueNameFromRedux;
     let accountUniqueName = accountUniqueNameFromRedux;
 
@@ -296,6 +323,20 @@ export default function InvoicePreviewPage() {
     );
   }
 
+  if (error && !paymentDetails) {
+    return (
+      <>
+        {!sessionId && <AuthHeader referenceId={referenceId} />}
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
+          <p className="max-w-md text-center text-gray-700">{error}</p>
+          <Button variant="outline" onClick={handleBack}>
+            ← Back to Invoices
+          </Button>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       {!sessionId && <AuthHeader referenceId={referenceId} />}
@@ -330,34 +371,41 @@ export default function InvoicePreviewPage() {
       <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="mx-auto max-w-7xl space-y-4 md:space-y-6">
           {voucher && (
-            <Card>
-              <CardContent>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                  <div>
-                    <p className="text-xs text-gray-500">Invoice Number</p>
-                    <p className="text-lg font-semibold">{voucher.number}</p>
+            <div className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between rounded-xl bg-white px-5 py-4">
+                <div className="flex flex-row items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-1 rounded bg-gray-100 px-2 py-2">
+                    <ClipboardDocumentListIcon className="h-12 w-12 text-blue-500" />
                   </div>
-
-                  <div>
-                    <p className="text-xs text-gray-500">Due Date</p>
-                    <p className="text-lg font-semibold">{voucher.dueDate}</p>
-                  </div>
-
-                  <div className="sm:col-span-2 md:col-span-1">
-                    <p className="text-xs text-gray-500">Balance Due</p>
-                    <p className="text-xl font-bold text-blue-900">
-                      {paymentDetails?.currency?.symbol} {voucher.amount}
-                    </p>
+                  <div className="flex flex-col">
+                    <span className="mt-1 text-2xl font-semibold text-gray-900">
+                      {voucher.number}
+                    </span>
+                    {voucher.dueDate && (
+                      <span className="text-lg font-medium text-gray-600">{voucher.dueDate}</span>
+                    )}
                   </div>
                 </div>
 
-                {!voucher.canPay && voucher.message && (
-                  <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
-                    {voucher.message}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                <div className="mx-4 hidden h-10 w-px bg-gray-200 sm:block" />
+
+                <div className="text-right">
+                  <span className="text-sm font-medium uppercase tracking-wide text-gray-600">
+                    Balance Due
+                  </span>
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
+                    {paymentDetails?.currency?.symbol}{" "}
+                    {Number(voucher.amount).toLocaleString("en-IN", {
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {!voucher.canPay && voucher.message && (
+                <p className="mt-4 text-sm text-red-600">{voucher.message}</p>
+              )}
+            </div>
           )}
 
           <Card>

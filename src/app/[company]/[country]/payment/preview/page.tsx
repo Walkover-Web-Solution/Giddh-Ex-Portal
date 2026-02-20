@@ -57,6 +57,19 @@ export default function PaymentPreviewPage() {
   const { referenceId: configReferenceId } = useAppConfig();
   const referenceId = configReferenceId?.trim() || DEFAULT_CONFIG.REFERENCE_ID;
 
+  useEffect(() => {
+    const token = searchParams.get("proxy_auth_token");
+    if (!token || !companyName || !country) return;
+    const cleanAuthUrl = `/auth?proxy_auth_token=${encodeURIComponent(token)}&company=${encodeURIComponent(companyName)}&country=${encodeURIComponent(country)}`;
+    router.replace(cleanAuthUrl);
+  }, [companyName, country, router, searchParams]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !companyName || !country) return;
+    sessionStorage.setItem("companyName", companyName);
+    sessionStorage.setItem("country", country);
+  }, [companyName, country]);
+
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const hasSession =
     typeof window !== "undefined" && (!!sessionId || !!getSessionCookie(companyName));

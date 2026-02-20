@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { PAGE_SIZE_OPTIONS } from "@/constants";
 import { mergeClassNames } from "@/lib/utils";
 
 export interface PaginationProps {
@@ -10,8 +9,6 @@ export interface PaginationProps {
   totalItems: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
-  onItemsPerPageChange: (items: number) => void;
-  pageSizeOptions?: number[];
 }
 
 function getPageNumbers(totalPages: number): (number | "ellipsis")[] {
@@ -27,12 +24,11 @@ export function Pagination({
   totalItems,
   itemsPerPage,
   onPageChange,
-  onItemsPerPageChange,
-  pageSizeOptions = PAGE_SIZE_OPTIONS,
 }: PaginationProps) {
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
   const hasPages = totalPages > 0;
+  const singlePage = totalPages <= 1;
   const pageNumbers = getPageNumbers(totalPages);
 
   const navLinkBase =
@@ -50,7 +46,7 @@ export function Pagination({
         <button
           type="button"
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={!hasPages || currentPage === 1}
+          disabled={!hasPages || singlePage || currentPage === 1}
           className={mergeClassNames(navLinkBase, "rounded-md px-4 py-2")}
           aria-label="Previous"
         >
@@ -59,7 +55,7 @@ export function Pagination({
         <button
           type="button"
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={!hasPages || currentPage === totalPages}
+          disabled={!hasPages || singlePage || currentPage === totalPages}
           className={mergeClassNames(navLinkBase, "ml-3 rounded-md px-4 py-2")}
           aria-label="Next"
         >
@@ -83,7 +79,7 @@ export function Pagination({
           <button
             type="button"
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={!hasPages || currentPage === 1}
+            disabled={!hasPages || singlePage || currentPage === 1}
             className={mergeClassNames(
               pageLinkBase,
               navLinkRoundedL,
@@ -123,7 +119,7 @@ export function Pagination({
           <button
             type="button"
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={!hasPages || currentPage === totalPages}
+            disabled={!hasPages || singlePage || currentPage === totalPages}
             className={mergeClassNames(
               pageLinkBase,
               navLinkRoundedR,

@@ -62,7 +62,7 @@ const PROD_CONFIG: AppConfig = {
   WEBSITE_DOMAIN: "https://giddh.com",
   BRAND_NAME: "Giddh",
   LOGOS: {
-    primary: "giddh-logo.png",
+    primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
     dark: "giddh-logo-light.png",
     icon: "giddh-square.logo",
@@ -81,7 +81,7 @@ const NON_PROD_CONFIG: AppConfig = {
   WEBSITE_DOMAIN: "https://web.giddh.com",
   BRAND_NAME: "Giddh",
   LOGOS: {
-    primary: "giddh-logo.png",
+    primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
     dark: "giddh-logo-light.png",
     icon: "giddh-square.logo",

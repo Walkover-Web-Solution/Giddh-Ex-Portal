@@ -21,7 +21,7 @@ export function Header({
     <header className="w-full border-b-2 border-blue-900/20 bg-white">
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-start gap-2">
             <h1 className="text-xl font-semibold text-blue-900 sm:text-2xl">{companyName}</h1>
             <p className="text-sm text-blue-900/70 sm:text-base">{accountName} A/C</p>
           </div>

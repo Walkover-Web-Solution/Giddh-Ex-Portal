@@ -22,7 +22,8 @@ export const PAGINATION_LIMIT = 50;
 /** Invoice list: items per page (synced with API) */
 export const INVOICE_PAGE_SIZE = 20;
 
-export const PAGE_SIZE_OPTIONS = [20, 50, 100];
+/** Payment list: items per page (synced with API) */
+export const PAYMENT_PAGE_SIZE = 50;
 
 export enum PAYMENT_METHODS_ENUM {
   RAZORPAY = "RAZORPAY",

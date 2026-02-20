@@ -1,6 +1,19 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+
+const SIDEBAR_COLLAPSED_KEY = "portalSidebarCollapsed";
+
+function getStoredCollapsed(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    if (stored == null) return false;
+    return JSON.parse(stored);
+  } catch {
+    return false;
+  }
+}
 
 interface SidebarContextType {
   isCollapsed: boolean;
@@ -14,14 +27,26 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => getStoredCollapsed());
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed((value) => {
+      const next = !value;
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <SidebarContext.Provider
       value={{
         isCollapsed,
-        toggleCollapsed: () => setIsCollapsed((value) => !value),
+        toggleCollapsed,
 
         isMobileOpen,
         openMobile: () => setIsMobileOpen(true),

@@ -1,3 +1,15 @@
+/** Payment voucher (receipt) balance status from API – when to show "Last Payment Made" card */
+export enum PaymentVoucherBalanceStatus {
+  ADJUSTED = "ADJUSTED",
+  PARTIAL_ADJUSTED = "PARTIAL-ADJUSTED",
+}
+
+/** Display status for Last Payment Made card (ADJUSTED → PAID, PARTIAL_ADJUSTED → UNPAID) */
+export enum LastPaymentStatusLabel {
+  PAID = "PAID",
+  UNPAID = "UNPAID",
+}
+
 /** Invoice/balance status values (normalized: uppercase, spaces as hyphen) */
 export enum InvoiceBalanceStatus {
   UNPAID = "UNPAID",

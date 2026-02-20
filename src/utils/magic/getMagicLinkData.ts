@@ -40,6 +40,11 @@ export interface MagicLinkData {
   apiTotalPages?: number;
   apiPage?: number;
   apiCount?: number;
+  apiDebitTransactionsCount?: number;
+  apiCreditTransactionsCount?: number;
+  apiPrevToken?: string | null;
+  apiNextToken?: string | null;
+  inferredView?: LedgerView;
 }
 
 export interface GetMagicLinkDataResult {
@@ -56,7 +61,7 @@ export interface GetMagicLinkDataResult {
  */
 export const getMagicLinkData = async (
   request: GetMagicLinkLedgerRequest,
-  viewMode: LedgerView = LedgerView.STATEMENT_VIEW
+  viewMode?: LedgerView
 ): Promise<GetMagicLinkDataResult> => {
   try {
     const response = await getMagicLinkLedger({ ...request, viewMode });
@@ -68,11 +73,36 @@ export const getMagicLinkData = async (
       };
     }
 
-    const { debitTransactions, creditTransactions, debitCreditTransactions } =
-      response.body.ledgersTransactions;
+    const ledgersTransactions = response.body.ledgersTransactions;
+    const { debitTransactions, creditTransactions, debitCreditTransactions } = ledgersTransactions;
+    const bodyWithView = response.body as typeof response.body & { ledgerView?: string | null };
+    const ltWithView = ledgersTransactions as typeof ledgersTransactions & {
+      ledgerView?: string | null;
+    };
+
+    const apiLedgerView =
+      (bodyWithView.ledgerView ?? ltWithView.ledgerView)?.trim().toUpperCase() || null;
+    const viewFromApi =
+      apiLedgerView === LedgerView.STATEMENT_VIEW
+        ? LedgerView.STATEMENT_VIEW
+        : apiLedgerView === LedgerView.T_VIEW
+          ? LedgerView.T_VIEW
+          : undefined;
+
+    const hasStatementData = (debitCreditTransactions?.length ?? 0) > 0;
+    const hasTViewData =
+      (debitTransactions?.length ?? 0) > 0 || (creditTransactions?.length ?? 0) > 0;
+    const inferredViewFromData = hasStatementData
+      ? LedgerView.STATEMENT_VIEW
+      : hasTViewData
+        ? LedgerView.T_VIEW
+        : undefined;
+
+    const inferredView = viewMode == null ? (viewFromApi ?? inferredViewFromData) : undefined;
+    const effectiveViewMode = viewMode ?? inferredView;
 
     const firstTransaction =
-      (viewMode === LedgerView.STATEMENT_VIEW && debitCreditTransactions?.[0]) ||
+      (effectiveViewMode === LedgerView.STATEMENT_VIEW && debitCreditTransactions?.[0]) ||
       debitTransactions?.[0] ||
       creditTransactions?.[0];
 
@@ -100,7 +130,7 @@ export const getMagicLinkData = async (
     let apiTransactions: Transaction[] = [];
 
     if (
-      viewMode === LedgerView.STATEMENT_VIEW &&
+      effectiveViewMode === LedgerView.STATEMENT_VIEW &&
       debitCreditTransactions &&
       debitCreditTransactions.length > 0
     ) {
@@ -209,27 +239,34 @@ export const getMagicLinkData = async (
       }
     }
 
-    const lt = response.body.ledgersTransactions;
+    const body = response.body as typeof response.body & {
+      prev_token?: string | null;
+      next_token?: string | null;
+    };
+    const apiPrevToken = body.prevToken ?? body.prev_token ?? ledgersTransactions.prevToken ?? null;
+    const apiNextToken = body.nextToken ?? body.next_token ?? ledgersTransactions.nextToken ?? null;
     const result: MagicLinkData = {
       transactions: apiTransactions,
-      // Include raw API response arrays
       debitCreditTransactions:
-        viewMode === LedgerView.STATEMENT_VIEW ? debitCreditTransactions : undefined,
-      debitTransactions: viewMode === LedgerView.T_VIEW ? debitTransactions : undefined,
-      creditTransactions: viewMode === LedgerView.T_VIEW ? creditTransactions : undefined,
-      forwardedBalance: lt.forwardedBalance,
-      companyName: response.body.companyName || "",
-      accountName: response.body.account?.name || "",
+        effectiveViewMode === LedgerView.STATEMENT_VIEW ? debitCreditTransactions : undefined,
+      debitTransactions: effectiveViewMode === LedgerView.T_VIEW ? debitTransactions : undefined,
+      creditTransactions: effectiveViewMode === LedgerView.T_VIEW ? creditTransactions : undefined,
+      ...(inferredView != null && { inferredView }),
+      forwardedBalance: ledgersTransactions.forwardedBalance,
+      companyName: body.companyName || "",
+      accountName: body.account?.name || "",
       currencyData,
       defaultCurrency: transactionCurrency.code,
       dateRange: {
-        from: lt.from,
-        to: lt.to,
+        from: ledgersTransactions.from,
+        to: ledgersTransactions.to,
       },
-      apiTotalItems: lt.totalItems,
-      apiTotalPages: lt.totalPages,
-      apiPage: lt.page,
-      apiCount: lt.count,
+      apiPage: ledgersTransactions.page ?? body.page,
+      apiCount: ledgersTransactions.count ?? body.count,
+      apiDebitTransactionsCount: ledgersTransactions.debitTransactionsCount,
+      apiCreditTransactionsCount: ledgersTransactions.creditTransactionsCount,
+      apiPrevToken,
+      apiNextToken,
     };
 
     return {

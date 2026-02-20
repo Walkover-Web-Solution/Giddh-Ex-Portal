@@ -68,6 +68,19 @@ export default function InvoicePayPage() {
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
 
+  useEffect(() => {
+    const token = searchParams.get("proxy_auth_token");
+    if (!token || !companyName || !country) return;
+    const cleanAuthUrl = `/auth?proxy_auth_token=${encodeURIComponent(token)}&company=${encodeURIComponent(companyName)}&country=${encodeURIComponent(country)}`;
+    router.replace(cleanAuthUrl);
+  }, [companyName, country, router, searchParams]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !companyName || !country) return;
+    sessionStorage.setItem("companyName", companyName);
+    sessionStorage.setItem("country", country);
+  }, [companyName, country]);
+
   const sessionId =
     typeof window !== "undefined"
       ? localStorage.getItem("token") || getSessionCookie(companyName) || null
@@ -346,6 +359,12 @@ export default function InvoicePayPage() {
     router.push(`/${companyName}/${country}/invoice`);
   };
 
+  useEffect(() => {
+    if (!isLoading && !paymentDetails?.vouchers?.length) {
+      router.replace(`/${companyName}/${country}/invoice`);
+    }
+  }, [isLoading, paymentDetails?.vouchers?.length, companyName, country, router]);
+
   const togglePanel = () => {
     setPanelOpenState((prev) => !prev);
   };
@@ -378,7 +397,7 @@ export default function InvoicePayPage() {
     return (
       <>
         {!sessionId && <AuthHeader referenceId={referenceId} />}
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex min-h-[calc(100vh-10rem)] w-full items-center justify-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
         </div>
       </>
@@ -386,14 +405,7 @@ export default function InvoicePayPage() {
   }
 
   if (!paymentDetails?.vouchers?.length) {
-    return (
-      <>
-        {!sessionId && <AuthHeader referenceId={referenceId} />}
-        <div className="flex flex-1 items-center justify-center p-6">
-          <p className="text-gray-600">No voucher details available.</p>
-        </div>
-      </>
-    );
+    return null;
   }
 
   return (
@@ -402,7 +414,7 @@ export default function InvoicePayPage() {
       <div className="mx-auto w-full max-w-7xl">
         <div className="px-4 py-6">
           <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-            <h2 className="font-light= text-2xl">
+            <h2 className="text-2xl font-semibold text-gray-900">
               {vouchers.length === 1
                 ? `Payment for ${singleVoucher?.number ?? ""}`
                 : "Payment All Invoices"}
@@ -410,7 +422,7 @@ export default function InvoicePayPage() {
             <button
               type="button"
               onClick={backToInvoice}
-              className="cursor-pointer text-3xl leading-none text-gray-500 hover:text-gray-700"
+              className="cursor-pointer text-3xl leading-none text-gray-900 hover:text-gray-700"
               aria-label="Close"
             >
               ×
@@ -422,14 +434,16 @@ export default function InvoicePayPage() {
               <div className="flex items-center justify-between rounded-xl bg-white px-5 py-4">
                 <div className="flex flex-row items-center justify-center gap-2">
                   <div className="flex items-center justify-center gap-1 rounded bg-gray-100 px-2 py-2">
-                    <ClipboardDocumentListIcon className="h-8 w-8 text-blue-500" />
+                    <ClipboardDocumentListIcon className="h-12 w-12 text-blue-500" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="mt-1 text-2xl font-semibold text-gray-800">
+                    <span className="mt-1 text-2xl font-semibold text-gray-900">
                       {singleVoucher.number}
                     </span>
                     {singleVoucher.dueDate && (
-                      <span className="text-md text-gray-500">{singleVoucher.dueDate}</span>
+                      <span className="text-lg font-medium text-gray-600">
+                        {singleVoucher.dueDate}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -437,10 +451,10 @@ export default function InvoicePayPage() {
                 <div className="mx-4 hidden h-10 w-px bg-gray-200 sm:block" />
 
                 <div className="text-right">
-                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  <span className="text-sm font-medium uppercase tracking-wide text-gray-600">
                     Balance Due
                   </span>
-                  <p className="mt-1 text-xl font-bold text-gray-900">
+                  <p className="mt-1 text-2xl font-bold text-gray-900">
                     {currency}{" "}
                     {Number(singleVoucher.amount).toLocaleString("en-IN", {
                       maximumFractionDigits: 0,
@@ -476,7 +490,7 @@ export default function InvoicePayPage() {
               <div className="mt-4 border-t border-dashed border-gray-200 pt-4">
                 {panelOpenState && (
                   <>
-                    <div className="grid grid-cols-3 gap-4 border-b border-gray-200 pb-2 text-xs font-medium uppercase text-gray-500">
+                    <div className="grid grid-cols-3 gap-4 border-b border-gray-200 pb-2 text-xs font-medium uppercase">
                       <span>Invoice #</span>
                       <span>Due on</span>
                       <span className="text-right">Balance Due</span>
