@@ -56,6 +56,7 @@ export default function AccountStatementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
   const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);
   const { showToast } = useToast();
 
@@ -116,7 +117,12 @@ export default function AccountStatementPage() {
         setCompanyAddress(response.body.companyGstAddress);
         setAccountName(response.body.accountName);
         setCompanyNameState(response.body.companyName);
-        setTotalItems(response.body.totalItems);
+        const items = response.body.totalItems ?? 0;
+        setTotalItems(items);
+        const pages =
+          response.body.totalPages ??
+          (itemsPerPage > 0 ? Math.max(1, Math.ceil(items / itemsPerPage)) : 1);
+        setTotalPages(pages);
       } else {
         setError("Failed to load account statement");
       }
@@ -257,11 +263,6 @@ export default function AccountStatementPage() {
     ],
     [accountAddress?.currency?.symbol]
   );
-
-  const effectiveTotal =
-    transactions.length < itemsPerPage && transactions.length > 0
-      ? (currentPage - 1) * itemsPerPage + transactions.length
-      : totalItems;
 
   return (
     <>
@@ -432,15 +433,17 @@ export default function AccountStatementPage() {
                   }
                 />
 
-                <div className="mt-4">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={Math.max(1, Math.ceil(effectiveTotal / itemsPerPage))}
-                    totalItems={effectiveTotal}
-                    itemsPerPage={itemsPerPage}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
+                {totalPages > 1 && (
+                  <div className="mt-4">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalItems={totalItems}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setCurrentPage}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
