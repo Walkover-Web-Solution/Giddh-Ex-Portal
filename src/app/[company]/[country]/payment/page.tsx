@@ -139,7 +139,10 @@ export default function PaymentsPage() {
       },
       {
         header: (
-          <Button variant="ghost" size="sm" onClick={() => handleSort("Date")}>
+          <button
+            onClick={() => handleSort("Date")}
+            className="flex items-center gap-1 hover:text-gray-700"
+          >
             Date
             {sortFilter === "Date" ? (
               sortDirection === SortOrder.ASC ? (
@@ -150,13 +153,16 @@ export default function PaymentsPage() {
             ) : (
               <ArrowUpDown className="h-4 w-4 opacity-50" />
             )}
-          </Button>
+          </button>
         ),
         accessor: "date" as keyof Payment,
       },
       {
         header: (
-          <Button variant="ghost" size="sm" onClick={() => handleSort("Amount")}>
+          <button
+            onClick={() => handleSort("Amount")}
+            className="flex items-center gap-1 hover:text-gray-700"
+          >
             Amount {getCurrencySymbol(currency)}
             {sortFilter === "Amount" ? (
               sortDirection === SortOrder.ASC ? (
@@ -167,7 +173,7 @@ export default function PaymentsPage() {
             ) : (
               <ArrowUpDown className="h-4 w-4 opacity-50" />
             )}
-          </Button>
+          </button>
         ),
         accessor: "amount" as keyof Payment,
       },

@@ -198,7 +198,8 @@ export default function InvoicesPage() {
     refetchInvoicesWithSort(newSortBy, newSortDirection);
   };
 
-  const hasActiveFilters = statusFilter !== "All Invoices" || sortBy !== "Total";
+  const hasActiveFilters =
+    statusFilter !== "All Invoices" || sortBy !== "Total" || sortDirection !== SortOrder.DESC;
 
   const handleDownloadInvoice = async (invoiceUniqueName: string, invoiceNumber: string) => {
     let companyUniqueName = companyUniqueNameFromRedux;

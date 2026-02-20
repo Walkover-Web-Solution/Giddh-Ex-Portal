@@ -32,7 +32,7 @@ export function UserDetailsCard() {
         <CardTitle className="text-lg font-semibold">My Details</CardTitle>
         <Link
           href={`/${companyName}/${country}/details`}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-blue-900 underline underline-offset-2 hover:text-blue-900/90"
         >
           View More
         </Link>
@@ -41,7 +41,7 @@ export function UserDetailsCard() {
         {error ? (
           <div className="py-4 text-center text-sm text-red-500">{error}</div>
         ) : data ? (
-          <div className="space-y-3 text-gray-600 font-medium">
+          <div className="space-y-3 font-medium text-gray-600">
             <div className="text-base font-semibold">{data.name ?? ""}</div>
             <div className="text-sm text-gray-600">{data.email ?? ""}</div>
             <div className="flex items-center gap-2 text-sm text-gray-600">

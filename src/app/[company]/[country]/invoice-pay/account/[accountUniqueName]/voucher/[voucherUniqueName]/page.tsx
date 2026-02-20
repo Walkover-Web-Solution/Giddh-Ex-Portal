@@ -359,6 +359,12 @@ export default function InvoicePayPage() {
     router.push(`/${companyName}/${country}/invoice`);
   };
 
+  useEffect(() => {
+    if (!isLoading && !paymentDetails?.vouchers?.length) {
+      router.replace(`/${companyName}/${country}/invoice`);
+    }
+  }, [isLoading, paymentDetails?.vouchers?.length, companyName, country, router]);
+
   const togglePanel = () => {
     setPanelOpenState((prev) => !prev);
   };
@@ -391,7 +397,7 @@ export default function InvoicePayPage() {
     return (
       <>
         {!sessionId && <AuthHeader referenceId={referenceId} />}
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex min-h-[calc(100vh-10rem)] w-full items-center justify-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
         </div>
       </>
@@ -399,14 +405,7 @@ export default function InvoicePayPage() {
   }
 
   if (!paymentDetails?.vouchers?.length) {
-    return (
-      <>
-        {!sessionId && <AuthHeader referenceId={referenceId} />}
-        <div className="flex flex-1 items-center justify-center p-6">
-          <p className="text-gray-600">No voucher details available.</p>
-        </div>
-      </>
-    );
+    return null;
   }
 
   return (

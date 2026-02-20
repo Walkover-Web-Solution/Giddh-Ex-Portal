@@ -83,9 +83,7 @@ export default function WelcomePage() {
       <div className="flex-1 p-6">
         <div className="mx-auto max-w-5xl space-y-6">
           <BalanceSummaryCard />
-
           <LastPaymentCard />
-
           <UserDetailsCard />
         </div>
       </div>

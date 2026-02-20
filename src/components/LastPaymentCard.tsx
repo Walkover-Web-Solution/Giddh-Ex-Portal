@@ -72,7 +72,7 @@ export function LastPaymentCard() {
             {companyName && country && data?.uniqueName ? (
               <Link
                 href={`/${companyName}/${country}/payment/preview?voucher=${encodeURIComponent(data.uniqueName)}`}
-                className="text-sm font-medium text-giddh-primary underline underline-offset-2 hover:text-giddh-primary/90 md:text-right"
+                className="text-sm font-medium text-blue-900 underline underline-offset-2 hover:text-blue-900/90 md:text-right"
               >
                 {data.voucherNumber}
               </Link>
@@ -94,7 +94,7 @@ export function LastPaymentCard() {
             {companyName && country && data?.invoiceUniqueName ? (
               <Link
                 href={`/${companyName}/${country}/invoice/preview?voucher=${encodeURIComponent(data.invoiceUniqueName)}${data?.account?.uniqueName ? `&accountUniqueName=${encodeURIComponent(data.account.uniqueName)}` : ""}`}
-                className="break-words text-sm font-medium text-giddh-primary underline underline-offset-2 hover:text-giddh-primary/90 md:text-right"
+                className="break-words text-sm font-medium text-blue-900 underline underline-offset-2 hover:text-giddh-primary/90 md:text-right"
               >
                 {data?.invoiceNumber ?? data?.account?.name}
               </Link>
