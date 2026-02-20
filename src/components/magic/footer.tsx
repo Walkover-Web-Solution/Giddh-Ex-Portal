@@ -1,5 +1,6 @@
 import type { BalanceType } from "@/constants/ledger";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { normalizeCode } from "./currencyUtils";
 import { CurrencyInfo } from "./types";
 
 interface FooterSummaryProps {
@@ -39,18 +40,15 @@ export function Footer({
 }: FooterProps) {
   const formatAmount = (amount: number | null, symbol?: string) => {
     if (amount === null) return "";
-    const sym = symbol ?? companyCurrency?.symbol;
-    return formatCurrencyAmount(amount, sym, { decimals: 2 });
+    return formatCurrencyAmount(amount, symbol ?? companyCurrency?.symbol, { decimals: 2 });
   };
 
-  const primaryCode = (companyCurrency?.code ?? "").trim().toUpperCase();
-  const convertedCode = (convertedCurrency?.code ?? "").trim().toUpperCase();
+  const companyCode = normalizeCode(companyCurrency?.code);
+  const convertedCode = normalizeCode(convertedCurrency?.code);
   const hasTwoCurrencies =
-    primaryCode.length > 0 && convertedCode.length > 0 && primaryCode !== convertedCode;
+    companyCode !== "" && convertedCode !== "" && companyCode !== convertedCode;
   const hasConverted =
-    hasTwoCurrencies &&
-    summary.convertedTotalDebit !== undefined &&
-    summary.convertedTotalCredit !== undefined;
+    hasTwoCurrencies && summary.convertedTotalDebit != null && summary.convertedTotalCredit != null;
 
   return (
     <div className="my-4 overflow-hidden rounded-lg bg-white shadow-sm">

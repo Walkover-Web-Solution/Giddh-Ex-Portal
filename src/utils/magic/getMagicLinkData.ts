@@ -73,10 +73,12 @@ export const getMagicLinkData = async (
       };
     }
 
-    const lt = response.body.ledgersTransactions;
-    const { debitTransactions, creditTransactions, debitCreditTransactions } = lt;
+    const ledgersTransactions = response.body.ledgersTransactions;
+    const { debitTransactions, creditTransactions, debitCreditTransactions } = ledgersTransactions;
     const bodyWithView = response.body as typeof response.body & { ledgerView?: string | null };
-    const ltWithView = lt as typeof lt & { ledgerView?: string | null };
+    const ltWithView = ledgersTransactions as typeof ledgersTransactions & {
+      ledgerView?: string | null;
+    };
 
     const apiLedgerView =
       (bodyWithView.ledgerView ?? ltWithView.ledgerView)?.trim().toUpperCase() || null;
@@ -241,8 +243,8 @@ export const getMagicLinkData = async (
       prev_token?: string | null;
       next_token?: string | null;
     };
-    const apiPrevToken = body.prevToken ?? body.prev_token ?? lt.prevToken ?? null;
-    const apiNextToken = body.nextToken ?? body.next_token ?? lt.nextToken ?? null;
+    const apiPrevToken = body.prevToken ?? body.prev_token ?? ledgersTransactions.prevToken ?? null;
+    const apiNextToken = body.nextToken ?? body.next_token ?? ledgersTransactions.nextToken ?? null;
     const result: MagicLinkData = {
       transactions: apiTransactions,
       debitCreditTransactions:
@@ -250,19 +252,19 @@ export const getMagicLinkData = async (
       debitTransactions: effectiveViewMode === LedgerView.T_VIEW ? debitTransactions : undefined,
       creditTransactions: effectiveViewMode === LedgerView.T_VIEW ? creditTransactions : undefined,
       ...(inferredView != null && { inferredView }),
-      forwardedBalance: lt.forwardedBalance,
+      forwardedBalance: ledgersTransactions.forwardedBalance,
       companyName: body.companyName || "",
       accountName: body.account?.name || "",
       currencyData,
       defaultCurrency: transactionCurrency.code,
       dateRange: {
-        from: lt.from,
-        to: lt.to,
+        from: ledgersTransactions.from,
+        to: ledgersTransactions.to,
       },
-      apiPage: lt.page ?? body.page,
-      apiCount: lt.count ?? body.count,
-      apiDebitTransactionsCount: lt.debitTransactionsCount,
-      apiCreditTransactionsCount: lt.creditTransactionsCount,
+      apiPage: ledgersTransactions.page ?? body.page,
+      apiCount: ledgersTransactions.count ?? body.count,
+      apiDebitTransactionsCount: ledgersTransactions.debitTransactionsCount,
+      apiCreditTransactionsCount: ledgersTransactions.creditTransactionsCount,
       apiPrevToken,
       apiNextToken,
     };

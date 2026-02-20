@@ -26,7 +26,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
-import { FileType, EXPORT_FILE_CONFIG, PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { FileType, EXPORT_FILE_CONFIG, PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { useToast } from "@/contexts/ToastContext";
 
@@ -438,12 +438,7 @@ export default function AccountStatementPage() {
                     totalPages={Math.max(1, Math.ceil(effectiveTotal / itemsPerPage))}
                     totalItems={effectiveTotal}
                     itemsPerPage={itemsPerPage}
-                    pageSizeOptions={PAGE_SIZE_OPTIONS}
                     onPageChange={setCurrentPage}
-                    onItemsPerPageChange={(newSize) => {
-                      setItemsPerPage(newSize);
-                      setCurrentPage(1);
-                    }}
                   />
                 </div>
               </CardContent>

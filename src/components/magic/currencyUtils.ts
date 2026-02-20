@@ -7,7 +7,7 @@ export interface CurrencyConfig {
   secondaryCurrency?: CurrencyInfo;
 }
 
-function normalizeCode(code: string | undefined): string {
+export function normalizeCode(code: string | undefined): string {
   return (code ?? "").trim().toUpperCase();
 }
 
@@ -16,12 +16,13 @@ export function getCurrencyConfig(
   transactionCurrency?: CurrencyInfo,
   convertedCurrency?: CurrencyInfo
 ): CurrencyConfig {
-  const tCode = normalizeCode(transactionCurrency?.code);
-  const cCode = normalizeCode(convertedCurrency?.code);
-  const hasMultipleCurrencies = tCode.length > 0 && cCode.length > 0 && tCode !== cCode;
+  const transactionCode = normalizeCode(transactionCurrency?.code);
+  const convertedCode = normalizeCode(convertedCurrency?.code);
+  const hasMultipleCurrencies =
+    transactionCode.length > 0 && convertedCode.length > 0 && transactionCode !== convertedCode;
 
   const selectedNorm = normalizeCode(selectedCurrency);
-  const isConvertedCurrencySelected = hasMultipleCurrencies && selectedNorm === cCode;
+  const isConvertedCurrencySelected = hasMultipleCurrencies && selectedNorm === convertedCode;
 
   const primaryCurrency = isConvertedCurrencySelected ? convertedCurrency : transactionCurrency;
 

@@ -312,12 +312,12 @@ export const fetchAllPayments = createAsyncThunk(
     sort = SortOrder.DESC,
     sortBy = "grandTotal",
     page = 1,
-    count = PAYMENT_PAGE_SIZE,
+    count,
   }: {
     companyName: string;
     companyUniqueName: string;
     accountUniqueName: string;
-    sort?: string;
+    sort?: "" | "asc" | "desc";
     sortBy?: string;
     page?: number;
     count?: number;
@@ -327,13 +327,15 @@ export const fetchAllPayments = createAsyncThunk(
       accountUniqueName,
       type: "receipt",
       page,
-      count,
-      sort: sort as "" | "asc" | "desc",
+      count: count ?? PAYMENT_PAGE_SIZE,
+      sort,
       sortBy,
     });
     const items = response.body.items || [];
     const totalItems = response.body.totalItems ?? 0;
-    const totalPages = response.body.totalPages ?? (count > 0 ? Math.ceil(totalItems / count) : 0);
+    const totalPages =
+      response.body.totalPages ??
+      ((count ?? PAYMENT_PAGE_SIZE) > 0 ? Math.ceil(totalItems / (count ?? PAYMENT_PAGE_SIZE)) : 0);
     return {
       companyName,
       data: items,
@@ -342,7 +344,7 @@ export const fetchAllPayments = createAsyncThunk(
       totalItems,
       totalPages,
       page: response.body.page ?? page,
-      count: response.body.count ?? count,
+      count: response.body.count ?? count ?? PAYMENT_PAGE_SIZE,
     };
   },
   {
@@ -389,7 +391,7 @@ export const fetchAllInvoices = createAsyncThunk(
     companyName: string;
     companyUniqueName: string;
     accountUniqueName: string;
-    sort?: string;
+    sort?: "" | "asc" | "desc";
     sortBy?: string;
     balanceStatus?: string[];
     page?: number;
@@ -401,7 +403,7 @@ export const fetchAllInvoices = createAsyncThunk(
       type: "sales",
       page,
       count,
-      sort: sort as "" | "asc" | "desc",
+      sort,
       sortBy,
       balanceStatus,
     });

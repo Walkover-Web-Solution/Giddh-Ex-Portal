@@ -544,7 +544,6 @@ export default function InvoicesPage() {
               totalItems={totalItems}
               itemsPerPage={INVOICE_PAGE_SIZE}
               onPageChange={setCurrentPage}
-              onItemsPerPageChange={() => {}}
             />
           )}
         </div>

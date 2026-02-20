@@ -22,7 +22,7 @@ import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
 import { getMagicLinkLedgerBalance } from "@/utils/magic/getMagicLinkLedgerBalance";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
-import { PAGINATION_LIMIT, PAGE_SIZE_OPTIONS } from "@/constants";
+import { PAGINATION_LIMIT } from "@/constants";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 
 export default function Magic() {
@@ -66,10 +66,6 @@ export default function Magic() {
   const [nextToken, setNextToken] = useState<string | null>(null);
   const [requestPaginationToken, setRequestPaginationToken] = useState<string | null>(null);
   const [requestReversePage, setRequestReversePage] = useState(false);
-  const prevTokenRef = useRef<string | null>(null);
-  const nextTokenRef = useRef<string | null>(null);
-  prevTokenRef.current = prevToken;
-  nextTokenRef.current = nextToken;
 
   const today = new Date();
   const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -575,22 +571,16 @@ export default function Magic() {
             (viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) && (
               <MagicPagination
                 currentPage={currentPage}
-                hasPrevious={!!prevToken}
-                hasNext={!!nextToken}
-                onPrevious={() => {
-                  const token = prevTokenRef.current;
-                  if (token != null && token !== "") {
-                    setRequestReversePage(true);
+                nextPageToken={nextToken ?? ""}
+                previousPageToken={prevToken ?? ""}
+                onPageChange={(token, isNext) => {
+                  if (token) {
+                    setRequestReversePage(!isNext);
                     setRequestPaginationToken(token);
                   }
                 }}
-                onNext={() => {
-                  const token = nextTokenRef.current;
-                  if (token != null && token !== "") {
-                    setRequestReversePage(false);
-                    setRequestPaginationToken(token);
-                  }
-                }}
+                itemsPerPage={itemsPerPage}
+                currentPageItemCount={filteredTransactions.length}
               />
             )}
           <Footer

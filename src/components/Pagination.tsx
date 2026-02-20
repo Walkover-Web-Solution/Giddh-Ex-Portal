@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { PAGE_SIZE_OPTIONS } from "@/constants";
 import { mergeClassNames } from "@/lib/utils";
 
 export interface PaginationProps {
@@ -10,8 +9,6 @@ export interface PaginationProps {
   totalItems: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
-  onItemsPerPageChange?: (items: number) => void;
-  pageSizeOptions?: number[];
 }
 
 function getPageNumbers(totalPages: number): (number | "ellipsis")[] {
@@ -27,7 +24,6 @@ export function Pagination({
   totalItems,
   itemsPerPage,
   onPageChange,
-  pageSizeOptions = PAGE_SIZE_OPTIONS,
 }: PaginationProps) {
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);

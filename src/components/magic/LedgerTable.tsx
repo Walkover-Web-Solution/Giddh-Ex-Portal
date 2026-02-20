@@ -11,8 +11,6 @@ export interface LedgerTablePaginationProps {
   totalItems: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
-  onItemsPerPageChange: (size: number) => void;
-  pageSizeOptions?: number[];
 }
 
 interface LedgerTableProps {
@@ -82,8 +80,6 @@ export function LedgerTable({
           totalItems={pagination.totalItems}
           itemsPerPage={pagination.itemsPerPage}
           onPageChange={pagination.onPageChange}
-          onItemsPerPageChange={pagination.onItemsPerPageChange}
-          pageSizeOptions={pagination.pageSizeOptions}
         />
       )}
     </div>

@@ -8,7 +8,8 @@ function getStoredCollapsed(): boolean {
   if (typeof window === "undefined") return false;
   try {
     const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
-    return stored === "true";
+    if (stored == null) return false;
+    return JSON.parse(stored);
   } catch {
     return false;
   }
