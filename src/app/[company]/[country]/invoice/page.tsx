@@ -30,7 +30,7 @@ import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import { INVOICE_PAGE_SIZE } from "@/constants";
+import { PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { InvoiceBalanceStatus, INVOICE_BALANCE_STATUS_LABELS } from "@/constants/invoiceStatus";
 import type { Invoice, InvoiceSortColumn } from "./types";
@@ -82,7 +82,7 @@ export default function InvoicesPage() {
           sortBy: apiSortBy,
           balanceStatus: statusFilterToBalanceStatus(statusFilter),
           page: currentPage,
-          count: INVOICE_PAGE_SIZE,
+          count: PAGINATION_LIMIT,
         })
       );
     }
@@ -157,7 +157,7 @@ export default function InvoicesPage() {
               ? balanceStatusOverride
               : statusFilterToBalanceStatus(statusFilter),
           page: 1,
-          count: INVOICE_PAGE_SIZE,
+          count: PAGINATION_LIMIT,
         })
       );
     }
@@ -178,7 +178,7 @@ export default function InvoicesPage() {
           sortBy: apiSortBy,
           balanceStatus: statusFilterToBalanceStatus(newStatusFilter),
           page: 1,
-          count: INVOICE_PAGE_SIZE,
+          count: PAGINATION_LIMIT,
         })
       );
     }
@@ -293,7 +293,7 @@ export default function InvoicesPage() {
   const columns = [
     {
       header: "S. No.",
-      accessor: (row: Invoice, index: number) => index + 1 + (currentPage - 1) * INVOICE_PAGE_SIZE,
+      accessor: (row: Invoice, index: number) => index + 1 + (currentPage - 1) * PAGINATION_LIMIT,
     },
     {
       header: "Invoice No.",
@@ -528,7 +528,7 @@ export default function InvoicesPage() {
           </div>
 
           {loading ? (
-            <TableSkeleton rows={INVOICE_PAGE_SIZE} />
+            <TableSkeleton rows={PAGINATION_LIMIT} />
           ) : error ? (
             <div className="py-12 text-center text-red-500">{error}</div>
           ) : invoicesData.length === 0 ? (
@@ -542,7 +542,7 @@ export default function InvoicesPage() {
               currentPage={currentPage}
               totalPages={totalPages}
               totalItems={totalItems}
-              itemsPerPage={INVOICE_PAGE_SIZE}
+              itemsPerPage={PAGINATION_LIMIT}
               onPageChange={setCurrentPage}
             />
           )}

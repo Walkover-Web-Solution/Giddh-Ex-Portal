@@ -16,14 +16,11 @@ export type { SortOrderType } from "./sort";
 /** Default page number (1-based) */
 export const DEFAULT_PAGE = 1;
 
-/** Default page size / items per page */
-export const PAGINATION_LIMIT = 50;
+/** Page size for invoice and payment lists */
+export const PAGINATION_LIMIT = 20;
 
-/** Invoice list: items per page (synced with API) */
-export const INVOICE_PAGE_SIZE = 20;
-
-/** Payment list: items per page (synced with API) */
-export const PAYMENT_PAGE_SIZE = 20;
+/** Page size for account statement and magic ledger */
+export const STATEMENT_PAGE_SIZE = 50;
 
 export enum PAYMENT_METHODS_ENUM {
   RAZORPAY = "RAZORPAY",

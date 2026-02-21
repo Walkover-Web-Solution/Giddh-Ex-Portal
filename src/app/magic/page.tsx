@@ -22,7 +22,7 @@ import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
 import { getMagicLinkLedgerBalance } from "@/utils/magic/getMagicLinkLedgerBalance";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
-import { PAGINATION_LIMIT } from "@/constants";
+import { STATEMENT_PAGE_SIZE } from "@/constants";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 
 export default function Magic() {
@@ -54,7 +54,7 @@ export default function Magic() {
     useState<Awaited<ReturnType<typeof getMagicLinkLedgerBalance>>["body"]>(undefined);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
+  const [itemsPerPage, setItemsPerPage] = useState(STATEMENT_PAGE_SIZE);
   const [apiDebitTransactionsCount, setApiDebitTransactionsCount] = useState<number | undefined>(
     undefined
   );
