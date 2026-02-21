@@ -4,12 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
-import {
-  downloadPaymentVoucher,
-  getPaymentList,
-  base64ToBlob,
-  PaymentVoucher,
-} from "@/utils/paymentPreview";
+import { downloadPaymentVoucher, base64ToBlob } from "@/utils/paymentPreview";
 import { ArrowLeft } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
@@ -30,8 +25,6 @@ function AuthHeader({ referenceId }: { referenceId: string }) {
   );
 }
 
-const EMPTY_PAYMENT_LIST = { status: "error" as const, body: { items: [], totalItems: 0 } };
-
 export default function PaymentPreviewPage() {
   const params = useParams();
   const router = useRouter();
@@ -50,8 +43,6 @@ export default function PaymentPreviewPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [pdfUrl, setPdfUrl] = useState<string>("");
-  const [paymentVoucher, setPaymentVoucher] = useState<PaymentVoucher | null>(null);
-  const [error, setError] = useState<string>("");
   const { showToast } = useToast();
 
   const { referenceId: configReferenceId } = useAppConfig();
@@ -100,20 +91,12 @@ export default function PaymentPreviewPage() {
   };
 
   useEffect(() => {
-    if (!voucherUniqueName) {
-      setError("No payment specified.");
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
+    if (!companyUniqueName || !accountUniqueName) {
       setIsLoading(false);
       return;
     }
-
-    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
-    if (companyUniqueName && accountUniqueName) {
-      setError("");
-      loadPaymentData(companyUniqueName, accountUniqueName);
-    } else {
-      setError("Missing company or account information. Please log in again.");
-      setIsLoading(false);
-    }
+    loadPaymentData(companyUniqueName, accountUniqueName);
   }, [
     voucherUniqueName,
     companyUniqueNameFromUrl,
@@ -157,7 +140,6 @@ export default function PaymentPreviewPage() {
 
   const loadPaymentData = async (companyUniqueName: string, accountUniqueName: string) => {
     setIsLoading(true);
-    setError("");
 
     try {
       const request = {
@@ -167,33 +149,24 @@ export default function PaymentPreviewPage() {
         sessionId: sessionId || undefined,
       };
 
-      let voucherResponse: Awaited<ReturnType<typeof downloadPaymentVoucher>>;
-      let paymentListResponse: Awaited<ReturnType<typeof getPaymentList>>;
-
-      if (hasSession) {
-        [voucherResponse, paymentListResponse] = await Promise.all([
-          downloadPaymentVoucher(request),
-          getPaymentList(request).catch(() => EMPTY_PAYMENT_LIST),
-        ]);
-      } else {
-        voucherResponse = await downloadPaymentVoucher(request);
-        paymentListResponse = EMPTY_PAYMENT_LIST;
-      }
+      const voucherResponse = await downloadPaymentVoucher(request);
 
       if (voucherResponse.status === "success" && voucherResponse.body) {
         const blob = base64ToBlob(voucherResponse.body);
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } else {
-        setError("Failed to load payment voucher. Please try again.");
+        const msg =
+          (voucherResponse as { message?: string }).message ||
+          "Failed to load payment voucher. Please try again.";
+        showToast(msg, "error");
       }
-
-      if (paymentListResponse.status === "success" && paymentListResponse.body.items.length > 0) {
-        setPaymentVoucher(paymentListResponse.body.items[0]);
-      }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error loading payment data:", err);
-      setError("An error occurred while loading the payment voucher. Please try again.");
+      const apiMessage =
+        (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data
+          ?.message ?? (err as { message?: string })?.message;
+      if (apiMessage) showToast(apiMessage, "error");
     } finally {
       setIsLoading(false);
     }
@@ -217,7 +190,7 @@ export default function PaymentPreviewPage() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${paymentVoucher?.voucherNumber || "payment"}.pdf`;
+        a.download = `payment-${voucherUniqueName || "voucher"}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -247,19 +220,10 @@ export default function PaymentPreviewPage() {
       <>
         {!hasSession && <AuthHeader referenceId={referenceId} />}
         <div className="flex min-h-[50vh] flex-1 items-center justify-center">
-          {error ? (
-            <div className="text-center">
-              <p className="mb-4 text-red-600">{error}</p>
-              <Button size="lg" onClick={handleBack}>
-                Back to Payments
-              </Button>
-            </div>
-          ) : (
-            <div
-              className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"
-              aria-label="Loading"
-            />
-          )}
+          <div
+            className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"
+            aria-label="Loading"
+          />
         </div>
       </>
     );
@@ -293,7 +257,7 @@ export default function PaymentPreviewPage() {
 
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl">
-          {pdfUrl ? (
+          {pdfUrl && (
             <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <iframe
@@ -303,10 +267,6 @@ export default function PaymentPreviewPage() {
                   title="Payment Voucher PDF"
                 />
               </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-red-600">
-              {error || "Failed to load payment voucher"}
             </div>
           )}
         </div>
