@@ -65,7 +65,10 @@
 /* Invoice preview auth: row layout + white anchor and white button */
 .auth-header-preview {
   .auth-container {
-    flex-direction: row;
+    flex-direction: column;
+    @media (min-width: 375px) {
+      flex-direction: row;
+    }
   }
 
   .auth-container p {

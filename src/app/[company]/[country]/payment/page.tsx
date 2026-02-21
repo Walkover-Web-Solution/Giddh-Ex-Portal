@@ -121,8 +121,12 @@ export default function PaymentsPage() {
         amount: formatCurrencyAmount(payment.grandTotal?.amountForAccount, currency, {
           decimals: 0,
         }),
-        paymentAccount: payment.account?.name ?? "",
-        unusedAmount: "",
+        paymentMode: payment.paymentMode?.name ?? "",
+        unusedAmount: formatCurrencyAmount(
+          payment.balanceDue?.amountForAccount ?? 0,
+          payment.accountCurrencySymbol ?? currency,
+          { decimals: 0 }
+        ),
       })),
     [allPayments, currency]
   );
@@ -177,7 +181,7 @@ export default function PaymentsPage() {
         ),
         accessor: "amount" as keyof Payment,
       },
-      { header: "Payment Account", accessor: "paymentAccount" as keyof Payment },
+      { header: "Payment Mode", accessor: "paymentMode" as keyof Payment },
       { header: "Unused Amount", accessor: "unusedAmount" as keyof Payment },
     ],
     [currency, sortFilter, sortDirection]

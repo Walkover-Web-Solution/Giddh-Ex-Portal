@@ -68,7 +68,7 @@ export function LastPaymentCard() {
         </div>
         <div className="py-1">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <span className="text-sm font-medium text-gray-600">Payment Number</span>
+            <span className="text-sm font-medium text-gray-600">Payment</span>
             {companyName && country && data?.uniqueName ? (
               <Link
                 href={`/${companyName}/${country}/payment/preview?voucher=${encodeURIComponent(data.uniqueName)}`}

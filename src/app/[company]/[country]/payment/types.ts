@@ -3,7 +3,7 @@ export interface Payment {
   paymentId: string;
   date: string;
   amount: string;
-  paymentAccount: string;
+  paymentMode: string;
   unusedAmount: string;
 }
 
