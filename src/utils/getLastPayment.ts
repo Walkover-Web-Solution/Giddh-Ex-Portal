@@ -9,9 +9,17 @@ export interface PaymentVoucher {
   grandTotal: {
     amountForAccount: number;
   };
+  balanceDue?: {
+    amountForAccount: number;
+    amountForCompany: number;
+  };
   companyCurrencySymbol?: string;
   accountCurrencySymbol?: string;
   account?: {
+    name: string;
+    uniqueName: string;
+  };
+  paymentMode?: {
     name: string;
     uniqueName: string;
   };
