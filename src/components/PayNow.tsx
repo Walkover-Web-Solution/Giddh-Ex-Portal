@@ -12,7 +12,7 @@ import {
   fetchAllInvoices,
   invoiceSortBy,
 } from "@/store/slices/companySlice";
-import { INVOICE_PAGE_SIZE } from "@/constants";
+import { PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { InvoiceBalanceStatus } from "@/constants/invoiceStatus";
 import {
@@ -408,7 +408,7 @@ export function PayNow({
             accountUniqueName,
             balanceStatus: [InvoiceBalanceStatus.UNPAID],
             page: 1,
-            count: INVOICE_PAGE_SIZE,
+            count: PAGINATION_LIMIT,
             sort: SortOrder.DESC,
             sortBy: invoiceSortBy.grandTotal,
           })
@@ -534,7 +534,7 @@ export function PayNow({
             accountUniqueName,
             balanceStatus: [InvoiceBalanceStatus.UNPAID],
             page: 1,
-            count: INVOICE_PAGE_SIZE,
+            count: PAGINATION_LIMIT,
             sort: SortOrder.DESC,
             sortBy: invoiceSortBy.grandTotal,
           })

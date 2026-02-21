@@ -35,11 +35,20 @@ export function MagicPagination({
   const canGoPrevious = !!previousPageToken;
   const canGoNext = !!nextPageToken;
 
-  const startItem = itemsPerPage > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
-  const endItem =
-    itemsPerPage > 0 && currentPageItemCount >= 0
-      ? (currentPage - 1) * itemsPerPage + currentPageItemCount
-      : 0;
+  const isLastPage =
+    !canGoNext && totalItems != null && totalItems >= 0 && currentPageItemCount > 0;
+  const endItem = (() => {
+    if (isLastPage) return totalItems!;
+    const raw =
+      itemsPerPage > 0 && currentPageItemCount >= 0
+        ? (currentPage - 1) * itemsPerPage + currentPageItemCount
+        : 0;
+    return totalItems != null && totalItems >= 0 && raw > totalItems ? totalItems : raw;
+  })();
+  const startItem = (() => {
+    if (isLastPage) return Math.max(1, (totalItems ?? 0) - currentPageItemCount + 1);
+    return itemsPerPage > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+  })();
   const showRange = startItem > 0 || endItem > 0;
 
   const rangeText = showRange ? (

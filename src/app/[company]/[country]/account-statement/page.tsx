@@ -26,7 +26,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
-import { FileType, EXPORT_FILE_CONFIG, PAGINATION_LIMIT } from "@/constants";
+import { FileType, EXPORT_FILE_CONFIG, STATEMENT_PAGE_SIZE } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { useToast } from "@/contexts/ToastContext";
 
@@ -54,7 +54,7 @@ export default function AccountStatementPage() {
   const [fromDate, setFromDate] = useState<Date>(startOfThisMonth);
   const [toDate, setToDate] = useState<Date>(endOfThisMonth);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
+  const [itemsPerPage, setItemsPerPage] = useState(STATEMENT_PAGE_SIZE);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);

@@ -22,7 +22,7 @@ import { getMagicLinkData } from "@/utils/magic/getMagicLinkData";
 import { getMagicLinkLedgerBalance } from "@/utils/magic/getMagicLinkLedgerBalance";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
-import { PAGINATION_LIMIT } from "@/constants";
+import { STATEMENT_PAGE_SIZE } from "@/constants";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 
 export default function Magic() {
@@ -54,13 +54,15 @@ export default function Magic() {
     useState<Awaited<ReturnType<typeof getMagicLinkLedgerBalance>>["body"]>(undefined);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
+  const [itemsPerPage, setItemsPerPage] = useState(STATEMENT_PAGE_SIZE);
   const [apiDebitTransactionsCount, setApiDebitTransactionsCount] = useState<number | undefined>(
     undefined
   );
   const [apiCreditTransactionsCount, setApiCreditTransactionsCount] = useState<number | undefined>(
     undefined
   );
+  const [apiTotalItems, setApiTotalItems] = useState<number | undefined>(undefined);
+  const [apiCount, setApiCount] = useState<number | undefined>(undefined);
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const [prevToken, setPrevToken] = useState<string | null>(null);
   const [nextToken, setNextToken] = useState<string | null>(null);
@@ -79,6 +81,7 @@ export default function Magic() {
   const prevToDateRef = useRef<Date>(endOfThisMonth);
   /** Only show full-page loader on first load for current link; skip for refetches (search, pagination, etc.) */
   const loadedLinkIdRef = useRef<string | null>(null);
+  const prevViewModeRef = useRef<ViewMode | undefined>(undefined);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -149,6 +152,8 @@ export default function Magic() {
             forwardedBalance: apiForwardedBalance,
             apiDebitTransactionsCount: responseApiDebitTransactionsCount,
             apiCreditTransactionsCount: responseApiCreditTransactionsCount,
+            apiTotalItems: responseApiTotalItems,
+            apiCount: responseApiCount,
             apiPrevToken: responseApiPrevToken,
             apiNextToken: responseApiNextToken,
             apiPage: responseApiPage,
@@ -156,6 +161,8 @@ export default function Magic() {
 
           setApiDebitTransactionsCount(responseApiDebitTransactionsCount);
           setApiCreditTransactionsCount(responseApiCreditTransactionsCount);
+          setApiTotalItems(responseApiTotalItems);
+          setApiCount(responseApiCount);
           setCurrentPage(responseApiPage ?? 1);
           setPrevToken(responseApiPrevToken ?? null);
           setNextToken(responseApiNextToken ?? null);
@@ -244,6 +251,8 @@ export default function Magic() {
           setLedgerBalance(undefined);
           setApiDebitTransactionsCount(undefined);
           setApiCreditTransactionsCount(undefined);
+          setApiTotalItems(undefined);
+          setApiCount(undefined);
           setPrevToken(null);
           setNextToken(null);
         }
@@ -257,6 +266,8 @@ export default function Magic() {
         setLedgerBalance(undefined);
         setApiDebitTransactionsCount(undefined);
         setApiCreditTransactionsCount(undefined);
+        setApiTotalItems(undefined);
+        setApiCount(undefined);
         setPrevToken(null);
         setNextToken(null);
         loadedLinkIdRef.current = null;
@@ -395,8 +406,13 @@ export default function Magic() {
     });
   }, [creditTransactions, searchQuery]);
 
-  // Reset to first page and clear token when filters or view change (token-based pagination)
+  // Reset pagination when filters/view/link/dates change (skip when viewMode is set from API on first load)
   useEffect(() => {
+    const isInitialViewModeFromApi =
+      prevViewModeRef.current === undefined && viewMode !== undefined;
+    prevViewModeRef.current = viewMode;
+    if (isInitialViewModeFromApi) return;
+
     setCurrentPage(1);
     setPrevToken(null);
     setNextToken(null);
@@ -411,20 +427,15 @@ export default function Magic() {
       buildFooterSummary({
         ledgerBalance,
         forwardedBalance,
-        viewMode,
-        filteredDebitCreditTransactions,
-        filteredDebitTransactions,
-        filteredCreditTransactions,
+        apiTotalTransactions: apiTotalItems ?? apiCount,
         apiDebitCount: apiDebitTransactionsCount,
         apiCreditCount: apiCreditTransactionsCount,
       }),
     [
       ledgerBalance,
       forwardedBalance,
-      viewMode,
-      filteredDebitCreditTransactions,
-      filteredDebitTransactions,
-      filteredCreditTransactions,
+      apiTotalItems,
+      apiCount,
       apiDebitTransactionsCount,
       apiCreditTransactionsCount,
     ]
@@ -567,8 +578,8 @@ export default function Magic() {
             }
             pagination={undefined}
           />
-          {hasMultiplePages &&
-            (viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) && (
+          {(viewMode === LedgerView.STATEMENT_VIEW || viewMode === LedgerView.T_VIEW) &&
+            (hasMultiplePages || apiTotalItems != null || apiCount != null) && (
               <MagicPagination
                 currentPage={currentPage}
                 nextPageToken={nextToken ?? ""}
@@ -580,7 +591,8 @@ export default function Magic() {
                   }
                 }}
                 itemsPerPage={itemsPerPage}
-                currentPageItemCount={filteredTransactions.length}
+                totalItems={apiTotalItems}
+                currentPageItemCount={apiCount ?? filteredTransactions.length}
               />
             )}
           <Footer

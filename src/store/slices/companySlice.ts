@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
-import { INVOICE_PAGE_SIZE, PAGINATION_LIMIT, PAYMENT_PAGE_SIZE } from "@/constants";
+import { PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
@@ -327,7 +327,7 @@ export const fetchAllPayments = createAsyncThunk(
       accountUniqueName,
       type: "receipt",
       page,
-      count: count ?? PAYMENT_PAGE_SIZE,
+      count: count ?? PAGINATION_LIMIT,
       sort,
       sortBy,
     });
@@ -335,7 +335,7 @@ export const fetchAllPayments = createAsyncThunk(
     const totalItems = response.body.totalItems ?? 0;
     const totalPages =
       response.body.totalPages ??
-      ((count ?? PAYMENT_PAGE_SIZE) > 0 ? Math.ceil(totalItems / (count ?? PAYMENT_PAGE_SIZE)) : 0);
+      ((count ?? PAGINATION_LIMIT) > 0 ? Math.ceil(totalItems / (count ?? PAGINATION_LIMIT)) : 0);
     return {
       companyName,
       data: items,
@@ -344,7 +344,7 @@ export const fetchAllPayments = createAsyncThunk(
       totalItems,
       totalPages,
       page: response.body.page ?? page,
-      count: response.body.count ?? count ?? PAYMENT_PAGE_SIZE,
+      count: response.body.count ?? count ?? PAGINATION_LIMIT,
     };
   },
   {
@@ -355,7 +355,7 @@ export const fetchAllPayments = createAsyncThunk(
       if (payments?.data != null && payments?.lastFetchTimestamp == null) return true;
       const sameSort = payments?.sort === sort && payments?.sortBy === sortBy;
       const samePage =
-        payments?.page === (page ?? 1) && payments?.count === (count ?? PAYMENT_PAGE_SIZE);
+        payments?.page === (page ?? 1) && payments?.count === (count ?? PAGINATION_LIMIT);
       const hasCachedResult = sameSort && samePage;
       return !hasCachedResult;
     },
@@ -386,7 +386,7 @@ export const fetchAllInvoices = createAsyncThunk(
     sortBy = invoiceSortBy.grandTotal,
     balanceStatus = [],
     page = 1,
-    count = INVOICE_PAGE_SIZE,
+    count = PAGINATION_LIMIT,
   }: {
     companyName: string;
     companyUniqueName: string;
@@ -431,7 +431,7 @@ export const fetchAllInvoices = createAsyncThunk(
       const sameSort = invoices?.sort === sort && invoices?.sortBy === sortBy;
       const sameStatus = sameBalanceStatus(invoices?.balanceStatus, balanceStatus);
       const samePage =
-        invoices?.page === (page ?? 1) && invoices?.count === (count ?? INVOICE_PAGE_SIZE);
+        invoices?.page === (page ?? 1) && invoices?.count === (count ?? PAGINATION_LIMIT);
       const hasCachedResult = sameSort && sameStatus && samePage;
       return !hasCachedResult;
     },
@@ -913,7 +913,7 @@ export const selectAllInvoicesTotalPages = (companyName: string) => (state: Root
 export const selectAllInvoicesPage = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.allInvoices?.page ?? 1;
 export const selectAllInvoicesCount = (companyName: string) => (state: RootState) =>
-  state.companies[companyName]?.allInvoices?.count ?? INVOICE_PAGE_SIZE;
+  state.companies[companyName]?.allInvoices?.count ?? PAGINATION_LIMIT;
 
 export const selectUserDetails = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.userDetails?.data || null;

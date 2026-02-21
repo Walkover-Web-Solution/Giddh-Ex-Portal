@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { DEFAULT_CONFIG } from "@/config/default";
 import { getSessionCookie } from "@/utils/cookies";
+import { useToast } from "@/contexts/ToastContext";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -78,7 +79,7 @@ export default function InvoicePreviewPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentError, setCommentError] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
-  const [error, setError] = useState("");
+  const { showToast } = useToast();
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -145,20 +146,11 @@ export default function InvoicePreviewPage() {
   };
 
   useEffect(() => {
-    if (!voucherUniqueName) {
-      setError("No invoice specified.");
-      setIsLoading(false);
-      return;
-    }
-
     const { companyUniqueName, accountUniqueName } = getNames();
     if (!companyUniqueName || !accountUniqueName) {
-      setError("Missing company or account information.");
       setIsLoading(false);
       return;
     }
-
-    setError("");
     loadInvoice(companyUniqueName, accountUniqueName);
   }, [
     voucherUniqueName,
@@ -197,14 +189,18 @@ export default function InvoicePreviewPage() {
           setPdfUrl(URL.createObjectURL(blob));
         }
       } else {
-        setError("Failed to load invoice.");
+        const message = (voucherRes as { message?: string }).message;
+        if (message) showToast(message, "error");
       }
 
       if (commentsRes.status === "success") {
         setComments(commentsRes.body);
       }
-    } catch {
-      setError("Failed to load invoice.");
+    } catch (err: unknown) {
+      const apiMessage =
+        (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data
+          ?.message ?? (err as { message?: string })?.message;
+      if (apiMessage) showToast(apiMessage, "error");
     } finally {
       setIsLoading(false);
     }
@@ -318,20 +314,6 @@ export default function InvoicePreviewPage() {
         {!sessionId && <AuthHeader referenceId={referenceId} />}
         <div className="flex flex-1 flex-row items-center justify-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-        </div>
-      </>
-    );
-  }
-
-  if (error && !paymentDetails) {
-    return (
-      <>
-        {!sessionId && <AuthHeader referenceId={referenceId} />}
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
-          <p className="max-w-md text-center text-gray-700">{error}</p>
-          <Button variant="outline" onClick={handleBack}>
-            ← Back to Invoices
-          </Button>
         </div>
       </>
     );

@@ -295,7 +295,7 @@ export function DateRangeCalendar({
 
       {isOpen && (
         <div
-          className={`absolute ${positionClasses[position]} ${directionClass} z-50 h-[415px] ${calendarWidth} max-w-[calc(100vw-1rem)] rounded-lg bg-white ${compact ? "p-3" : "p-4"} overflow-y-auto shadow-lg ring-1 ring-gray-200`}
+          className={`absolute ${positionClasses[position]} ${directionClass} z-50 h-[425px] ${calendarWidth} max-w-[calc(100vw-1rem)] rounded-lg bg-white ${compact ? "p-3" : "p-4"} overflow-y-auto shadow-lg ring-1 ring-gray-200`}
         >
           <div className="text-center">
             <div className="flex items-center text-gray-900">
