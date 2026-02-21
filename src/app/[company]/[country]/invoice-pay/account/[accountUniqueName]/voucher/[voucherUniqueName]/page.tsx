@@ -546,7 +546,7 @@ export default function InvoicePayPage() {
                               : "/icons/payu.svg"
                         }
                         alt={gateway.value}
-                        className="h-12 w-20 object-contain"
+                        className="!h-6 w-auto object-contain"
                       />
                     </label>
                   );

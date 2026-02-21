@@ -7,13 +7,13 @@ interface FooterSummaryProps {
   totalTransactions: number;
   debitCount: number;
   creditCount: number;
-  openingBalance: number;
-  openingBalanceType: BalanceType;
+  openingBalance?: number;
+  openingBalanceType?: BalanceType;
   netTotalCredit: number;
   totalDebit: number;
   totalCredit: number;
-  closingBalance: number;
-  closingBalanceType: BalanceType;
+  closingBalance?: number;
+  closingBalanceType?: BalanceType;
   reckoningDebitTotal?: number;
   reckoningCreditTotal?: number;
   convertedTotalDebit?: number;
@@ -74,7 +74,7 @@ export function Footer({
             <div>
               <p className="text-xs text-blue-900 sm:text-sm">Opening Balance</p>
               <p className="mt-1.5 text-base font-semibold text-blue-900 sm:mt-2 sm:text-lg">
-                {formatAmount(summary.openingBalance)} {summary.openingBalanceType}
+                {formatAmount(summary.openingBalance ?? null)} {summary.openingBalanceType ?? ""}
               </p>
               {hasConverted &&
                 summary.convertedOpeningBalance !== undefined &&
@@ -164,7 +164,7 @@ export function Footer({
             <div className="flex flex-col">
               <p className="text-xs text-blue-900 sm:text-sm">Closing Balance</p>
               <p className="mt-1.5 text-lg font-semibold text-blue-900 sm:mt-2 sm:text-xl">
-                {formatAmount(summary.closingBalance)} {summary.closingBalanceType}
+                {formatAmount(summary.closingBalance ?? null)} {summary.closingBalanceType ?? ""}
               </p>
               {hasConverted &&
                 summary.convertedClosingBalance !== undefined &&

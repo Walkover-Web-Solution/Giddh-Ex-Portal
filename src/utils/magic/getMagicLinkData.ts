@@ -263,6 +263,8 @@ export const getMagicLinkData = async (
       },
       apiPage: ledgersTransactions.page ?? body.page,
       apiCount: ledgersTransactions.count ?? body.count,
+      apiTotalItems:
+        ledgersTransactions.totalItems ?? ledgersTransactions.count ?? body.count ?? undefined,
       apiDebitTransactionsCount: ledgersTransactions.debitTransactionsCount,
       apiCreditTransactionsCount: ledgersTransactions.creditTransactionsCount,
       apiPrevToken,
