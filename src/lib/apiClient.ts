@@ -26,13 +26,7 @@ class ApiClient {
           // Extract company name from URL path (e.g., /PiyusssshhCompany/in/welcome)
           const pathParts = window.location.pathname.split("/").filter(Boolean);
           const companyName = pathParts[0]; // First part of path is company name
-
-          let country = "";
-
-          const storedCountry = sessionStorage.getItem("country");
-          if (storedCountry) {
-            country = storedCountry;
-          }
+          const country = pathParts[1] ?? ""; // Second part of path is country
 
           // Get session token from cookie only (companyName-session format)
           if (companyName) {

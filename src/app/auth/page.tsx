@@ -6,8 +6,7 @@ import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { selectAllCompanies } from "@/store/slices/companySlice";
+import { useAppDispatch } from "@/store/hooks";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { sessionManager } from "@/utils/sessionManager";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -24,17 +23,11 @@ export default function Auth() {
   const token = searchParams.get("proxy_auth_token");
   const companyParam = searchParams.get("company");
   const countryParam = searchParams.get("country");
-  const allCompanies = useAppSelector(selectAllCompanies);
-
   const companyName =
-    companyParam ||
-    Object.values(allCompanies)[0]?.companyName ||
-    (typeof window !== "undefined" ? sessionStorage.getItem("companyName") : null);
+    companyParam || (typeof window !== "undefined" ? sessionStorage.getItem("companyName") : null);
 
   const country =
-    countryParam ||
-    Object.values(allCompanies)[0]?.country ||
-    (typeof window !== "undefined" ? sessionStorage.getItem("country") : null);
+    countryParam || (typeof window !== "undefined" ? sessionStorage.getItem("country") : null);
 
   const hasCalledRef = useRef(false);
 
