@@ -244,11 +244,8 @@ export default function InvoicesPage() {
 
   const validBalanceStatuses = useMemo(() => new Set(Object.values(InvoiceBalanceStatus)), []);
 
-  const getInvoiceBalanceStatus = (invoice: { balanceStatus?: string; balancePayment?: string }) =>
-    (invoice.balanceStatus || invoice.balancePayment || "").toUpperCase().replace(/\s+/g, "-");
-
-  const isPaymentPending = (invoice: { paymentInfo?: { paymentStatus?: string } }) =>
-    (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
+  const getInvoiceBalanceStatus = (invoice: { balanceStatus?: string }) =>
+    (invoice.balanceStatus || "").toUpperCase().replace(/\s+/g, "-");
 
   const allInvoicesData: Invoice[] = useMemo(
     () =>
@@ -263,8 +260,7 @@ export default function InvoicesPage() {
             status === InvoiceBalanceStatus.UNPAID || status === InvoiceBalanceStatus.PARTIAL_PAID;
           const isHoldOrCancel =
             status === InvoiceBalanceStatus.HOLD || status === InvoiceBalanceStatus.CANCEL;
-          const paymentPending = isPaymentPending(invoice);
-          const showPayNow = isPayableStatus && !isHoldOrCancel && !paymentPending;
+          const showPayNow = isPayableStatus && !isHoldOrCancel;
           const rawOverdue = invoice.overdueDays ?? "";
           const overdueFormatted =
             rawOverdue && /\b1\s+days\b/i.test(rawOverdue)
@@ -277,7 +273,7 @@ export default function InvoicesPage() {
             total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
               decimals: 0,
             }),
-            status: paymentPending ? "PENDING" : status || InvoiceBalanceStatus.UNKNOWN,
+            status: status || InvoiceBalanceStatus.UNKNOWN,
             overdue:
               status === InvoiceBalanceStatus.PAID ||
               status === InvoiceBalanceStatus.HOLD ||

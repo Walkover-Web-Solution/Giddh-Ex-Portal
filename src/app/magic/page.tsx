@@ -52,6 +52,12 @@ export default function Magic() {
   >(undefined);
   const [ledgerBalance, setLedgerBalance] =
     useState<Awaited<ReturnType<typeof getMagicLinkLedgerBalance>>["body"]>(undefined);
+  const [accountCurrency, setAccountCurrency] = useState<boolean | undefined>(undefined);
+  const [staticCurrencyToggleOptions, setStaticCurrencyToggleOptions] = useState<{
+    transactionCode: string;
+    convertedCode: string;
+  } | null>(null);
+  const hasSetStaticCurrencyOptionsRef = useRef(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_LIMIT);
@@ -110,19 +116,29 @@ export default function Magic() {
       const isFirstLoadForLink = loadedLinkIdRef.current !== linkId;
       if (isFirstLoadForLink) {
         setLoading(true);
+        setAccountCurrency(undefined);
+        setStaticCurrencyToggleOptions(null);
+        hasSetStaticCurrencyOptionsRef.current = false;
       }
       setError(null);
 
       try {
+        const searchValue = debouncedSearchQuery.trim();
+        const accountCurrencyForRequest = staticCurrencyToggleOptions
+          ? selectedCurrency === staticCurrencyToggleOptions.transactionCode
+          : accountCurrency;
+
         const request: Parameters<typeof getMagicLinkData>[0] = {
           linkId,
           sort: SortOrder.ASC,
+          ...(accountCurrencyForRequest !== undefined
+            ? { accountCurrency: accountCurrencyForRequest }
+            : {}),
         };
         if (hasSetDatesFromAPI.current) {
           request.from = formatDateToAPI(fromDate);
           request.to = formatDateToAPI(toDate);
         }
-        const searchValue = debouncedSearchQuery.trim();
         if (searchValue) {
           request.q = searchValue;
         }
@@ -168,10 +184,8 @@ export default function Magic() {
           setNextToken(responseApiNextToken ?? null);
 
           setTransactions(transformedTransactions);
-          // Preserve currency when API returns no data (no transactions → empty currency); keep toggle visible
-          const hasValidExtractedCurrency =
-            !!extractedCurrencyData.transactionCurrency?.code?.trim();
-          if (hasValidExtractedCurrency) {
+          const hasValidCurrency = !!extractedCurrencyData.transactionCurrency?.code?.trim();
+          if (hasValidCurrency) {
             setCurrencyData(extractedCurrencyData);
           }
           setCompanyName(apiCompanyName);
@@ -181,9 +195,23 @@ export default function Magic() {
           setCreditTransactions(apiCreditTransactions || []);
           setForwardedBalance(apiForwardedBalance);
 
+          if (hasValidCurrency && !hasSetStaticCurrencyOptionsRef.current) {
+            const tCode = extractedCurrencyData.transactionCurrency?.code?.trim();
+            const cCode = extractedCurrencyData.convertedCurrency?.code?.trim();
+            if (tCode && cCode && tCode.toUpperCase() !== cCode.toUpperCase()) {
+              setStaticCurrencyToggleOptions({
+                transactionCode: extractedCurrencyData.transactionCurrency!.code,
+                convertedCode: extractedCurrencyData.convertedCurrency!.code,
+              });
+              hasSetStaticCurrencyOptionsRef.current = true;
+            }
+          }
+
           const balanceRes = await getMagicLinkLedgerBalance({
             linkId,
-            accountCurrency: true,
+            ...(accountCurrencyForRequest !== undefined
+              ? { accountCurrency: accountCurrencyForRequest }
+              : {}),
             ...(searchValue ? { q: searchValue } : {}),
             ...(hasSetDatesFromAPI.current
               ? { from: formatDateToAPI(fromDate), to: formatDateToAPI(toDate) }
@@ -191,13 +219,14 @@ export default function Magic() {
           });
           if (balanceRes.status === "success" && balanceRes.body) {
             setLedgerBalance(balanceRes.body);
+            if (balanceRes.body.accountCurrency !== undefined) {
+              setAccountCurrency(balanceRes.body.accountCurrency);
+            }
           } else {
             setLedgerBalance(undefined);
           }
 
-          // Set selected currency from API: initial load uses transaction currency; refetch keeps user choice if still valid
-          // Only when we have valid extracted currency (skip when no data so we don't set selectedCurrency to "")
-          if (hasValidExtractedCurrency) {
+          if (hasValidCurrency) {
             const transactionCurrencyCode = extractedCurrencyData.transactionCurrency?.code
               ?.trim()
               .toUpperCase();
@@ -208,7 +237,18 @@ export default function Magic() {
             const isValidSelection =
               selectedNorm === transactionCurrencyCode || selectedNorm === convertedCurrencyCode;
             if (isInitialMount.current && extractedCurrencyData.transactionCurrency) {
-              setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
+              if (
+                balanceRes.status === "success" &&
+                balanceRes.body?.accountCurrency !== undefined
+              ) {
+                setSelectedCurrency(
+                  balanceRes.body.accountCurrency
+                    ? extractedCurrencyData.transactionCurrency!.code
+                    : extractedCurrencyData.convertedCurrency!.code
+                );
+              } else {
+                setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
+              }
             } else if (!isValidSelection && extractedCurrencyData.transactionCurrency) {
               setSelectedCurrency(extractedCurrencyData.transactionCurrency.code);
             }
@@ -249,6 +289,7 @@ export default function Magic() {
           setCreditTransactions([]);
           setForwardedBalance(undefined);
           setLedgerBalance(undefined);
+          setAccountCurrency(undefined);
           setApiDebitTransactionsCount(undefined);
           setApiCreditTransactionsCount(undefined);
           setApiTotalItems(undefined);
@@ -264,6 +305,7 @@ export default function Magic() {
         setCreditTransactions([]);
         setForwardedBalance(undefined);
         setLedgerBalance(undefined);
+        setAccountCurrency(undefined);
         setApiDebitTransactionsCount(undefined);
         setApiCreditTransactionsCount(undefined);
         setApiTotalItems(undefined);
@@ -287,6 +329,7 @@ export default function Magic() {
     requestReversePage,
     fetchTrigger,
     debouncedSearchQuery,
+    selectedCurrency,
   ]);
 
   const normalizeSearchForAmount = (s: string) => {
@@ -526,6 +569,8 @@ export default function Magic() {
             onViewModeChange={handleViewModeChange}
             transactionCurrency={currencyData?.transactionCurrency}
             convertedCurrency={currencyData?.convertedCurrency}
+            staticTransactionCode={staticCurrencyToggleOptions?.transactionCode}
+            staticConvertedCode={staticCurrencyToggleOptions?.convertedCode}
           />
         </section>
 

@@ -25,6 +25,7 @@ export interface MagicLinkLedgerBalanceBody {
   convertedCurrencyCode: string;
   currencySymbol: string;
   convertedCurrencySymbol: string;
+  accountCurrency?: boolean;
 }
 
 export interface MagicLinkLedgerBalanceResponse {
@@ -61,8 +62,8 @@ export const getMagicLinkLedgerBalance = async (
     if (request.to) {
       queryParts.push(`to=${encodeURIComponent(request.to)}`);
     }
-    if (request.accountCurrency === true) {
-      queryParts.push("accountCurrency=true");
+    if (request.accountCurrency !== undefined) {
+      queryParts.push(`accountCurrency=${request.accountCurrency}`);
     }
     const url = queryParts.length > 0 ? `${baseUrl}?${queryParts.join("&")}` : baseUrl;
 
