@@ -74,12 +74,18 @@ export interface PaymentUpdatePayload {
   date?: string;
 }
 
+const SESSION_HEADER = "Session-Id";
+
+function sessionHeaders(sessionId?: string): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (sessionId) headers[SESSION_HEADER] = sessionId;
+  return headers;
+}
+
 export async function getPaymentMethods(
   request: PaymentRequest
 ): Promise<{ status: string; body: PaymentMethodsResponse }> {
-  const headers: Record<string, string> = {
-    "Session-id": request.sessionId ?? "",
-  };
+  const headers = sessionHeaders(request.sessionId);
 
   const response = await apiClient.get(
     API_PATHS.paymentMethods(request.companyUniqueName, request.accountUniqueName),
@@ -115,7 +121,7 @@ export async function getInvoicePayVoucherDetails(
 ): Promise<{ status: string; body: InvoicePayVoucherDetailsResponse }> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "Session-id": request.sessionId ?? "",
+    ...sessionHeaders(request.sessionId),
   };
 
   const response = await apiClient.post(
@@ -132,9 +138,7 @@ export type PaymentMethodListResponse = Record<string, Record<string, string>>;
 export async function getPaymentMethodList(
   request: PaymentRequest
 ): Promise<{ status: string; body: PaymentMethodListResponse }> {
-  const headers: Record<string, string> = {
-    "Session-id": request.sessionId ?? "",
-  };
+  const headers = sessionHeaders(request.sessionId);
 
   const response = await apiClient.get(
     API_PATHS.paymentMethodList(request.companyUniqueName, request.accountUniqueName),
@@ -148,10 +152,8 @@ export async function getVoucherPaymentDetails(
 ): Promise<{ status: string; body: PaymentDetailsResponse }> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    ...sessionHeaders(request.sessionId),
   };
-  if (request.sessionId) {
-    headers["Session-id"] = request.sessionId;
-  }
 
   const payload: any = {
     paymentGatewayType: request.paymentGatewayType,

@@ -59,17 +59,6 @@ export default function Auth() {
       }
     };
 
-    // Token present but company/country missing (e.g. link from Giddh without company param)
-    if (token && !configLoading && !companyName && !hasCalledRef.current) {
-      hasCalledRef.current = true;
-      showToast(
-        "This sign-in link is incomplete. Please use the portal link from your invitation (it should open from your company's portal URL).",
-        "error"
-      );
-      router.replace("/");
-      return;
-    }
-
     const authenticateUser = async () => {
       if (!token || !companyName || hasCalledRef.current || configLoading) return;
 

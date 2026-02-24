@@ -244,24 +244,27 @@ export default function InvoicesPage() {
 
   const validBalanceStatuses = useMemo(() => new Set(Object.values(InvoiceBalanceStatus)), []);
 
+  const getInvoiceBalanceStatus = (invoice: { balanceStatus?: string; balancePayment?: string }) =>
+    (invoice.balanceStatus || invoice.balancePayment || "").toUpperCase().replace(/\s+/g, "-");
+
+  const isPaymentPending = (invoice: { paymentInfo?: { paymentStatus?: string } }) =>
+    (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
+
   const allInvoicesData: Invoice[] = useMemo(
     () =>
       (allInvoices || [])
         .filter((invoice) => {
-          const status = (invoice.balanceStatus || "").toUpperCase().replace(/\s+/g, "-");
-          const isPendingPayment =
-            (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
-          return validBalanceStatuses.has(status as InvoiceBalanceStatus) && !isPendingPayment;
+          const status = getInvoiceBalanceStatus(invoice);
+          return validBalanceStatuses.has(status as InvoiceBalanceStatus);
         })
         .map((invoice) => {
-          const status = (invoice.balanceStatus || "").toUpperCase().replace(/\s+/g, "-");
+          const status = getInvoiceBalanceStatus(invoice);
           const isPayableStatus =
             status === InvoiceBalanceStatus.UNPAID || status === InvoiceBalanceStatus.PARTIAL_PAID;
           const isHoldOrCancel =
             status === InvoiceBalanceStatus.HOLD || status === InvoiceBalanceStatus.CANCEL;
-          const isPendingPayment =
-            (invoice.paymentInfo?.paymentStatus ?? "").toUpperCase() === "PENDING";
-          const showPayNow = isPayableStatus && !isHoldOrCancel && !isPendingPayment;
+          const paymentPending = isPaymentPending(invoice);
+          const showPayNow = isPayableStatus && !isHoldOrCancel && !paymentPending;
           const rawOverdue = invoice.overdueDays ?? "";
           const overdueFormatted =
             rawOverdue && /\b1\s+days\b/i.test(rawOverdue)
@@ -274,7 +277,7 @@ export default function InvoicesPage() {
             total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
               decimals: 0,
             }),
-            status: status || InvoiceBalanceStatus.UNKNOWN,
+            status: paymentPending ? "PENDING" : status || InvoiceBalanceStatus.UNKNOWN,
             overdue:
               status === InvoiceBalanceStatus.PAID ||
               status === InvoiceBalanceStatus.HOLD ||
@@ -351,9 +354,11 @@ export default function InvoicesPage() {
       accessor: (row: Invoice) => (
         <span
           className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-            row.status === InvoiceBalanceStatus.PAID
-              ? "bg-green-100 text-green-800"
-              : "bg-orange-100 text-orange-800"
+            row.status === "PENDING"
+              ? "bg-amber-100 text-amber-800"
+              : row.status === InvoiceBalanceStatus.PAID
+                ? "bg-green-100 text-green-800"
+                : "bg-orange-100 text-orange-800"
           }`}
         >
           {row.status}
