@@ -39,17 +39,20 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     async function loadConfig() {
       let whiteLabelData = getStoredWhiteLabel();
 
-      try {
-        const response = await fetch(`${DEFAULT_CONFIG.GIDDH_API_URL}/white-label`);
-        const data = await response.json();
+      const pathname = window.location.pathname;
+      if (pathname !== "/magic" && pathname !== "/magic.html") {
+        try {
+          const response = await fetch(`${DEFAULT_CONFIG.GIDDH_API_URL}/white-label`);
+          const data = await response.json();
 
-        if (data?.body) {
-          whiteLabelData = data.body;
-          localStorage.setItem("whiteLabel", JSON.stringify(whiteLabelData));
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err instanceof Error ? err : new Error("Failed to load config"));
+          if (data?.body) {
+            whiteLabelData = data.body;
+            localStorage.setItem("whiteLabel", JSON.stringify(whiteLabelData));
+          }
+        } catch (err) {
+          if (isMounted) {
+            setError(err instanceof Error ? err : new Error("Failed to load config"));
+          }
         }
       }
 
