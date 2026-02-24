@@ -4,7 +4,7 @@ import { DataTable } from "@/components/DataTable";
 import { Dropdown } from "@/components/Dropdown";
 import { Pagination } from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -34,6 +34,8 @@ import { PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { InvoiceBalanceStatus, INVOICE_BALANCE_STATUS_LABELS } from "@/constants/invoiceStatus";
 import type { Invoice, InvoiceSortColumn } from "./types";
+import { getPaymentMethods, PAYMENT_METHODS_ENUM } from "@/utils/payment";
+import { PayNow } from "@/components/PayNow";
 
 export type StatusFilterValue = "All Invoices" | InvoiceBalanceStatus;
 function statusFilterToBalanceStatus(statusFilter: StatusFilterValue): string[] {
@@ -51,6 +53,8 @@ export default function InvoicesPage() {
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
+  const [directPayInvoiceId, setDirectPayInvoiceId] = useState<string | null>(null);
+  const [checkingPayMethods, setCheckingPayMethods] = useState<string | null>(null);
 
   const companyName = params?.company as string;
   const country = params?.country as string;
@@ -110,21 +114,83 @@ export default function InvoicesPage() {
     router.push(`${path}?${params.toString()}`);
   };
 
-  const handlePayNowClick = (e: React.MouseEvent, invoiceUniqueName: string) => {
+  const navigateToInvoicePay = useCallback(
+    (invoiceUniqueName: string) => {
+      const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+        companyUniqueNameFromRedux,
+        accountUniqueNameFromRedux
+      );
+      if (!accountUniqueName) {
+        showToast("Account information is missing. Please refresh or log in again.", "error");
+        return;
+      }
+      const search = new URLSearchParams();
+      if (companyUniqueName) search.set("companyUniqueName", companyUniqueName);
+      const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice-pay/account/${encodeURIComponent(accountUniqueName)}/voucher/${encodeURIComponent(invoiceUniqueName)}`;
+      router.push(search.toString() ? `${path}?${search.toString()}` : path);
+    },
+    [
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux,
+      companyName,
+      country,
+      router,
+      showToast,
+    ]
+  );
+
+  const handlePayNowClick = async (e: React.MouseEvent, invoiceUniqueName: string) => {
     e.preventDefault();
     e.stopPropagation();
+
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
     if (!accountUniqueName) {
-      showToast("Account information is missing. Please refresh or log in again.", "error");
       return;
     }
-    const search = new URLSearchParams();
-    if (companyUniqueName) search.set("companyUniqueName", companyUniqueName);
-    const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice-pay/account/${encodeURIComponent(accountUniqueName)}/voucher/${encodeURIComponent(invoiceUniqueName)}`;
-    router.push(search.toString() ? `${path}?${search.toString()}` : path);
+    if (!companyUniqueName) {
+      navigateToInvoicePay(invoiceUniqueName);
+      return;
+    }
+
+    setCheckingPayMethods(invoiceUniqueName);
+    try {
+      const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const response = await getPaymentMethods({
+        companyUniqueName,
+        accountUniqueName,
+        sessionId: sessionId || undefined,
+      });
+
+      const body = (response?.body ?? {}) as Record<string, unknown>;
+      const isEnabled = (val: unknown) =>
+        val === true ||
+        (val && typeof val === "object" && (val as { enabled?: boolean }).enabled !== false);
+      const enabledMethods = [
+        PAYMENT_METHODS_ENUM.RAZORPAY,
+        PAYMENT_METHODS_ENUM.PAYPAL,
+        PAYMENT_METHODS_ENUM.PAYU,
+      ].filter((key) => {
+        const variants = [
+          key,
+          key.toLowerCase(),
+          key.charAt(0).toUpperCase() + key.slice(1).toLowerCase(),
+        ];
+        return variants.some((v) => isEnabled(body[v]));
+      });
+
+      if (enabledMethods.length === 1) {
+        setDirectPayInvoiceId(invoiceUniqueName);
+      } else {
+        navigateToInvoicePay(invoiceUniqueName);
+      }
+    } catch {
+      navigateToInvoicePay(invoiceUniqueName);
+    } finally {
+      setCheckingPayMethods(null);
+    }
   };
 
   const handleClearFilters = () => {
@@ -370,15 +436,33 @@ export default function InvoicesPage() {
       accessor: (row: Invoice) => (
         <div className="flex gap-2">
           {row.showPayNow && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={(e) => handlePayNowClick(e, row.id)}
-              className="shrink-0"
-            >
-              Pay Now
-            </Button>
+            <>
+              {directPayInvoiceId === row.id ? (
+                <PayNow
+                  invoiceUniqueName={row.id}
+                  invoiceNumber={row.invoiceNo}
+                  canPay
+                  autoTrigger
+                  variant="button"
+                  buttonVariant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onSuccess={() => setDirectPayInvoiceId(null)}
+                  onAutoTriggerDone={() => setDirectPayInvoiceId(null)}
+                />
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => handlePayNowClick(e, row.id)}
+                  disabled={checkingPayMethods === row.id}
+                  className="shrink-0"
+                >
+                  {checkingPayMethods === row.id ? "Loading..." : "Pay Now"}
+                </Button>
+              )}
+            </>
           )}
           <button
             onClick={() => handleDownloadInvoice(row.id, row.invoiceNo)}

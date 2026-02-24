@@ -52,6 +52,10 @@ interface PayNowProps {
   selectedPaymentMethod?: PAYMENT_METHODS_ENUM | null;
   /** When invoicePayMode: custom button label. */
   buttonText?: string;
+  /** When true, automatically triggers handlePayNow on mount (used for single-method direct pay from invoice list). */
+  autoTrigger?: boolean;
+  /** Callback when autoTrigger payment is dismissed or cancelled (e.g. to reset parent state). */
+  onAutoTriggerDone?: () => void;
 }
 
 declare global {
@@ -75,6 +79,8 @@ export function PayNow({
   paymentDetails: paymentDetailsFromParent,
   selectedPaymentMethod: selectedPaymentMethodFromParent,
   buttonText: buttonTextProp,
+  autoTrigger = false,
+  onAutoTriggerDone,
 }: PayNowProps) {
   const params = useParams();
   const router = useRouter();
@@ -102,6 +108,15 @@ export function PayNow({
   useEffect(() => {
     loadRazorpayScript();
   }, []);
+
+  const autoTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (autoTrigger && canPay && !autoTriggeredRef.current) {
+      autoTriggeredRef.current = true;
+      handlePayNow();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoTrigger, canPay]);
 
   const loadRazorpayScript = () => {
     if (typeof window !== "undefined" && !window.Razorpay) {
@@ -194,6 +209,7 @@ export function PayNow({
     if (!companyUniqueName || !accountUniqueName) {
       showToast("Missing company or account information", "error");
       setIsProcessing(false);
+      onAutoTriggerDone?.();
       return;
     }
 
@@ -212,6 +228,7 @@ export function PayNow({
         method = await loadPaymentMethods(companyUniqueName, accountUniqueName);
         if (!method) {
           setIsProcessing(false);
+          onAutoTriggerDone?.();
           return;
         }
       }
@@ -225,6 +242,7 @@ export function PayNow({
         );
       }
       setIsProcessing(false);
+      onAutoTriggerDone?.();
       return;
     }
 
@@ -303,6 +321,7 @@ export function PayNow({
       } else {
         showToast("Failed to initialize payment", "error");
         setIsProcessing(false);
+        onAutoTriggerDone?.();
       }
     } catch (err: unknown) {
       logger.error("Error processing payment", err);
@@ -314,6 +333,7 @@ export function PayNow({
         error.response?.data?.message ?? (err instanceof Error ? err.message : null);
       showToast(apiMessage as string, "error");
       setIsProcessing(false);
+      onAutoTriggerDone?.();
     }
   };
 

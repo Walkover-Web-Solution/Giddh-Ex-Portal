@@ -13,6 +13,8 @@ import {
   PaymentDetailsResponse,
   Comment,
 } from "@/utils/invoicePreview";
+import { getPaymentMethods, PAYMENT_METHODS_ENUM } from "@/utils/payment";
+import { PayNow } from "@/components/PayNow";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
@@ -79,6 +81,8 @@ export default function InvoicePreviewPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentError, setCommentError] = useState("");
   const [pdfUrl, setPdfUrl] = useState("");
+  const [directPay, setDirectPay] = useState(false);
+  const [checkingPayMethods, setCheckingPayMethods] = useState(false);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -212,13 +216,59 @@ export default function InvoicePreviewPage() {
     router.push(`/${companyName}/${country}/invoice`);
   };
 
-  const handlePayNowClick = () => {
+  const navigateToInvoicePay = () => {
     const { companyUniqueName, accountUniqueName } = getNames();
     if (!accountUniqueName) return;
     const search = new URLSearchParams();
     if (companyUniqueName) search.set("companyUniqueName", companyUniqueName);
     const path = `/${encodeURIComponent(companyName)}/${encodeURIComponent(country)}/invoice-pay/account/${encodeURIComponent(accountUniqueName)}/voucher/${encodeURIComponent(voucherUniqueName)}`;
     router.push(search.toString() ? `${path}?${search.toString()}` : path);
+  };
+
+  const handlePayNowClick = async () => {
+    const { companyUniqueName, accountUniqueName } = getNames();
+    if (!accountUniqueName) return;
+    if (!companyUniqueName) {
+      navigateToInvoicePay();
+      return;
+    }
+
+    setCheckingPayMethods(true);
+    try {
+      const sid = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const response = await getPaymentMethods({
+        companyUniqueName,
+        accountUniqueName,
+        sessionId: sid || undefined,
+      });
+
+      const body = (response?.body ?? {}) as Record<string, unknown>;
+      const isEnabled = (val: unknown) =>
+        val === true ||
+        (val && typeof val === "object" && (val as { enabled?: boolean }).enabled !== false);
+      const enabledMethods = [
+        PAYMENT_METHODS_ENUM.RAZORPAY,
+        PAYMENT_METHODS_ENUM.PAYPAL,
+        PAYMENT_METHODS_ENUM.PAYU,
+      ].filter((key) => {
+        const variants = [
+          key,
+          key.toLowerCase(),
+          key.charAt(0).toUpperCase() + key.slice(1).toLowerCase(),
+        ];
+        return variants.some((v) => isEnabled(body[v]));
+      });
+
+      if (enabledMethods.length === 1) {
+        setDirectPay(true);
+      } else {
+        navigateToInvoicePay();
+      }
+    } catch {
+      navigateToInvoicePay();
+    } finally {
+      setCheckingPayMethods(false);
+    }
   };
 
   const handlePrint = () => {
@@ -335,9 +385,31 @@ export default function InvoicePreviewPage() {
 
             <div className="flex items-center gap-2">
               {voucher?.canPay && (
-                <Button type="button" variant="outline" size="md" onClick={handlePayNowClick}>
-                  Pay Now
-                </Button>
+                <>
+                  {directPay ? (
+                    <PayNow
+                      invoiceUniqueName={voucherUniqueName}
+                      invoiceNumber={voucher.number}
+                      canPay
+                      autoTrigger
+                      variant="button"
+                      buttonVariant="outline"
+                      size="md"
+                      onSuccess={() => setDirectPay(false)}
+                      onAutoTriggerDone={() => setDirectPay(false)}
+                    />
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="md"
+                      onClick={handlePayNowClick}
+                      disabled={checkingPayMethods}
+                    >
+                      {checkingPayMethods ? "Loading..." : "Pay Now"}
+                    </Button>
+                  )}
+                </>
               )}
               <Button variant="outline" size="md" onClick={handlePrint}>
                 Print
