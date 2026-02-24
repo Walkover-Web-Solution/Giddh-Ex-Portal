@@ -391,7 +391,7 @@ export default function AccountStatementPage() {
                     toDate={toDate}
                     onFromDateChange={handleFromDateChange}
                     onToDateChange={handleToDateChange}
-                    openDirection="top"
+                    openDirection="auto"
                     position="left"
                     compact
                   />

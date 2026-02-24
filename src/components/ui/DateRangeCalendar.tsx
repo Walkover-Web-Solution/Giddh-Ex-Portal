@@ -68,10 +68,10 @@ export interface DateRangeCalendarProps {
    */
   calendarWidth?: string;
   /**
-   * Where the calendar popover opens relative to the trigger
-   * @default "bottom"
+   * Where the calendar popover opens relative to the trigger.
+   * @default "auto"
    */
-  openDirection?: "top" | "bottom";
+  openDirection?: "top" | "bottom" | "auto";
   /**
    * Use smaller spacing and cell size (very small / compact mode)
    * @default false
@@ -93,15 +93,26 @@ export function DateRangeCalendar({
   maxDate,
   position = "right",
   calendarWidth = "w-[min(320px,calc(100vw-1rem))] max-w-[310px]",
-  openDirection = "bottom",
+  openDirection = "auto",
   compact = false,
 }: DateRangeCalendarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [effectiveOpenDirection, setEffectiveOpenDirection] = useState<"top" | "bottom">("bottom");
   const [currentMonth, setCurrentMonth] = useState(fromDate);
   const [selecting, setSelecting] = useState<"from" | "to">("from");
   const [tempFromDate, setTempFromDate] = useState<Date | null>(null);
   const [tempToDate, setTempToDate] = useState<Date | null>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
+
+  const updateOpenDirection = () => {
+    if (openDirection !== "auto" || typeof window === "undefined") return;
+    const el = calendarRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    setEffectiveOpenDirection(spaceBelow >= spaceAbove ? "bottom" : "top");
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -258,7 +269,8 @@ export function DateRangeCalendar({
     center: "left-1/2 -translate-x-1/2",
   };
 
-  const directionClass = openDirection === "top" ? "bottom-full mb-2" : "top-full mt-2";
+  const resolvedDirection = openDirection === "auto" ? effectiveOpenDirection : openDirection;
+  const directionClass = resolvedDirection === "top" ? "bottom-full mb-2" : "top-full mt-2";
 
   const dateRangeFormatted = formatDateRange();
 
@@ -269,21 +281,23 @@ export function DateRangeCalendar({
           fromDate,
           toDate,
           onClick: () => {
-            setIsOpen((open) => !open);
             if (!isOpen) {
+              updateOpenDirection();
               setCurrentMonth(fromDate);
               setSelecting("from");
             }
+            setIsOpen((open) => !open);
           },
         })
       ) : (
         <button
           onClick={() => {
-            setIsOpen((open) => !open);
             if (!isOpen) {
+              updateOpenDirection();
               setCurrentMonth(fromDate);
               setSelecting("from");
             }
+            setIsOpen((open) => !open);
           }}
           className="flex items-center gap-1.5 rounded-md border border-blue-900/30 px-2 py-1.5 text-xs text-blue-900 transition-colors hover:border-blue-900/50 hover:bg-blue-50 sm:gap-2 sm:px-3 sm:py-2 sm:text-sm"
         >
@@ -374,7 +388,7 @@ export function DateRangeCalendar({
                     <time
                       dateTime={format(day, "yyyy-MM-dd")}
                       className={[
-                        "relative z-10 mx-auto flex h-3 w-3 items-center justify-center rounded-full text-[11px] sm:h-7 sm:w-7 sm:text-xs",
+                        "relative z-10 mx-auto flex h-4 w-4 items-center justify-center rounded-full text-[11px] sm:h-7 sm:w-7 sm:text-xs",
                         (isStart || isEnd) && "bg-blue-900 font-semibold text-white",
                       ]
                         .filter(Boolean)

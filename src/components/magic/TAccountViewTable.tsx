@@ -578,49 +578,6 @@ export function TAccountViewTable({
             );
           })}
         </div>
-
-        <div className="grid grid-cols-[1fr_1fr] border-t border-gray-200 bg-gray-50">
-          <div className="grid grid-cols-[minmax(90px,auto)_minmax(150px,1fr)_minmax(100px,auto)] px-4 py-4 pl-6 pr-4 font-semibold text-gray-900">
-            <span className="col-span-2">Total</span>
-            <span className="whitespace-nowrap text-right">
-              <div>
-                {format(
-                  isConvertedCurrencySelected ? (totalDebitConverted ?? totalDebit) : totalDebit,
-                  primaryCurrency?.symbol
-                )}
-              </div>
-              {hasMultipleCurrencies &&
-                (isConvertedCurrencySelected ? totalDebit : totalDebitConverted) != null && (
-                  <div className="whitespace-nowrap text-[10px] font-normal text-gray-600">
-                    {format(
-                      isConvertedCurrencySelected ? totalDebit : (totalDebitConverted ?? null),
-                      secondaryCurrency?.symbol
-                    )}
-                  </div>
-                )}
-            </span>
-          </div>
-          <div className="grid grid-cols-[minmax(90px,auto)_minmax(150px,1fr)_minmax(100px,auto)] border-l border-gray-200 px-4 py-4 pr-6 font-semibold text-gray-900">
-            <span className="col-span-2">Total</span>
-            <span className="whitespace-nowrap text-right">
-              <div>
-                {format(
-                  isConvertedCurrencySelected ? (totalCreditConverted ?? totalCredit) : totalCredit,
-                  primaryCurrency?.symbol
-                )}
-              </div>
-              {hasMultipleCurrencies &&
-                (isConvertedCurrencySelected ? totalCredit : totalCreditConverted) != null && (
-                  <div className="whitespace-nowrap text-[10px] font-normal text-gray-600">
-                    {format(
-                      isConvertedCurrencySelected ? totalCredit : (totalCreditConverted ?? null),
-                      secondaryCurrency?.symbol
-                    )}
-                  </div>
-                )}
-            </span>
-          </div>
-        </div>
       </div>
     </DataTable>
   );

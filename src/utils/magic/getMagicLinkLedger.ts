@@ -93,8 +93,8 @@ export interface GetMagicLinkLedgerRequest {
   count?: number;
   paginationToken?: string | null;
   reversePage?: boolean;
-  /** Search query; sent as query param `q` */
   q?: string;
+  accountCurrency?: boolean;
 }
 
 export const getMagicLinkLedger = async (
@@ -127,6 +127,9 @@ export const getMagicLinkLedger = async (
     }
     if (request.q != null && request.q !== "") {
       queryParts.push(`q=${encodeURIComponent(request.q)}`);
+    }
+    if (request.accountCurrency !== undefined) {
+      queryParts.push(`accountCurrency=${request.accountCurrency}`);
     }
     const url = `${config.GIDDH_API_URL}${GIDDH_MAGIC_LINK_PATHS.ledger(request.linkId)}?${queryParts.join("&")}`;
 

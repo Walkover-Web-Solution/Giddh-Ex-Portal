@@ -17,6 +17,8 @@ interface SearchAndViewControlsProps {
   onViewModeChange: (mode: ViewMode) => void;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
+  staticTransactionCode?: string;
+  staticConvertedCode?: string;
 }
 
 export function SearchAndViewControls({
@@ -28,19 +30,30 @@ export function SearchAndViewControls({
   onViewModeChange,
   transactionCurrency,
   convertedCurrency,
+  staticTransactionCode,
+  staticConvertedCode,
 }: SearchAndViewControlsProps) {
   const transactionCode = transactionCurrency?.code?.trim().toUpperCase();
   const convertedCode = convertedCurrency?.code?.trim().toUpperCase();
   const hasTwoDistinct = !!transactionCode && !!convertedCode && transactionCode !== convertedCode;
 
+  const useStaticLabels =
+    !!staticTransactionCode?.trim() &&
+    !!staticConvertedCode?.trim() &&
+    staticTransactionCode.trim().toUpperCase() !== staticConvertedCode.trim().toUpperCase();
   const availableCurrencies =
-    transactionCurrency && convertedCurrency && hasTwoDistinct
+    useStaticLabels && staticTransactionCode && staticConvertedCode
       ? [
-          { code: transactionCurrency.code, label: transactionCurrency.code },
-          { code: convertedCurrency.code, label: convertedCurrency.code },
+          { code: staticTransactionCode.trim(), label: staticTransactionCode.trim() },
+          { code: staticConvertedCode.trim(), label: staticConvertedCode.trim() },
         ]
-      : [];
-  const showCurrencyToggle = hasTwoDistinct && availableCurrencies.length === 2;
+      : transactionCurrency && convertedCurrency && hasTwoDistinct
+        ? [
+            { code: transactionCurrency.code, label: transactionCurrency.code },
+            { code: convertedCurrency.code, label: convertedCurrency.code },
+          ]
+        : [];
+  const showCurrencyToggle = availableCurrencies.length === 2;
   return (
     <div className="w-full border-blue-900/20 bg-white">
       <div className="mx-auto max-w-7xl py-3 sm:py-4">
