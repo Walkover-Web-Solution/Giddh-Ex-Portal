@@ -36,9 +36,9 @@ export function SearchAndViewControls({
   const availableCurrencies =
     transactionCurrency && convertedCurrency && hasTwoDistinct
       ? [
-        { code: transactionCurrency.code, label: transactionCurrency.code },
-        { code: convertedCurrency.code, label: convertedCurrency.code },
-      ]
+          { code: transactionCurrency.code, label: transactionCurrency.code },
+          { code: convertedCurrency.code, label: convertedCurrency.code },
+        ]
       : [];
   const showCurrencyToggle = hasTwoDistinct && availableCurrencies.length === 2;
   return (
@@ -130,8 +130,9 @@ export function SearchAndViewControls({
                       type="button"
                       onClick={() => onViewModeChange(value)}
                       aria-label={`View: ${LEDGER_VIEW_LABEL[value]}`}
-                      className={`relative z-10 flex-1 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:outline-2 focus-visible:outline-indigo-600 sm:px-3 sm:py-2 sm:text-sm ${value === LedgerView.STATEMENT_VIEW ? "min-w-[7.5rem]" : "min-w-0"
-                        }`}
+                      className={`relative z-10 flex-1 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:outline-2 focus-visible:outline-indigo-600 sm:px-3 sm:py-2 sm:text-sm ${
+                        value === LedgerView.STATEMENT_VIEW ? "min-w-[7.5rem]" : "min-w-0"
+                      }`}
                     >
                       {LEDGER_VIEW_TOGGLE_LABEL[value]}
                     </button>
@@ -142,7 +143,7 @@ export function SearchAndViewControls({
           </div>
         </div>
         {searchQuery.trim() ? (
-          <p className="text-xs text-blue-900 sm:text-sm">
+          <p className="text-xs font-semibold text-yellow-500 sm:text-sm">
             We do not show Opening and Closing balance when filters applied.
           </p>
         ) : null}

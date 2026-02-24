@@ -304,9 +304,15 @@ export function PayNow({
         showToast("Failed to initialize payment", "error");
         setIsProcessing(false);
       }
-    } catch (error) {
-      logger.error("Error processing payment", error);
-      showToast("Failed to process payment. Please try again.", "error");
+    } catch (err: unknown) {
+      logger.error("Error processing payment", err);
+      const error = err as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      const apiMessage =
+        error.response?.data?.message ?? (err instanceof Error ? err.message : null);
+      showToast(apiMessage as string, "error");
       setIsProcessing(false);
     }
   };

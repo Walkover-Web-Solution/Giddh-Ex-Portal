@@ -74,14 +74,14 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
   const params = useParams();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const hasCalledApis = useRef(false);
+  const hasCalledApisForCompany = useRef<string | null>(null);
 
   const companyName = params?.company as string;
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
 
   useEffect(() => {
-    if (hasCalledApis.current) return;
+    if (hasCalledApisForCompany.current === companyName) return;
     if (typeof window === "undefined") return;
 
     const isLoginOrAuth = pathname?.includes("/login") || pathname?.includes("/auth");
@@ -94,7 +94,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
     let accountUniqueName = accountUniqueNameFromRedux;
 
     if (!companyUniqueName) {
-      const userData = localStorage.getItem("userData");
+      const userData = localStorage.getItem(`userData_${companyName}`);
       if (userData) {
         try {
           const parsedData = JSON.parse(userData);
@@ -107,7 +107,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
     }
 
     if (companyName && companyUniqueName && accountUniqueName) {
-      hasCalledApis.current = true;
+      hasCalledApisForCompany.current = companyName;
       dispatch(fetchCompanyDetails({ companyName, companyUniqueName, accountUniqueName })).catch(
         () => {}
       );

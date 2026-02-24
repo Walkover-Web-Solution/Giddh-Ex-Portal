@@ -45,9 +45,9 @@ export async function setupUserSession({
     })
   );
 
-  localStorage.setItem("userEmail", email);
+  localStorage.setItem(`userEmail_${company}`, email);
   localStorage.setItem(
-    "userData",
+    `userData_${company}`,
     JSON.stringify({
       ...fullUserData,
       companyUniqueName,

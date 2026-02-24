@@ -60,7 +60,7 @@ export function SwitchAccountButton() {
     setError(null);
 
     try {
-      const email = localStorage.getItem("userEmail");
+      const email = localStorage.getItem(`userEmail_${company}`);
       const proxyToken = localStorage.getItem("proxy_auth_token");
 
       if (!email || !proxyToken) {
@@ -117,7 +117,7 @@ export function SwitchAccountButton() {
 
     try {
       const proxyToken = localStorage.getItem("proxy_auth_token");
-      const email = localStorage.getItem("userEmail");
+      const email = localStorage.getItem(`userEmail_${company}`);
 
       if (!proxyToken || !email) {
         setError("Authentication data not found. Please log in again.");
@@ -223,7 +223,8 @@ export function SwitchAccountButton() {
                     (!currentAccountUniqueName &&
                       typeof window !== "undefined" &&
                       account.account.uniqueName ===
-                        JSON.parse(localStorage.getItem("userData") || "{}")?.account?.uniqueName);
+                        JSON.parse(localStorage.getItem(`userData_${company}`) || "{}")?.account
+                          ?.uniqueName);
                   return (
                     <button
                       key={index}

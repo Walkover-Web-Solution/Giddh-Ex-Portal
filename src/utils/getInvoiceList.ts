@@ -10,10 +10,13 @@ export interface InvoiceVoucher {
     amountForAccount: number;
   };
   balanceStatus: string;
+  balancePayment?: string;
   dueDate?: string;
   overdueDays?: string;
   paymentInfo?: {
-    paymentStatus: string;
+    paymentId?: string;
+    paymentProvider?: string;
+    paymentStatus?: string;
   };
   companyCurrencySymbol?: string;
 }

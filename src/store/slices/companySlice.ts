@@ -118,7 +118,7 @@ interface CompanyInfo {
   companyAddress?: CompanyAddressState;
 }
 
-interface CompanyState {
+export interface CompanyState {
   [companyName: string]: CompanyInfo;
 }
 
