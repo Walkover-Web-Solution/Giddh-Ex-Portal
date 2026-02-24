@@ -397,51 +397,6 @@ export function StatementViewTable({
             );
           })}
         </tbody>
-
-        <tfoot className="divide-y divide-gray-200 bg-gray-50 font-semibold">
-          <tr>
-            <td colSpan={2} className="py-4 pl-4 pr-3 text-sm text-gray-900 sm:pl-6">
-              Total
-            </td>
-            <td className="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-900">
-              <div className="whitespace-nowrap">
-                {format(
-                  getAmount(totalDebit, totalDebitConverted, isConvertedCurrencySelected),
-                  primaryCurrency?.symbol
-                )}
-              </div>
-              {hasMultipleCurrencies &&
-                getAmount(totalDebit, totalDebitConverted, !isConvertedCurrencySelected) !=
-                  null && (
-                  <div className="whitespace-nowrap text-[10px] font-normal text-blue-900/60">
-                    {format(
-                      getAmount(totalDebit, totalDebitConverted, !isConvertedCurrencySelected),
-                      secondaryCurrency?.symbol
-                    )}
-                  </div>
-                )}
-            </td>
-            <td className="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-900">
-              <div className="whitespace-nowrap">
-                {format(
-                  getAmount(totalCredit, totalCreditConverted, isConvertedCurrencySelected),
-                  primaryCurrency?.symbol
-                )}
-              </div>
-              {hasMultipleCurrencies &&
-                getAmount(totalCredit, totalCreditConverted, !isConvertedCurrencySelected) !=
-                  null && (
-                  <div className="whitespace-nowrap text-[10px] font-normal text-blue-900/60">
-                    {format(
-                      getAmount(totalCredit, totalCreditConverted, !isConvertedCurrencySelected),
-                      secondaryCurrency?.symbol
-                    )}
-                  </div>
-                )}
-            </td>
-            <td className="py-4 pl-3 pr-4 sm:pr-6" />
-          </tr>
-        </tfoot>
       </table>
     </DataTable>
   );

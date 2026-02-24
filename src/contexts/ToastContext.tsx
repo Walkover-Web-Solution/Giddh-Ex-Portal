@@ -43,12 +43,12 @@ const toastStyles = {
       "inline-flex rounded-md bg-red-50 p-1.5 text-red-500 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 focus-visible:ring-offset-red-50 focus-visible:outline-none",
   },
   info: {
-    container: "rounded-md bg-blue-50 p-4",
+    container: "rounded-md bg-yellow-50 p-4",
     icon: InformationCircleIcon,
-    iconClass: "size-5 text-blue-400",
-    messageClass: "text-sm font-medium text-blue-800",
+    iconClass: "size-5 text-yellow-400",
+    messageClass: "text-sm font-medium text-yellow-800",
     dismissClass:
-      "inline-flex rounded-md bg-blue-50 p-1.5 text-blue-500 hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-50 focus-visible:outline-none",
+      "inline-flex rounded-md bg-yellow-50 p-1.5 text-yellow-600 hover:bg-yellow-100 focus-visible:ring-2 focus-visible:ring-yellow-600 focus-visible:ring-offset-2 focus-visible:ring-offset-yellow-50 focus-visible:outline-none",
   },
 } as const;
 
