@@ -397,6 +397,12 @@ export default function InvoicePreviewPage() {
                       size="md"
                       onSuccess={() => setDirectPay(false)}
                       onAutoTriggerDone={() => setDirectPay(false)}
+                      companyUniqueName={
+                        companyUniqueNameFromUrl || companyUniqueNameFromRedux || undefined
+                      }
+                      accountUniqueName={
+                        accountUniqueNameFromUrl || accountUniqueNameFromRedux || undefined
+                      }
                     />
                   ) : (
                     <Button
