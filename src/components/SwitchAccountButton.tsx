@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectAccountUniqueName } from "@/store/slices/companySlice";
+import { selectAccountUniqueName, clearCompanyData } from "@/store/slices/companySlice";
 import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
 import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
@@ -148,10 +148,14 @@ export function SwitchAccountButton() {
           dispatch,
         });
 
+        // Clear stale company data from Redux so condition guards allow re-fetch after reload
+        dispatch(clearCompanyData(company));
+
+        // Clear module-level accounts cache so it re-fetches on next mount
+        delete accountsCache[company];
+
         await new Promise((resolve) => setTimeout(resolve, TIMING.REDIRECT_DELAY));
 
-        // Refresh the page to reload with new account data
-        router.refresh();
         window.location.reload();
       } else {
         const msg = (sessionResponse as { message?: string }).message ?? "Failed to switch account";
