@@ -562,6 +562,8 @@ export default function InvoicePayPage() {
                     buttonText="Proceed to Payment"
                     onSuccess={onInvoicePaySuccess}
                     className="w-48"
+                    companyUniqueName={companyUniqueName}
+                    accountUniqueName={accountUniqueName}
                   />
                 </div>
               )}

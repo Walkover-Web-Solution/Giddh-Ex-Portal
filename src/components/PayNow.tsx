@@ -56,6 +56,10 @@ interface PayNowProps {
   autoTrigger?: boolean;
   /** Callback when autoTrigger payment is dismissed or cancelled (e.g. to reset parent state). */
   onAutoTriggerDone?: () => void;
+  /** Override company unique name (used by public/unauthenticated pages where Redux/localStorage are empty). */
+  companyUniqueName?: string;
+  /** Override account unique name (used by public/unauthenticated pages where Redux/localStorage are empty). */
+  accountUniqueName?: string;
 }
 
 declare global {
@@ -81,6 +85,8 @@ export function PayNow({
   buttonText: buttonTextProp,
   autoTrigger = false,
   onAutoTriggerDone,
+  companyUniqueName: companyUniqueNameProp,
+  accountUniqueName: accountUniqueNameProp,
 }: PayNowProps) {
   const params = useParams();
   const router = useRouter();
@@ -102,6 +108,9 @@ export function PayNow({
   const sessionId = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const getCompanyAndAccountNames = () => {
+    if (companyUniqueNameProp && accountUniqueNameProp) {
+      return { companyUniqueName: companyUniqueNameProp, accountUniqueName: accountUniqueNameProp };
+    }
     return getStorageNames(companyUniqueNameFromRedux, accountUniqueNameFromRedux);
   };
 
