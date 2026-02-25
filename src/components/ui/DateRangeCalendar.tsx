@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   format,
   startOfMonth,
@@ -98,6 +99,12 @@ export function DateRangeCalendar({
 }: DateRangeCalendarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [effectiveOpenDirection, setEffectiveOpenDirection] = useState<"top" | "bottom">("bottom");
+  const [dropdownRect, setDropdownRect] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const [currentMonth, setCurrentMonth] = useState(fromDate);
   const [selecting, setSelecting] = useState<"from" | "to">("from");
   const [tempFromDate, setTempFromDate] = useState<Date | null>(null);
@@ -112,6 +119,34 @@ export function DateRangeCalendar({
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
     setEffectiveOpenDirection(spaceBelow >= spaceAbove ? "bottom" : "top");
+  };
+
+  const updateDropdownPosition = () => {
+    const element = calendarRef.current;
+    if (!element || typeof window === "undefined") return;
+    const rect = element.getBoundingClientRect();
+    const margin = 8;
+    const width = Math.min(320, window.innerWidth - margin * 2);
+    const maxLeft = window.innerWidth - width - margin;
+
+    const leftByPosition: Record<"left" | "right" | "center", number> = {
+      left: rect.left - (window.innerWidth >= 640 ? 10 : 20),
+      center: rect.left + rect.width / 2 - width / 2,
+      right: rect.right - width,
+    };
+    const left = Math.max(margin, Math.min(leftByPosition[position], maxLeft));
+
+    const openDown =
+      openDirection === "auto"
+        ? window.innerHeight - rect.bottom >= rect.top
+        : openDirection === "bottom";
+    setDropdownRect({
+      ...(openDown
+        ? { top: rect.bottom + margin }
+        : { bottom: window.innerHeight - rect.top + margin }),
+      left,
+      width: width,
+    });
   };
 
   useEffect(() => {
@@ -130,7 +165,10 @@ export function DateRangeCalendar({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const inTrigger = calendarRef.current?.contains(target);
+      const inPortal = (target as Element).closest?.("[data-date-range-calendar-portal]");
+      if (!inTrigger && !inPortal) {
         setIsOpen(false);
         setSelecting("from");
         setTempFromDate(null);
@@ -141,6 +179,22 @@ export function DateRangeCalendar({
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setDropdownRect(null);
+      return;
+    }
+    updateOpenDirection();
+    updateDropdownPosition();
+    const onScrollOrResize = () => updateDropdownPosition();
+    window.addEventListener("scroll", onScrollOrResize, true);
+    window.addEventListener("resize", onScrollOrResize);
+    return () => {
+      window.removeEventListener("scroll", onScrollOrResize, true);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
   }, [isOpen]);
 
   const monthStart = startOfMonth(currentMonth);
@@ -307,144 +361,155 @@ export function DateRangeCalendar({
         </button>
       )}
 
-      {isOpen && (
-        <div
-          className={`absolute ${positionClasses[position]} ${directionClass} z-50 h-[425px] ${calendarWidth} max-w-[calc(100vw-1rem)] rounded-lg bg-white ${compact ? "p-3" : "p-4"} overflow-y-auto shadow-lg ring-1 ring-gray-200`}
-        >
-          <div className="text-center">
-            <div className="flex items-center text-gray-900">
-              <button
-                type="button"
-                onClick={goToPreviousMonth}
-                className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
-                aria-label="Previous month"
-              >
-                <ChevronLeftIcon aria-hidden className="size-5" />
-              </button>
-              <div className="flex-auto text-sm font-semibold">
-                {format(currentMonth, "MMMM yyyy")}
+      {isOpen &&
+        dropdownRect &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            data-date-range-calendar-portal
+            className={`fixed z-[9999] h-[425px] rounded-lg bg-white ${compact ? "p-3" : "p-4"} shadow-lg ring-1 ring-gray-200`}
+            style={{
+              left: dropdownRect.left,
+              width: dropdownRect.width,
+              ...(dropdownRect.top != null ? { top: dropdownRect.top } : {}),
+              ...(dropdownRect.bottom != null ? { bottom: dropdownRect.bottom } : {}),
+            }}
+          >
+            <div className="text-center">
+              <div className="flex items-center text-gray-900">
+                <button
+                  type="button"
+                  onClick={goToPreviousMonth}
+                  className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
+                  aria-label="Previous month"
+                >
+                  <ChevronLeftIcon aria-hidden className="size-5" />
+                </button>
+                <div className="flex-auto text-sm font-semibold">
+                  {format(currentMonth, "MMMM yyyy")}
+                </div>
+                <button
+                  onClick={goToNextMonth}
+                  className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
+                  aria-label="Next month"
+                >
+                  <ChevronRightIcon aria-hidden className="size-5" />
+                </button>
               </div>
-              <button
-                onClick={goToNextMonth}
-                className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-gray-400 hover:text-gray-500"
-                aria-label="Next month"
-              >
-                <ChevronRightIcon aria-hidden className="size-5" />
-              </button>
-            </div>
 
-            <div className="mt-3 grid grid-cols-7 text-[10px] font-medium leading-5 text-gray-500 sm:mt-6 sm:text-xs sm:leading-6">
-              <div>S</div>
-              <div>M</div>
-              <div>T</div>
-              <div>W</div>
-              <div>T</div>
-              <div>F</div>
-              <div>S</div>
-            </div>
+              <div className="mt-3 grid grid-cols-7 text-[10px] font-medium leading-5 text-gray-500 sm:mt-6 sm:text-xs sm:leading-6">
+                <div>S</div>
+                <div>M</div>
+                <div>T</div>
+                <div>W</div>
+                <div>T</div>
+                <div>F</div>
+                <div>S</div>
+              </div>
 
-            <div className="mt-2 grid grid-cols-7 bg-gray-200">
-              {days.map((day, dayIdx) => {
-                const isCurrentMonth = isSameMonth(day, currentMonth);
-                const isInRange = isDateInRange(day);
-                const isStart = isDateStart(day);
-                const isEnd = isDateEnd(day);
-                const isDisabled = isDateDisabled(day);
+              <div className="mt-2 grid grid-cols-7 bg-gray-200">
+                {days.map((day, dayIdx) => {
+                  const isCurrentMonth = isSameMonth(day, currentMonth);
+                  const isInRange = isDateInRange(day);
+                  const isStart = isDateStart(day);
+                  const isEnd = isDateEnd(day);
+                  const isDisabled = isDateDisabled(day);
 
-                return (
-                  <button
-                    key={dayIdx}
-                    type="button"
-                    onClick={() => handleDateClick(day)}
-                    disabled={!isCurrentMonth || isDisabled}
-                    className={`relative h-7 bg-white text-xs disabled:cursor-not-allowed disabled:text-gray-400 sm:h-7 sm:text-sm ${
-                      isCurrentMonth && !isDisabled ? "hover:bg-gray-50" : ""
-                    }`}
-                    aria-label={
-                      isStart && isEnd
-                        ? `From and to date: ${format(day, "MMMM d, yyyy")}`
-                        : isStart
-                          ? `From date: ${format(day, "MMMM d, yyyy")}`
-                          : isEnd
-                            ? `To date: ${format(day, "MMMM d, yyyy")}`
-                            : undefined
-                    }
-                  >
-                    {isInRange && (
-                      <span className="absolute inset-0 my-1 bg-blue-900/10" aria-hidden />
-                    )}
-                    {isStart && (
-                      <span
-                        className="absolute inset-y-0 left-1 right-0 my-1 rounded-l-full bg-blue-900/10"
-                        aria-hidden
-                      />
-                    )}
-                    {isEnd && (
-                      <span
-                        className="absolute inset-y-0 left-0 right-1 my-1 rounded-r-full bg-blue-900/10"
-                        aria-hidden
-                      />
-                    )}
-                    <time
-                      dateTime={format(day, "yyyy-MM-dd")}
-                      className={[
-                        "relative z-10 mx-auto flex h-4 w-4 items-center justify-center rounded-full text-[11px] sm:h-7 sm:w-7 sm:text-xs",
-                        (isStart || isEnd) && "bg-blue-900 font-semibold text-white",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                    >
-                      {format(day, "d")}
-                    </time>
-                  </button>
-                );
-              })}
-            </div>
-
-            {quickActionButtons.length > 0 && (
-              <div className="mt-3 flex max-h-16 flex-wrap gap-1.5 overflow-y-auto border-t border-gray-100 pt-2 sm:mt-4 sm:max-h-24 sm:gap-2 sm:pt-3">
-                {quickActionButtons.map((action, idx) => {
-                  const selected = isQuickActionSelected(action);
                   return (
                     <button
-                      key={idx}
+                      key={dayIdx}
                       type="button"
-                      onClick={() => {
-                        const { from, to } = action.getDates();
-                        setTempFromDate(from);
-                        setTempToDate(to);
-                        setSelecting("from");
-                      }}
-                      className={`rounded-md px-2 py-1 text-[11px] font-semibold shadow-sm transition-colors sm:text-xs ${
-                        selected
-                          ? "bg-blue-900 text-white ring-1 ring-blue-900 hover:bg-blue-800"
-                          : "bg-white text-blue-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                      onClick={() => handleDateClick(day)}
+                      disabled={!isCurrentMonth || isDisabled}
+                      className={`relative h-7 bg-white text-xs disabled:cursor-not-allowed disabled:text-gray-400 sm:h-7 sm:text-sm ${
+                        isCurrentMonth && !isDisabled ? "hover:bg-gray-50" : ""
                       }`}
+                      aria-label={
+                        isStart && isEnd
+                          ? `From and to date: ${format(day, "MMMM d, yyyy")}`
+                          : isStart
+                            ? `From date: ${format(day, "MMMM d, yyyy")}`
+                            : isEnd
+                              ? `To date: ${format(day, "MMMM d, yyyy")}`
+                              : undefined
+                      }
                     >
-                      {action.label}
+                      {isInRange && (
+                        <span className="absolute inset-0 my-1 bg-blue-900/10" aria-hidden />
+                      )}
+                      {isStart && (
+                        <span
+                          className="absolute inset-y-0 left-1 right-0 my-1 rounded-l-full bg-blue-900/10"
+                          aria-hidden
+                        />
+                      )}
+                      {isEnd && (
+                        <span
+                          className="absolute inset-y-0 left-0 right-1 my-1 rounded-r-full bg-blue-900/10"
+                          aria-hidden
+                        />
+                      )}
+                      <time
+                        dateTime={format(day, "yyyy-MM-dd")}
+                        className={[
+                          "relative z-10 mx-auto flex h-4 w-4 items-center justify-center rounded-full text-[11px] sm:h-7 sm:w-7 sm:text-xs",
+                          (isStart || isEnd) && "bg-blue-900 font-semibold text-white",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      >
+                        {format(day, "d")}
+                      </time>
                     </button>
                   );
                 })}
               </div>
-            )}
 
-            <div className="mt-3 flex justify-end border-t border-gray-100 pt-3">
-              <button
-                type="button"
-                onClick={handleApply}
-                disabled={!isBothDatesSelected}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:py-2 sm:text-sm ${
-                  isBothDatesSelected
-                    ? "bg-blue-900 text-white hover:bg-blue-800"
-                    : "cursor-not-allowed bg-gray-200 text-gray-400"
-                }`}
-              >
-                Apply
-              </button>
+              {quickActionButtons.length > 0 && (
+                <div className="mt-3 flex max-h-16 flex-wrap gap-1.5 overflow-y-auto border-t border-gray-100 pt-2 sm:mt-4 sm:max-h-24 sm:gap-2 sm:pt-3">
+                  {quickActionButtons.map((action, idx) => {
+                    const selected = isQuickActionSelected(action);
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          const { from, to } = action.getDates();
+                          setTempFromDate(from);
+                          setTempToDate(to);
+                          setSelecting("from");
+                        }}
+                        className={`rounded-md px-2 py-1 text-[11px] font-semibold shadow-sm transition-colors sm:text-xs ${
+                          selected
+                            ? "bg-blue-900 text-white ring-1 ring-blue-900 hover:bg-blue-800"
+                            : "bg-white text-blue-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        {action.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="mt-3 flex justify-end border-t border-gray-100 pt-3">
+                <button
+                  type="button"
+                  onClick={handleApply}
+                  disabled={!isBothDatesSelected}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:py-2 sm:text-sm ${
+                    isBothDatesSelected
+                      ? "bg-blue-900 text-white hover:bg-blue-800"
+                      : "cursor-not-allowed bg-gray-200 text-gray-400"
+                  }`}
+                >
+                  Apply
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
