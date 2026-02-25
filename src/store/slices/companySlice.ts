@@ -144,10 +144,11 @@ export const fetchCompanyDetails = createAsyncThunk(
     return { companyName, data: response.body[0] };
   },
   {
-    condition: ({ companyName }, { getState }) => {
+    condition: ({ companyName, accountUniqueName }, { getState }) => {
       const state = getState() as RootState;
-      const existingData = state.companies[companyName]?.user;
-      return !existingData;
+      const company = state.companies[companyName];
+      if (!company?.user) return true;
+      return company.account?.uniqueName !== accountUniqueName;
     },
   }
 );
@@ -176,10 +177,11 @@ export const fetchUserDetails = createAsyncThunk(
     };
   },
   {
-    condition: ({ companyName }, { getState }) => {
+    condition: ({ companyName, accountUniqueName }, { getState }) => {
       const state = getState() as RootState;
-      const existingData = state.companies[companyName]?.userDetails?.data;
-      return !existingData;
+      const company = state.companies[companyName];
+      if (!company?.userDetails?.data) return true;
+      return company.account?.uniqueName !== accountUniqueName;
     },
   }
 );
@@ -221,10 +223,11 @@ export const fetchCompanyAddress = createAsyncThunk(
     return { companyName, data: addressString, gstin, companyDisplayName };
   },
   {
-    condition: ({ companyName }, { getState }) => {
+    condition: ({ companyName, accountUniqueName }, { getState }) => {
       const state = getState() as RootState;
-      const existing = state.companies[companyName]?.companyAddress?.data;
-      return existing == null;
+      const company = state.companies[companyName];
+      if (company?.companyAddress?.data == null) return true;
+      return company.account?.uniqueName !== accountUniqueName;
     },
   }
 );
