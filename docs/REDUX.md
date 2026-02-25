@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Giddh Portal uses **Redux Toolkit** for state management. The store is organized using feature-based slices, with a focus on the company slice that manages multi-tenant data.
+The Giddh Portal uses **Redux Toolkit** with **redux-persist** for state management. The store has a single slice (`companySlice`) that manages all company-related session and API data. Redux state is persisted to `localStorage` via redux-persist.
 
 ## Store Configuration
 
@@ -10,17 +10,38 @@ The Giddh Portal uses **Redux Toolkit** for state management. The store is organ
 
 ```typescript
 import { configureStore } from "@reduxjs/toolkit";
-import companyReducer from "./slices/companySlice";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
+import companyReducer, { CompanyState } from "./slices/companySlice";
+
+const companyPersistConfig = {
+  key: "companies",
+  storage,
+  stateReconciler: autoMergeLevel2,
+};
+
+const persistedCompanyReducer = persistReducer<CompanyState>(companyPersistConfig, companyReducer);
 
 export const store = configureStore({
   reducer: {
-    companies: companyReducer,
+    companies: persistedCompanyReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
 });
 
-export type RootState = ReturnType<typeof store.getState>;
+export const persistor = persistStore(store);
+
+export type RootState = { companies: CompanyState };
 export type AppDispatch = typeof store.dispatch;
 ```
+
+**Note:** The store is wrapped in `PersistGate` (via `ReduxProvider`) so that persisted state is rehydrated before the app renders.
 
 ### Typed Hooks: `src/store/hooks.ts`
 
@@ -46,7 +67,7 @@ const data = useAppSelector(selectData);
 
 ### File: `src/store/slices/companySlice.ts`
 
-The company slice manages all company-related data in a multi-tenant structure.
+The company slice manages all company-related session and API data. The state is keyed by the URL `company` param, which matches the company slug in the route `/:company/:country/...`.
 
 ### State Structure
 
@@ -55,39 +76,36 @@ interface CompanyState {
   [companyName: string]: {
     companyName: string;
     country: string;
+    companyDisplayName?: string | null;
     companyUniqueName?: string;
-    user?: UserCompanyData;
-    userData?: UserData;
-    account?: AccountInfo;
+    user?: UserCompanyData; // from fetchCompanyDetails
+    userData?: UserData; // set on login/account switch
+    account?: AccountInfo; // set on login/account switch
     balanceSummary?: BalanceSummaryState;
     accountDetails?: AccountDetailsState;
     accountsList?: AccountsListState;
     allPayments?: AllPaymentsState;
     allInvoices?: AllInvoicesState;
     userDetails?: UserDetailsState;
+    companyAddress?: CompanyAddressState;
   };
 }
 ```
 
 ### Key Concepts
 
-#### 1. Multi-Tenant State
+#### 1. Company-Keyed State
 
-Each company has its own isolated state:
+State is keyed by the URL `company` param. Only one company is active per login session:
 
 ```typescript
 {
   "PiyusssshhCompany": {
     companyName: "PiyusssshhCompany",
     country: "in",
-    user: { ... },
-    allInvoices: { ... }
-  },
-  "AnotherCompany": {
-    companyName: "AnotherCompany",
-    country: "uk",
-    user: { ... },
-    allInvoices: { ... }
+    userData: { email, account, vendorContactUniqueName },
+    account: { uniqueName: "account-unique-name" },
+    allInvoices: { data: [...], loading: false, error: null }
   }
 }
 ```
@@ -252,7 +270,7 @@ dispatch(
 
 #### 7. `fetchUserDetails`
 
-Fetches user/vendor details.
+Fetches user/vendor details (account details + contacts list in parallel).
 
 ```typescript
 dispatch(
@@ -267,6 +285,25 @@ dispatch(
 **Updates:**
 
 - `companies[companyName].userDetails`
+
+#### 8. `fetchCompanyAddress`
+
+Fetches company GST address and display name via the view-statement API.
+
+```typescript
+dispatch(
+  fetchCompanyAddress({
+    companyName: "PiyusssshhCompany",
+    companyUniqueName: "piyusssshhcompany",
+    accountUniqueName: "account123",
+  })
+);
+```
+
+**Updates:**
+
+- `companies[companyName].companyAddress`
+- `companies[companyName].companyDisplayName`
 
 ## Selectors
 
@@ -290,14 +327,41 @@ export const selectFeatureError = (companyName: string) => (state: RootState) =>
 #### Company & Account Selectors
 
 ```typescript
-// Get company unique name
+// Get company unique name (from redux, set on login)
 selectCompanyUniqueName(companyName: string)
 
 // Get account unique name
 selectAccountUniqueName(companyName: string)
 
-// Get user company data
-selectUserCompanyData(companyName: string)
+// Get full company entry from redux state
+selectCompanyByName(companyName: string)
+
+// Get all companies state
+selectAllCompanies(state: RootState)
+
+// Get user company data (from fetchCompanyDetails)
+selectUser(companyName: string)
+
+// Get userData (email, account, vendorContactUniqueName)
+selectUserData(companyName: string)
+
+// Get user email
+selectUserEmail(companyName: string)
+
+// Get user account object
+selectUserAccount(companyName: string)
+
+// Get account object { uniqueName }
+selectAccount(companyName: string)
+
+// Get company display name (from API or URL param)
+selectCompanyDisplayName(companyName: string)
+
+// Get company address string
+selectCompanyAddress(companyName: string)
+
+// Get company GSTIN
+selectCompanyGstin(companyName: string)
 ```
 
 #### Balance Summary Selectors
@@ -338,8 +402,20 @@ selectAllPaymentsError(companyName: string)
 selectAllInvoices(companyName: string)
 selectAllInvoicesLoading(companyName: string)
 selectAllInvoicesError(companyName: string)
-selectInvoicesTotalPages(companyName: string)
-selectInvoicesTotalItems(companyName: string)
+selectAllInvoicesTotalPages(companyName: string)
+selectAllInvoicesTotalItems(companyName: string)
+selectAllInvoicesPage(companyName: string)
+selectAllInvoicesCount(companyName: string)
+```
+
+#### Data Freshness Selectors (5-minute TTL)
+
+```typescript
+selectIsInvoicesDataStale(companyName: string)
+selectIsPaymentsDataStale(companyName: string)
+selectIsBalanceSummaryStale(companyName: string)
+selectIsAccountDetailsStale(companyName: string)
+selectIsUserDetailsStale(companyName: string)
 ```
 
 #### User Details Selectors
@@ -448,9 +524,22 @@ if (!data) {
 return <DataDisplay data={data} />;
 ```
 
-## Reducers
+## Synchronous Reducers
 
-### Extra Reducers Pattern
+### Exported Actions
+
+```typescript
+setCompanyData({ companyName, country }); // Initialize company entry
+setUserData({ companyName, userData, companyUniqueName }); // Set on login/account switch
+setAccount({ companyName, accountUniqueName }); // Set account unique name
+clearCompanyData(companyName); // Delete company state (used on logout)
+invalidatePaymentsData(companyName); // Force payments refetch
+invalidateInvoicesData(companyName); // Force invoices refetch
+```
+
+> **Note:** `invalidatePaymentsData` and `invalidateInvoicesData` are dispatched by `PayNow` after a successful payment to trigger data refresh. `clearCompanyData` is dispatched by `Sidebar` on logout.
+
+## Extra Reducers Pattern
 
 ```typescript
 .addCase(fetchFeatureData.pending, (state, action) => {
@@ -551,6 +640,8 @@ return <Content data={data} />;
 
 ### 1. LocalStorage Fallback
 
+When Redux state is not yet rehydrated, fall back to `localStorage` using the flat `userData` key (set by `setupUserSession`):
+
 ```typescript
 let companyUniqueName = companyUniqueNameFromRedux;
 let accountUniqueName = accountUniqueNameFromRedux;
@@ -563,6 +654,17 @@ if (!companyUniqueName && typeof window !== "undefined") {
     accountUniqueName = parsedData.account?.uniqueName;
   }
 }
+```
+
+Or use the helper utility:
+
+```typescript
+import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
+
+const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+  companyUniqueNameFromRedux,
+  accountUniqueNameFromRedux
+);
 ```
 
 ### 2. Parallel Data Fetching

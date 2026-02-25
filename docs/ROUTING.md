@@ -2,7 +2,7 @@
 
 ## Overview
 
-Giddh Portal uses Next.js 14 App Router with dynamic routing for multi-tenant support. The routing structure supports company-specific and country-specific pages.
+Giddh Portal uses Next.js 16 App Router with dynamic routing. The routing structure supports company-specific and country-specific pages.
 
 ## Routing Structure
 
@@ -32,25 +32,33 @@ src/app/
 │   └── [country]/
 │       ├── account-statement/
 │       │   └── page.tsx
+│       ├── auth/
+│       │   └── page.tsx          # Company-scoped auth (account selection)
 │       ├── details/
 │       │   └── page.tsx
 │       ├── invoice/
+│       │   ├── page.tsx          # Invoice list
 │       │   └── preview/
-│       │       └── page.tsx
-│       ├── invoices/
-│       │   └── page.tsx
+│       │       └── page.tsx      # Invoice preview
+│       ├── invoice-pay/
+│       │   ├── [...slug]/
+│       │   │   └── page.tsx      # Catch-all for invoice-pay routes
+│       │   └── account/[accountUniqueName]/voucher/[voucherUniqueName]/
+│       │       └── page.tsx      # Invoice pay page (unauthenticated)
 │       ├── login/
 │       │   └── page.tsx
 │       ├── payment/
+│       │   ├── page.tsx          # Payment list
 │       │   └── preview/
-│       │       └── page.tsx
-│       ├── payments/
-│       │   └── page.tsx
+│       │       └── page.tsx      # Payment preview
 │       ├── welcome/
 │       │   └── page.tsx
+│       ├── page.tsx              # Redirect to welcome
 │       └── layout.tsx
 ├── auth/
-│   └── page.tsx
+│   └── page.tsx                  # Root auth (proxy token entry point)
+├── magic/
+│   └── page.tsx                  # Magic link viewer
 ├── layout.tsx
 └── page.tsx
 ```
@@ -202,27 +210,19 @@ export default function RootLayout({
 
 **File:** `src/app/[company]/[country]/layout.tsx`
 
-Provides shared layout for all company-specific pages (Header, Sidebar, Footer).
+Provides shared layout for all company-specific pages (Sidebar, Footer). Uses `useParams()` since it is a Client Component. On mount it dispatches `fetchCompanyDetails`, `fetchUserDetails`, and `fetchCompanyAddress` if not already cached in Redux.
 
 ```typescript
-export default function CompanyLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { company: string; country: string };
-}) {
+"use client";
+
+export default function CompanyLayout({ children }: { children: React.ReactNode }) {
+  // Uses useParams() to get company/country — not via props
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex flex-1 flex-col">
-        <Header />
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
-        <Footer />
-      </div>
-    </div>
+    <SessionGuard>
+      <SidebarProvider>
+        <LayoutContent>{children}</LayoutContent>
+      </SidebarProvider>
+    </SessionGuard>
   );
 }
 ```
@@ -327,13 +327,11 @@ const isActive = pathname.endsWith("invoices") || isInvoiceRoute;
 
 ### Authentication Check
 
+Route protection is handled by the `SessionGuard` component (wraps the company layout), which checks for the session cookie:
+
 ```typescript
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    router.push(`/${companyName}/${country}/login`);
-  }
-}, []);
+// SessionGuard checks getSessionCookie(companyName)
+// If no valid session → redirects to /:company/:country/login
 ```
 
 ### Redirect After Login
@@ -349,14 +347,14 @@ router.push(redirectTo);
 ### Company/Account Validation
 
 ```typescript
-useEffect(() => {
-  const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
+const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+  companyUniqueNameFromRedux,
+  accountUniqueNameFromRedux
+);
 
-  if (!companyUniqueName || !accountUniqueName) {
-    setError("Missing company or account information");
-    router.push(`/${companyName}/${country}/login`);
-  }
-}, []);
+if (!companyUniqueName || !accountUniqueName) {
+  setError("Missing company or account information");
+}
 ```
 
 ## URL Construction Helpers

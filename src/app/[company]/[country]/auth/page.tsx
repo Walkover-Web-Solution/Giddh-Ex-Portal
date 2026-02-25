@@ -68,6 +68,7 @@ export default function AuthPage() {
 
         await setupUserSession({
           company,
+          country,
           email,
           account: selectedAccount.account,
           vendorContactUniqueName: selectedAccount.vendorContactUniqueName,

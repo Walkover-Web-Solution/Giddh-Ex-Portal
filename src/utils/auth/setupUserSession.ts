@@ -5,6 +5,7 @@ import type { AppDispatch } from "@/store/store";
 
 interface SetupSessionParams {
   company: string;
+  country: string;
   email: string;
   account: Account["account"];
   vendorContactUniqueName: string;
@@ -15,6 +16,7 @@ interface SetupSessionParams {
 
 export async function setupUserSession({
   company,
+  country,
   email,
   account,
   vendorContactUniqueName,
@@ -45,12 +47,14 @@ export async function setupUserSession({
     })
   );
 
-  localStorage.setItem(`userEmail_${company}`, email);
+  localStorage.setItem("userEmail", email);
   localStorage.setItem(
-    `userData_${company}`,
+    "userData",
     JSON.stringify({
       ...fullUserData,
       companyUniqueName,
+      company,
+      country,
     })
   );
 }

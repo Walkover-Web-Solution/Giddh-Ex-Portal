@@ -94,7 +94,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
     let accountUniqueName = accountUniqueNameFromRedux;
 
     if (!companyUniqueName) {
-      const userData = localStorage.getItem(`userData_${companyName}`);
+      const userData = localStorage.getItem("userData");
       if (userData) {
         try {
           const parsedData = JSON.parse(userData);
