@@ -1,12 +1,57 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { setCompanyData } from "@/store/slices/companySlice";
 import { getSessionCookie } from "@/utils/cookies";
 import { sessionManager } from "@/utils/sessionManager";
 import { useAppConfig } from "@/hooks/useAppConfig";
+
+function getActiveSession(
+  currentCompany: string,
+  currentCountry: string
+): { slug: string; country: string } | null {
+  // Check if this exact company has a session — handled separately
+  if (getSessionCookie(currentCompany)) return null;
+
+  // Primary: check localStorage userData (written by setupUserSession)
+  try {
+    const rawUserData = localStorage.getItem("userData");
+    if (rawUserData) {
+      const userData = JSON.parse(rawUserData);
+      const activeSlug = userData?.company;
+      const activeCountry = userData?.country;
+      if (activeSlug && activeCountry && activeSlug !== currentCompany) {
+        if (getSessionCookie(activeSlug)) {
+          return { slug: activeSlug, country: activeCountry };
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  // Fallback: scan all cookies for any "*-session" cookie
+  // Handles sessions created before userData stored company/country fields
+  try {
+    const cookies = document.cookie.split(";");
+    for (const cookie of cookies) {
+      const [name] = cookie.trim().split("=");
+      if (name && name.endsWith("-session")) {
+        const slug = name.slice(0, -"-session".length);
+        if (slug && slug !== currentCompany) {
+          // Use currentCountry as the redirect country — same portal
+          return { slug, country: currentCountry };
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+}
 
 export default function LoginPage() {
   const params = useParams();
@@ -16,6 +61,15 @@ export default function LoginPage() {
   const { referenceId } = useAppConfig();
   const company = params?.company as string;
   const country = params?.country as string;
+
+  // Detect redirect conditions synchronously so the auth script is never loaded
+  // when we are about to navigate away.
+  const [isRedirecting, setIsRedirecting] = useState(() => {
+    if (typeof window === "undefined" || !company || !country) return false;
+    if (getSessionCookie(company)) return true;
+    const other = getActiveSession(company, country);
+    return other !== null;
+  });
 
   useEffect(() => {
     if (company && country) {
@@ -27,20 +81,34 @@ export default function LoginPage() {
   useEffect(() => {
     const token = searchParams.get("proxy_auth_token");
     if (!token || !company || !country) return;
+    setIsRedirecting(true);
     const authUrl = `/auth?proxy_auth_token=${encodeURIComponent(token)}&company=${encodeURIComponent(company)}&country=${encodeURIComponent(country)}`;
     router.replace(authUrl);
   }, [company, country, router, searchParams]);
 
   useEffect(() => {
-    if (company && country) {
-      const sessionId = getSessionCookie(company);
-      if (sessionId) {
-        router.push(`/${company}/${country}/welcome`);
-      }
+    if (!company || !country) return;
+
+    // If this company already has a session, go to welcome
+    const sessionId = getSessionCookie(company);
+    if (sessionId) {
+      setIsRedirecting(true);
+      router.push(`/${company}/${country}/welcome`);
+      return;
+    }
+
+    // If a DIFFERENT company is already logged in, redirect to that company instead
+    const other = getActiveSession(company, country);
+    if (other) {
+      setIsRedirecting(true);
+      router.replace(`/${other.slug}/${other.country}/welcome`);
     }
   }, [company, country, router]);
 
   useEffect(() => {
+    // Never load the auth widget if we are navigating away
+    if (isRedirecting || !referenceId) return;
+
     const script = document.createElement("script");
     script.src = "https://proxy.msg91.com/assets/proxy-auth/proxy-auth.js";
     script.type = "text/javascript";
@@ -65,7 +133,9 @@ export default function LoginPage() {
         document.body.removeChild(script);
       }
     };
-  }, [referenceId]);
+  }, [referenceId, isRedirecting]);
+
+  if (isRedirecting) return null;
 
   return (
     <>

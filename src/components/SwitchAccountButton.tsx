@@ -16,6 +16,9 @@ import type { Account } from "@/types/auth";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { mergeClassNames } from "@/lib/utils";
 
+// Module-level cache: keyed by company slug, persists across page navigations
+const accountsCache: Record<string, Account[]> = {};
+
 export function SwitchAccountButton() {
   const params = useParams();
   const router = useRouter();
@@ -25,18 +28,19 @@ export function SwitchAccountButton() {
   const currentAccountUniqueName = useAppSelector(selectAccountUniqueName(company));
 
   const [isOpen, setIsOpen] = useState(false);
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>(() => accountsCache[company] ?? []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fetchingAccounts, setFetchingAccounts] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isProcessing = useRef(false);
 
-  // Fetch accounts on mount to know if we should show the button (hide when single account)
+  // Fetch once on mount — skipped if already cached for this company
   useEffect(() => {
-    if (company) {
+    if (company && !accountsCache[company]) {
       fetchAccounts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [company]);
 
   // Close dropdown when clicking outside
@@ -60,7 +64,7 @@ export function SwitchAccountButton() {
     setError(null);
 
     try {
-      const email = localStorage.getItem(`userEmail_${company}`);
+      const email = localStorage.getItem("userEmail");
       const proxyToken = localStorage.getItem("proxy_auth_token");
 
       if (!email || !proxyToken) {
@@ -68,15 +72,11 @@ export function SwitchAccountButton() {
         setFetchingAccounts(false);
         return;
       }
-
       const verifyResponse = await verifyPortalUser(email, company, proxyToken);
 
       if (verifyResponse.status === ApiResponseStatus.SUCCESS && verifyResponse.body?.length > 0) {
+        accountsCache[company] = verifyResponse.body;
         setAccounts(verifyResponse.body);
-        if (verifyResponse.body.length === 1) {
-          setError(null);
-          // Still show the account, but user can't switch to it (it's already selected)
-        }
       } else {
         setError("No accounts found.");
       }
@@ -101,10 +101,10 @@ export function SwitchAccountButton() {
     if (isOpen) {
       setIsOpen(false);
     } else {
-      setIsOpen(true);
       if (accounts.length === 0 && !fetchingAccounts) {
         fetchAccounts();
       }
+      setIsOpen(true);
     }
   };
 
@@ -117,7 +117,7 @@ export function SwitchAccountButton() {
 
     try {
       const proxyToken = localStorage.getItem("proxy_auth_token");
-      const email = localStorage.getItem(`userEmail_${company}`);
+      const email = localStorage.getItem("userEmail");
 
       if (!proxyToken || !email) {
         setError("Authentication data not found. Please log in again.");
@@ -139,6 +139,7 @@ export function SwitchAccountButton() {
 
         await setupUserSession({
           company,
+          country,
           email,
           account: selectedAccount.account,
           vendorContactUniqueName: selectedAccount.vendorContactUniqueName,
@@ -176,9 +177,6 @@ export function SwitchAccountButton() {
   };
 
   if (accounts.length === 1) {
-    return null;
-  }
-  if (fetchingAccounts && accounts.length === 0) {
     return null;
   }
 
@@ -223,8 +221,7 @@ export function SwitchAccountButton() {
                     (!currentAccountUniqueName &&
                       typeof window !== "undefined" &&
                       account.account.uniqueName ===
-                        JSON.parse(localStorage.getItem(`userData_${company}`) || "{}")?.account
-                          ?.uniqueName);
+                        JSON.parse(localStorage.getItem("userData") || "{}")?.account?.uniqueName);
                   return (
                     <button
                       key={index}

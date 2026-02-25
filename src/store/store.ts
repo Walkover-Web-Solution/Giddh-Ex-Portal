@@ -11,8 +11,6 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
-import counterReducer from "./slices/counterSlice";
-import userReducer from "./slices/userSlice";
 import companyReducer, { CompanyState } from "./slices/companySlice";
 
 const companyPersistConfig = {
@@ -25,8 +23,6 @@ const persistedCompanyReducer = persistReducer<CompanyState>(companyPersistConfi
 
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
-    user: userReducer,
     companies: persistedCompanyReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -39,6 +35,5 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-type StoreState = ReturnType<typeof store.getState>;
-export type RootState = Omit<StoreState, "companies"> & { companies: CompanyState };
+export type RootState = { companies: CompanyState };
 export type AppDispatch = typeof store.dispatch;

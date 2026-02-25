@@ -51,10 +51,16 @@ giddh-portal/
 │   ├── app/                    # Next.js App Router pages
 │   │   ├── [company]/         # Dynamic company routes
 │   │   │   └── [country]/     # Dynamic country routes
-│   │   │       ├── invoices/
-│   │   │       ├── payments/
+│   │   │       ├── invoice/   # Invoice list + preview
+│   │   │       ├── payment/   # Payment list + preview
+│   │   │       ├── invoice-pay/ # Public invoice pay
 │   │   │       ├── account-statement/
-│   │   │       └── ...
+│   │   │       ├── details/
+│   │   │       ├── welcome/
+│   │   │       ├── login/
+│   │   │       └── auth/
+│   │   ├── auth/              # Root auth (proxy token)
+│   │   └── magic/             # Magic link viewer
 │   ├── components/            # Reusable React components
 │   ├── config/                # Configuration system
 │   ├── contexts/              # React contexts
@@ -77,13 +83,17 @@ giddh-portal/
 
 ## Key Features
 
-- ✅ Multi-tenant support (company/country routing)
-- ✅ Invoice management and preview
+- ✅ Company/country URL-based routing
+- ✅ Single-company session per login
+- ✅ Invoice management, preview, and payment
 - ✅ Payment processing (Razorpay, PayPal, PayU)
 - ✅ Account statements with PDF export
 - ✅ Payment voucher preview
-- ✅ Session-based authentication
-- ✅ Responsive design
+- ✅ Account switching (within same company)
+- ✅ Magic link account statement viewer
+- ✅ Session-based authentication (cookie + redux-persist)
+- ✅ White-label configuration support
+- ✅ Responsive design with collapsible sidebar
 
 ## Contributing
 

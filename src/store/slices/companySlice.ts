@@ -479,18 +479,6 @@ export const companySlice = createSlice({
         };
       }
     },
-    setUser: (
-      state,
-      action: PayloadAction<{
-        companyName: string;
-        user: UserCompanyData;
-      }>
-    ) => {
-      const { companyName, user } = action.payload;
-      if (state[companyName]) {
-        state[companyName].user = user;
-      }
-    },
     setAccount: (
       state,
       action: PayloadAction<{
@@ -505,24 +493,6 @@ export const companySlice = createSlice({
     },
     clearCompanyData: (state, action: PayloadAction<string>) => {
       delete state[action.payload];
-    },
-    clearAllCompanies: () => initialState,
-    clearBalanceSummary: (state, action: PayloadAction<string>) => {
-      const companyName = action.payload;
-      if (state[companyName]?.balanceSummary) {
-        state[companyName].balanceSummary = {
-          data: null,
-          loading: false,
-          error: null,
-        };
-      }
-    },
-    clearUserData: (state, action: PayloadAction<string>) => {
-      const companyName = action.payload;
-      if (state[companyName]) {
-        state[companyName].userData = undefined;
-        state[companyName].user = undefined;
-      }
     },
     invalidatePaymentsData: (state, action: PayloadAction<string>) => {
       const companyName = action.payload;
@@ -831,12 +801,8 @@ export const companySlice = createSlice({
 export const {
   setCompanyData,
   setUserData,
-  setUser,
   setAccount,
   clearCompanyData,
-  clearAllCompanies,
-  clearBalanceSummary,
-  clearUserData,
   invalidatePaymentsData,
   invalidateInvoicesData,
 } = companySlice.actions;

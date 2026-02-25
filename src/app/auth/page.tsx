@@ -69,7 +69,6 @@ export default function Auth() {
 
         if (detailsResponse.status === "success" && detailsResponse.data[0]?.email) {
           const email = detailsResponse.data[0].email;
-
           const verifyResponse = await verifyPortalUser(email, companyName, token);
 
           if (
@@ -106,6 +105,7 @@ export default function Auth() {
 
               await setupUserSession({
                 company: companyName,
+                country: country ?? "",
                 email,
                 account: userData.account,
                 vendorContactUniqueName: userData.vendorContactUniqueName,

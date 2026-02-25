@@ -46,18 +46,26 @@ src/
 │   └── page.tsx                  # Home page
 │
 ├── components/                    # Reusable components
-│   ├── ui/                       # UI components (shadcn/ui)
-│   │   ├── card.tsx
-│   │   └── ...
-│   ├── skeletons/                # Loading skeletons
-│   │   └── TableSkeleton.tsx
+│   ├── ui/                       # UI primitives (button, card, input, DataTable, DateRangeCalendar)
+│   ├── skeletons/                # Loading skeletons (Table, Card, Balance, Payment, UserDetails)
+│   ├── magic/                    # Magic-link specific components
 │   ├── BalanceSummaryCard.tsx    # Balance display
 │   ├── DataTable.tsx             # Generic data table
+│   ├── Dropdown.tsx              # Dropdown component
+│   ├── ErrorMessage.tsx          # Error display
 │   ├── Footer.tsx                # Footer component
-│   ├── Header.tsx                # Header component
+│   ├── LastPaymentCard.tsx       # Last payment display
+│   ├── LoadingSpinner.tsx        # Loading spinner
 │   ├── Pagination.tsx            # Pagination component
 │   ├── PayNow.tsx                # Payment gateway integration
-│   └── Sidebar.tsx               # Navigation sidebar
+│   ├── PersistGateLoading.tsx    # Redux persist loading screen
+│   ├── SessionExpiredModal.tsx   # Session expired modal
+│   ├── SessionGuard.tsx          # Route session guard
+│   ├── SessionVerification.tsx   # Session verification
+│   ├── Sidebar.tsx               # Navigation sidebar
+│   ├── SidebarToggleButton.tsx   # Sidebar collapse toggle
+│   ├── SwitchAccountButton.tsx   # Account switching dropdown
+│   └── UserDetailsCard.tsx       # User details display
 │
 ├── config/                        # Configuration system
 │   ├── default.ts                # Default configuration values
@@ -75,9 +83,9 @@ src/
 │
 ├── store/                         # Redux store
 │   ├── slices/
-│   │   └── companySlice.ts       # Company state management
+│   │   └── companySlice.ts       # Company state management (only slice)
 │   ├── hooks.ts                  # Typed Redux hooks
-│   └── store.ts                  # Store configuration
+│   └── store.ts                  # Store configuration (redux-persist)
 │
 ├── utils/                         # API utilities
 │   ├── magic/                    # Magic link utilities
@@ -162,12 +170,13 @@ export default function FeaturePage() {
 
 ### 3. State Management Pattern
 
-**Redux Toolkit** is used for global state management:
+**Redux Toolkit + redux-persist** is used for global state management:
 
-- **Slices**: Feature-based state slices
-- **Async Thunks**: Asynchronous API calls
-- **Selectors**: Memoized state selectors
-- **Typed Hooks**: Type-safe useAppSelector and useAppDispatch
+- **Single Slice**: `companySlice` manages all company, session, and API data
+- **Async Thunks**: Asynchronous API calls with condition guards to prevent redundant fetches
+- **Selectors**: Curried selectors `select*(companyName)(state)` keyed by URL `company` param
+- **Typed Hooks**: Type-safe `useAppSelector` and `useAppDispatch`
+- **Persistence**: State is persisted to `localStorage` via redux-persist (`key: "companies"`)
 
 ### 4. API Layer Architecture
 
@@ -185,12 +194,18 @@ Component → API Utility → Axios Client → API Server
 ### 5. Authentication Flow
 
 ```
-1. User enters credentials
-2. API returns session token
-3. Token stored in localStorage
-4. Token sent in Session-id header
-5. Redux stores user data
-6. Protected routes check authentication
+1. User accesses /:company/:country/login or /:company/:country/auth
+2. Proxy token verified via verifyPortalUser API
+3. Session saved via savePortalSession API → returns sessionId
+4. setupUserSession() called:
+   a. setSessionCookie(company, sessionId)   → cookie used by SessionGuard
+   b. dispatch(setUserData(...))             → Redux
+   c. dispatch(setAccount(...))             → Redux
+   d. localStorage.setItem("userEmail", ...) → flat key
+   e. localStorage.setItem("userData", ...)  → flat key (fallback for rehydration)
+5. On every page load, layout.tsx dispatches fetchCompanyDetails,
+   fetchUserDetails, fetchCompanyAddress if not already in Redux
+6. SessionGuard checks session cookie; redirects to login if missing
 ```
 
 ## Folder Organization Rules
@@ -297,9 +312,10 @@ className = "w-full md:w-1/2 lg:w-1/3";
 
 ### 1. Authentication
 
-- Session-based authentication
-- Tokens stored in localStorage
-- Session-id header on all authenticated requests
+- Session-based authentication via HTTP cookies (`session_<company>` cookie)
+- `proxy_auth_token` stored in `localStorage` for account switching
+- `Session-id` header on all authenticated API requests
+- `SessionGuard` component protects all company routes
 
 ### 2. Data Validation
 
