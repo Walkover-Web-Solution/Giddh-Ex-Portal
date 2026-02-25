@@ -32,6 +32,8 @@ export function Header({
               toDate={toDate}
               onFromDateChange={onFromDateChange}
               onToDateChange={onToDateChange}
+              position="left"
+              openDirection="auto"
             />
           </div>
         </div>
