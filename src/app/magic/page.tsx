@@ -638,7 +638,12 @@ export default function Magic() {
                 }}
                 itemsPerPage={itemsPerPage}
                 totalItems={apiTotalItems}
-                currentPageItemCount={apiCount ?? filteredTransactions.length}
+                currentPageItemCount={
+                  viewMode === LedgerView.T_VIEW
+                    ? (filteredDebitTransactions?.length ?? 0) +
+                      (filteredCreditTransactions?.length ?? 0)
+                    : (apiCount ?? filteredTransactions.length)
+                }
               />
             )}
           <Footer
