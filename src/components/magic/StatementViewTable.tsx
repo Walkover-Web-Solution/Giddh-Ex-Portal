@@ -38,6 +38,7 @@ interface Props {
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
   linkId: string;
+  hideOpeningClosingBalance?: boolean;
 }
 
 export function StatementViewTable({
@@ -49,6 +50,7 @@ export function StatementViewTable({
   transactionCurrency,
   convertedCurrency,
   linkId,
+  hideOpeningClosingBalance = false,
 }: Props) {
   const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
@@ -282,12 +284,14 @@ export function StatementViewTable({
             <th scope="col" className="px-3 py-3.5 text-right text-sm font-semibold text-white">
               Credit
             </th>
-            <th
-              scope="col"
-              className="py-3.5 pl-3 pr-4 text-right text-sm font-semibold text-white sm:pr-6"
-            >
-              Closing Balance
-            </th>
+            {!hideOpeningClosingBalance && (
+              <th
+                scope="col"
+                className="py-3.5 pl-3 pr-4 text-right text-sm font-semibold text-white sm:pr-6"
+              >
+                Closing Balance
+              </th>
+            )}
           </tr>
         </thead>
 
@@ -354,45 +358,47 @@ export function StatementViewTable({
                   />
                 </td>
 
-                <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  {"isForwardedBalanceRow" in item && item.isForwardedBalanceRow ? (
-                    ""
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-end gap-1">
-                        <span className="whitespace-nowrap font-medium text-gray-900">
-                          {format(
-                            getAmount(
-                              item.closingBalance,
-                              item.closingBalanceConverted,
-                              isConvertedCurrencySelected
-                            ),
-                            primaryCurrency?.symbol
-                          )}
-                        </span>
-                        <span className="text-[10px] text-gray-500">{item.balanceType}</span>
-                      </div>
-
-                      {hasMultipleCurrencies &&
-                        getAmount(
-                          item.closingBalance,
-                          item.closingBalanceConverted,
-                          !isConvertedCurrencySelected
-                        ) !== null && (
-                          <div className="whitespace-nowrap text-right text-[10px] text-gray-500">
+                {!hideOpeningClosingBalance && (
+                  <td className="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                    {"isForwardedBalanceRow" in item && item.isForwardedBalanceRow ? (
+                      ""
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-end gap-1">
+                          <span className="whitespace-nowrap font-medium text-gray-900">
                             {format(
                               getAmount(
                                 item.closingBalance,
                                 item.closingBalanceConverted,
-                                !isConvertedCurrencySelected
+                                isConvertedCurrencySelected
                               ),
-                              secondaryCurrency?.symbol
+                              primaryCurrency?.symbol
                             )}
-                          </div>
-                        )}
-                    </>
-                  )}
-                </td>
+                          </span>
+                          <span className="text-[10px] text-gray-500">{item.balanceType}</span>
+                        </div>
+
+                        {hasMultipleCurrencies &&
+                          getAmount(
+                            item.closingBalance,
+                            item.closingBalanceConverted,
+                            !isConvertedCurrencySelected
+                          ) !== null && (
+                            <div className="whitespace-nowrap text-right text-[10px] text-gray-500">
+                              {format(
+                                getAmount(
+                                  item.closingBalance,
+                                  item.closingBalanceConverted,
+                                  !isConvertedCurrencySelected
+                                ),
+                                secondaryCurrency?.symbol
+                              )}
+                            </div>
+                          )}
+                      </>
+                    )}
+                  </td>
+                )}
               </tr>
             );
           })}

@@ -54,7 +54,7 @@ export const API_PATHS = {
 
   /** GET vouchers balance summary */
   vouchersBalanceSummary: (company: string, account: string) =>
-    `${portalAccount(company, account)}/vouchers/balance-summary`,
+    `${portalAccount(company, account)}/vouchers/balance-summary?voucherVersion=2`,
 
   /** GET payment vouchers list (receipt type, single uniqueName) */
   paymentVouchersList: (company: string, account: string, uniqueName: string) =>
