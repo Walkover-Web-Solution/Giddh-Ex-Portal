@@ -27,6 +27,7 @@ interface LedgerTableProps {
   convertedForwardedBalance?: ForwardedBalanceShape;
   ledgerTotals?: LedgerTotals;
   pagination?: LedgerTablePaginationProps;
+  hideOpeningClosingBalance?: boolean;
 }
 
 export function LedgerTable({
@@ -43,6 +44,7 @@ export function LedgerTable({
   convertedForwardedBalance,
   ledgerTotals,
   pagination,
+  hideOpeningClosingBalance,
 }: LedgerTableProps) {
   if (viewMode === LedgerView.STATEMENT_VIEW) {
     return (
@@ -55,6 +57,7 @@ export function LedgerTable({
         transactionCurrency={transactionCurrency}
         convertedCurrency={convertedCurrency}
         linkId={linkId}
+        hideOpeningClosingBalance={hideOpeningClosingBalance}
       />
     );
   }

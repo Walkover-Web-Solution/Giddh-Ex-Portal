@@ -582,6 +582,7 @@ export default function Magic() {
             transactionCurrency={currencyData?.transactionCurrency}
             convertedCurrency={currencyData?.convertedCurrency}
             linkId={linkId}
+            hideOpeningClosingBalance={!!debouncedSearchQuery.trim()}
             debitCreditTransactions={
               viewMode === LedgerView.STATEMENT_VIEW &&
               filteredDebitCreditTransactions &&

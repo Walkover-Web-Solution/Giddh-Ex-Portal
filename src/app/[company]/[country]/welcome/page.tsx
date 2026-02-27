@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectBalanceSummary,
   selectAllPayments,
   fetchBalanceSummary,
   fetchAllPayments,
@@ -26,7 +25,6 @@ export default function WelcomePage() {
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
 
-  const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
   const allPayments = useAppSelector(selectAllPayments(companyName));
 
   useEffect(() => {
@@ -50,23 +48,14 @@ export default function WelcomePage() {
 
     if (companyName && companyUniqueName && accountUniqueName) {
       hasCalledApis.current = true;
-      if (!balanceSummary) {
-        dispatch(
-          fetchBalanceSummary({ companyName, companyUniqueName, uniqueName: accountUniqueName })
-        );
-      }
+      dispatch(
+        fetchBalanceSummary({ companyName, companyUniqueName, uniqueName: accountUniqueName })
+      );
       if (!allPayments || allPayments.length === 0) {
         dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }));
       }
     }
-  }, [
-    dispatch,
-    companyName,
-    companyUniqueNameFromRedux,
-    accountUniqueNameFromRedux,
-    balanceSummary,
-    allPayments,
-  ]);
+  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, allPayments]);
 
   return (
     <>

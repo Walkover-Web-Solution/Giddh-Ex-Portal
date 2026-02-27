@@ -280,13 +280,6 @@ export const fetchBalanceSummary = createAsyncThunk(
       }
     );
     return { companyName, data: response.data.body };
-  },
-  {
-    condition: ({ companyName }, { getState }) => {
-      const state = getState() as RootState;
-      const existingData = state.companies[companyName]?.balanceSummary?.data;
-      return !existingData;
-    },
   }
 );
 
