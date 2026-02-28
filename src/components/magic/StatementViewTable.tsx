@@ -105,9 +105,7 @@ export function StatementViewTable({
   };
 
   const displayTransactions = useMemo(() => {
-    if (!debitCreditTransactions?.length) return [];
-
-    const rows = debitCreditTransactions.map((tx) => {
+    const rows = (debitCreditTransactions ?? []).map((tx) => {
       const row = transformLedgerTransactionToDisplay(tx, true) as Transaction & {
         transaction: LedgerTransaction;
       };
