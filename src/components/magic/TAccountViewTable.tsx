@@ -205,7 +205,11 @@ export function TAccountViewTable({
     return [bfRow, ...baseCreditTransactions];
   }, [baseCreditTransactions, forwardedBalance, convertedForwardedBalance]);
 
-  const maxRows = Math.max(debitTx.length, creditTx.length);
+  const debitRowCount =
+    forwardedBalance?.type === LEDGER_TYPE_CREDIT ? debitTx.length + 1 : debitTx.length;
+  const creditRowCount =
+    forwardedBalance?.type === LEDGER_TYPE_DEBIT ? creditTx.length + 1 : creditTx.length;
+  const maxRows = Math.max(debitRowCount, creditRowCount);
 
   const { totalDebit, totalCredit, totalDebitConverted, totalCreditConverted } = useMemo(() => {
     if (ledgerTotals) {
