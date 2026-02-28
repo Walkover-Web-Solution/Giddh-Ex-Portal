@@ -35,7 +35,7 @@ export default function PaymentsPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [sortFilter, setSortFilter] = useState<PaymentSortColumn>("Amount");
-  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
+  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);
   const [currentPage, setCurrentPage] = useState(1);
 
   const companyName = params?.company as string;
@@ -94,18 +94,18 @@ export default function PaymentsPage() {
 
   const handleClearFilters = () => {
     setSortFilter("Amount");
-    setSortDirection(SortOrder.DESC);
+    setSortDirection(SortOrder.ASC);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = sortFilter !== "Amount" || sortDirection !== SortOrder.DESC;
+  const hasActiveFilters = sortFilter !== "Amount" || sortDirection !== SortOrder.ASC;
 
   const handleSort = (column: PaymentSortColumn) => {
     if (sortFilter === column) {
       setSortDirection(sortDirection === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC);
     } else {
       setSortFilter(column);
-      setSortDirection(SortOrder.DESC);
+      setSortDirection(SortOrder.ASC);
     }
     setCurrentPage(1);
   };

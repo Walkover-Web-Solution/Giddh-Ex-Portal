@@ -50,7 +50,7 @@ export default async function getInvoiceList({
   type = "sales",
   page = DEFAULT_PAGE,
   count = PAGINATION_LIMIT,
-  sort = "",
+  sort = "asc",
   sortBy = "voucherDate",
   balanceStatus = [],
   uniqueNames = [],

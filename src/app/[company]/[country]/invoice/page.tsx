@@ -50,7 +50,7 @@ export default function InvoicesPage() {
   const { showToast } = useToast();
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>("All Invoices");
   const [sortBy, setSortBy] = useState<InvoiceSortColumn>("Total");
-  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
+  const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
   const [directPayInvoiceId, setDirectPayInvoiceId] = useState<string | null>(null);
@@ -196,9 +196,9 @@ export default function InvoicesPage() {
   const handleClearFilters = () => {
     setStatusFilter("All Invoices");
     setSortBy("Total");
-    setSortDirection(SortOrder.DESC);
+    setSortDirection(SortOrder.ASC);
     setCurrentPage(1);
-    refetchInvoicesWithSort("Total", SortOrder.DESC, []);
+    refetchInvoicesWithSort("Total", SortOrder.ASC, []);
   };
 
   const refetchInvoicesWithSort = (
@@ -256,7 +256,7 @@ export default function InvoicesPage() {
         ? sortDirection === SortOrder.ASC
           ? SortOrder.DESC
           : SortOrder.ASC
-        : SortOrder.DESC;
+        : SortOrder.ASC;
     const newSortBy = column;
     setSortBy(newSortBy);
     setSortDirection(newSortDirection);
@@ -265,7 +265,7 @@ export default function InvoicesPage() {
   };
 
   const hasActiveFilters =
-    statusFilter !== "All Invoices" || sortBy !== "Total" || sortDirection !== SortOrder.DESC;
+    statusFilter !== "All Invoices" || sortBy !== "Total" || sortDirection !== SortOrder.ASC;
 
   const handleDownloadInvoice = async (invoiceUniqueName: string, invoiceNumber: string) => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -580,9 +580,9 @@ export default function InvoicesPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortBy("Total");
-                    setSortDirection(SortOrder.DESC);
+                    setSortDirection(SortOrder.ASC);
                     setCurrentPage(1);
-                    refetchInvoicesWithSort("Total", SortOrder.DESC);
+                    refetchInvoicesWithSort("Total", SortOrder.ASC);
                   }}
                 >
                   Total
@@ -590,9 +590,9 @@ export default function InvoicesPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortBy("Date");
-                    setSortDirection(SortOrder.DESC);
+                    setSortDirection(SortOrder.ASC);
                     setCurrentPage(1);
-                    refetchInvoicesWithSort("Date", SortOrder.DESC);
+                    refetchInvoicesWithSort("Date", SortOrder.ASC);
                   }}
                 >
                   Date
