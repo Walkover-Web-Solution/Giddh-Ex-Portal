@@ -5,12 +5,12 @@ import { useParams, usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchCompanyDetails,
-  fetchCompanyAddress,
   fetchUserDetails,
   selectCompanyUniqueName,
   selectAccountUniqueName,
   selectCompanyAddress,
   selectCompanyGstin,
+  selectCompanyTaxType,
   selectCompanyDisplayName,
 } from "@/store/slices/companySlice";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
@@ -27,7 +27,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const companyName = params?.company as string;
   const companyDisplayName = useAppSelector(selectCompanyDisplayName(companyName)) ?? "";
   const companyAddress = useAppSelector(selectCompanyAddress(companyName));
-  const gstin = useAppSelector(selectCompanyGstin(companyName));
+  const taxNumber = useAppSelector(selectCompanyGstin(companyName));
+  const taxType = useAppSelector(selectCompanyTaxType(companyName));
 
   const isLoginPage = pathname?.includes("/login");
   const isAuthPage = pathname?.includes("/auth");
@@ -59,7 +60,8 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         {showFooter && (
           <Footer
             companyName={companyDisplayName}
-            gstin={gstin ?? ""}
+            taxNumber={taxNumber ?? ""}
+            taxType={taxType ?? ""}
             companyAddress={companyAddress ?? undefined}
             supportEmail="support@giddh.com"
             variant="full"
@@ -114,9 +116,6 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
         () => {}
       );
       dispatch(fetchUserDetails({ companyName, companyUniqueName, accountUniqueName })).catch(
-        () => {}
-      );
-      dispatch(fetchCompanyAddress({ companyName, companyUniqueName, accountUniqueName })).catch(
         () => {}
       );
     }
