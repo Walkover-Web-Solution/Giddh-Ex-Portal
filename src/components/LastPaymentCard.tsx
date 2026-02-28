@@ -20,14 +20,14 @@ export function LastPaymentCard() {
   const country = params?.country as string;
 
   const allPayments = useAppSelector(selectAllPayments(companyName));
-  const firstPaymentItem = allPayments?.[0] ?? null;
+  const lastPaymentItem = allPayments?.[0] ?? null;
   const loading = useAppSelector(selectAllPaymentsLoading(companyName));
   const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
-  const balanceStatus = firstPaymentItem?.balanceStatus?.trim().toUpperCase();
+  const balanceStatus = lastPaymentItem?.balanceStatus?.trim().toUpperCase();
   const isAdjusted = balanceStatus === PaymentVoucherBalanceStatus.ADJUSTED;
   const isPartialAdjusted = balanceStatus === PaymentVoucherBalanceStatus.PARTIAL_ADJUSTED;
-  const showCard = firstPaymentItem && (isAdjusted || isPartialAdjusted);
+  const showCard = lastPaymentItem && (isAdjusted || isPartialAdjusted);
 
   if (loading) {
     return <PaymentCardSkeleton />;
@@ -37,7 +37,7 @@ export function LastPaymentCard() {
     return null;
   }
 
-  const data = firstPaymentItem;
+  const data = lastPaymentItem;
   const amountCurrency =
     data.accountCurrencySymbol ?? data.companyCurrencySymbol ?? balanceSummary?.currency;
   const paymentStatusLabel = isAdjusted

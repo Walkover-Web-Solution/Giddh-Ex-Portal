@@ -263,6 +263,7 @@ export const fetchAllPayments = createAsyncThunk(
     sortBy = "grandTotal",
     page = 1,
     count,
+    forceRefetch,
   }: {
     companyName: string;
     companyUniqueName: string;
@@ -271,6 +272,7 @@ export const fetchAllPayments = createAsyncThunk(
     sortBy?: string;
     page?: number;
     count?: number;
+    forceRefetch?: boolean;
   }) => {
     const response = await getLastPayment({
       companyUniqueName,
@@ -298,7 +300,8 @@ export const fetchAllPayments = createAsyncThunk(
     };
   },
   {
-    condition: ({ companyName, sort, sortBy, page, count }, { getState }) => {
+    condition: ({ companyName, sort, sortBy, page, count, forceRefetch }, { getState }) => {
+      if (forceRefetch) return true;
       const state = getState() as RootState;
       const payments = state.companies[companyName]?.allPayments;
       if (payments?.loading) return false;
