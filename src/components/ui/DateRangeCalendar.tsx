@@ -252,8 +252,9 @@ export function DateRangeCalendar({
   const goToNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
   const formatDateRange = () => {
-    const desktopFormat = dateFormat?.desktop ?? "dd MMM yyyy";
-    const mobileFormat = dateFormat?.mobile ?? "dd/MM";
+    const defaultFormat = "dd MMM yyyy";
+    const desktopFormat = dateFormat?.desktop ?? defaultFormat;
+    const mobileFormat = dateFormat?.mobile ?? defaultFormat;
     return {
       desktop: `${format(fromDate, desktopFormat)} - ${format(toDate, desktopFormat)}`,
       mobile: `${format(fromDate, mobileFormat)} - ${format(toDate, mobileFormat)}`,

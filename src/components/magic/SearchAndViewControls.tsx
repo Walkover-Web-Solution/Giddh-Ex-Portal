@@ -81,7 +81,7 @@ export function SearchAndViewControls({
               </button>
             ) : null}
           </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3 md:flex-nowrap">
             {showCurrencyToggle &&
               (() => {
                 const currencySelectedIndex = availableCurrencies.findIndex(

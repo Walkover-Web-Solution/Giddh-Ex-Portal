@@ -117,7 +117,7 @@ export function StatementViewTable({
       return row;
     });
 
-    if (forwardedBalance) {
+    if (forwardedBalance && !hideOpeningClosingBalance) {
       const isCredit = balanceBfSide === LEDGER_TYPE_CREDIT;
       const convertedAmount = convertedForwardedBalance?.amount ?? forwardedBalance.amount;
       const openingBalanceRow = {
@@ -138,7 +138,13 @@ export function StatementViewTable({
     }
 
     return rows;
-  }, [debitCreditTransactions, forwardedBalance, convertedForwardedBalance, balanceBfSide]);
+  }, [
+    debitCreditTransactions,
+    forwardedBalance,
+    convertedForwardedBalance,
+    balanceBfSide,
+    hideOpeningClosingBalance,
+  ]);
 
   const currencyConfig = getCurrencyConfig(
     selectedCurrency,
