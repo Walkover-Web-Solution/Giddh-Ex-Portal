@@ -87,7 +87,6 @@ export default function InvoicesPage() {
           balanceStatus: statusFilterToBalanceStatus(statusFilter),
           page: currentPage,
           count: PAGINATION_LIMIT,
-          refetch: true,
         })
       );
     }
