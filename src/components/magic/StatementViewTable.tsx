@@ -312,10 +312,25 @@ export function StatementViewTable({
                   {item.date}
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm">
-                  {item.particular}
-                  {item.transaction?.inventory?.stock?.name
-                    ? ` (${item.transaction.inventory.stock.name})`
-                    : ""}
+                  <div className="group/particular relative inline-block max-w-full">
+                    <span
+                      className="pointer-events-none absolute bottom-full left-0 z-10 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                      role="tooltip"
+                    >
+                      {item.particular}
+                      {item.transaction?.inventory?.stock?.name
+                        ? ` (${item.transaction.inventory.stock.name})`
+                        : ""}
+                    </span>
+                    <span className="block max-w-[200px] truncate">
+                      {item.particular.length > 100
+                        ? `${item.particular.slice(0, 100)}...`
+                        : item.particular}
+                      {item.transaction?.inventory?.stock?.name
+                        ? ` (${item.transaction.inventory.stock.name})`
+                        : ""}
+                    </span>
+                  </div>
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm">
                   <AmountCell

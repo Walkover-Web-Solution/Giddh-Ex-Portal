@@ -155,6 +155,9 @@ export function TAccountViewTable({
     return formatCurrencyAmount(amount, symbol || "₹", { decimals: 2 });
   };
 
+  const truncateParticular = (text: string) =>
+    text.length > 40 ? `${text.slice(0, 40)}...` : text;
+
   const isForwardedBalanceRow = (tx: unknown): tx is ForwardedBalanceRow =>
     Boolean(
       tx &&
@@ -337,7 +340,17 @@ export function TAccountViewTable({
                     isForwardedBalanceRow(dr) ? (
                       <>
                         <div className="whitespace-nowrap text-sm text-gray-900">{dr.date}</div>
-                        <div className="line-clamp-2 text-sm">{dr.particular}</div>
+                        <div className="group/particular relative min-w-0 overflow-visible text-sm">
+                          <span
+                            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                            role="tooltip"
+                          >
+                            {dr.particular}
+                          </span>
+                          <span className="line-clamp-2 block">
+                            {truncateParticular(dr.particular)}
+                          </span>
+                        </div>
                         <div className="whitespace-nowrap text-right text-sm font-medium text-gray-900">
                           <div>
                             {format(
@@ -360,13 +373,28 @@ export function TAccountViewTable({
                         <div className="whitespace-nowrap text-sm text-gray-900">
                           {isLedgerTransaction(dr) ? dr.entryDate : (dr as Transaction).date}
                         </div>
-                        <div className="line-clamp-2 text-sm">
-                          {isLedgerTransaction(dr)
-                            ? formatParticularWithPrefix(dr.particular.name, dr.type)
-                            : (dr as Transaction).particular}
-                          {isLedgerTransaction(dr) && dr.inventory?.stock?.name
-                            ? ` (${dr.inventory.stock.name})`
-                            : ""}
+                        <div className="group/particular relative min-w-0 overflow-visible text-sm">
+                          <span
+                            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                            role="tooltip"
+                          >
+                            {(isLedgerTransaction(dr)
+                              ? formatParticularWithPrefix(dr.particular.name, dr.type)
+                              : (dr as Transaction).particular) +
+                              (isLedgerTransaction(dr) && dr.inventory?.stock?.name
+                                ? ` (${dr.inventory.stock.name})`
+                                : "")}
+                          </span>
+                          <span className="line-clamp-2 block">
+                            {truncateParticular(
+                              (isLedgerTransaction(dr)
+                                ? formatParticularWithPrefix(dr.particular.name, dr.type)
+                                : (dr as Transaction).particular) +
+                                (isLedgerTransaction(dr) && dr.inventory?.stock?.name
+                                  ? ` (${dr.inventory.stock.name})`
+                                  : "")
+                            )}
+                          </span>
                         </div>
                         <div className="flex items-center justify-end gap-1.5">
                           <div className="whitespace-nowrap text-right text-sm font-medium text-gray-900">
@@ -463,7 +491,17 @@ export function TAccountViewTable({
                     isForwardedBalanceRow(cr) ? (
                       <>
                         <div className="whitespace-nowrap text-sm text-gray-900">{cr.date}</div>
-                        <div className="line-clamp-2 text-sm">{cr.particular}</div>
+                        <div className="group/particular relative min-w-0 overflow-visible text-sm">
+                          <span
+                            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                            role="tooltip"
+                          >
+                            {cr.particular}
+                          </span>
+                          <span className="line-clamp-2 block">
+                            {truncateParticular(cr.particular)}
+                          </span>
+                        </div>
                         <div className="whitespace-nowrap text-right text-sm font-medium text-gray-900">
                           <div>
                             {format(
@@ -486,13 +524,28 @@ export function TAccountViewTable({
                         <div className="whitespace-nowrap text-sm text-gray-900">
                           {isLedgerTransaction(cr) ? cr.entryDate : (cr as Transaction).date}
                         </div>
-                        <div className="line-clamp-2 text-sm">
-                          {isLedgerTransaction(cr)
-                            ? formatParticularWithPrefix(cr.particular.name, cr.type)
-                            : (cr as Transaction).particular}
-                          {isLedgerTransaction(cr) && cr.inventory?.stock?.name
-                            ? ` (${cr.inventory.stock.name})`
-                            : ""}
+                        <div className="group/particular relative min-w-0 overflow-visible text-sm">
+                          <span
+                            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                            role="tooltip"
+                          >
+                            {(isLedgerTransaction(cr)
+                              ? formatParticularWithPrefix(cr.particular.name, cr.type)
+                              : (cr as Transaction).particular) +
+                              (isLedgerTransaction(cr) && cr.inventory?.stock?.name
+                                ? ` (${cr.inventory.stock.name})`
+                                : "")}
+                          </span>
+                          <span className="line-clamp-2 block">
+                            {truncateParticular(
+                              (isLedgerTransaction(cr)
+                                ? formatParticularWithPrefix(cr.particular.name, cr.type)
+                                : (cr as Transaction).particular) +
+                                (isLedgerTransaction(cr) && cr.inventory?.stock?.name
+                                  ? ` (${cr.inventory.stock.name})`
+                                  : "")
+                            )}
+                          </span>
                         </div>
                         <div className="flex items-center justify-end gap-1.5">
                           <div className="whitespace-nowrap text-right text-sm font-medium text-gray-900">
