@@ -68,7 +68,10 @@ class ApiClient {
           const pathname = typeof window !== "undefined" ? window.location.pathname : "";
           const isPublicRoute = publicRoutes.some((route) => pathname.includes(route));
 
-          if (!isPublicRoute) {
+          const hasProxyToken =
+            typeof window !== "undefined" && !!localStorage.getItem("proxy_auth_token");
+
+          if (!isPublicRoute && !hasProxyToken) {
             console.error("Unauthorized - Session expired");
             if (typeof window !== "undefined") {
               const event = new CustomEvent("session-expired");
