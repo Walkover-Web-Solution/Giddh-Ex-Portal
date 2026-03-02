@@ -224,21 +224,25 @@ export default function Magic() {
             }
             if (!hasValidCurrency) {
               const body = balanceRes.body;
-              const tCode = (body.currencyCode ?? "").trim();
-              const cCode = (body.convertedCurrencyCode ?? "").trim();
-              if (tCode && cCode && tCode.toUpperCase() !== cCode.toUpperCase()) {
+              const transactionCode = (body.currencyCode ?? "").trim();
+              const convertedCode = (body.convertedCurrencyCode ?? "").trim();
+              if (
+                transactionCode &&
+                convertedCode &&
+                transactionCode.toUpperCase() !== convertedCode.toUpperCase()
+              ) {
                 const currencyFromBalance: CurrencyData = {
                   transactionCurrency: {
-                    code: body.currencyCode ?? "",
-                    symbol: body.currencySymbol ?? "₹",
+                    code: body.currencyCode,
+                    symbol: body.currencySymbol,
                   },
                   convertedCurrency: {
-                    code: body.convertedCurrencyCode ?? "",
-                    symbol: body.convertedCurrencySymbol ?? "₹",
+                    code: body.convertedCurrencyCode,
+                    symbol: body.convertedCurrencySymbol,
                   },
                   companyCurrency: {
-                    code: body.currencyCode ?? "",
-                    symbol: body.currencySymbol ?? "₹",
+                    code: body.currencyCode,
+                    symbol: body.currencySymbol,
                   },
                 };
                 setCurrencyData(currencyFromBalance);
@@ -249,10 +253,10 @@ export default function Magic() {
                   });
                   hasSetStaticCurrencyOptionsRef.current = true;
                 }
-                const txCode = currencyFromBalance.transactionCurrency.code.toUpperCase();
-                const cvCode = currencyFromBalance.convertedCurrency.code.toUpperCase();
                 const currentNorm = (selectedCurrency ?? "").trim().toUpperCase();
-                const isValidSelection = currentNorm === txCode || currentNorm === cvCode;
+                const isValidSelection =
+                  currentNorm === transactionCode.toUpperCase() ||
+                  currentNorm === convertedCode.toUpperCase();
                 if (isInitialMount.current && body.accountCurrency !== undefined) {
                   setSelectedCurrency(
                     body.accountCurrency

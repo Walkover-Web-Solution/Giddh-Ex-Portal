@@ -37,7 +37,6 @@ interface Props {
   creditTransactions?: LedgerTransaction[];
   forwardedBalance?: ForwardedBalanceShape;
   convertedForwardedBalance?: ForwardedBalanceShape;
-  /** Canonical balance b/f type so side doesn't flip on currency toggle */
   balanceBfType?: LedgerTransactionType;
   ledgerTotals?: LedgerTotals;
   transactionCurrency?: CurrencyInfo;
