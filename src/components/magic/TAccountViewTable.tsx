@@ -1,6 +1,10 @@
 "use client";
 
-import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
+import {
+  LEDGER_TYPE_CREDIT,
+  LEDGER_TYPE_DEBIT,
+  type LedgerTransactionType,
+} from "@/constants/ledger";
 import { Transaction, Currency, CurrencyInfo, ForwardedBalanceShape } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
@@ -33,6 +37,7 @@ interface Props {
   creditTransactions?: LedgerTransaction[];
   forwardedBalance?: ForwardedBalanceShape;
   convertedForwardedBalance?: ForwardedBalanceShape;
+  balanceBfType?: LedgerTransactionType;
   ledgerTotals?: LedgerTotals;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
@@ -46,11 +51,13 @@ export function TAccountViewTable({
   creditTransactions,
   forwardedBalance,
   convertedForwardedBalance,
+  balanceBfType,
   ledgerTotals,
   transactionCurrency,
   convertedCurrency,
   linkId,
 }: Props) {
+  const balanceBfSide = balanceBfType ?? forwardedBalance?.type;
   const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingVouchers, setDownloadingVouchers] = useState<Set<string>>(new Set());
@@ -147,6 +154,9 @@ export function TAccountViewTable({
     return formatCurrencyAmount(amount, symbol || "₹", { decimals: 2 });
   };
 
+  const truncateParticular = (text: string) =>
+    text.length > 40 ? `${text.slice(0, 40)}...` : text;
+
   const isForwardedBalanceRow = (tx: unknown): tx is ForwardedBalanceRow =>
     Boolean(
       tx &&
@@ -176,8 +186,7 @@ export function TAccountViewTable({
   );
 
   const debitTx = useMemo(() => {
-    if (!forwardedBalance || forwardedBalance.type !== LEDGER_TYPE_DEBIT)
-      return baseDebitTransactions;
+    if (!forwardedBalance || balanceBfSide !== LEDGER_TYPE_DEBIT) return baseDebitTransactions;
     const convertedAmount = convertedForwardedBalance?.amount ?? forwardedBalance.amount;
     const bfRow: ForwardedBalanceRow = {
       _isOpeningBalanceRow: true,
@@ -188,11 +197,10 @@ export function TAccountViewTable({
       convertedAmount,
     };
     return [bfRow, ...baseDebitTransactions];
-  }, [baseDebitTransactions, forwardedBalance, convertedForwardedBalance]);
+  }, [baseDebitTransactions, forwardedBalance, convertedForwardedBalance, balanceBfSide]);
 
   const creditTx = useMemo(() => {
-    if (!forwardedBalance || forwardedBalance.type !== LEDGER_TYPE_CREDIT)
-      return baseCreditTransactions;
+    if (!forwardedBalance || balanceBfSide !== LEDGER_TYPE_CREDIT) return baseCreditTransactions;
     const convertedAmount = convertedForwardedBalance?.amount ?? forwardedBalance.amount;
     const bfRow: ForwardedBalanceRow = {
       _isOpeningBalanceRow: true,
@@ -203,9 +211,12 @@ export function TAccountViewTable({
       convertedAmount,
     };
     return [bfRow, ...baseCreditTransactions];
-  }, [baseCreditTransactions, forwardedBalance, convertedForwardedBalance]);
+  }, [baseCreditTransactions, forwardedBalance, convertedForwardedBalance, balanceBfSide]);
 
-  const maxRows = Math.max(debitTx.length, creditTx.length);
+  const debitRowCount = balanceBfSide === LEDGER_TYPE_CREDIT ? debitTx.length + 1 : debitTx.length;
+  const creditRowCount =
+    balanceBfSide === LEDGER_TYPE_DEBIT ? creditTx.length + 1 : creditTx.length;
+  const maxRows = Math.max(debitRowCount, creditRowCount);
 
   const { totalDebit, totalCredit, totalDebitConverted, totalCreditConverted } = useMemo(() => {
     if (ledgerTotals) {
@@ -282,8 +293,8 @@ export function TAccountViewTable({
 
         <div className="divide-y divide-gray-200 bg-white">
           {Array.from({ length: maxRows }).map((_, i) => {
-            const hasOpeningBalanceOnCredit = forwardedBalance?.type === LEDGER_TYPE_CREDIT;
-            const hasOpeningBalanceOnDebit = forwardedBalance?.type === LEDGER_TYPE_DEBIT;
+            const hasOpeningBalanceOnCredit = balanceBfSide === LEDGER_TYPE_CREDIT;
+            const hasOpeningBalanceOnDebit = balanceBfSide === LEDGER_TYPE_DEBIT;
             const dr = hasOpeningBalanceOnCredit
               ? i === 0
                 ? undefined
@@ -328,7 +339,17 @@ export function TAccountViewTable({
                     isForwardedBalanceRow(dr) ? (
                       <>
                         <div className="whitespace-nowrap text-sm text-gray-900">{dr.date}</div>
-                        <div className="line-clamp-2 text-sm">{dr.particular}</div>
+                        <div className="group/particular relative min-w-0 overflow-visible text-sm">
+                          <span
+                            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                            role="tooltip"
+                          >
+                            {dr.particular}
+                          </span>
+                          <span className="line-clamp-2 block">
+                            {truncateParticular(dr.particular)}
+                          </span>
+                        </div>
                         <div className="whitespace-nowrap text-right text-sm font-medium text-gray-900">
                           <div>
                             {format(
@@ -351,13 +372,28 @@ export function TAccountViewTable({
                         <div className="whitespace-nowrap text-sm text-gray-900">
                           {isLedgerTransaction(dr) ? dr.entryDate : (dr as Transaction).date}
                         </div>
-                        <div className="line-clamp-2 text-sm">
-                          {isLedgerTransaction(dr)
-                            ? formatParticularWithPrefix(dr.particular.name, dr.type)
-                            : (dr as Transaction).particular}
-                          {isLedgerTransaction(dr) && dr.inventory?.stock?.name
-                            ? ` (${dr.inventory.stock.name})`
-                            : ""}
+                        <div className="group/particular relative min-w-0 overflow-visible text-sm">
+                          <span
+                            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                            role="tooltip"
+                          >
+                            {(isLedgerTransaction(dr)
+                              ? formatParticularWithPrefix(dr.particular.name, dr.type)
+                              : (dr as Transaction).particular) +
+                              (isLedgerTransaction(dr) && dr.inventory?.stock?.name
+                                ? ` (${dr.inventory.stock.name})`
+                                : "")}
+                          </span>
+                          <span className="line-clamp-2 block">
+                            {truncateParticular(
+                              (isLedgerTransaction(dr)
+                                ? formatParticularWithPrefix(dr.particular.name, dr.type)
+                                : (dr as Transaction).particular) +
+                                (isLedgerTransaction(dr) && dr.inventory?.stock?.name
+                                  ? ` (${dr.inventory.stock.name})`
+                                  : "")
+                            )}
+                          </span>
                         </div>
                         <div className="flex items-center justify-end gap-1.5">
                           <div className="whitespace-nowrap text-right text-sm font-medium text-gray-900">
@@ -454,7 +490,17 @@ export function TAccountViewTable({
                     isForwardedBalanceRow(cr) ? (
                       <>
                         <div className="whitespace-nowrap text-sm text-gray-900">{cr.date}</div>
-                        <div className="line-clamp-2 text-sm">{cr.particular}</div>
+                        <div className="group/particular relative min-w-0 overflow-visible text-sm">
+                          <span
+                            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                            role="tooltip"
+                          >
+                            {cr.particular}
+                          </span>
+                          <span className="line-clamp-2 block">
+                            {truncateParticular(cr.particular)}
+                          </span>
+                        </div>
                         <div className="whitespace-nowrap text-right text-sm font-medium text-gray-900">
                           <div>
                             {format(
@@ -477,13 +523,28 @@ export function TAccountViewTable({
                         <div className="whitespace-nowrap text-sm text-gray-900">
                           {isLedgerTransaction(cr) ? cr.entryDate : (cr as Transaction).date}
                         </div>
-                        <div className="line-clamp-2 text-sm">
-                          {isLedgerTransaction(cr)
-                            ? formatParticularWithPrefix(cr.particular.name, cr.type)
-                            : (cr as Transaction).particular}
-                          {isLedgerTransaction(cr) && cr.inventory?.stock?.name
-                            ? ` (${cr.inventory.stock.name})`
-                            : ""}
+                        <div className="group/particular relative min-w-0 overflow-visible text-sm">
+                          <span
+                            className="pointer-events-none absolute bottom-full left-0 z-50 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                            role="tooltip"
+                          >
+                            {(isLedgerTransaction(cr)
+                              ? formatParticularWithPrefix(cr.particular.name, cr.type)
+                              : (cr as Transaction).particular) +
+                              (isLedgerTransaction(cr) && cr.inventory?.stock?.name
+                                ? ` (${cr.inventory.stock.name})`
+                                : "")}
+                          </span>
+                          <span className="line-clamp-2 block">
+                            {truncateParticular(
+                              (isLedgerTransaction(cr)
+                                ? formatParticularWithPrefix(cr.particular.name, cr.type)
+                                : (cr as Transaction).particular) +
+                                (isLedgerTransaction(cr) && cr.inventory?.stock?.name
+                                  ? ` (${cr.inventory.stock.name})`
+                                  : "")
+                            )}
+                          </span>
                         </div>
                         <div className="flex items-center justify-end gap-1.5">
                           <div className="whitespace-nowrap text-right text-sm font-medium text-gray-900">

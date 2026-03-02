@@ -1,4 +1,4 @@
-import { LedgerView } from "@/constants/ledger";
+import { LedgerView, type LedgerTransactionType } from "@/constants/ledger";
 import { Transaction, Currency, ViewMode, CurrencyInfo, ForwardedBalanceShape } from "./types";
 import { StatementViewTable, type LedgerTotals } from "./StatementViewTable";
 import { TAccountViewTable } from "./TAccountViewTable";
@@ -25,6 +25,7 @@ interface LedgerTableProps {
   creditTransactions?: LedgerTransaction[];
   forwardedBalance?: ForwardedBalanceShape;
   convertedForwardedBalance?: ForwardedBalanceShape;
+  balanceBfType?: LedgerTransactionType;
   ledgerTotals?: LedgerTotals;
   pagination?: LedgerTablePaginationProps;
   hideOpeningClosingBalance?: boolean;
@@ -42,6 +43,7 @@ export function LedgerTable({
   creditTransactions,
   forwardedBalance,
   convertedForwardedBalance,
+  balanceBfType,
   ledgerTotals,
   pagination,
   hideOpeningClosingBalance,
@@ -53,6 +55,7 @@ export function LedgerTable({
         debitCreditTransactions={debitCreditTransactions}
         forwardedBalance={forwardedBalance}
         convertedForwardedBalance={convertedForwardedBalance}
+        balanceBfType={balanceBfType}
         ledgerTotals={ledgerTotals}
         transactionCurrency={transactionCurrency}
         convertedCurrency={convertedCurrency}
@@ -71,6 +74,7 @@ export function LedgerTable({
         creditTransactions={creditTransactions}
         forwardedBalance={forwardedBalance}
         convertedForwardedBalance={convertedForwardedBalance}
+        balanceBfType={balanceBfType}
         ledgerTotals={ledgerTotals}
         transactionCurrency={transactionCurrency}
         convertedCurrency={convertedCurrency}

@@ -1,20 +1,32 @@
-/** Company info from company-details API */
-export interface CompanyInfo {
-  name: string;
-  uniqueName: string;
+/** A single address entry from get-company-details API */
+export interface CompanyAddress {
+  name?: string;
+  address?: string;
+  isDefault?: boolean;
+  stateName?: string;
+  uniqueName?: string;
+  pincode?: string;
+  taxType?: string;
+  stateCode?: string;
+  taxNumber?: string;
 }
 
-/** User company data from company-details API */
-export interface UserCompanyData {
+/** Company data returned by get-company-details API */
+export interface CompanyData {
   name: string;
-  id: string;
-  email: string;
-  companies: CompanyInfo[];
-  currentCompany: CompanyInfo;
+  uniqueName: string;
+  address?: string;
+  country?: string;
+  addresses?: CompanyAddress[];
+  portalDomain?: string;
+  contactNo?: string;
+  baseCurrency?: string;
+  headQuarterAlias?: string;
+  razorpayIntegrated?: boolean;
 }
 
 /** Response shape for get-company-details API */
 export interface CompanyDetailsResponse {
   status: string;
-  body: UserCompanyData[];
+  body: CompanyData;
 }

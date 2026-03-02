@@ -49,7 +49,7 @@ export default function InvoicesPage() {
   const dispatch = useAppDispatch();
   const { showToast } = useToast();
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>("All Invoices");
-  const [sortBy, setSortBy] = useState<InvoiceSortColumn>("Total");
+  const [sortBy, setSortBy] = useState<InvoiceSortColumn>("Date");
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadingInvoice, setDownloadingInvoice] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export default function InvoicesPage() {
   const totalPages = useAppSelector(selectAllInvoicesTotalPages(companyName));
   const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
-  const apiSortBy = sortBy === "Total" ? invoiceSortBy.grandTotal : invoiceSortBy.voucherDate;
+  const apiSortBy = sortBy === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
 
   useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
@@ -87,6 +87,7 @@ export default function InvoicesPage() {
           balanceStatus: statusFilterToBalanceStatus(statusFilter),
           page: currentPage,
           count: PAGINATION_LIMIT,
+          refetch: true,
         })
       );
     }
@@ -195,10 +196,10 @@ export default function InvoicesPage() {
 
   const handleClearFilters = () => {
     setStatusFilter("All Invoices");
-    setSortBy("Total");
+    setSortBy("Date");
     setSortDirection(SortOrder.DESC);
     setCurrentPage(1);
-    refetchInvoicesWithSort("Total", SortOrder.DESC, []);
+    refetchInvoicesWithSort("Date", SortOrder.DESC, []);
   };
 
   const refetchInvoicesWithSort = (
@@ -217,7 +218,7 @@ export default function InvoicesPage() {
           companyUniqueName,
           accountUniqueName,
           sort: newSortDirection,
-          sortBy: newSortBy === "Total" ? invoiceSortBy.grandTotal : invoiceSortBy.voucherDate,
+          sortBy: newSortBy === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal,
           balanceStatus:
             balanceStatusOverride !== undefined
               ? balanceStatusOverride
@@ -256,7 +257,9 @@ export default function InvoicesPage() {
         ? sortDirection === SortOrder.ASC
           ? SortOrder.DESC
           : SortOrder.ASC
-        : SortOrder.DESC;
+        : column === "Date"
+          ? SortOrder.DESC
+          : SortOrder.ASC;
     const newSortBy = column;
     setSortBy(newSortBy);
     setSortDirection(newSortDirection);
@@ -265,7 +268,7 @@ export default function InvoicesPage() {
   };
 
   const hasActiveFilters =
-    statusFilter !== "All Invoices" || sortBy !== "Total" || sortDirection !== SortOrder.DESC;
+    statusFilter !== "All Invoices" || sortBy !== "Date" || sortDirection !== SortOrder.DESC;
 
   const handleDownloadInvoice = async (invoiceUniqueName: string, invoiceNumber: string) => {
     let companyUniqueName = companyUniqueNameFromRedux;
@@ -332,11 +335,15 @@ export default function InvoicesPage() {
             rawOverdue && /\b1\s+days\b/i.test(rawOverdue)
               ? rawOverdue.replace(/\b1\s+days\b/i, "1 day")
               : rawOverdue;
+          const totalCurrency =
+            invoice.accountCurrencySymbol ??
+            invoice.companyCurrencySymbol ??
+            getCurrencySymbol(currency);
           return {
             id: invoice.uniqueName ?? "",
             invoiceNo: invoice.voucherNumber ?? "",
             date: invoice.voucherDate ?? "",
-            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
+            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, totalCurrency, {
               decimals: 0,
             }),
             status: status || InvoiceBalanceStatus.UNKNOWN,
@@ -580,9 +587,9 @@ export default function InvoicesPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortBy("Total");
-                    setSortDirection(SortOrder.DESC);
+                    setSortDirection(SortOrder.ASC);
                     setCurrentPage(1);
-                    refetchInvoicesWithSort("Total", SortOrder.DESC);
+                    refetchInvoicesWithSort("Total", SortOrder.ASC);
                   }}
                 >
                   Total

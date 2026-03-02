@@ -3,7 +3,8 @@ import { EnvelopeIcon } from "@heroicons/react/24/outline";
 
 interface FooterProps {
   companyName: string;
-  gstin: string;
+  taxNumber: string;
+  taxType: string;
   companyAddress?: string;
   supportEmail: string;
   variant?: "full" | "minimal";
@@ -11,7 +12,8 @@ interface FooterProps {
 
 export function Footer({
   companyName,
-  gstin,
+  taxNumber,
+  taxType,
   companyAddress,
   supportEmail,
   variant = "minimal",
@@ -47,7 +49,11 @@ export function Footer({
             <p className="mt-0.5 text-sm font-medium text-gray-600">{companyAddress}</p>
           )}
 
-          {gstin && <p className="mt-0.5 text-sm font-medium text-gray-600">GSTIN: {gstin}</p>}
+          {taxNumber && (
+            <p className="mt-0.5 text-sm font-medium text-gray-600">
+              {taxType}: {taxNumber}
+            </p>
+          )}
         </div>
         <div className="mt-4 text-center md:order-3 md:mt-0 md:text-right">
           <p className="text-md font-medium text-gray-900">Contact Us</p>

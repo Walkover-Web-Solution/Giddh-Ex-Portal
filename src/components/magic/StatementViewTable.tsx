@@ -5,6 +5,7 @@ import {
   BALANCE_TYPE_CR,
   LEDGER_TYPE_DEBIT,
   LEDGER_TYPE_CREDIT,
+  type LedgerTransactionType,
 } from "@/constants/ledger";
 import { Currency, CurrencyInfo, Transaction, ForwardedBalanceShape } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
@@ -34,6 +35,7 @@ interface Props {
   debitCreditTransactions?: LedgerTransaction[];
   forwardedBalance?: ForwardedBalanceShape;
   convertedForwardedBalance?: ForwardedBalanceShape;
+  balanceBfType?: LedgerTransactionType;
   ledgerTotals?: LedgerTotals;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
@@ -46,12 +48,14 @@ export function StatementViewTable({
   debitCreditTransactions,
   forwardedBalance,
   convertedForwardedBalance,
+  balanceBfType,
   ledgerTotals,
   transactionCurrency,
   convertedCurrency,
   linkId,
   hideOpeningClosingBalance = false,
 }: Props) {
+  const balanceBfSide = balanceBfType ?? forwardedBalance?.type;
   const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<string | null>(null);
@@ -105,9 +109,7 @@ export function StatementViewTable({
   };
 
   const displayTransactions = useMemo(() => {
-    if (!debitCreditTransactions?.length) return [];
-
-    const rows = debitCreditTransactions.map((tx) => {
+    const rows = (debitCreditTransactions ?? []).map((tx) => {
       const row = transformLedgerTransactionToDisplay(tx, true) as Transaction & {
         transaction: LedgerTransaction;
       };
@@ -116,7 +118,7 @@ export function StatementViewTable({
     });
 
     if (forwardedBalance) {
-      const isCredit = forwardedBalance.type === LEDGER_TYPE_CREDIT;
+      const isCredit = balanceBfSide === LEDGER_TYPE_CREDIT;
       const convertedAmount = convertedForwardedBalance?.amount ?? forwardedBalance.amount;
       const openingBalanceRow = {
         date: "",
@@ -127,8 +129,7 @@ export function StatementViewTable({
         creditConverted: isCredit ? convertedAmount : 0,
         closingBalance: forwardedBalance.amount,
         closingBalanceConverted: convertedAmount,
-        balanceType:
-          forwardedBalance.type === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
+        balanceType: balanceBfSide === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
         voucherGenerated: false,
         transaction: {} as LedgerTransaction,
         isForwardedBalanceRow: true,
@@ -137,7 +138,7 @@ export function StatementViewTable({
     }
 
     return rows;
-  }, [debitCreditTransactions, forwardedBalance, convertedForwardedBalance]);
+  }, [debitCreditTransactions, forwardedBalance, convertedForwardedBalance, balanceBfSide]);
 
   const currencyConfig = getCurrencyConfig(
     selectedCurrency,
@@ -311,10 +312,25 @@ export function StatementViewTable({
                   {item.date}
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm">
-                  {item.particular}
-                  {item.transaction?.inventory?.stock?.name
-                    ? ` (${item.transaction.inventory.stock.name})`
-                    : ""}
+                  <div className="group/particular relative inline-block max-w-full">
+                    <span
+                      className="pointer-events-none absolute bottom-full left-0 z-10 mb-1 max-w-sm whitespace-normal break-words rounded bg-gray-800 px-2 py-1.5 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/particular:opacity-100"
+                      role="tooltip"
+                    >
+                      {item.particular}
+                      {item.transaction?.inventory?.stock?.name
+                        ? ` (${item.transaction.inventory.stock.name})`
+                        : ""}
+                    </span>
+                    <span className="block max-w-[200px] truncate">
+                      {item.particular.length > 100
+                        ? `${item.particular.slice(0, 100)}...`
+                        : item.particular}
+                      {item.transaction?.inventory?.stock?.name
+                        ? ` (${item.transaction.inventory.stock.name})`
+                        : ""}
+                    </span>
+                  </div>
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm">
                   <AmountCell

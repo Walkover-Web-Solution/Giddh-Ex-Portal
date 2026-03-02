@@ -57,7 +57,7 @@ export default async function getLastPayment({
   type = "receipt",
   page = DEFAULT_PAGE,
   count = PAGINATION_LIMIT,
-  sort = "desc",
+  sort = "asc",
   sortBy = "grandTotal",
   balanceStatus = [],
   uniqueNames = [],

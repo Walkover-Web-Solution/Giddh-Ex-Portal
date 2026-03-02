@@ -34,7 +34,7 @@ export default function PaymentsPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [sortFilter, setSortFilter] = useState<PaymentSortColumn>("Amount");
+  const [sortFilter, setSortFilter] = useState<PaymentSortColumn>("Date");
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.DESC);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -50,7 +50,7 @@ export default function PaymentsPage() {
   const totalPages = useAppSelector(selectAllPaymentsTotalPages(companyName));
   const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
-  const apiSortBy = sortFilter === "Amount" ? invoiceSortBy.grandTotal : invoiceSortBy.voucherDate;
+  const apiSortBy = sortFilter === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
 
   useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
@@ -93,19 +93,19 @@ export default function PaymentsPage() {
   };
 
   const handleClearFilters = () => {
-    setSortFilter("Amount");
+    setSortFilter("Date");
     setSortDirection(SortOrder.DESC);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = sortFilter !== "Amount" || sortDirection !== SortOrder.DESC;
+  const hasActiveFilters = sortFilter !== "Date" || sortDirection !== SortOrder.DESC;
 
   const handleSort = (column: PaymentSortColumn) => {
     if (sortFilter === column) {
       setSortDirection(sortDirection === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC);
     } else {
       setSortFilter(column);
-      setSortDirection(SortOrder.DESC);
+      setSortDirection(column === "Date" ? SortOrder.DESC : SortOrder.ASC);
     }
     setCurrentPage(1);
   };
@@ -218,6 +218,7 @@ export default function PaymentsPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortFilter("Amount");
+                    setSortDirection(SortOrder.ASC);
                     setCurrentPage(1);
                   }}
                 >
@@ -226,6 +227,7 @@ export default function PaymentsPage() {
                 <Dropdown.Item
                   onClick={() => {
                     setSortFilter("Date");
+                    setSortDirection(SortOrder.DESC);
                     setCurrentPage(1);
                   }}
                 >

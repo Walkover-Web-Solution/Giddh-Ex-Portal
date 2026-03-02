@@ -7,28 +7,27 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectAllPayments,
   fetchBalanceSummary,
   fetchAllPayments,
+  invoiceSortBy,
 } from "@/store/slices/companySlice";
-import { useParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useParams, usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { SortOrder } from "@/constants/sort";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 
 export default function WelcomePage() {
   const params = useParams();
+  const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const hasCalledApis = useRef(false);
 
   const companyName = params?.company as string;
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
 
-  const allPayments = useAppSelector(selectAllPayments(companyName));
-
   useEffect(() => {
-    if (hasCalledApis.current) return;
+    if (!pathname?.includes("/welcome")) return;
 
     let companyUniqueName = companyUniqueNameFromRedux;
     let accountUniqueName = accountUniqueNameFromRedux;
@@ -47,15 +46,21 @@ export default function WelcomePage() {
     }
 
     if (companyName && companyUniqueName && accountUniqueName) {
-      hasCalledApis.current = true;
       dispatch(
         fetchBalanceSummary({ companyName, companyUniqueName, uniqueName: accountUniqueName })
       );
-      if (!allPayments || allPayments.length === 0) {
-        dispatch(fetchAllPayments({ companyName, companyUniqueName, accountUniqueName }));
-      }
+      dispatch(
+        fetchAllPayments({
+          companyName,
+          companyUniqueName,
+          accountUniqueName,
+          sort: SortOrder.DESC,
+          sortBy: invoiceSortBy.voucherDate,
+          refetch: true,
+        })
+      );
     }
-  }, [dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux, allPayments]);
+  }, [pathname, dispatch, companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
   return (
     <>

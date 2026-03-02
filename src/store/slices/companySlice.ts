@@ -7,11 +7,9 @@ import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
 import getAccountsList, { Account } from "@/utils/getAccountsList";
 import getLastPayment, { PaymentVoucher } from "@/utils/getLastPayment";
-import { UserCompanyData } from "@/types/company";
+import { CompanyData } from "@/types/company";
 import getCompanyDetails from "@/utils/getCompanyDetails";
 import getInvoiceList, { InvoiceVoucher } from "@/utils/getInvoiceList";
-import { getAccountStatement } from "@/utils/accountStatement";
-import { formatDateToAPI as formatDateToAPIUtil } from "@/utils/dateUtils";
 
 interface Currency {
   code: string;
@@ -70,6 +68,7 @@ interface AllInvoicesState {
   totalPages?: number;
   page?: number;
   count?: number;
+  accountUniqueName?: string;
 }
 
 interface UserDetailsState {
@@ -97,6 +96,7 @@ interface AccountInfo {
 interface CompanyAddressState {
   data: string | null;
   gstin: string | null;
+  taxType: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -106,7 +106,7 @@ interface CompanyInfo {
   country: string;
   companyDisplayName?: string | null;
   companyUniqueName?: string;
-  user?: UserCompanyData;
+  user?: CompanyData;
   userData?: UserData;
   account?: AccountInfo;
   balanceSummary?: BalanceSummaryState;
@@ -141,13 +141,14 @@ export const fetchCompanyDetails = createAsyncThunk(
     accountUniqueName: string;
   }) => {
     const response = await getCompanyDetails(companyUniqueName, accountUniqueName);
-    return { companyName, data: response.body[0] };
+    return { companyName, data: response.body };
   },
   {
     condition: ({ companyName, accountUniqueName }, { getState }) => {
       const state = getState() as RootState;
       const company = state.companies[companyName];
       if (!company?.user) return true;
+      if (company?.companyAddress?.taxType === undefined) return true;
       return company.account?.uniqueName !== accountUniqueName;
     },
   }
@@ -181,52 +182,6 @@ export const fetchUserDetails = createAsyncThunk(
       const state = getState() as RootState;
       const company = state.companies[companyName];
       if (!company?.userDetails?.data) return true;
-      return company.account?.uniqueName !== accountUniqueName;
-    },
-  }
-);
-
-export const fetchCompanyAddress = createAsyncThunk(
-  "companies/fetchCompanyAddress",
-  async ({
-    companyName,
-    companyUniqueName,
-    accountUniqueName,
-  }: {
-    companyName: string;
-    companyUniqueName: string;
-    accountUniqueName: string;
-  }) => {
-    const today = formatDateToAPIUtil(new Date());
-    const response = await getAccountStatement({
-      companyUniqueName,
-      accountUniqueName,
-      page: 1,
-      count: PAGINATION_LIMIT,
-      from: today,
-      to: today,
-      sort: SortOrder.ASC,
-    });
-    const companyGstAddress = response.body?.companyGstAddress;
-    const companyDisplayName = response.body?.companyName?.trim() || null;
-    if (!companyGstAddress) return { companyName, data: null, gstin: null, companyDisplayName };
-    const mainParts = [
-      companyGstAddress.address,
-      companyGstAddress.stateName,
-      companyGstAddress.countryName,
-    ].filter(Boolean);
-    const pinPart = companyGstAddress.pinCode?.trim()
-      ? (mainParts.length ? " - " : "") + companyGstAddress.pinCode.trim()
-      : "";
-    const addressString = [...mainParts, pinPart].filter(Boolean).join(", ").trim();
-    const gstin = companyGstAddress.taxNumber?.trim() || null;
-    return { companyName, data: addressString, gstin, companyDisplayName };
-  },
-  {
-    condition: ({ companyName, accountUniqueName }, { getState }) => {
-      const state = getState() as RootState;
-      const company = state.companies[companyName];
-      if (company?.companyAddress?.data == null) return true;
       return company.account?.uniqueName !== accountUniqueName;
     },
   }
@@ -305,10 +260,11 @@ export const fetchAllPayments = createAsyncThunk(
     companyName,
     companyUniqueName,
     accountUniqueName,
-    sort = SortOrder.DESC,
+    sort = SortOrder.ASC,
     sortBy = "grandTotal",
     page = 1,
     count,
+    refetch,
   }: {
     companyName: string;
     companyUniqueName: string;
@@ -317,6 +273,7 @@ export const fetchAllPayments = createAsyncThunk(
     sortBy?: string;
     page?: number;
     count?: number;
+    refetch?: boolean;
   }) => {
     const response = await getLastPayment({
       companyUniqueName,
@@ -344,7 +301,8 @@ export const fetchAllPayments = createAsyncThunk(
     };
   },
   {
-    condition: ({ companyName, sort, sortBy, page, count }, { getState }) => {
+    condition: ({ companyName, sort, sortBy, page, count, refetch }, { getState }) => {
+      if (refetch) return true;
       const state = getState() as RootState;
       const payments = state.companies[companyName]?.allPayments;
       if (payments?.loading) return false;
@@ -378,11 +336,12 @@ export const fetchAllInvoices = createAsyncThunk(
     companyName,
     companyUniqueName,
     accountUniqueName,
-    sort = SortOrder.DESC,
+    sort = SortOrder.ASC,
     sortBy = invoiceSortBy.grandTotal,
     balanceStatus = [],
     page = 1,
     count = PAGINATION_LIMIT,
+    refetch,
   }: {
     companyName: string;
     companyUniqueName: string;
@@ -392,6 +351,7 @@ export const fetchAllInvoices = createAsyncThunk(
     balanceStatus?: string[];
     page?: number;
     count?: number;
+    refetch?: boolean;
   }) => {
     const response = await getInvoiceList({
       companyUniqueName,
@@ -419,10 +379,15 @@ export const fetchAllInvoices = createAsyncThunk(
     };
   },
   {
-    condition: ({ companyName, sort, sortBy, balanceStatus, page, count }, { getState }) => {
+    condition: (
+      { companyName, accountUniqueName, sort, sortBy, balanceStatus, page, count, refetch },
+      { getState }
+    ) => {
+      if (refetch) return true;
       const state = getState() as RootState;
       const invoices = state.companies[companyName]?.allInvoices;
       if (invoices?.loading) return false;
+      if (invoices?.accountUniqueName !== accountUniqueName) return true;
       if (invoices?.data != null && invoices?.lastFetchTimestamp == null) return true;
       const sameSort = invoices?.sort === sort && invoices?.sortBy === sortBy;
       const sameStatus = sameBalanceStatus(invoices?.balanceStatus, balanceStatus);
@@ -670,6 +635,7 @@ export const companySlice = createSlice({
           page,
           count,
         } = action.payload;
+        const accountUniqueName = action.meta.arg.accountUniqueName;
         if (!state[companyName]) {
           state[companyName] = { companyName, country: "" };
         }
@@ -686,6 +652,7 @@ export const companySlice = createSlice({
             totalPages,
             page,
             count,
+            accountUniqueName,
           };
         }
       })
@@ -739,55 +706,34 @@ export const companySlice = createSlice({
           };
         }
       })
-      .addCase(fetchCompanyAddress.pending, (state, action) => {
-        const { companyName } = action.meta.arg;
-        if (!state[companyName]) {
-          state[companyName] = {
-            companyName,
-            country: "",
-            companyAddress: { data: null, gstin: null, loading: true, error: null },
-          };
-        } else {
-          state[companyName].companyAddress = {
-            data: state[companyName].companyAddress?.data ?? null,
-            gstin: state[companyName].companyAddress?.gstin ?? null,
-            loading: true,
-            error: null,
-          };
-        }
-      })
-      .addCase(fetchCompanyAddress.fulfilled, (state, action) => {
-        const { companyName, data, gstin, companyDisplayName } = action.payload;
-        if (state[companyName]) {
-          state[companyName].companyAddress = {
-            data,
-            gstin: gstin ?? null,
-            loading: false,
-            error: null,
-          };
-          if (companyDisplayName != null) {
-            state[companyName].companyDisplayName = companyDisplayName;
-          }
-        }
-      })
-      .addCase(fetchCompanyAddress.rejected, (state, action) => {
-        const { companyName } = action.meta.arg;
-        if (state[companyName]) {
-          state[companyName].companyAddress = {
-            data: state[companyName].companyAddress?.data ?? null,
-            gstin: state[companyName].companyAddress?.gstin ?? null,
-            loading: false,
-            error: action.error?.message ?? "Failed to fetch company address",
-          };
-        }
-      })
       .addCase(fetchCompanyDetails.fulfilled, (state, action) => {
         const { companyName, data } = action.payload;
         if (state[companyName]) {
           state[companyName].user = data;
-          const displayName = data?.currentCompany?.name?.trim();
+          const displayName = data?.name?.trim();
           if (displayName) {
             state[companyName].companyDisplayName = displayName;
+          }
+          const defaultAddress = data?.addresses?.find((a) => a.isDefault) ?? data?.addresses?.[0];
+          if (defaultAddress) {
+            const mainParts = [
+              defaultAddress.address,
+              defaultAddress.stateName,
+              data?.country,
+            ].filter(Boolean);
+            const pinPart = defaultAddress.pincode?.trim()
+              ? (mainParts.length ? " - " : "") + defaultAddress.pincode.trim()
+              : "";
+            const addressString = [...mainParts, pinPart].filter(Boolean).join(", ").trim();
+            const gstin = defaultAddress.taxNumber?.trim() || null;
+            const taxType = defaultAddress.taxType?.trim() || null;
+            state[companyName].companyAddress = {
+              data: addressString || null,
+              gstin,
+              taxType,
+              loading: false,
+              error: null,
+            };
           }
         }
       });
@@ -819,10 +765,10 @@ export const selectBalanceSummaryError = (companyName: string) => (state: RootSt
 export const selectUser = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.user || null;
 
-/** Display name from API (view-statement companyName or get-company-details currentCompany.name), fallback to URL param */
+/** Display name from API (get-company-details name), fallback to URL param */
 export const selectCompanyDisplayName = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.companyDisplayName ??
-  state.companies[companyName]?.user?.currentCompany?.name ??
+  state.companies[companyName]?.user?.name ??
   null;
 export const selectUserData = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.userData || null;
@@ -888,6 +834,8 @@ export const selectCompanyAddress = (companyName: string) => (state: RootState) 
   state.companies[companyName]?.companyAddress?.data ?? null;
 export const selectCompanyGstin = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.companyAddress?.gstin ?? null;
+export const selectCompanyTaxType = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.companyAddress?.taxType ?? null;
 
 // Data freshness selectors (5 minutes TTL)
 const DATA_FRESHNESS_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds

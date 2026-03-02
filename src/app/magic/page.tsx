@@ -222,6 +222,52 @@ export default function Magic() {
             if (balanceRes.body.accountCurrency !== undefined) {
               setAccountCurrency(balanceRes.body.accountCurrency);
             }
+            if (!hasValidCurrency) {
+              const body = balanceRes.body;
+              const transactionCode = (body.currencyCode ?? "").trim();
+              const convertedCode = (body.convertedCurrencyCode ?? "").trim();
+              if (
+                transactionCode &&
+                convertedCode &&
+                transactionCode.toUpperCase() !== convertedCode.toUpperCase()
+              ) {
+                const currencyFromBalance: CurrencyData = {
+                  transactionCurrency: {
+                    code: body.currencyCode,
+                    symbol: body.currencySymbol,
+                  },
+                  convertedCurrency: {
+                    code: body.convertedCurrencyCode,
+                    symbol: body.convertedCurrencySymbol,
+                  },
+                  companyCurrency: {
+                    code: body.currencyCode,
+                    symbol: body.currencySymbol,
+                  },
+                };
+                setCurrencyData(currencyFromBalance);
+                if (!hasSetStaticCurrencyOptionsRef.current) {
+                  setStaticCurrencyToggleOptions({
+                    transactionCode: currencyFromBalance.transactionCurrency.code,
+                    convertedCode: currencyFromBalance.convertedCurrency.code,
+                  });
+                  hasSetStaticCurrencyOptionsRef.current = true;
+                }
+                const currentNorm = (selectedCurrency ?? "").trim().toUpperCase();
+                const isValidSelection =
+                  currentNorm === transactionCode.toUpperCase() ||
+                  currentNorm === convertedCode.toUpperCase();
+                if (isInitialMount.current && body.accountCurrency !== undefined) {
+                  setSelectedCurrency(
+                    body.accountCurrency
+                      ? currencyFromBalance.transactionCurrency.code
+                      : currencyFromBalance.convertedCurrency.code
+                  );
+                } else if (!isValidSelection) {
+                  setSelectedCurrency(currencyFromBalance.transactionCurrency.code);
+                }
+              }
+            }
           } else {
             setLedgerBalance(undefined);
           }
@@ -465,6 +511,22 @@ export default function Magic() {
 
   const hasMultiplePages = !!(prevToken || nextToken);
 
+  const transactionCurrencyCode =
+    staticCurrencyToggleOptions?.transactionCode ?? currencyData?.transactionCurrency?.code ?? "";
+
+  const balanceBfType = useMemo((): LedgerTransactionType | undefined => {
+    const txCode = (transactionCurrencyCode ?? "").trim().toUpperCase();
+    if (ledgerBalance?.forwardedBalance || ledgerBalance?.convertedForwardedBalance) {
+      const bodyCode = (ledgerBalance.currencyCode ?? "").trim().toUpperCase();
+      const usePrimary = txCode === "" || bodyCode === txCode;
+      if (usePrimary && ledgerBalance.forwardedBalance) return ledgerBalance.forwardedBalance.type;
+      if (ledgerBalance.convertedForwardedBalance)
+        return ledgerBalance.convertedForwardedBalance.type;
+      return ledgerBalance.forwardedBalance?.type;
+    }
+    return forwardedBalance?.type;
+  }, [ledgerBalance, forwardedBalance, transactionCurrencyCode]);
+
   const summary = useMemo(
     () =>
       buildFooterSummary({
@@ -612,6 +674,7 @@ export default function Magic() {
                 ? ledgerBalance.convertedForwardedBalance
                 : undefined
             }
+            balanceBfType={balanceBfType}
             ledgerTotals={
               ledgerBalance
                 ? {
