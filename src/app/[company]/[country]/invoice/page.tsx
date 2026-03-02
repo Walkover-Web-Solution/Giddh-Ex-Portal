@@ -4,7 +4,7 @@ import { DataTable } from "@/components/DataTable";
 import { Dropdown } from "@/components/Dropdown";
 import { Pagination } from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -69,27 +69,29 @@ export default function InvoicesPage() {
   const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
   const apiSortBy = sortBy === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
+  const lastKeyRef = useRef("");
 
   useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
-
-    if (companyName && companyUniqueName && accountUniqueName) {
-      dispatch(
-        fetchAllInvoices({
-          companyName,
-          companyUniqueName,
-          accountUniqueName,
-          sort: sortDirection,
-          sortBy: apiSortBy,
-          balanceStatus: statusFilterToBalanceStatus(statusFilter),
-          page: currentPage,
-          count: PAGINATION_LIMIT,
-        })
-      );
-    }
+    if (!companyName || !companyUniqueName || !accountUniqueName) return;
+    const key = `${companyUniqueName}|${accountUniqueName}|${currentPage}|${sortDirection}|${apiSortBy}|${statusFilter}`;
+    if (lastKeyRef.current === key) return;
+    lastKeyRef.current = key;
+    dispatch(
+      fetchAllInvoices({
+        companyName,
+        companyUniqueName,
+        accountUniqueName,
+        sort: sortDirection,
+        sortBy: apiSortBy,
+        balanceStatus: statusFilterToBalanceStatus(statusFilter),
+        page: currentPage,
+        count: PAGINATION_LIMIT,
+      })
+    );
   }, [
     dispatch,
     companyName,
