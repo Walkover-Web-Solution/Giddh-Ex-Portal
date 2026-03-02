@@ -5,6 +5,7 @@ import {
   BALANCE_TYPE_CR,
   LEDGER_TYPE_DEBIT,
   LEDGER_TYPE_CREDIT,
+  type LedgerTransactionType,
 } from "@/constants/ledger";
 import { Currency, CurrencyInfo, Transaction, ForwardedBalanceShape } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
@@ -34,6 +35,7 @@ interface Props {
   debitCreditTransactions?: LedgerTransaction[];
   forwardedBalance?: ForwardedBalanceShape;
   convertedForwardedBalance?: ForwardedBalanceShape;
+  balanceBfType?: LedgerTransactionType;
   ledgerTotals?: LedgerTotals;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
@@ -46,12 +48,14 @@ export function StatementViewTable({
   debitCreditTransactions,
   forwardedBalance,
   convertedForwardedBalance,
+  balanceBfType,
   ledgerTotals,
   transactionCurrency,
   convertedCurrency,
   linkId,
   hideOpeningClosingBalance = false,
 }: Props) {
+  const balanceBfSide = balanceBfType ?? forwardedBalance?.type;
   const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<string | null>(null);
@@ -114,7 +118,7 @@ export function StatementViewTable({
     });
 
     if (forwardedBalance) {
-      const isCredit = forwardedBalance.type === LEDGER_TYPE_CREDIT;
+      const isCredit = balanceBfSide === LEDGER_TYPE_CREDIT;
       const convertedAmount = convertedForwardedBalance?.amount ?? forwardedBalance.amount;
       const openingBalanceRow = {
         date: "",
@@ -125,8 +129,7 @@ export function StatementViewTable({
         creditConverted: isCredit ? convertedAmount : 0,
         closingBalance: forwardedBalance.amount,
         closingBalanceConverted: convertedAmount,
-        balanceType:
-          forwardedBalance.type === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
+        balanceType: balanceBfSide === LEDGER_TYPE_DEBIT ? BALANCE_TYPE_DR : BALANCE_TYPE_CR,
         voucherGenerated: false,
         transaction: {} as LedgerTransaction,
         isForwardedBalanceRow: true,
@@ -135,7 +138,7 @@ export function StatementViewTable({
     }
 
     return rows;
-  }, [debitCreditTransactions, forwardedBalance, convertedForwardedBalance]);
+  }, [debitCreditTransactions, forwardedBalance, convertedForwardedBalance, balanceBfSide]);
 
   const currencyConfig = getCurrencyConfig(
     selectedCurrency,

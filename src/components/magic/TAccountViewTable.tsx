@@ -1,6 +1,10 @@
 "use client";
 
-import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
+import {
+  LEDGER_TYPE_CREDIT,
+  LEDGER_TYPE_DEBIT,
+  type LedgerTransactionType,
+} from "@/constants/ledger";
 import { Transaction, Currency, CurrencyInfo, ForwardedBalanceShape } from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
@@ -33,6 +37,8 @@ interface Props {
   creditTransactions?: LedgerTransaction[];
   forwardedBalance?: ForwardedBalanceShape;
   convertedForwardedBalance?: ForwardedBalanceShape;
+  /** Canonical balance b/f type so side doesn't flip on currency toggle */
+  balanceBfType?: LedgerTransactionType;
   ledgerTotals?: LedgerTotals;
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
@@ -46,11 +52,13 @@ export function TAccountViewTable({
   creditTransactions,
   forwardedBalance,
   convertedForwardedBalance,
+  balanceBfType,
   ledgerTotals,
   transactionCurrency,
   convertedCurrency,
   linkId,
 }: Props) {
+  const balanceBfSide = balanceBfType ?? forwardedBalance?.type;
   const { showToast } = useToast();
   const [downloadingTransactionId, setDownloadingTransactionId] = useState<string | null>(null);
   const [downloadingVouchers, setDownloadingVouchers] = useState<Set<string>>(new Set());
@@ -176,8 +184,7 @@ export function TAccountViewTable({
   );
 
   const debitTx = useMemo(() => {
-    if (!forwardedBalance || forwardedBalance.type !== LEDGER_TYPE_DEBIT)
-      return baseDebitTransactions;
+    if (!forwardedBalance || balanceBfSide !== LEDGER_TYPE_DEBIT) return baseDebitTransactions;
     const convertedAmount = convertedForwardedBalance?.amount ?? forwardedBalance.amount;
     const bfRow: ForwardedBalanceRow = {
       _isOpeningBalanceRow: true,
@@ -188,11 +195,10 @@ export function TAccountViewTable({
       convertedAmount,
     };
     return [bfRow, ...baseDebitTransactions];
-  }, [baseDebitTransactions, forwardedBalance, convertedForwardedBalance]);
+  }, [baseDebitTransactions, forwardedBalance, convertedForwardedBalance, balanceBfSide]);
 
   const creditTx = useMemo(() => {
-    if (!forwardedBalance || forwardedBalance.type !== LEDGER_TYPE_CREDIT)
-      return baseCreditTransactions;
+    if (!forwardedBalance || balanceBfSide !== LEDGER_TYPE_CREDIT) return baseCreditTransactions;
     const convertedAmount = convertedForwardedBalance?.amount ?? forwardedBalance.amount;
     const bfRow: ForwardedBalanceRow = {
       _isOpeningBalanceRow: true,
@@ -203,12 +209,11 @@ export function TAccountViewTable({
       convertedAmount,
     };
     return [bfRow, ...baseCreditTransactions];
-  }, [baseCreditTransactions, forwardedBalance, convertedForwardedBalance]);
+  }, [baseCreditTransactions, forwardedBalance, convertedForwardedBalance, balanceBfSide]);
 
-  const debitRowCount =
-    forwardedBalance?.type === LEDGER_TYPE_CREDIT ? debitTx.length + 1 : debitTx.length;
+  const debitRowCount = balanceBfSide === LEDGER_TYPE_CREDIT ? debitTx.length + 1 : debitTx.length;
   const creditRowCount =
-    forwardedBalance?.type === LEDGER_TYPE_DEBIT ? creditTx.length + 1 : creditTx.length;
+    balanceBfSide === LEDGER_TYPE_DEBIT ? creditTx.length + 1 : creditTx.length;
   const maxRows = Math.max(debitRowCount, creditRowCount);
 
   const { totalDebit, totalCredit, totalDebitConverted, totalCreditConverted } = useMemo(() => {
@@ -286,8 +291,8 @@ export function TAccountViewTable({
 
         <div className="divide-y divide-gray-200 bg-white">
           {Array.from({ length: maxRows }).map((_, i) => {
-            const hasOpeningBalanceOnCredit = forwardedBalance?.type === LEDGER_TYPE_CREDIT;
-            const hasOpeningBalanceOnDebit = forwardedBalance?.type === LEDGER_TYPE_DEBIT;
+            const hasOpeningBalanceOnCredit = balanceBfSide === LEDGER_TYPE_CREDIT;
+            const hasOpeningBalanceOnDebit = balanceBfSide === LEDGER_TYPE_DEBIT;
             const dr = hasOpeningBalanceOnCredit
               ? i === 0
                 ? undefined
