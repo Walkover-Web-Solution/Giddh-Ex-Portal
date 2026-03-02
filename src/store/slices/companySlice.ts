@@ -68,6 +68,7 @@ interface AllInvoicesState {
   totalPages?: number;
   page?: number;
   count?: number;
+  accountUniqueName?: string;
 }
 
 interface UserDetailsState {
@@ -263,7 +264,7 @@ export const fetchAllPayments = createAsyncThunk(
     sortBy = "grandTotal",
     page = 1,
     count,
-    forceRefetch,
+    refetch,
   }: {
     companyName: string;
     companyUniqueName: string;
@@ -272,7 +273,7 @@ export const fetchAllPayments = createAsyncThunk(
     sortBy?: string;
     page?: number;
     count?: number;
-    forceRefetch?: boolean;
+    refetch?: boolean;
   }) => {
     const response = await getLastPayment({
       companyUniqueName,
@@ -300,8 +301,8 @@ export const fetchAllPayments = createAsyncThunk(
     };
   },
   {
-    condition: ({ companyName, sort, sortBy, page, count, forceRefetch }, { getState }) => {
-      if (forceRefetch) return true;
+    condition: ({ companyName, sort, sortBy, page, count, refetch }, { getState }) => {
+      if (refetch) return true;
       const state = getState() as RootState;
       const payments = state.companies[companyName]?.allPayments;
       if (payments?.loading) return false;
@@ -340,6 +341,7 @@ export const fetchAllInvoices = createAsyncThunk(
     balanceStatus = [],
     page = 1,
     count = PAGINATION_LIMIT,
+    refetch,
   }: {
     companyName: string;
     companyUniqueName: string;
@@ -349,6 +351,7 @@ export const fetchAllInvoices = createAsyncThunk(
     balanceStatus?: string[];
     page?: number;
     count?: number;
+    refetch?: boolean;
   }) => {
     const response = await getInvoiceList({
       companyUniqueName,
@@ -376,10 +379,15 @@ export const fetchAllInvoices = createAsyncThunk(
     };
   },
   {
-    condition: ({ companyName, sort, sortBy, balanceStatus, page, count }, { getState }) => {
+    condition: (
+      { companyName, accountUniqueName, sort, sortBy, balanceStatus, page, count, refetch },
+      { getState }
+    ) => {
+      if (refetch) return true;
       const state = getState() as RootState;
       const invoices = state.companies[companyName]?.allInvoices;
       if (invoices?.loading) return false;
+      if (invoices?.accountUniqueName !== accountUniqueName) return true;
       if (invoices?.data != null && invoices?.lastFetchTimestamp == null) return true;
       const sameSort = invoices?.sort === sort && invoices?.sortBy === sortBy;
       const sameStatus = sameBalanceStatus(invoices?.balanceStatus, balanceStatus);
@@ -627,6 +635,7 @@ export const companySlice = createSlice({
           page,
           count,
         } = action.payload;
+        const accountUniqueName = action.meta.arg.accountUniqueName;
         if (!state[companyName]) {
           state[companyName] = { companyName, country: "" };
         }
@@ -643,6 +652,7 @@ export const companySlice = createSlice({
             totalPages,
             page,
             count,
+            accountUniqueName,
           };
         }
       })

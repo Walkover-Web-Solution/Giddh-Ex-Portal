@@ -87,6 +87,7 @@ export default function InvoicesPage() {
           balanceStatus: statusFilterToBalanceStatus(statusFilter),
           page: currentPage,
           count: PAGINATION_LIMIT,
+          refetch: true,
         })
       );
     }
@@ -332,11 +333,15 @@ export default function InvoicesPage() {
             rawOverdue && /\b1\s+days\b/i.test(rawOverdue)
               ? rawOverdue.replace(/\b1\s+days\b/i, "1 day")
               : rawOverdue;
+          const totalCurrency =
+            invoice.accountCurrencySymbol ??
+            invoice.companyCurrencySymbol ??
+            getCurrencySymbol(currency);
           return {
             id: invoice.uniqueName ?? "",
             invoiceNo: invoice.voucherNumber ?? "",
             date: invoice.voucherDate ?? "",
-            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, currency, {
+            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, totalCurrency, {
               decimals: 0,
             }),
             status: status || InvoiceBalanceStatus.UNKNOWN,

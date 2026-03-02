@@ -56,7 +56,7 @@ export default function WelcomePage() {
           accountUniqueName,
           sort: SortOrder.DESC,
           sortBy: invoiceSortBy.voucherDate,
-          forceRefetch: true,
+          refetch: true,
         })
       );
     }

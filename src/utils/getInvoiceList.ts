@@ -19,6 +19,7 @@ export interface InvoiceVoucher {
     paymentStatus?: string;
   };
   companyCurrencySymbol?: string;
+  accountCurrencySymbol?: string;
 }
 
 export interface InvoiceListResponse {
