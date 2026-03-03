@@ -16,10 +16,9 @@ import {
   selectAllPaymentsTotalPages,
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectBalanceSummary,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
-import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/utils/currency";
+import { formatCurrencyAmount } from "@/utils/currency";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
@@ -48,7 +47,6 @@ export default function PaymentsPage() {
   const error = useAppSelector(selectAllPaymentsError(companyName));
   const totalItems = useAppSelector(selectAllPaymentsTotalItems(companyName));
   const totalPages = useAppSelector(selectAllPaymentsTotalPages(companyName));
-  const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
   const apiSortBy = sortFilter === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
 
@@ -110,25 +108,27 @@ export default function PaymentsPage() {
     setCurrentPage(1);
   };
 
-  const currency = balanceSummary?.currency || DEFAULT_CURRENCY;
-
   const paymentsData: Payment[] = useMemo(
     () =>
       (allPayments || []).map((payment) => ({
         id: payment.uniqueName,
         paymentId: payment.voucherNumber,
         date: payment.voucherDate,
-        amount: formatCurrencyAmount(payment.grandTotal?.amountForAccount, currency, {
-          decimals: 0,
-        }),
+        amount: formatCurrencyAmount(
+          payment.grandTotal?.amountForAccount,
+          payment.accountCurrencySymbol,
+          {
+            decimals: 0,
+          }
+        ),
         paymentMode: payment.paymentMode?.name ?? "",
         unusedAmount: formatCurrencyAmount(
           payment.balanceDue?.amountForAccount ?? 0,
-          payment.accountCurrencySymbol ?? currency,
+          payment.accountCurrencySymbol,
           { decimals: 0 }
         ),
       })),
-    [allPayments, currency]
+    [allPayments]
   );
 
   const columns = useMemo(
@@ -167,7 +167,7 @@ export default function PaymentsPage() {
             onClick={() => handleSort("Amount")}
             className="flex items-center gap-1 hover:text-gray-700"
           >
-            Amount {getCurrencySymbol(currency)}
+            Amount
             {sortFilter === "Amount" ? (
               sortDirection === SortOrder.ASC ? (
                 <ArrowUp className="h-4 w-4" />
@@ -184,7 +184,7 @@ export default function PaymentsPage() {
       { header: "Payment Mode", accessor: "paymentMode" as keyof Payment },
       { header: "Unused Amount", accessor: "unusedAmount" as keyof Payment },
     ],
-    [currency, sortFilter, sortDirection]
+    [sortFilter, sortDirection]
   );
 
   return (

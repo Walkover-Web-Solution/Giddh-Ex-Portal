@@ -17,10 +17,9 @@ import {
   selectAllInvoicesTotalPages,
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectBalanceSummary,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
-import { formatCurrencyAmount, getCurrencySymbol, DEFAULT_CURRENCY } from "@/utils/currency";
+import { formatCurrencyAmount } from "@/utils/currency";
 import { downloadBase64AsPDF } from "@/utils/fileUtils";
 import downloadInvoice from "@/utils/downloadInvoice";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
@@ -66,7 +65,6 @@ export default function InvoicesPage() {
   const error = useAppSelector(selectAllInvoicesError(companyName));
   const totalItems = useAppSelector(selectAllInvoicesTotalItems(companyName));
   const totalPages = useAppSelector(selectAllInvoicesTotalPages(companyName));
-  const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
 
   const apiSortBy = sortBy === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
   const lastKeyRef = useRef("");
@@ -310,8 +308,6 @@ export default function InvoicesPage() {
     }
   };
 
-  const currency = balanceSummary?.currency || DEFAULT_CURRENCY;
-
   const validBalanceStatuses = useMemo(() => new Set(Object.values(InvoiceBalanceStatus)), []);
 
   const getInvoiceBalanceStatus = (invoice: { balanceStatus?: string }) =>
@@ -336,10 +332,7 @@ export default function InvoicesPage() {
             rawOverdue && /\b1\s+days\b/i.test(rawOverdue)
               ? rawOverdue.replace(/\b1\s+days\b/i, "1 day")
               : rawOverdue;
-          const totalCurrency =
-            invoice.accountCurrencySymbol ??
-            invoice.companyCurrencySymbol ??
-            getCurrencySymbol(currency);
+          const totalCurrency = invoice.accountCurrencySymbol ?? "";
           return {
             id: invoice.uniqueName ?? "",
             invoiceNo: invoice.voucherNumber ?? "",
@@ -357,7 +350,7 @@ export default function InvoicesPage() {
             showPayNow,
           };
         }),
-    [allInvoices, currency, validBalanceStatuses]
+    [allInvoices, validBalanceStatuses]
   );
 
   const invoicesData = allInvoicesData;

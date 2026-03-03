@@ -3,11 +3,6 @@ export interface Currency {
   symbol: string;
 }
 
-export const DEFAULT_CURRENCY: Currency = {
-  code: "INR",
-  symbol: "₹",
-};
-
 export function formatCurrencyAmount(
   amount: number | undefined | null,
   currency?: Currency | string | null,
@@ -21,15 +16,15 @@ export function formatCurrencyAmount(
 
   const numericAmount = amount !== undefined && amount !== null ? amount : 0;
 
-  let currencySymbol = DEFAULT_CURRENCY.symbol;
-  let currencyCode = DEFAULT_CURRENCY.code;
+  let currencySymbol = "";
+  let currencyCode = "";
 
   if (currency) {
     if (typeof currency === "string") {
       currencySymbol = currency;
     } else {
-      currencySymbol = currency.symbol || DEFAULT_CURRENCY.symbol;
-      currencyCode = currency.code || DEFAULT_CURRENCY.code;
+      currencySymbol = currency.symbol ?? "";
+      currencyCode = currency.code ?? "";
     }
   }
 
@@ -55,22 +50,22 @@ export function formatCurrencyAmount(
 
 export function getCurrencySymbol(currency?: Currency | string | null): string {
   if (!currency) {
-    return DEFAULT_CURRENCY.symbol;
+    return "";
   }
 
   if (typeof currency === "string") {
     return currency;
   }
 
-  return currency.symbol || DEFAULT_CURRENCY.symbol;
+  return currency.symbol ?? "";
 }
 
 export function getCurrencyCode(currency?: Currency | null): string {
   if (!currency) {
-    return DEFAULT_CURRENCY.code;
+    return "";
   }
 
-  return currency.code || DEFAULT_CURRENCY.code;
+  return currency.code ?? "";
 }
 
 export function getCurrencyDisplay(currency?: Currency | null): string {
