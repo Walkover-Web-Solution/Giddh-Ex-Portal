@@ -24,7 +24,7 @@ import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { DateRangeCalendar } from "@/components/ui/DateRangeCalendar";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { ArrowUp, ArrowDown } from "lucide-react";
 import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
 import { FileType, EXPORT_FILE_CONFIG, PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
@@ -221,9 +221,31 @@ export default function AccountStatementPage() {
     setCurrentPage(1);
   };
 
+  const toggleDateSort = () => {
+    setSortDirection((prev) => (prev === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC));
+    setCurrentPage(1);
+  };
+
   const statementColumns = useMemo(
     () => [
-      { header: "Date", accessor: (row: Transaction) => row.date },
+      {
+        header: (
+          <button
+            type="button"
+            onClick={toggleDateSort}
+            className="inline-flex cursor-pointer select-none items-center gap-1 rounded font-semibold outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1"
+            aria-label={`Sort by date ${sortDirection === SortOrder.ASC ? "descending" : "ascending"}`}
+          >
+            Date
+            {sortDirection === SortOrder.ASC ? (
+              <ArrowUp className="h-4 w-4 text-gray-500" aria-hidden />
+            ) : (
+              <ArrowDown className="h-4 w-4 text-gray-500" aria-hidden />
+            )}
+          </button>
+        ),
+        accessor: (row: Transaction) => row.date,
+      },
       {
         header: "Transaction",
         accessor: (row: Transaction) => row.voucherType,
@@ -261,7 +283,7 @@ export default function AccountStatementPage() {
         cellClassName: "text-right font-medium",
       },
     ],
-    [accountAddress?.currency?.symbol]
+    [accountAddress?.currency?.symbol, sortDirection]
   );
 
   return (
@@ -400,10 +422,7 @@ export default function AccountStatementPage() {
                     trigger={
                       <>
                         <span>{isExporting ? "Exporting..." : "Export"}</span>
-                        <ChevronDownIcon
-                          aria-hidden
-                          className="-mr-1 size-5 shrink-0 text-gray-400"
-                        />
+                        <ArrowDown aria-hidden className="-mr-1 size-5 shrink-0 text-gray-400" />
                       </>
                     }
                     buttonClassName="w-auto min-w-0 justify-center px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50 sm:px-6"
