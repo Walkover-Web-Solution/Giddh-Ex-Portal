@@ -145,7 +145,7 @@ export const getMagicLinkLedger = async (
     }
 
     const response = await axios.get(url, { headers });
-    const data = response.data as MagicLinkLedgerResponse & { code?: string };
+    const data = response.data as MagicLinkLedgerResponse;
     if (data?.status === "error") {
       return {
         status: "error",
@@ -153,7 +153,7 @@ export const getMagicLinkLedger = async (
         code: data.code,
       };
     }
-    return data as MagicLinkLedgerResponse;
+    return data;
   } catch (error: any) {
     const data = error.response?.data;
     const code = data?.code;
