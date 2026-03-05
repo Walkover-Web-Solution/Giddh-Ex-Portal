@@ -40,6 +40,8 @@ export interface LedgerTransaction {
 
 export interface MagicLinkLedgerResponse {
   status: "success" | "error";
+  code?: string;
+  message?: string;
   body?: {
     account: {
       name: string;
@@ -80,7 +82,6 @@ export interface MagicLinkLedgerResponse {
       ledgerView?: string | null;
     };
   };
-  message?: string;
 }
 
 export interface GetMagicLinkLedgerRequest {
@@ -144,8 +145,15 @@ export const getMagicLinkLedger = async (
     }
 
     const response = await axios.get(url, { headers });
-
-    return response.data as MagicLinkLedgerResponse;
+    const data = response.data as MagicLinkLedgerResponse & { code?: string };
+    if (data?.status === "error") {
+      return {
+        status: "error",
+        message: data.message,
+        code: data.code,
+      };
+    }
+    return data as MagicLinkLedgerResponse;
   } catch (error: any) {
     const data = error.response?.data;
     const code = data?.code;
@@ -157,6 +165,7 @@ export const getMagicLinkLedger = async (
     return {
       status: "error",
       message,
+      code,
     };
   }
 };
