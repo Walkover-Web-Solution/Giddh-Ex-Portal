@@ -51,7 +51,6 @@ export interface GetMagicLinkDataResult {
   success: boolean;
   data?: MagicLinkData;
   error?: string;
-  transactionLimitExceeded?: boolean;
 }
 
 /**
@@ -71,7 +70,6 @@ export const getMagicLinkData = async (
       return {
         success: false,
         error: response.message || "Failed to load ledger data",
-        transactionLimitExceeded: response.code === "INVALID_REQUEST",
       };
     }
 
