@@ -23,13 +23,11 @@ import { getMagicLinkLedgerBalance } from "@/utils/magic/getMagicLinkLedgerBalan
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { PAGINATION_LIMIT } from "@/constants";
-import { useToast } from "@/contexts/ToastContext";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 
 export default function Magic() {
   const searchParams = useSearchParams();
   const linkId = searchParams.get("id") || "";
-  const { showToast } = useToast();
 
   const [viewMode, setViewMode] = useState<ViewMode>();
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>("INR");
@@ -40,7 +38,6 @@ export default function Magic() {
   const [accountName, setAccountName] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [transactionLimitExceeded, setTransactionLimitExceeded] = useState(false);
   const [currencyData, setCurrencyData] = useState<CurrencyData | null>(null);
   const [debitCreditTransactions, setDebitCreditTransactions] = useState<LedgerTransaction[]>([]);
   const [debitTransactions, setDebitTransactions] = useState<LedgerTransaction[]>([]);
@@ -325,52 +322,28 @@ export default function Magic() {
             isInitialMount.current = false;
           }
           loadedLinkIdRef.current = linkId;
-          setTransactionLimitExceeded(false);
 
           // Initial state from API: set view from response.ledgerView (or infer from data if backend doesn't send it yet)
           if (viewMode === undefined && result.data.inferredView != null) {
             setViewMode(result.data.inferredView);
           }
         } else {
-          if (result.transactionLimitExceeded && result.error) {
-            showToast(result.error, "error");
-            setTransactionLimitExceeded(true);
-            setError(null);
-            if (viewMode === undefined) {
-              setViewMode(LedgerView.STATEMENT_VIEW);
-            }
-            setTransactions([]);
-            setDebitCreditTransactions([]);
-            setDebitTransactions([]);
-            setCreditTransactions([]);
-            setForwardedBalance(undefined);
-            setLedgerBalance(undefined);
-            setApiDebitTransactionsCount(undefined);
-            setApiCreditTransactionsCount(undefined);
-            setApiTotalItems(undefined);
-            setApiCount(undefined);
-            setPrevToken(null);
-            setNextToken(null);
-          } else {
-            setTransactionLimitExceeded(false);
-            setError(result.error || "Failed to load ledger data");
-            setTransactions([]);
-            setDebitCreditTransactions([]);
-            setDebitTransactions([]);
-            setCreditTransactions([]);
-            setForwardedBalance(undefined);
-            setLedgerBalance(undefined);
-            setAccountCurrency(undefined);
-            setApiDebitTransactionsCount(undefined);
-            setApiCreditTransactionsCount(undefined);
-            setApiTotalItems(undefined);
-            setApiCount(undefined);
-            setPrevToken(null);
-            setNextToken(null);
-          }
+          setError(result.error || "Failed to load ledger data");
+          setTransactions([]);
+          setDebitCreditTransactions([]);
+          setDebitTransactions([]);
+          setCreditTransactions([]);
+          setForwardedBalance(undefined);
+          setLedgerBalance(undefined);
+          setAccountCurrency(undefined);
+          setApiDebitTransactionsCount(undefined);
+          setApiCreditTransactionsCount(undefined);
+          setApiTotalItems(undefined);
+          setApiCount(undefined);
+          setPrevToken(null);
+          setNextToken(null);
         }
       } catch (err) {
-        setTransactionLimitExceeded(false);
         setError("Failed to load ledger data");
         setTransactions([]);
         setDebitCreditTransactions([]);
@@ -621,7 +594,7 @@ export default function Magic() {
     );
   }
 
-  if (error && transactions.length === 0 && !transactionLimitExceeded) {
+  if (error && transactions.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center text-2xl">
         Magic link not found. The link may be invalid or expired. Please request a new statement
