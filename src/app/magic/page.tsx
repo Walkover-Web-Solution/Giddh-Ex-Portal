@@ -595,10 +595,13 @@ export default function Magic() {
   }
 
   if (error && transactions.length === 0) {
+    const isTransactionLimitError = error.toLowerCase().includes("transaction count is more than");
     return (
-      <div className="flex min-h-screen items-center justify-center text-2xl">
-        Magic link not found. The link may be invalid or expired. Please request a new statement
-        link from the account owner.
+      <div className="flex min-h-screen flex-col items-center justify-center gap-2 text-center text-2xl">
+        {error}
+        {isTransactionLimitError && (
+          <span className="text-xl text-gray-500">Please generate a new link with t-view</span>
+        )}
       </div>
     );
   }
