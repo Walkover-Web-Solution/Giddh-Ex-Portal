@@ -159,7 +159,7 @@ export function Sidebar() {
                             active
                               ? "bg-gray-50 text-blue-900"
                               : "hover:bg-gray-50 hover:text-blue-900",
-                            "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6",
+                            "group flex gap-x-3 rounded p-2 text-sm font-semibold leading-6",
                             isCollapsed && "md:justify-center md:px-2"
                           )}
                           title={isCollapsed ? name : undefined}
