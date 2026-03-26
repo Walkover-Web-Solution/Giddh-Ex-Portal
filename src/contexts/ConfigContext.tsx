@@ -26,10 +26,10 @@ function getStoredWhiteLabel(): WhiteLabelConfig | null {
 }
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const storedWhiteLabel = getStoredWhiteLabel();
-  const initialConfig = mergeWhiteLabelConfig(storedWhiteLabel);
-
-  const [config, setConfig] = useState<AppConfig>(initialConfig);
+  const [config, setConfig] = useState<AppConfig>(() => {
+    if (typeof window === "undefined") return DEFAULT_CONFIG;
+    return mergeWhiteLabelConfig(getStoredWhiteLabel());
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

@@ -1,4 +1,6 @@
-import { config } from "@/config";
+"use client";
+
+import { useConfig } from "@/contexts/ConfigContext";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 
 interface FooterProps {
@@ -18,6 +20,7 @@ export function Footer({
   supportEmail,
   variant = "minimal",
 }: FooterProps) {
+  const { config } = useConfig();
   const year = new Date().getFullYear();
 
   if (variant === "minimal") {
