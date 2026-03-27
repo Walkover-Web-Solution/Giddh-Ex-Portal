@@ -35,6 +35,8 @@ export interface WhiteLabelConfig {
   proxyReferenceIdUk?: string;
   proxyUrl?: string;
   websiteDomain?: string;
+  brandName?: string;
+  logos?: LogoConfig;
   giddhWhiteLabel?: GiddhWhiteLabel;
 }
 
@@ -66,7 +68,7 @@ const PROD_CONFIG: AppConfig = {
     light: "giddh-logo-dark.png",
     dark: "giddh-logo-light.png",
     icon: "giddh-square.logo",
-    favicon: "favicon.ico",
+    favicon: "/icons/giddh_app_icon.svg",
   },
 };
 
@@ -85,7 +87,7 @@ const NON_PROD_CONFIG: AppConfig = {
     light: "giddh-logo-dark.png",
     dark: "giddh-logo-light.png",
     icon: "giddh-square.logo",
-    favicon: "favicon.ico",
+    favicon: "/icons/giddh_app_icon.svg",
   },
 };
 
@@ -112,8 +114,8 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
     REFERENCE_ID_UK: whiteLabel.proxyReferenceIdUk || DEFAULT_CONFIG.REFERENCE_ID_UK,
     WEBSITE_DOMAIN: whiteLabel.websiteDomain || DEFAULT_CONFIG.WEBSITE_DOMAIN,
     GIDDH_API_URL: giddhWhiteLabel?.apiDomain || DEFAULT_CONFIG.GIDDH_API_URL,
-    BRAND_NAME: giddhWhiteLabel?.brandName || DEFAULT_CONFIG.BRAND_NAME,
-    LOGOS: giddhWhiteLabel?.logos || DEFAULT_CONFIG.LOGOS,
+    BRAND_NAME: whiteLabel.brandName || giddhWhiteLabel?.brandName || DEFAULT_CONFIG.BRAND_NAME,
+    LOGOS: whiteLabel.logos || giddhWhiteLabel?.logos || DEFAULT_CONFIG.LOGOS,
   };
 }
 
