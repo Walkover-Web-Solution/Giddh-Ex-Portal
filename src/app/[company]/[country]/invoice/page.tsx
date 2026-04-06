@@ -70,6 +70,12 @@ export default function InvoicesPage() {
   const lastKeyRef = useRef("");
 
   useEffect(() => {
+    if (loading) {
+      setDirectPayInvoiceId(null);
+    }
+  }, [loading]);
+
+  useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
@@ -417,10 +423,10 @@ export default function InvoicesPage() {
       accessor: (row: Invoice) => (
         <span
           className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${row.status === "PENDING"
-              ? "bg-amber-100 text-amber-800"
-              : row.status === InvoiceBalanceStatus.PAID
-                ? "bg-green-100 text-green-800"
-                : "bg-orange-100 text-orange-800"
+            ? "bg-amber-100 text-amber-800"
+            : row.status === InvoiceBalanceStatus.PAID
+              ? "bg-green-100 text-green-800"
+              : "bg-orange-100 text-orange-800"
             }`}
         >
           {row.status}
