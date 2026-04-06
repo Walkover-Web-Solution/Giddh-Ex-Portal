@@ -118,14 +118,14 @@ export default function PaymentsPage() {
           payment.grandTotal?.amountForAccount,
           payment.accountCurrencySymbol,
           {
-            decimals: 0,
+            decimals: 2,
           }
         ),
         paymentMode: payment.paymentMode?.name ?? "",
         unusedAmount: formatCurrencyAmount(
           payment.balanceDue?.amountForAccount ?? 0,
           payment.accountCurrencySymbol,
-          { decimals: 0 }
+          { decimals: 2 }
         ),
       })),
     [allPayments]

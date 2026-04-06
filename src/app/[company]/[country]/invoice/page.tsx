@@ -338,13 +338,13 @@ export default function InvoicesPage() {
             invoiceNo: invoice.voucherNumber ?? "",
             date: invoice.voucherDate ?? "",
             total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, totalCurrency, {
-              decimals: 0,
+              decimals: 2,
             }),
             status: status || InvoiceBalanceStatus.UNKNOWN,
             overdue:
               status === InvoiceBalanceStatus.PAID ||
-              status === InvoiceBalanceStatus.HOLD ||
-              status === InvoiceBalanceStatus.CANCEL
+                status === InvoiceBalanceStatus.HOLD ||
+                status === InvoiceBalanceStatus.CANCEL
                 ? "-"
                 : overdueFormatted,
             showPayNow,
@@ -416,13 +416,12 @@ export default function InvoicesPage() {
       header: "Status",
       accessor: (row: Invoice) => (
         <span
-          className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-            row.status === "PENDING"
+          className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${row.status === "PENDING"
               ? "bg-amber-100 text-amber-800"
               : row.status === InvoiceBalanceStatus.PAID
                 ? "bg-green-100 text-green-800"
                 : "bg-orange-100 text-orange-800"
-          }`}
+            }`}
         >
           {row.status}
         </span>

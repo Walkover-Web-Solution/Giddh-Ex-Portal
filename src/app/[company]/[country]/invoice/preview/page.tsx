@@ -23,6 +23,7 @@ import { useAppConfig } from "@/hooks/useAppConfig";
 import { DEFAULT_CONFIG } from "@/config/default";
 import { getSessionCookie } from "@/utils/cookies";
 import { useToast } from "@/contexts/ToastContext";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -454,9 +455,8 @@ export default function InvoicePreviewPage() {
                     Balance Due
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
-                    {paymentDetails?.currency?.symbol}{" "}
-                    {Number(voucher.amount).toLocaleString("en-IN", {
-                      maximumFractionDigits: 0,
+                    {formatCurrencyAmount(Number(voucher.amount), paymentDetails?.currency ?? null, {
+                      decimals: 2,
                     })}
                   </p>
                 </div>

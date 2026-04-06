@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { ApiResponseStatus } from "@/utils/proxy/types";
 import { useToast } from "@/contexts/ToastContext";
 import { getSessionCookie } from "@/utils/cookies";
+import { formatCurrencyAmount } from "@/utils/currency";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -390,7 +391,6 @@ export default function InvoicePayPage() {
 
   const vouchers = paymentDetails?.vouchers ?? [];
   const singleVoucher = vouchers.length === 1 ? vouchers[0] : null;
-  const currency = paymentDetails?.currency?.symbol ?? "";
   const totalAmount = paymentDetails?.totalAmount ?? 0;
 
   if (isLoading) {
@@ -455,9 +455,8 @@ export default function InvoicePayPage() {
                     Balance Due
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
-                    {currency}{" "}
-                    {Number(singleVoucher.amount).toLocaleString("en-IN", {
-                      maximumFractionDigits: 0,
+                    {formatCurrencyAmount(Number(singleVoucher.amount), paymentDetails?.currency ?? null, {
+                      decimals: 2,
                     })}
                   </p>
                 </div>
@@ -477,8 +476,9 @@ export default function InvoicePayPage() {
                   <div>
                     <p className="text-xs text-gray-500">Total Amount</p>
                     <p className="mt-1 text-lg font-semibold">
-                      {currency}{" "}
-                      {Number(totalAmount).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                      {formatCurrencyAmount(Number(totalAmount), paymentDetails?.currency ?? null, {
+                        decimals: 2,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -500,8 +500,9 @@ export default function InvoicePayPage() {
                         <span>{v.number}</span>
                         <span>{v.dueDate ?? ""}</span>
                         <span className="text-right">
-                          {currency}
-                          {Number(v.amount).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                          {formatCurrencyAmount(Number(v.amount), paymentDetails?.currency ?? null, {
+                            decimals: 2,
+                          })}
                         </span>
                       </div>
                     ))}
