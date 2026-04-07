@@ -187,7 +187,7 @@ export function StatementViewTable({
   }, [ledgerTotals, displayTransactions]);
 
   const format = (amount: number | null, symbol?: string) =>
-    amount === null ? "" : formatCurrencyAmount(amount, symbol || "₹");
+    amount === null ? "" : formatCurrencyAmount(amount, symbol);
 
   const getAmount = (base: number | null, converted: number | null, useConverted: boolean) =>
     useConverted && converted !== null ? converted : base;
