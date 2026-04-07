@@ -455,9 +455,7 @@ export default function InvoicePreviewPage() {
                     Balance Due
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
-                    {formatCurrencyAmount(Number(voucher.amount), paymentDetails?.currency ?? null, {
-                      decimals: 2,
-                    })}
+                    {formatCurrencyAmount(voucher.amount, paymentDetails?.currency)}
                   </p>
                 </div>
               </div>

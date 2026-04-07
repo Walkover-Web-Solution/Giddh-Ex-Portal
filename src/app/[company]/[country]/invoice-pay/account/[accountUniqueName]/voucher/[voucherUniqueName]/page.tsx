@@ -455,9 +455,7 @@ export default function InvoicePayPage() {
                     Balance Due
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
-                    {formatCurrencyAmount(Number(singleVoucher.amount), paymentDetails?.currency ?? null, {
-                      decimals: 2,
-                    })}
+                    {formatCurrencyAmount(singleVoucher.amount, paymentDetails?.currency)}
                   </p>
                 </div>
               </div>
@@ -476,9 +474,7 @@ export default function InvoicePayPage() {
                   <div>
                     <p className="text-xs text-gray-500">Total Amount</p>
                     <p className="mt-1 text-lg font-semibold">
-                      {formatCurrencyAmount(Number(totalAmount), paymentDetails?.currency ?? null, {
-                        decimals: 2,
-                      })}
+                      {formatCurrencyAmount(totalAmount, paymentDetails?.currency)}
                     </p>
                   </div>
                 </div>
@@ -500,9 +496,7 @@ export default function InvoicePayPage() {
                         <span>{v.number}</span>
                         <span>{v.dueDate ?? ""}</span>
                         <span className="text-right">
-                          {formatCurrencyAmount(Number(v.amount), paymentDetails?.currency ?? null, {
-                            decimals: 2,
-                          })}
+                          {formatCurrencyAmount(v.amount, paymentDetails?.currency)}
                         </span>
                       </div>
                     ))}

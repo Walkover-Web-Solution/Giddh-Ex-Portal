@@ -343,9 +343,7 @@ export default function InvoicesPage() {
             id: invoice.uniqueName ?? "",
             invoiceNo: invoice.voucherNumber ?? "",
             date: invoice.voucherDate ?? "",
-            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, totalCurrency, {
-              decimals: 2,
-            }),
+            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, totalCurrency),
             status: status || InvoiceBalanceStatus.UNKNOWN,
             overdue:
               status === InvoiceBalanceStatus.PAID ||

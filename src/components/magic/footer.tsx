@@ -40,7 +40,7 @@ export function Footer({
 }: FooterProps) {
   const formatAmount = (amount: number | null, symbol?: string) => {
     if (amount === null) return "";
-    return formatCurrencyAmount(amount, symbol ?? companyCurrency?.symbol, { decimals: 2 });
+    return formatCurrencyAmount(amount, symbol ?? companyCurrency?.symbol);
   };
 
   const companyCode = normalizeCode(companyCurrency?.code);
