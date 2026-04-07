@@ -44,7 +44,7 @@ export function BalanceSummaryCard() {
               <span className="text-base font-semibold">{getCurrencyDisplay(data?.currency)}</span>
               <div className="flex flex-col sm:items-end">
                 <div className="break-all text-xl font-bold md:break-normal">
-                  {formatCurrencyAmount(data?.balancePayable, data?.currency, { decimals: 0 })}
+                  {formatCurrencyAmount(data?.balancePayable, data?.currency)}
                 </div>
                 <div className="text-xs text-gray-500 font-medium">
                   Number of Invoices: {data?.noOfInvoices || 0}

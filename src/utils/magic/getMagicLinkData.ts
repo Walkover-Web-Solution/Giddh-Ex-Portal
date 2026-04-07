@@ -112,13 +112,14 @@ export const getMagicLinkData = async (
     };
 
     const convertedCurrency: CurrencyInfo = {
-      code: firstTransaction?.convertedCurrencyCode || firstTransaction?.currencyCode || "INR",
-      symbol: firstTransaction?.convertedCurrencySymbol || firstTransaction?.currencySymbol || "₹",
+      code: firstTransaction?.convertedCurrencyCode || firstTransaction?.currencyCode || "",
+      symbol:
+        firstTransaction?.convertedCurrencySymbol || firstTransaction?.currencySymbol || "",
     };
 
     const companyCurrency: CurrencyInfo = {
-      code: firstTransaction?.companyCurrencyCode || firstTransaction?.currencyCode || "INR",
-      symbol: firstTransaction?.companyCurrencySymbol || firstTransaction?.currencySymbol || "₹",
+      code: firstTransaction?.companyCurrencyCode || firstTransaction?.currencyCode || "",
+      symbol: firstTransaction?.companyCurrencySymbol || firstTransaction?.currencySymbol || "",
     };
 
     const currencyData: CurrencyData = {

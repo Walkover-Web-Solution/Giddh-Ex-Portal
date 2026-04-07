@@ -54,9 +54,7 @@ export function LastPaymentCard() {
           <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
             <span className="text-sm font-medium text-gray-600">Amount</span>
             <span className="break-all text-xl font-bold md:break-normal md:text-right">
-              {formatCurrencyAmount(data.grandTotal?.amountForAccount, amountCurrency, {
-                decimals: 0,
-              })}
+              {formatCurrencyAmount(data.grandTotal?.amountForAccount, amountCurrency)}
             </span>
           </div>
         </div>

@@ -151,7 +151,7 @@ export function TAccountViewTable({
 
   const format = (amount: number | null, symbol?: string) => {
     if (amount === null) return "";
-    return formatCurrencyAmount(amount, symbol || "₹", { decimals: 2 });
+    return formatCurrencyAmount(amount, symbol);
   };
 
   const truncateParticular = (text: string) =>

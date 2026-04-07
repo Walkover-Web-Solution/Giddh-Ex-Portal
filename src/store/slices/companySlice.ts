@@ -142,15 +142,6 @@ export const fetchCompanyDetails = createAsyncThunk(
   }) => {
     const response = await getCompanyDetails(companyUniqueName, accountUniqueName);
     return { companyName, data: response.body };
-  },
-  {
-    condition: ({ companyName, accountUniqueName }, { getState }) => {
-      const state = getState() as RootState;
-      const company = state.companies[companyName];
-      if (!company?.user) return true;
-      if (company?.companyAddress?.taxType === undefined) return true;
-      return company.account?.uniqueName !== accountUniqueName;
-    },
   }
 );
 

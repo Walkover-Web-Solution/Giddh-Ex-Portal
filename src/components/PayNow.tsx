@@ -364,12 +364,14 @@ export function PayNow({
     if (!window.Razorpay) {
       showToast("Razorpay SDK not loaded", "error");
       setIsProcessing(false);
+      onAutoTriggerDone?.();
       return;
     }
 
     if (!paymentDetails.paymentKey?.trim()) {
       showToast("Payment key not received. Please contact support.", "error");
       setIsProcessing(false);
+      onAutoTriggerDone?.();
       return;
     }
 
@@ -384,6 +386,11 @@ export function PayNow({
       },
       theme: {
         color: "#F37254",
+      },
+      modal: {
+        ondismiss: () => {
+          onAutoTriggerDone?.();
+        },
       },
     };
 

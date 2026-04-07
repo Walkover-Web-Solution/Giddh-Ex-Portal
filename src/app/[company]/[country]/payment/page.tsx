@@ -116,16 +116,12 @@ export default function PaymentsPage() {
         date: payment.voucherDate,
         amount: formatCurrencyAmount(
           payment.grandTotal?.amountForAccount,
-          payment.accountCurrencySymbol,
-          {
-            decimals: 0,
-          }
+          payment.accountCurrencySymbol
         ),
         paymentMode: payment.paymentMode?.name ?? "",
         unusedAmount: formatCurrencyAmount(
           payment.balanceDue?.amountForAccount ?? 0,
-          payment.accountCurrencySymbol,
-          { decimals: 0 }
+          payment.accountCurrencySymbol
         ),
       })),
     [allPayments]

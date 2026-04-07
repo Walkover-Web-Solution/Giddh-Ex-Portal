@@ -120,9 +120,9 @@ export default function AuthPage() {
                   size="xl"
                   onClick={() => handleAccountSelect(account)}
                   disabled={loading}
-                  className="group relative w-full overflow-hidden py-4"
+                  className="group relative h-auto min-h-12 w-full min-w-0 whitespace-normal px-4 py-4 text-center leading-snug"
                 >
-                  <span className="relative z-10 transition-colors group-hover:text-indigo-700">
+                  <span className="relative z-10 block max-w-full break-words text-pretty transition-colors group-hover:text-indigo-700">
                     {account.account.name}
                   </span>
                 </Button>
