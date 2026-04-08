@@ -13,6 +13,7 @@ import {
 } from "@/store/slices/companySlice";
 import { useParams, usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { getUserDataFromStorage } from "@/utils/getUserDataFromStorage";
 import { SortOrder } from "@/constants/sort";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
@@ -33,15 +34,10 @@ export default function WelcomePage() {
     let accountUniqueName = accountUniqueNameFromRedux;
 
     if (!companyUniqueName && typeof window !== "undefined") {
-      const userData = localStorage.getItem("userData");
-      if (userData) {
-        try {
-          const parsedData = JSON.parse(userData);
-          companyUniqueName = parsedData.companyUniqueName;
-          accountUniqueName = parsedData.account?.uniqueName;
-        } catch (e) {
-          console.error("Error parsing userData:", e);
-        }
+      const parsedData = getUserDataFromStorage(companyName);
+      if (parsedData) {
+        companyUniqueName = parsedData.companyUniqueName ?? companyUniqueName;
+        accountUniqueName = parsedData.account?.uniqueName ?? accountUniqueName;
       }
     }
 

@@ -7,7 +7,6 @@ import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices
 import {
   getAccountStatement,
   downloadAccountStatement,
-  formatCurrency,
   convertDateToAPIFormat,
   AccountStatementRequest,
   Transaction,
@@ -15,6 +14,7 @@ import {
   AccountAddress,
   Address,
 } from "@/utils/accountStatement";
+import { formatCurrencyAmount } from "@/utils/currency";
 import { base64ToBlob } from "@/utils/invoicePreview";
 import { DataTable } from "@/components/DataTable";
 import { Dropdown } from "@/components/Dropdown";
@@ -29,6 +29,7 @@ import { LEDGER_TYPE_CREDIT, LEDGER_TYPE_DEBIT } from "@/constants/ledger";
 import { FileType, EXPORT_FILE_CONFIG, PAGINATION_LIMIT } from "@/constants";
 import { SortOrder } from "@/constants/sort";
 import { useToast } from "@/contexts/ToastContext";
+import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 
 export default function AccountStatementPage() {
   const params = useParams();
@@ -60,34 +61,15 @@ export default function AccountStatementPage() {
   const [sortDirection, setSortDirection] = useState<SortOrder>(SortOrder.ASC);
   const { showToast } = useToast();
 
-  const getCompanyAndAccountNames = () => {
-    let companyUniqueName = companyUniqueNameFromRedux;
-    let accountUniqueName = accountUniqueNameFromRedux;
-
-    if (!companyUniqueName || !accountUniqueName) {
-      if (typeof window !== "undefined") {
-        const userData = localStorage.getItem("userData");
-        if (userData) {
-          try {
-            const parsedData = JSON.parse(userData);
-            companyUniqueName = companyUniqueName || parsedData.companyUniqueName;
-            accountUniqueName = accountUniqueName || parsedData.account?.uniqueName;
-          } catch (e) {
-            console.error("Error parsing userData:", e);
-          }
-        }
-      }
-    }
-
-    return { companyUniqueName, accountUniqueName };
-  };
+  const resolveCompanyAndAccount = () =>
+    getCompanyAndAccountNames(companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux);
 
   useEffect(() => {
     fetchAccountStatement();
   }, [fromDate, toDate, currentPage, itemsPerPage, sortDirection]);
 
   const fetchAccountStatement = async () => {
-    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
+    const { companyUniqueName, accountUniqueName } = resolveCompanyAndAccount();
     if (!companyUniqueName || !accountUniqueName) {
       setError("Missing company or account information");
       setLoading(false);
@@ -135,7 +117,7 @@ export default function AccountStatementPage() {
   };
 
   const handleExport = async (format: FileType) => {
-    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
+    const { companyUniqueName, accountUniqueName } = resolveCompanyAndAccount();
     if (!companyUniqueName || !accountUniqueName) return;
 
     setIsExporting(true);
@@ -261,7 +243,7 @@ export default function AccountStatementPage() {
         header: "Amount",
         accessor: (row: Transaction) =>
           row.voucherAmount.type === LEDGER_TYPE_DEBIT
-            ? formatCurrency(row.voucherAmount.amount, accountAddress?.currency?.symbol)
+            ? formatCurrencyAmount(row.voucherAmount.amount, accountAddress?.currency)
             : "",
         headerClassName: "text-right",
         cellClassName: "text-right",
@@ -270,7 +252,7 @@ export default function AccountStatementPage() {
         header: "Payments",
         accessor: (row: Transaction) =>
           row.voucherAmount.type === LEDGER_TYPE_CREDIT
-            ? formatCurrency(row.voucherAmount.amount, accountAddress?.currency?.symbol)
+            ? formatCurrencyAmount(row.voucherAmount.amount, accountAddress?.currency)
             : "",
         headerClassName: "hidden md:table-cell text-right",
         cellClassName: "hidden md:table-cell text-right",
@@ -278,12 +260,12 @@ export default function AccountStatementPage() {
       {
         header: "Balance",
         accessor: (row: Transaction) =>
-          formatCurrency(row.closingBalance.amount, accountAddress?.currency?.symbol),
+          formatCurrencyAmount(row.closingBalance.amount, accountAddress?.currency),
         headerClassName: "text-right",
         cellClassName: "text-right font-medium",
       },
     ],
-    [accountAddress?.currency?.symbol, sortDirection]
+    [accountAddress?.currency, sortDirection]
   );
 
   return (
@@ -368,34 +350,31 @@ export default function AccountStatementPage() {
                           <div className="flex justify-between text-gray-900">
                             <span>Opening Balance</span>
                             <span className="font-medium">
-                              {formatCurrency(
+                              {formatCurrencyAmount(
                                 summary.openingBalance.amount,
-                                accountAddress?.currency?.symbol
+                                accountAddress?.currency
                               )}
                             </span>
                           </div>
                           <div className="flex justify-between text-gray-900">
                             <span>Invoiced Amount</span>
                             <span className="font-medium">
-                              {formatCurrency(summary.debitTotal, accountAddress?.currency?.symbol)}
+                              {formatCurrencyAmount(summary.debitTotal, accountAddress?.currency)}
                             </span>
                           </div>
                           <div className="flex justify-between text-gray-900">
                             <span>Amount Paid</span>
                             <span className="font-medium">
-                              {formatCurrency(
-                                summary.creditTotal,
-                                accountAddress?.currency?.symbol
-                              )}
+                              {formatCurrencyAmount(summary.creditTotal, accountAddress?.currency)}
                             </span>
                           </div>
                           <div className="border-t-2 border-gray-400 pt-2" />
                           <div className="flex justify-between font-semibold text-gray-800">
                             <span>Balance Due</span>
                             <span>
-                              {formatCurrency(
+                              {formatCurrencyAmount(
                                 summary.closingBalance.amount,
-                                accountAddress?.currency?.symbol
+                                accountAddress?.currency
                               )}
                             </span>
                           </div>

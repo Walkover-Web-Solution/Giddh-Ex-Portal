@@ -14,5 +14,6 @@ export function useAppConfig() {
     paypalUrl: config.PAYPAL_URL,
     referenceIdUk: config.REFERENCE_ID_UK,
     apiUrlUk: config.API_URL_UK,
+    switchAccountAuthErrorMessage: config.SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
   };
 }

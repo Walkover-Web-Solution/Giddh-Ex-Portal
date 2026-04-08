@@ -106,8 +106,8 @@ export default function InvoicePayPage() {
   const isRefetchingAfterPaymentRef = useRef(false);
 
   const getNames = useCallback(() => {
-    return getStorageNames(companyUniqueNameFromRedux, accountUniqueNameFromRedux);
-  }, [companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+    return getStorageNames(companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux);
+  }, [companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
   const accountUniqueName = accountUniqueNameParam || getNames().accountUniqueName;
   const companyUniqueName = searchParams.get("companyUniqueName") || getNames().companyUniqueName;

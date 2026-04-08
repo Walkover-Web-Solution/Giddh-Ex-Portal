@@ -25,7 +25,10 @@ import {
   InvoicePayVoucherDetailsResponse,
 } from "@/utils/payment";
 import { formatDateToAPI } from "@/utils/dateUtils";
-import { getCompanyAndAccountNames as getStorageNames } from "@/utils/getUserDataFromStorage";
+import {
+  getCompanyAndAccountNames as getStorageNames,
+  getUserDataFromStorage,
+} from "@/utils/getUserDataFromStorage";
 import { logger } from "@/utils/logger";
 import { useToast } from "@/contexts/ToastContext";
 import { ApiResponseStatus } from "@/utils/proxy/types";
@@ -111,7 +114,10 @@ export function PayNow({
     if (companyUniqueNameProp && accountUniqueNameProp) {
       return { companyUniqueName: companyUniqueNameProp, accountUniqueName: accountUniqueNameProp };
     }
-    return getStorageNames(companyUniqueNameFromRedux, accountUniqueNameFromRedux);
+    if (!companyName) {
+      return { companyUniqueName: undefined, accountUniqueName: undefined };
+    }
+    return getStorageNames(companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux);
   };
 
   useEffect(() => {
@@ -256,14 +262,13 @@ export function PayNow({
     }
 
     if (method === PAYMENT_METHODS_ENUM.PAYU) {
-      const userData = localStorage.getItem("userData");
       let hasDetails = false;
 
-      if (userData) {
+      if (companyName) {
         try {
-          const parsed = JSON.parse(userData);
+          const parsed = getUserDataFromStorage(companyName);
           if (
-            parsed.portalDetails?.name &&
+            parsed?.portalDetails?.name &&
             parsed.portalDetails?.email &&
             parsed.portalDetails?.contactNo
           ) {

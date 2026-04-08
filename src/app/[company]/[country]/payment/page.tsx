@@ -52,6 +52,7 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -81,6 +82,7 @@ export default function PaymentsPage() {
 
   const handlePaymentClick = (voucherUniqueName: string) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );

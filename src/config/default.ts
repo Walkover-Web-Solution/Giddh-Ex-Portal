@@ -28,6 +28,10 @@ export interface GiddhWhiteLabel {
   brandName?: string;
 }
 
+export interface PortalMessagesConfig {
+  switchAccountAuthError?: string;
+}
+
 export interface WhiteLabelConfig {
   proxyApiUrl?: string;
   proxyApiUrlUk?: string;
@@ -36,6 +40,7 @@ export interface WhiteLabelConfig {
   proxyUrl?: string;
   websiteDomain?: string;
   giddhWhiteLabel?: GiddhWhiteLabel;
+  portalMessages?: PortalMessagesConfig;
 }
 
 export interface AppConfig {
@@ -49,7 +54,11 @@ export interface AppConfig {
   WEBSITE_DOMAIN: string;
   BRAND_NAME: string;
   LOGOS: LogoConfig;
+  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: string;
 }
+
+export const DEFAULT_SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE =
+  "Authentication data not found. Please log in again.";
 
 const PROD_CONFIG: AppConfig = {
   REFERENCE_ID: "117230e170290843965805217bfd25",
@@ -61,6 +70,7 @@ const PROD_CONFIG: AppConfig = {
   PAYPAL_URL: "https://www.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://giddh.com",
   BRAND_NAME: "Giddh",
+  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: DEFAULT_SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
   LOGOS: {
     primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
@@ -80,6 +90,7 @@ const NON_PROD_CONFIG: AppConfig = {
   PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://web.giddh.com",
   BRAND_NAME: "Giddh",
+  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: DEFAULT_SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
   LOGOS: {
     primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
@@ -103,6 +114,8 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
 
   const giddhWhiteLabel = whiteLabel.giddhWhiteLabel;
 
+  const apiSwitchAccountMsg = whiteLabel.portalMessages?.switchAccountAuthError?.trim();
+
   return {
     ...DEFAULT_CONFIG,
     PROXY_URL: whiteLabel.proxyUrl || DEFAULT_CONFIG.PROXY_URL,
@@ -114,6 +127,8 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
     GIDDH_API_URL: giddhWhiteLabel?.apiDomain || DEFAULT_CONFIG.GIDDH_API_URL,
     BRAND_NAME: giddhWhiteLabel?.brandName || DEFAULT_CONFIG.BRAND_NAME,
     LOGOS: giddhWhiteLabel?.logos || DEFAULT_CONFIG.LOGOS,
+    SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE:
+      apiSwitchAccountMsg || DEFAULT_CONFIG.SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
   };
 }
 
