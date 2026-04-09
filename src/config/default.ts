@@ -43,6 +43,7 @@ export interface WhiteLabelConfig {
 export interface AppConfig {
   REFERENCE_ID: string;
   GIDDH_API_URL: string;
+  GIDDH_API_URL_UK: string;
   REFERENCE_ID_UK: string;
   API_URL_UK: string;
   PROXY_URL: string;
@@ -59,6 +60,7 @@ const PROD_CONFIG: AppConfig = {
   REFERENCE_ID_UK: "117230d172709659666f16714325b0",
   API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2",
   GIDDH_API_URL: "https://api.giddh.com",
+  GIDDH_API_URL_UK: "https://gbapi.giddh.com",
   PROXY_URL: "https://routes.msg91.com",
   PAYPAL_URL: "https://www.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://giddh.com",
@@ -78,6 +80,7 @@ const NON_PROD_CONFIG: AppConfig = {
   REFERENCE_ID_UK: "117230d172709659666f16714325b0",
   API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2",
   GIDDH_API_URL: "https://apitest.giddh.com",
+  GIDDH_API_URL_UK: "https://gbapi.giddh.com",
   PROXY_URL: "https://routes.msg91.com",
   PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://web.giddh.com",

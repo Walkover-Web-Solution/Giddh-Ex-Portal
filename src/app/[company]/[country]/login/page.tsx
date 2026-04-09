@@ -7,6 +7,7 @@ import { setCompanyData } from "@/store/slices/companySlice";
 import { getSessionCookie } from "@/utils/cookies";
 import { sessionManager } from "@/utils/sessionManager";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 
 function getActiveSession(
   currentCompany: string,
@@ -117,6 +118,9 @@ export default function LoginPage() {
     script.onload = () => {
       (window as any).initVerification?.({
         referenceId,
+        addInfo: {
+          redirect_path: getAuthRedirectPath(country),
+        },
         success: () => {
           console.log("Login initialized successfully");
         },

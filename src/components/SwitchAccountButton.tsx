@@ -72,7 +72,7 @@ export function SwitchAccountButton() {
         setFetchingAccounts(false);
         return;
       }
-      const verifyResponse = await verifyPortalUser(email, company, proxyToken);
+      const verifyResponse = await verifyPortalUser(email, company, proxyToken, country);
 
       if (verifyResponse.status === ApiResponseStatus.SUCCESS && verifyResponse.body?.length > 0) {
         accountsCache[company] = verifyResponse.body;
@@ -130,7 +130,8 @@ export function SwitchAccountButton() {
         selectedAccount.account,
         selectedAccount.vendorContactUniqueName,
         proxyToken,
-        company
+        company,
+        country
       );
 
       if (sessionResponse.status === "success") {
