@@ -4,7 +4,7 @@ import { getDetails } from "@/utils/proxy/getDetails";
 import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
 import { ApiResponseStatus } from "@/utils/proxy/types";
 import { savePortalSession } from "@/utils/proxy/saveSession";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "@/store/hooks";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
@@ -14,41 +14,25 @@ import { logger } from "@/utils/logger";
 import { useConfig } from "@/contexts/ConfigContext";
 import { useToast } from "@/contexts/ToastContext";
 
-export default function Auth() {
+export default function AuthWithCountry() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
+  const params = useParams();
   const { showToast } = useToast();
   const { isLoading: configLoading } = useConfig();
+
+  const countryFromPath = (params?.country as string) ?? "";
   const token = searchParams.get("proxy_auth_token");
   const companyParam = searchParams.get("company");
-  const countryParam = searchParams.get("country");
   const companyName =
     companyParam || (typeof window !== "undefined" ? sessionStorage.getItem("companyName") : null);
 
   const country =
-    countryParam || (typeof window !== "undefined" ? sessionStorage.getItem("country") : null);
+    countryFromPath ||
+    (typeof window !== "undefined" ? sessionStorage.getItem("country") : null);
 
   const hasCalledRef = useRef(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const search = window.location.search || "";
-    const hasDuplicateAuth = search.includes("/auth?");
-    if (!hasDuplicateAuth) return;
-    const tokenFromUrl = searchParams.get("proxy_auth_token");
-    const companyFromUrl = searchParams.get("company");
-    const countryFromUrl = searchParams.get("country");
-    if (!tokenFromUrl) return;
-    const params = new URLSearchParams();
-    params.set("proxy_auth_token", tokenFromUrl);
-    if (companyFromUrl) params.set("company", companyFromUrl);
-    if (countryFromUrl) params.set("country", countryFromUrl);
-    const cleanQuery = params.toString();
-    if (window.location.search !== `?${cleanQuery}`) {
-      router.replace(`/auth?${cleanQuery}`, { scroll: false });
-    }
-  }, [router, searchParams]);
 
   useEffect(() => {
     const goToLogin = () => {
@@ -77,17 +61,14 @@ export default function Auth() {
           ) {
             const accounts = verifyResponse.body;
 
-            // If multiple accounts, redirect to account selection page
             if (accounts.length > 1) {
               sessionManager.setPendingAuth(accounts, token, email);
               router.push(`/${companyName}/${country}/auth`);
               return;
             }
 
-            // Single account - proceed with normal flow
             const userData = accounts[0];
 
-            // Store proxy token for account switching
             if (token) {
               localStorage.setItem("proxy_auth_token", token);
             }

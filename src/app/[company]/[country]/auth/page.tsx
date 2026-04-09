@@ -59,7 +59,8 @@ export default function AuthPage() {
         selectedAccount.account,
         selectedAccount.vendorContactUniqueName,
         token,
-        company
+        company,
+        country
       );
 
       if (sessionResponse.status === "success") {

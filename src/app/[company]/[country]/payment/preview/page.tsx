@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastContext";
+import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { getSessionCookie } from "@/utils/cookies";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { DEFAULT_CONFIG } from "@/config/default";
@@ -116,7 +117,10 @@ export default function PaymentPreviewPage() {
         if (!el) return;
         (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
           referenceId,
-          success: () => {},
+          addInfo: {
+            redirect_path: getAuthRedirectPath(country),
+          },
+          success: () => { },
           failure: (err: unknown) => console.error("[PaymentPreview Auth] Login failed:", err),
         });
       };
