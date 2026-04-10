@@ -133,10 +133,11 @@ export default function InvoicePayPage() {
         if (!el) return;
         (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
           referenceId,
+          theme: "light",
           addInfo: {
             redirect_path: getAuthRedirectPath(country),
           },
-          success: () => { },
+          success: () => {},
           failure: (err: unknown) => console.error("[InvoicePay Auth] Login failed:", err),
         });
       };
@@ -328,8 +329,8 @@ export default function InvoicePayPage() {
           status === 403
             ? "Access denied. Your session may have expired—please sign in again."
             : axiosErr?.response?.data?.message ||
-            axiosErr?.message ||
-            "Failed to fetch voucher details";
+              axiosErr?.message ||
+              "Failed to fetch voucher details";
         console.error("[InvoicePay] Voucher details error:", err);
         showToast(msg);
       }
