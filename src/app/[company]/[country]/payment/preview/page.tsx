@@ -117,10 +117,11 @@ export default function PaymentPreviewPage() {
         if (!el) return;
         (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
           referenceId,
+          theme: "light",
           addInfo: {
             redirect_path: getAuthRedirectPath(country),
           },
-          success: () => { },
+          success: () => {},
           failure: (err: unknown) => console.error("[PaymentPreview Auth] Login failed:", err),
         });
       };
