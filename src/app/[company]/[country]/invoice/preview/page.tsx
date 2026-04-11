@@ -99,6 +99,7 @@ export default function InvoicePreviewPage() {
         if (!authContainerElement) return;
         (window as any).initVerification?.({
           referenceId,
+          theme: "light",
           success: () => console.log("[Preview Auth] Login initialized successfully"),
           failure: (err: unknown) => console.error("[Preview Auth] Login failed:", err),
         });

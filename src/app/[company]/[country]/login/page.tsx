@@ -58,6 +58,7 @@ export default function LoginPage() {
     script.onload = () => {
       (window as any).initVerification?.({
         referenceId,
+        theme: "light",
         success: () => {
           console.log("Login initialized successfully");
         },

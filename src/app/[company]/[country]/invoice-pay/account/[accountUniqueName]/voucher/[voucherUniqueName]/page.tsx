@@ -132,6 +132,7 @@ export default function InvoicePayPage() {
         if (!el) return;
         (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
           referenceId,
+          theme: "light",
           success: () => {},
           failure: (err: unknown) => console.error("[InvoicePay Auth] Login failed:", err),
         });
