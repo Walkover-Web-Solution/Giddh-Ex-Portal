@@ -1,4 +1,6 @@
-import { config } from "@/config";
+"use client";
+
+import { useConfig } from "@/contexts/ConfigContext";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 
 interface FooterProps {
@@ -18,6 +20,7 @@ export function Footer({
   supportEmail,
   variant = "minimal",
 }: FooterProps) {
+  const { config } = useConfig();
   const year = new Date().getFullYear();
 
   if (variant === "minimal") {
@@ -36,9 +39,15 @@ export function Footer({
   return (
     <footer className="bg-white">
       <div className="mx-auto max-w-7xl px-6 py-6 md:flex md:items-center md:justify-between lg:px-8">
-        <div className="flex justify-center gap-x-6 md:order-1 md:justify-start">
-          <img src={config?.LOGOS?.primary} alt="Giddh Logo" className="h-8 w-auto" />
-        </div>
+        {config?.LOGOS?.primary && (
+          <div className="flex justify-center gap-x-6 md:order-1 md:justify-start">
+            <img
+              src={config.LOGOS?.primary}
+              alt={`${config.BRAND_NAME || "Brand"} logo`}
+              className="h-8 w-auto"
+            />
+          </div>
+        )}
 
         <div className="text-md mt-4 text-center text-gray-600 md:order-2 md:mt-0">
           {companyName ? (

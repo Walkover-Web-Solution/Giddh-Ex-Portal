@@ -5,8 +5,8 @@ export const metadata: Metadata = {
   title: `${DEFAULT_CONFIG.BRAND_NAME} Portal`,
   description: "Modern Next.js application with TypeScript, TailwindCSS, Redux, and SASS",
   icons: {
-    icon: "/icons/giddh_app_icon.svg",
-    shortcut: "/icons/giddh_app_icon.svg",
-    apple: "/icons/giddh_app_icon.svg",
+    icon: DEFAULT_CONFIG.LOGOS.favicon,
+    shortcut: DEFAULT_CONFIG.LOGOS.favicon,
+    apple: DEFAULT_CONFIG.LOGOS.favicon,
   },
 };

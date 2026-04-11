@@ -24,6 +24,7 @@ import { DEFAULT_CONFIG } from "@/config/default";
 import { getSessionCookie } from "@/utils/cookies";
 import { getUserDataFromStorage } from "@/utils/getUserDataFromStorage";
 import { useToast } from "@/contexts/ToastContext";
+import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { formatCurrencyAmount } from "@/utils/currency";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
@@ -100,6 +101,9 @@ export default function InvoicePreviewPage() {
         (window as any).initVerification?.({
           referenceId,
           theme: "light",
+          addInfo: {
+            redirect_path: getAuthRedirectPath(country),
+          },
           success: () => console.log("[Preview Auth] Login initialized successfully"),
           failure: (err: unknown) => console.error("[Preview Auth] Login failed:", err),
         });

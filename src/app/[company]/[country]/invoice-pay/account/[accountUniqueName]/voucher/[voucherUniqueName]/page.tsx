@@ -21,6 +21,7 @@ import { PayNow } from "@/components/PayNow";
 import { Button } from "@/components/ui/button";
 import { ApiResponseStatus } from "@/utils/proxy/types";
 import { useToast } from "@/contexts/ToastContext";
+import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { getSessionCookie } from "@/utils/cookies";
 import { formatCurrencyAmount } from "@/utils/currency";
 
@@ -133,7 +134,10 @@ export default function InvoicePayPage() {
         (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
           referenceId,
           theme: "light",
-          success: () => {},
+          addInfo: {
+            redirect_path: getAuthRedirectPath(country),
+          },
+          success: () => { },
           failure: (err: unknown) => console.error("[InvoicePay Auth] Login failed:", err),
         });
       };
@@ -325,8 +329,8 @@ export default function InvoicePayPage() {
           status === 403
             ? "Access denied. Your session may have expired—please sign in again."
             : axiosErr?.response?.data?.message ||
-              axiosErr?.message ||
-              "Failed to fetch voucher details";
+            axiosErr?.message ||
+            "Failed to fetch voucher details";
         console.error("[InvoicePay] Voucher details error:", err);
         showToast(msg);
       }

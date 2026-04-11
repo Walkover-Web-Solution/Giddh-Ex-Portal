@@ -7,6 +7,7 @@ import { setCompanyData } from "@/store/slices/companySlice";
 import { getSessionCookie } from "@/utils/cookies";
 import { sessionManager } from "@/utils/sessionManager";
 import { useAppConfig } from "@/hooks/useAppConfig";
+import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 
 export default function LoginPage() {
   const params = useParams();
@@ -59,6 +60,9 @@ export default function LoginPage() {
       (window as any).initVerification?.({
         referenceId,
         theme: "light",
+        addInfo: {
+          redirect_path: getAuthRedirectPath(country),
+        },
         success: () => {
           console.log("Login initialized successfully");
         },

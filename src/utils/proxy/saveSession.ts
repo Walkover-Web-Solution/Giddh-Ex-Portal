@@ -28,10 +28,12 @@ export const savePortalSession = async (
   account: { name: string; uniqueName: string },
   vendorContactUniqueName: string,
   proxyAuthToken: string,
-  subDomain: string
+  subDomain: string,
+  country?: string
 ): Promise<SaveSessionResponse> => {
   const config = getConfig();
-  const baseUrl = config.API_URL.replace(/\/$/, "");
+  const rawUrl = country === "uk" ? config.API_URL_UK : config.API_URL;
+  const baseUrl = rawUrl.replace(/\/$/, "");
 
   const requestBody: SaveSessionRequest = {
     account,
