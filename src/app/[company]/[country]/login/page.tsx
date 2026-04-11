@@ -9,51 +9,6 @@ import { sessionManager } from "@/utils/sessionManager";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 
-function getActiveSession(
-  currentCompany: string,
-  currentCountry: string
-): { slug: string; country: string } | null {
-  // Check if this exact company has a session — handled separately
-  if (getSessionCookie(currentCompany)) return null;
-
-  // Primary: check localStorage userData (written by setupUserSession)
-  try {
-    const rawUserData = localStorage.getItem("userData");
-    if (rawUserData) {
-      const userData = JSON.parse(rawUserData);
-      const activeSlug = userData?.company;
-      const activeCountry = userData?.country;
-      if (activeSlug && activeCountry && activeSlug !== currentCompany) {
-        if (getSessionCookie(activeSlug)) {
-          return { slug: activeSlug, country: activeCountry };
-        }
-      }
-    }
-  } catch {
-    // ignore
-  }
-
-  // Fallback: scan all cookies for any "*-session" cookie
-  // Handles sessions created before userData stored company/country fields
-  try {
-    const cookies = document.cookie.split(";");
-    for (const cookie of cookies) {
-      const [name] = cookie.trim().split("=");
-      if (name && name.endsWith("-session")) {
-        const slug = name.slice(0, -"-session".length);
-        if (slug && slug !== currentCompany) {
-          // Use currentCountry as the redirect country — same portal
-          return { slug, country: currentCountry };
-        }
-      }
-    }
-  } catch {
-    // ignore
-  }
-
-  return null;
-}
-
 export default function LoginPage() {
   const params = useParams();
   const router = useRouter();
@@ -63,13 +18,9 @@ export default function LoginPage() {
   const company = params?.company as string;
   const country = params?.country as string;
 
-  // Detect redirect conditions synchronously so the auth script is never loaded
-  // when we are about to navigate away.
   const [isRedirecting, setIsRedirecting] = useState(() => {
     if (typeof window === "undefined" || !company || !country) return false;
-    if (getSessionCookie(company)) return true;
-    const other = getActiveSession(company, country);
-    return other !== null;
+    return !!getSessionCookie(company);
   });
 
   useEffect(() => {
@@ -90,24 +41,14 @@ export default function LoginPage() {
   useEffect(() => {
     if (!company || !country) return;
 
-    // If this company already has a session, go to welcome
     const sessionId = getSessionCookie(company);
     if (sessionId) {
       setIsRedirecting(true);
       router.push(`/${company}/${country}/welcome`);
-      return;
-    }
-
-    // If a DIFFERENT company is already logged in, redirect to that company instead
-    const other = getActiveSession(company, country);
-    if (other) {
-      setIsRedirecting(true);
-      router.replace(`/${other.slug}/${other.country}/welcome`);
     }
   }, [company, country, router]);
 
   useEffect(() => {
-    // Never load the auth widget if we are navigating away
     if (isRedirecting || !referenceId) return;
 
     const script = document.createElement("script");

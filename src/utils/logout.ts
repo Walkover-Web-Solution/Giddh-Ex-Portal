@@ -1,13 +1,12 @@
 import { deleteSessionCookie } from "./cookies";
+import { userDataStorageKey, userEmailStorageKey } from "./getUserDataFromStorage";
 
-/** Keys cleared on logout so session-expired modal and re-login flow behave correctly. */
-const AUTH_STORAGE_KEYS = ["proxy_auth_token", "userEmail", "userData"] as const;
-
-export const logoutCompany = (companyUniqueName: string) => {
-  if (companyUniqueName) {
-    deleteSessionCookie(companyUniqueName);
+export const logoutCompany = (companySlug: string) => {
+  if (companySlug) {
+    deleteSessionCookie(companySlug);
   }
-  if (typeof window !== "undefined") {
-    AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+  if (typeof window !== "undefined" && companySlug) {
+    localStorage.removeItem(userDataStorageKey(companySlug));
+    localStorage.removeItem(userEmailStorageKey(companySlug));
   }
 };

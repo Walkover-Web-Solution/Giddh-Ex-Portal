@@ -15,6 +15,8 @@ import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { mergeClassNames } from "@/lib/utils";
+import { getUserDataFromStorage, getUserEmailFromStorage } from "@/utils/getUserDataFromStorage";
+import { useAppConfig } from "@/hooks/useAppConfig";
 
 // Module-level cache: keyed by company slug, persists across page navigations
 const accountsCache: Record<string, Account[]> = {};
@@ -23,6 +25,7 @@ export function SwitchAccountButton() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { switchAccountAuthErrorMessage } = useAppConfig();
   const company = params?.company as string;
   const country = params?.country as string;
   const currentAccountUniqueName = useAppSelector(selectAccountUniqueName(company));
@@ -64,11 +67,11 @@ export function SwitchAccountButton() {
     setError(null);
 
     try {
-      const email = localStorage.getItem("userEmail");
+      const email = getUserEmailFromStorage(company);
       const proxyToken = localStorage.getItem("proxy_auth_token");
 
       if (!email || !proxyToken) {
-        setError("Authentication data not found. Please log in again.");
+        setError(switchAccountAuthErrorMessage);
         setFetchingAccounts(false);
         return;
       }
@@ -117,10 +120,10 @@ export function SwitchAccountButton() {
 
     try {
       const proxyToken = localStorage.getItem("proxy_auth_token");
-      const email = localStorage.getItem("userEmail");
+      const email = getUserEmailFromStorage(company);
 
       if (!proxyToken || !email) {
-        setError("Authentication data not found. Please log in again.");
+        setError(switchAccountAuthErrorMessage);
         setLoading(false);
         isProcessing.current = false;
         return;
@@ -222,12 +225,12 @@ export function SwitchAccountButton() {
               <div className="space-y-0">
                 {accounts.map((account, index) => {
                   const isLastAccount = index === accounts.length - 1;
+                  const storedAccount =
+                    typeof window !== "undefined" ? getUserDataFromStorage(company) : null;
                   const isCurrentAccount =
                     account.account.uniqueName === currentAccountUniqueName ||
                     (!currentAccountUniqueName &&
-                      typeof window !== "undefined" &&
-                      account.account.uniqueName ===
-                      JSON.parse(localStorage.getItem("userData") || "{}")?.account?.uniqueName);
+                      account.account.uniqueName === storedAccount?.account?.uniqueName);
                   return (
                     <div key={index} className="group/acct-item relative w-full">
                       <span

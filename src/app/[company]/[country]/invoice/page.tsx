@@ -77,6 +77,7 @@ export default function InvoicesPage() {
 
   useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -109,6 +110,7 @@ export default function InvoicesPage() {
 
   const handleInvoiceClick = (invoiceUniqueName: string) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -123,6 +125,7 @@ export default function InvoicesPage() {
   const navigateToInvoicePay = useCallback(
     (invoiceUniqueName: string) => {
       const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+        companyName,
         companyUniqueNameFromRedux,
         accountUniqueNameFromRedux
       );
@@ -150,6 +153,7 @@ export default function InvoicesPage() {
     e.stopPropagation();
 
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -213,6 +217,7 @@ export default function InvoicesPage() {
     balanceStatusOverride?: string[]
   ) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -237,6 +242,7 @@ export default function InvoicesPage() {
 
   const refetchInvoicesWithStatus = (newStatusFilter: StatusFilterValue) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -276,21 +282,11 @@ export default function InvoicesPage() {
     statusFilter !== "All Invoices" || sortBy !== "Date" || sortDirection !== SortOrder.DESC;
 
   const handleDownloadInvoice = async (invoiceUniqueName: string, invoiceNumber: string) => {
-    let companyUniqueName = companyUniqueNameFromRedux;
-    let accountUniqueName = accountUniqueNameFromRedux;
-
-    if (!companyUniqueName && typeof window !== "undefined") {
-      const userData = localStorage.getItem("userData");
-      if (userData) {
-        try {
-          const parsedData = JSON.parse(userData);
-          companyUniqueName = parsedData.companyUniqueName;
-          accountUniqueName = parsedData.account?.uniqueName;
-        } catch (e) {
-          console.error("Error parsing userData:", e);
-        }
-      }
-    }
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
 
     if (!companyUniqueName || !accountUniqueName) {
       console.error("Missing company or account unique name");

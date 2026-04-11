@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { DEFAULT_CONFIG } from "@/config/default";
 import { getSessionCookie } from "@/utils/cookies";
+import { getUserDataFromStorage } from "@/utils/getUserDataFromStorage";
 import { useToast } from "@/contexts/ToastContext";
 import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { formatCurrencyAmount } from "@/utils/currency";
@@ -137,15 +138,10 @@ export default function InvoicePreviewPage() {
     let accountUniqueName = accountUniqueNameFromRedux;
 
     if ((!companyUniqueName || !accountUniqueName) && typeof window !== "undefined") {
-      const stored = localStorage.getItem("userData");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          companyUniqueName ||= parsed.companyUniqueName;
-          accountUniqueName ||= parsed.account?.uniqueName;
-        } catch {
-          // Skip invalid userData; continue with Redux or URL params
-        }
+      const parsed = getUserDataFromStorage(companyName);
+      if (parsed) {
+        companyUniqueName = companyUniqueName ?? parsed.companyUniqueName ?? null;
+        accountUniqueName = accountUniqueName ?? parsed.account?.uniqueName ?? null;
       }
     }
 

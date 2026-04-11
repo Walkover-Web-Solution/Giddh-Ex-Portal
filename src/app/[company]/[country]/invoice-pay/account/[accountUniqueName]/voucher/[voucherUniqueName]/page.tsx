@@ -107,8 +107,8 @@ export default function InvoicePayPage() {
   const isRefetchingAfterPaymentRef = useRef(false);
 
   const getNames = useCallback(() => {
-    return getStorageNames(companyUniqueNameFromRedux, accountUniqueNameFromRedux);
-  }, [companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+    return getStorageNames(companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux);
+  }, [companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
   const accountUniqueName = accountUniqueNameParam || getNames().accountUniqueName;
   const companyUniqueName = searchParams.get("companyUniqueName") || getNames().companyUniqueName;
@@ -137,7 +137,7 @@ export default function InvoicePayPage() {
           addInfo: {
             redirect_path: getAuthRedirectPath(country),
           },
-          success: () => {},
+          success: () => { },
           failure: (err: unknown) => console.error("[InvoicePay Auth] Login failed:", err),
         });
       };
@@ -329,8 +329,8 @@ export default function InvoicePayPage() {
           status === 403
             ? "Access denied. Your session may have expired—please sign in again."
             : axiosErr?.response?.data?.message ||
-              axiosErr?.message ||
-              "Failed to fetch voucher details";
+            axiosErr?.message ||
+            "Failed to fetch voucher details";
         console.error("[InvoicePay] Voucher details error:", err);
         showToast(msg);
       }
