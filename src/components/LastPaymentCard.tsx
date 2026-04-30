@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -8,9 +9,12 @@ import {
   selectAllPayments,
   selectAllPaymentsLoading,
   selectBalanceSummary,
+  selectCompanyDecimalPlaces,
+  selectCompanyBalanceDisplayFormat,
 } from "@/store/slices/companySlice";
 import { PaymentCardSkeleton } from "@/components/skeletons/PaymentCardSkeleton";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
 import { LastPaymentStatusLabel, PaymentVoucherBalanceStatus } from "@/constants/invoiceStatus";
 
 export function LastPaymentCard() {
@@ -23,6 +27,12 @@ export function LastPaymentCard() {
   const lastPaymentItem = allPayments?.[0] ?? null;
   const loading = useAppSelector(selectAllPaymentsLoading(companyName));
   const balanceSummary = useAppSelector(selectBalanceSummary(companyName));
+  const companyDecimalPlaces = useAppSelector(selectCompanyDecimalPlaces(companyName));
+  const balanceDisplayFormat = useAppSelector(selectCompanyBalanceDisplayFormat(companyName));
+  const amountFormatLocale = useMemo(
+    () => getLocaleFromDisplayFormat(balanceDisplayFormat),
+    [balanceDisplayFormat]
+  );
 
   const balanceStatus = lastPaymentItem?.balanceStatus?.trim().toUpperCase();
   const isAdjusted = balanceStatus === PaymentVoucherBalanceStatus.ADJUSTED;
@@ -54,7 +64,10 @@ export function LastPaymentCard() {
           <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
             <span className="text-sm font-medium text-gray-600">Amount</span>
             <span className="break-all text-xl font-bold md:break-normal md:text-right">
-              {formatCurrencyAmount(data.grandTotal?.amountForAccount, amountCurrency)}
+              {formatCurrencyAmount(data.grandTotal?.amountForAccount, amountCurrency, {
+                decimals: companyDecimalPlaces,
+                locale: amountFormatLocale,
+              })}
             </span>
           </div>
         </div>

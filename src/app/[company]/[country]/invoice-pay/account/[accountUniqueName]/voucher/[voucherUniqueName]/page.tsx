@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
-import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
+import {
+  selectCompanyUniqueName,
+  selectAccountUniqueName,
+  selectCompanyDecimalPlaces,
+  selectCompanyBalanceDisplayFormat,
+} from "@/store/slices/companySlice";
 import {
   getPaymentMethods,
   getInvoicePayVoucherDetails,
@@ -24,6 +29,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { getSessionCookie } from "@/utils/cookies";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -69,6 +75,12 @@ export default function InvoicePayPage() {
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
+  const companyDecimalPlaces = useAppSelector(selectCompanyDecimalPlaces(companyName));
+  const balanceDisplayFormat = useAppSelector(selectCompanyBalanceDisplayFormat(companyName));
+  const amountFormatLocale = useMemo(
+    () => getLocaleFromDisplayFormat(balanceDisplayFormat),
+    [balanceDisplayFormat]
+  );
 
   useEffect(() => {
     const token = searchParams.get("proxy_auth_token");
@@ -460,7 +472,10 @@ export default function InvoicePayPage() {
                     Balance Due
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
-                    {formatCurrencyAmount(singleVoucher.amount, paymentDetails?.currency)}
+                    {formatCurrencyAmount(singleVoucher.amount, paymentDetails?.currency, {
+                      decimals: companyDecimalPlaces,
+                      locale: amountFormatLocale,
+                    })}
                   </p>
                 </div>
               </div>
@@ -479,7 +494,10 @@ export default function InvoicePayPage() {
                   <div>
                     <p className="text-xs text-gray-500">Total Amount</p>
                     <p className="mt-1 text-lg font-semibold">
-                      {formatCurrencyAmount(totalAmount, paymentDetails?.currency)}
+                      {formatCurrencyAmount(totalAmount, paymentDetails?.currency, {
+                        decimals: companyDecimalPlaces,
+                        locale: amountFormatLocale,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -501,7 +519,10 @@ export default function InvoicePayPage() {
                         <span>{v.number}</span>
                         <span>{v.dueDate ?? ""}</span>
                         <span className="text-right">
-                          {formatCurrencyAmount(v.amount, paymentDetails?.currency)}
+                          {formatCurrencyAmount(v.amount, paymentDetails?.currency, {
+                            decimals: companyDecimalPlaces,
+                            locale: amountFormatLocale,
+                          })}
                         </span>
                       </div>
                     ))}

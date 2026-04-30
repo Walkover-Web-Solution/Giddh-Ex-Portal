@@ -23,6 +23,8 @@ export interface CompanyData {
   baseCurrency?: string;
   headQuarterAlias?: string;
   razorpayIntegrated?: boolean;
+  balanceDecimalPlaces?: number;
+  balanceDisplayFormat?: string;
 }
 
 /** Response shape for get-company-details API */

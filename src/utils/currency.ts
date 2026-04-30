@@ -1,3 +1,6 @@
+import { DEFAULT_NUMBER_FORMAT_LOCALE } from "@/constants/numberFormat";
+import { formatNumber } from "@/utils/numberFormat";
+
 export interface Currency {
   code: string;
   symbol: string;
@@ -10,9 +13,15 @@ export function formatCurrencyAmount(
     showSymbol?: boolean;
     showCode?: boolean;
     decimals?: number;
+    locale?: string;
   }
 ): string {
-  const { showSymbol = true, showCode = false, decimals = 2 } = options || {};
+  const {
+    showSymbol = true,
+    showCode = false,
+    decimals = 2,
+    locale = DEFAULT_NUMBER_FORMAT_LOCALE,
+  } = options || {};
 
   const numericAmount = amount !== undefined && amount !== null ? amount : 0;
 
@@ -28,10 +37,7 @@ export function formatCurrencyAmount(
     }
   }
 
-  const formattedAmount = numericAmount.toLocaleString("en-IN", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
+  const formattedAmount = formatNumber(numericAmount, decimals, locale);
 
   const parts: string[] = [];
 
