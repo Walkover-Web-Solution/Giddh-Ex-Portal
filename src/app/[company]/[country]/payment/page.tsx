@@ -16,9 +16,12 @@ import {
   selectAllPaymentsTotalPages,
   selectCompanyUniqueName,
   selectAccountUniqueName,
+  selectCompanyDecimalPlaces,
+  selectCompanyBalanceDisplayFormat,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
@@ -47,6 +50,12 @@ export default function PaymentsPage() {
   const error = useAppSelector(selectAllPaymentsError(companyName));
   const totalItems = useAppSelector(selectAllPaymentsTotalItems(companyName));
   const totalPages = useAppSelector(selectAllPaymentsTotalPages(companyName));
+  const companyDecimalPlaces = useAppSelector(selectCompanyDecimalPlaces(companyName));
+  const balanceDisplayFormat = useAppSelector(selectCompanyBalanceDisplayFormat(companyName));
+  const amountFormatLocale = useMemo(
+    () => getLocaleFromDisplayFormat(balanceDisplayFormat),
+    [balanceDisplayFormat]
+  );
 
   const apiSortBy = sortFilter === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
 
@@ -118,15 +127,17 @@ export default function PaymentsPage() {
         date: payment.voucherDate,
         amount: formatCurrencyAmount(
           payment.grandTotal?.amountForAccount,
-          payment.accountCurrencySymbol
+          payment.accountCurrencySymbol,
+          { decimals: companyDecimalPlaces, locale: amountFormatLocale }
         ),
         paymentMode: payment.paymentMode?.name ?? "",
         unusedAmount: formatCurrencyAmount(
           payment.balanceDue?.amountForAccount ?? 0,
-          payment.accountCurrencySymbol
+          payment.accountCurrencySymbol,
+          { decimals: companyDecimalPlaces, locale: amountFormatLocale }
         ),
       })),
-    [allPayments]
+    [allPayments, companyDecimalPlaces, amountFormatLocale]
   );
 
   const columns = useMemo(

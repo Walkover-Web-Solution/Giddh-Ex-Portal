@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { apiClient } from "@/lib/apiClient";
 import { API_PATHS } from "@/constants/apiPaths";
 import { PAGINATION_LIMIT } from "@/constants";
+import { DEFAULT_NUMBER_DISPLAY_FORMAT } from "@/constants/numberFormat";
 import { SortOrder } from "@/constants/sort";
 import type { RootState } from "../store";
 import getAccountDetails, { AccountDetailsResponse } from "@/utils/getAccountDetails";
@@ -755,6 +756,12 @@ export const selectBalanceSummaryError = (companyName: string) => (state: RootSt
 
 export const selectUser = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.user || null;
+
+export const selectCompanyDecimalPlaces = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.user?.balanceDecimalPlaces ?? 2;
+
+export const selectCompanyBalanceDisplayFormat = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.user?.balanceDisplayFormat ?? DEFAULT_NUMBER_DISPLAY_FORMAT;
 
 /** Display name from API (get-company-details name), fallback to URL param */
 export const selectCompanyDisplayName = (companyName: string) => (state: RootState) =>

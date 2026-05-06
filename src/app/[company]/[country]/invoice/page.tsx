@@ -17,9 +17,12 @@ import {
   selectAllInvoicesTotalPages,
   selectCompanyUniqueName,
   selectAccountUniqueName,
+  selectCompanyDecimalPlaces,
+  selectCompanyBalanceDisplayFormat,
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
 import { downloadBase64AsPDF } from "@/utils/fileUtils";
 import downloadInvoice from "@/utils/downloadInvoice";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
@@ -65,6 +68,12 @@ export default function InvoicesPage() {
   const error = useAppSelector(selectAllInvoicesError(companyName));
   const totalItems = useAppSelector(selectAllInvoicesTotalItems(companyName));
   const totalPages = useAppSelector(selectAllInvoicesTotalPages(companyName));
+  const companyDecimalPlaces = useAppSelector(selectCompanyDecimalPlaces(companyName));
+  const balanceDisplayFormat = useAppSelector(selectCompanyBalanceDisplayFormat(companyName));
+  const amountFormatLocale = useMemo(
+    () => getLocaleFromDisplayFormat(balanceDisplayFormat),
+    [balanceDisplayFormat]
+  );
 
   const apiSortBy = sortBy === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
   const lastKeyRef = useRef("");
@@ -339,7 +348,10 @@ export default function InvoicesPage() {
             id: invoice.uniqueName ?? "",
             invoiceNo: invoice.voucherNumber ?? "",
             date: invoice.voucherDate ?? "",
-            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, totalCurrency),
+            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, totalCurrency, {
+              decimals: companyDecimalPlaces,
+              locale: amountFormatLocale,
+            }),
             status: status || InvoiceBalanceStatus.UNKNOWN,
             overdue:
               status === InvoiceBalanceStatus.PAID ||
@@ -350,7 +362,7 @@ export default function InvoicesPage() {
             showPayNow,
           };
         }),
-    [allInvoices, validBalanceStatuses]
+    [allInvoices, validBalanceStatuses, companyDecimalPlaces, amountFormatLocale]
   );
 
   const invoicesData = allInvoicesData;

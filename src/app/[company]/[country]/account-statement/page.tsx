@@ -3,7 +3,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
-import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
+import {
+  selectCompanyUniqueName,
+  selectAccountUniqueName,
+  selectCompanyDecimalPlaces,
+  selectCompanyBalanceDisplayFormat,
+} from "@/store/slices/companySlice";
 import {
   getAccountStatement,
   downloadAccountStatement,
@@ -15,6 +20,7 @@ import {
   Address,
 } from "@/utils/accountStatement";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
 import { base64ToBlob } from "@/utils/invoicePreview";
 import { DataTable } from "@/components/DataTable";
 import { Dropdown } from "@/components/Dropdown";
@@ -37,6 +43,12 @@ export default function AccountStatementPage() {
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
+  const companyDecimalPlaces = useAppSelector(selectCompanyDecimalPlaces(companyName));
+  const balanceDisplayFormat = useAppSelector(selectCompanyBalanceDisplayFormat(companyName));
+  const amountFormatLocale = useMemo(
+    () => getLocaleFromDisplayFormat(balanceDisplayFormat),
+    [balanceDisplayFormat]
+  );
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState<AccountSummary | null>(null);
@@ -243,7 +255,10 @@ export default function AccountStatementPage() {
         header: "Amount",
         accessor: (row: Transaction) =>
           row.voucherAmount.type === LEDGER_TYPE_DEBIT
-            ? formatCurrencyAmount(row.voucherAmount.amount, accountAddress?.currency)
+            ? formatCurrencyAmount(row.voucherAmount.amount, accountAddress?.currency, {
+                decimals: companyDecimalPlaces,
+                locale: amountFormatLocale,
+              })
             : "",
         headerClassName: "text-right",
         cellClassName: "text-right",
@@ -252,7 +267,10 @@ export default function AccountStatementPage() {
         header: "Payments",
         accessor: (row: Transaction) =>
           row.voucherAmount.type === LEDGER_TYPE_CREDIT
-            ? formatCurrencyAmount(row.voucherAmount.amount, accountAddress?.currency)
+            ? formatCurrencyAmount(row.voucherAmount.amount, accountAddress?.currency, {
+                decimals: companyDecimalPlaces,
+                locale: amountFormatLocale,
+              })
             : "",
         headerClassName: "hidden md:table-cell text-right",
         cellClassName: "hidden md:table-cell text-right",
@@ -260,12 +278,20 @@ export default function AccountStatementPage() {
       {
         header: "Balance",
         accessor: (row: Transaction) =>
-          formatCurrencyAmount(row.closingBalance.amount, accountAddress?.currency),
+          formatCurrencyAmount(row.closingBalance.amount, accountAddress?.currency, {
+            decimals: companyDecimalPlaces,
+            locale: amountFormatLocale,
+          }),
         headerClassName: "text-right",
         cellClassName: "text-right font-medium",
       },
     ],
-    [accountAddress?.currency, sortDirection]
+    [
+      accountAddress?.currency,
+      sortDirection,
+      companyDecimalPlaces,
+      amountFormatLocale,
+    ]
   );
 
   return (
@@ -352,20 +378,27 @@ export default function AccountStatementPage() {
                             <span className="font-medium">
                               {formatCurrencyAmount(
                                 summary.openingBalance.amount,
-                                accountAddress?.currency
+                                accountAddress?.currency,
+                                { decimals: companyDecimalPlaces, locale: amountFormatLocale }
                               )}
                             </span>
                           </div>
                           <div className="flex justify-between text-gray-900">
                             <span>Invoiced Amount</span>
                             <span className="font-medium">
-                              {formatCurrencyAmount(summary.debitTotal, accountAddress?.currency)}
+                              {formatCurrencyAmount(summary.debitTotal, accountAddress?.currency, {
+                                decimals: companyDecimalPlaces,
+                                locale: amountFormatLocale,
+                              })}
                             </span>
                           </div>
                           <div className="flex justify-between text-gray-900">
                             <span>Amount Paid</span>
                             <span className="font-medium">
-                              {formatCurrencyAmount(summary.creditTotal, accountAddress?.currency)}
+                              {formatCurrencyAmount(summary.creditTotal, accountAddress?.currency, {
+                                decimals: companyDecimalPlaces,
+                                locale: amountFormatLocale,
+                              })}
                             </span>
                           </div>
                           <div className="border-t-2 border-gray-400 pt-2" />
@@ -374,7 +407,8 @@ export default function AccountStatementPage() {
                             <span>
                               {formatCurrencyAmount(
                                 summary.closingBalance.amount,
-                                accountAddress?.currency
+                                accountAddress?.currency,
+                                { decimals: companyDecimalPlaces, locale: amountFormatLocale }
                               )}
                             </span>
                           </div>
