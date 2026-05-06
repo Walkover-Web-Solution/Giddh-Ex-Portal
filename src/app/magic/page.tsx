@@ -23,6 +23,9 @@ import { getMagicLinkLedgerBalance } from "@/utils/magic/getMagicLinkLedgerBalan
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { PAGINATION_LIMIT } from "@/constants";
+import { DEFAULT_NUMBER_DISPLAY_FORMAT } from "@/constants/numberFormat";
+import type { MagicCurrencyAmountFormat } from "@/components/magic/types";
+import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 
 export default function Magic() {
@@ -72,6 +75,9 @@ export default function Magic() {
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const [prevToken, setPrevToken] = useState<string | null>(null);
   const [nextToken, setNextToken] = useState<string | null>(null);
+  const [currencyAmountFormat, setCurrencyAmountFormat] = useState<
+    MagicCurrencyAmountFormat | undefined
+  >(undefined);
   const [requestPaginationToken, setRequestPaginationToken] = useState<string | null>(null);
   const [requestReversePage, setRequestReversePage] = useState(false);
 
@@ -190,6 +196,15 @@ export default function Magic() {
           }
           setCompanyName(apiCompanyName);
           setAccountName(apiAccountName);
+          {
+            const decimals = result.data.balanceDecimalPlaces ?? 2;
+            const displayFormat =
+              result.data.balanceDisplayFormat ?? DEFAULT_NUMBER_DISPLAY_FORMAT;
+            setCurrencyAmountFormat({
+              decimals,
+              locale: getLocaleFromDisplayFormat(displayFormat),
+            });
+          }
           setDebitCreditTransactions(apiDebitCreditTransactions || []);
           setDebitTransactions(apiDebitTransactions || []);
           setCreditTransactions(apiCreditTransactions || []);
@@ -329,6 +344,7 @@ export default function Magic() {
           }
         } else {
           setError(result.error || "Failed to load ledger data");
+          setCurrencyAmountFormat(undefined);
           setTransactions([]);
           setDebitCreditTransactions([]);
           setDebitTransactions([]);
@@ -345,6 +361,7 @@ export default function Magic() {
         }
       } catch (err) {
         setError("Failed to load ledger data");
+        setCurrencyAmountFormat(undefined);
         setTransactions([]);
         setDebitCreditTransactions([]);
         setDebitTransactions([]);
@@ -647,6 +664,7 @@ export default function Magic() {
             transactionCurrency={currencyData?.transactionCurrency}
             convertedCurrency={currencyData?.convertedCurrency}
             linkId={linkId}
+            currencyAmountFormat={currencyAmountFormat}
             hideOpeningClosingBalance={!!debouncedSearchQuery.trim()}
             debitCreditTransactions={
               viewMode === LedgerView.STATEMENT_VIEW &&
@@ -717,6 +735,7 @@ export default function Magic() {
             companyCurrency={currencyData?.transactionCurrency}
             convertedCurrency={currencyData?.convertedCurrency}
             hideOpeningClosingBalance={!!debouncedSearchQuery.trim()}
+            currencyAmountFormat={currencyAmountFormat}
           />
         </section>
       </main>

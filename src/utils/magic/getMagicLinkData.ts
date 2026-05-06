@@ -30,6 +30,8 @@ export interface MagicLinkData {
   };
   companyName: string;
   accountName: string;
+  balanceDecimalPlaces?: number;
+  balanceDisplayFormat?: string;
   currencyData: CurrencyData;
   defaultCurrency: string;
   dateRange: {
@@ -256,6 +258,8 @@ export const getMagicLinkData = async (
       forwardedBalance: ledgersTransactions.forwardedBalance,
       companyName: body.companyName || "",
       accountName: body.account?.name || "",
+      balanceDecimalPlaces: body.balanceDecimalPlaces,
+      balanceDisplayFormat: body.balanceDisplayFormat,
       currencyData,
       defaultCurrency: transactionCurrency.code,
       dateRange: {

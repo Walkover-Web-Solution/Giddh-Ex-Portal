@@ -46,6 +46,9 @@ export interface MagicLinkLedgerResponse {
       uniqueName: string;
     };
     companyName: string;
+    balanceDecimalPlaces?: number;
+    balanceDisplayFormat?: string;
+    currencyDisplayFormat?: string;
     ledgerView?: string | null;
     prevToken?: string | null;
     nextToken?: string | null;
