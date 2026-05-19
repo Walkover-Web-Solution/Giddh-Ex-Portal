@@ -6,8 +6,6 @@ import { useAppSelector } from "@/store/hooks";
 import {
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectCompanyDecimalPlaces,
-  selectCompanyBalanceDisplayFormat,
 } from "@/store/slices/companySlice";
 import {
   getVoucherDetails,
@@ -31,7 +29,7 @@ import { getUserDataFromStorage } from "@/utils/getUserDataFromStorage";
 import { useToast } from "@/contexts/ToastContext";
 import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { formatCurrencyAmount } from "@/utils/currency";
-import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
+import { useAmountFormatOptions } from "@/hooks/useAmountFormatOptions";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -66,12 +64,7 @@ export default function InvoicePreviewPage() {
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
-  const companyDecimalPlaces = useAppSelector(selectCompanyDecimalPlaces(companyName));
-  const balanceDisplayFormat = useAppSelector(selectCompanyBalanceDisplayFormat(companyName));
-  const amountFormatLocale = useMemo(
-    () => getLocaleFromDisplayFormat(balanceDisplayFormat),
-    [balanceDisplayFormat]
-  );
+  const amountFormat = useAmountFormatOptions(companyName);
 
   const { referenceId: configReferenceId } = useAppConfig();
   const referenceId = configReferenceId?.trim() || DEFAULT_CONFIG.REFERENCE_ID;
@@ -469,8 +462,7 @@ export default function InvoicePreviewPage() {
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
                     {formatCurrencyAmount(voucher.amount, paymentDetails?.currency, {
-                      decimals: companyDecimalPlaces,
-                      locale: amountFormatLocale,
+                      ...amountFormat,
                     })}
                   </p>
                 </div>

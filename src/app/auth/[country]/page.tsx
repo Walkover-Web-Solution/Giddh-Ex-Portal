@@ -53,7 +53,7 @@ export default function AuthWithCountry() {
 
         if (detailsResponse.status === "success" && detailsResponse.data[0]?.email) {
           const email = detailsResponse.data[0].email;
-          const verifyResponse = await verifyPortalUser(email, companyName, token, country ?? undefined);
+          const verifyResponse = await verifyPortalUser(email, companyName, token, country as string);
 
           if (
             verifyResponse.status === ApiResponseStatus.SUCCESS &&
@@ -78,7 +78,7 @@ export default function AuthWithCountry() {
               userData.vendorContactUniqueName,
               token,
               companyName,
-              country ?? undefined
+              country as string
             );
 
             if (sessionResponse.status === "success") {

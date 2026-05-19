@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   const [isRedirecting, setIsRedirecting] = useState(() => {
     if (typeof window === "undefined" || !company || !country) return false;
-    return !!getSessionCookie(company);
+    return Boolean(getSessionCookie(company));
   });
 
   useEffect(() => {

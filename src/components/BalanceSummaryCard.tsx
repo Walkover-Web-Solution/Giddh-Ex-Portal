@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
@@ -8,12 +7,10 @@ import {
   selectBalanceSummary,
   selectBalanceSummaryLoading,
   selectBalanceSummaryError,
-  selectCompanyDecimalPlaces,
-  selectCompanyBalanceDisplayFormat,
 } from "@/store/slices/companySlice";
 import { BalanceSummarySkeleton } from "@/components/skeletons/BalanceSummarySkeleton";
 import { formatCurrencyAmount, getCurrencyDisplay } from "@/utils/currency";
-import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
+import { useAmountFormatOptions } from "@/hooks/useAmountFormatOptions";
 
 export function BalanceSummaryCard() {
   const params = useParams();
@@ -23,12 +20,7 @@ export function BalanceSummaryCard() {
   const data = useAppSelector(selectBalanceSummary(companyName));
   const loading = useAppSelector(selectBalanceSummaryLoading(companyName));
   const error = useAppSelector(selectBalanceSummaryError(companyName));
-  const companyDecimalPlaces = useAppSelector(selectCompanyDecimalPlaces(companyName));
-  const balanceDisplayFormat = useAppSelector(selectCompanyBalanceDisplayFormat(companyName));
-  const amountFormatLocale = useMemo(
-    () => getLocaleFromDisplayFormat(balanceDisplayFormat),
-    [balanceDisplayFormat]
-  );
+  const amountFormat = useAmountFormatOptions(companyName);
 
   if (loading) {
     return <BalanceSummarySkeleton />;
@@ -54,10 +46,7 @@ export function BalanceSummaryCard() {
               <span className="text-base font-semibold">{getCurrencyDisplay(data?.currency)}</span>
               <div className="flex flex-col sm:items-end">
                 <div className="break-all text-xl font-bold md:break-normal">
-                  {formatCurrencyAmount(data?.balancePayable, data?.currency, {
-                    decimals: companyDecimalPlaces,
-                    locale: amountFormatLocale,
-                  })}
+                  {formatCurrencyAmount(data?.balancePayable, data?.currency, amountFormat)}
                 </div>
                 <div className="text-xs text-gray-500 font-medium">
                   Number of Invoices: {data?.noOfInvoices || 0}

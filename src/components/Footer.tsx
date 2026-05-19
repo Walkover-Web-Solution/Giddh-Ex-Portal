@@ -42,7 +42,7 @@ export function Footer({
         {config?.LOGOS?.primary && (
           <div className="flex justify-center gap-x-6 md:order-1 md:justify-start">
             <img
-              src={config.LOGOS?.primary}
+              src={config.LOGOS.primary}
               alt={`${config.BRAND_NAME || "Brand"} logo`}
               className="h-8 w-auto"
             />

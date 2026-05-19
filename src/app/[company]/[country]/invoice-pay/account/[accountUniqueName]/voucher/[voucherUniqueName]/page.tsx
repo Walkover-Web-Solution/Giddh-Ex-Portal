@@ -6,8 +6,6 @@ import { useAppSelector } from "@/store/hooks";
 import {
   selectCompanyUniqueName,
   selectAccountUniqueName,
-  selectCompanyDecimalPlaces,
-  selectCompanyBalanceDisplayFormat,
 } from "@/store/slices/companySlice";
 import {
   getPaymentMethods,
@@ -29,7 +27,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { getSessionCookie } from "@/utils/cookies";
 import { formatCurrencyAmount } from "@/utils/currency";
-import { getLocaleFromDisplayFormat } from "@/utils/numberFormat";
+import { useAmountFormatOptions } from "@/hooks/useAmountFormatOptions";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -75,12 +73,7 @@ export default function InvoicePayPage() {
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
-  const companyDecimalPlaces = useAppSelector(selectCompanyDecimalPlaces(companyName));
-  const balanceDisplayFormat = useAppSelector(selectCompanyBalanceDisplayFormat(companyName));
-  const amountFormatLocale = useMemo(
-    () => getLocaleFromDisplayFormat(balanceDisplayFormat),
-    [balanceDisplayFormat]
-  );
+  const amountFormat = useAmountFormatOptions(companyName);
 
   useEffect(() => {
     const token = searchParams.get("proxy_auth_token");
@@ -473,8 +466,7 @@ export default function InvoicePayPage() {
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
                     {formatCurrencyAmount(singleVoucher.amount, paymentDetails?.currency, {
-                      decimals: companyDecimalPlaces,
-                      locale: amountFormatLocale,
+                      ...amountFormat,
                     })}
                   </p>
                 </div>
@@ -495,8 +487,7 @@ export default function InvoicePayPage() {
                     <p className="text-xs text-gray-500">Total Amount</p>
                     <p className="mt-1 text-lg font-semibold">
                       {formatCurrencyAmount(totalAmount, paymentDetails?.currency, {
-                        decimals: companyDecimalPlaces,
-                        locale: amountFormatLocale,
+                        ...amountFormat,
                       })}
                     </p>
                   </div>
@@ -520,8 +511,7 @@ export default function InvoicePayPage() {
                         <span>{v.dueDate ?? ""}</span>
                         <span className="text-right">
                           {formatCurrencyAmount(v.amount, paymentDetails?.currency, {
-                            decimals: companyDecimalPlaces,
-                            locale: amountFormatLocale,
+                            ...amountFormat,
                           })}
                         </span>
                       </div>

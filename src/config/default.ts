@@ -60,8 +60,13 @@ export interface AppConfig {
   SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: string;
 }
 
-export const DEFAULT_SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE =
-  "Authentication data not found. Please log in again.";
+/** Default portal copy — add new user-facing strings here. */
+export const PORTAL_MESSAGES = {
+  SWITCH_ACCOUNT_AUTH_ERROR:
+    "Authentication data not found. Please log in again.",
+} as const;
+
+export type PortalMessageKey = keyof typeof PORTAL_MESSAGES;
 
 const PROD_CONFIG: AppConfig = {
   REFERENCE_ID: "117230e170290843965805217bfd25",
@@ -74,7 +79,7 @@ const PROD_CONFIG: AppConfig = {
   PAYPAL_URL: "https://www.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://giddh.com",
   BRAND_NAME: "Giddh",
-  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: DEFAULT_SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
+  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: PORTAL_MESSAGES.SWITCH_ACCOUNT_AUTH_ERROR,
   LOGOS: {
     primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
@@ -95,7 +100,7 @@ const NON_PROD_CONFIG: AppConfig = {
   PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://web.giddh.com",
   BRAND_NAME: "Giddh",
-  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: DEFAULT_SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
+  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: PORTAL_MESSAGES.SWITCH_ACCOUNT_AUTH_ERROR,
   LOGOS: {
     primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
