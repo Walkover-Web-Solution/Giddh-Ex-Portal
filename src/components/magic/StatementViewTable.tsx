@@ -7,7 +7,13 @@ import {
   LEDGER_TYPE_CREDIT,
   type LedgerTransactionType,
 } from "@/constants/ledger";
-import { Currency, CurrencyInfo, Transaction, ForwardedBalanceShape } from "./types";
+import {
+  Currency,
+  CurrencyInfo,
+  Transaction,
+  ForwardedBalanceShape,
+  type MagicCurrencyAmountFormat,
+} from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import {
   downloadMagicLinkVoucher,
@@ -41,6 +47,7 @@ interface Props {
   convertedCurrency?: CurrencyInfo;
   linkId: string;
   hideOpeningClosingBalance?: boolean;
+  currencyAmountFormat?: MagicCurrencyAmountFormat;
 }
 
 export function StatementViewTable({
@@ -54,6 +61,7 @@ export function StatementViewTable({
   convertedCurrency,
   linkId,
   hideOpeningClosingBalance = false,
+  currencyAmountFormat,
 }: Props) {
   const balanceBfSide = balanceBfType ?? forwardedBalance?.type;
   const { showToast } = useToast();
@@ -187,7 +195,7 @@ export function StatementViewTable({
   }, [ledgerTotals, displayTransactions]);
 
   const format = (amount: number | null, symbol?: string) =>
-    amount === null ? "" : formatCurrencyAmount(amount, symbol || "₹", { decimals: 2 });
+    amount === null ? "" : formatCurrencyAmount(amount, symbol, currencyAmountFormat);
 
   const getAmount = (base: number | null, converted: number | null, useConverted: boolean) =>
     useConverted && converted !== null ? converted : base;

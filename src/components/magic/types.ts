@@ -34,6 +34,11 @@ export interface CurrencyInfo {
   symbol: string;
 }
 
+export type MagicCurrencyAmountFormat = {
+  decimals: number;
+  locale: string;
+};
+
 export interface CurrencyData {
   transactionCurrency: CurrencyInfo;
   convertedCurrency: CurrencyInfo;

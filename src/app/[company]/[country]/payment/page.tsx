@@ -19,6 +19,7 @@ import {
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { useAmountFormatOptions } from "@/hooks/useAmountFormatOptions";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { SwitchAccountButton } from "@/components/SwitchAccountButton";
@@ -47,11 +48,13 @@ export default function PaymentsPage() {
   const error = useAppSelector(selectAllPaymentsError(companyName));
   const totalItems = useAppSelector(selectAllPaymentsTotalItems(companyName));
   const totalPages = useAppSelector(selectAllPaymentsTotalPages(companyName));
+  const amountFormat = useAmountFormatOptions(companyName);
 
   const apiSortBy = sortFilter === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
 
   useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -81,6 +84,7 @@ export default function PaymentsPage() {
 
   const handlePaymentClick = (voucherUniqueName: string) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -117,18 +121,16 @@ export default function PaymentsPage() {
         amount: formatCurrencyAmount(
           payment.grandTotal?.amountForAccount,
           payment.accountCurrencySymbol,
-          {
-            decimals: 0,
-          }
+          amountFormat
         ),
         paymentMode: payment.paymentMode?.name ?? "",
         unusedAmount: formatCurrencyAmount(
           payment.balanceDue?.amountForAccount ?? 0,
           payment.accountCurrencySymbol,
-          { decimals: 0 }
+          amountFormat
         ),
       })),
-    [allPayments]
+    [allPayments, amountFormat]
   );
 
   const columns = useMemo(

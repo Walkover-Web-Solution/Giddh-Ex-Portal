@@ -1,4 +1,5 @@
 import { setSessionCookie } from "@/utils/cookies";
+import { userDataStorageKey, userEmailStorageKey } from "@/utils/getUserDataFromStorage";
 import { setUserData, setAccount } from "@/store/slices/companySlice";
 import type { Account, UserData } from "@/types/auth";
 import type { AppDispatch } from "@/store/store";
@@ -47,9 +48,9 @@ export async function setupUserSession({
     })
   );
 
-  localStorage.setItem("userEmail", email);
+  localStorage.setItem(userEmailStorageKey(company), email);
   localStorage.setItem(
-    "userData",
+    userDataStorageKey(company),
     JSON.stringify({
       ...fullUserData,
       companyUniqueName,
@@ -57,4 +58,7 @@ export async function setupUserSession({
       country,
     })
   );
+
+  localStorage.removeItem("userData");
+  localStorage.removeItem("userEmail");
 }

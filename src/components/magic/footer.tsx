@@ -1,7 +1,7 @@
 import type { BalanceType } from "@/constants/ledger";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { normalizeCode } from "./currencyUtils";
-import { CurrencyInfo } from "./types";
+import type { CurrencyInfo, MagicCurrencyAmountFormat } from "./types";
 
 interface FooterSummaryProps {
   totalTransactions: number;
@@ -30,6 +30,7 @@ interface FooterProps {
   convertedCurrency?: CurrencyInfo;
   /** When true, Opening and Closing balance blocks are hidden (e.g. when search/filters applied). */
   hideOpeningClosingBalance?: boolean;
+  currencyAmountFormat?: MagicCurrencyAmountFormat;
 }
 
 export function Footer({
@@ -37,10 +38,11 @@ export function Footer({
   companyCurrency,
   convertedCurrency,
   hideOpeningClosingBalance = false,
+  currencyAmountFormat,
 }: FooterProps) {
   const formatAmount = (amount: number | null, symbol?: string) => {
     if (amount === null) return "";
-    return formatCurrencyAmount(amount, symbol ?? companyCurrency?.symbol, { decimals: 2 });
+    return formatCurrencyAmount(amount, symbol ?? companyCurrency?.symbol, currencyAmountFormat);
   };
 
   const companyCode = normalizeCode(companyCurrency?.code);

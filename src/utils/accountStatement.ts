@@ -116,10 +116,6 @@ export async function downloadAccountStatement(
   return response.data;
 }
 
-export function formatCurrency(amount: number, currencySymbol: string = "₹"): string {
-  return `${currencySymbol}${Math.abs(amount).toLocaleString("en-IN")}`;
-}
-
 /** Format date string for display (dd-MM-yyyy). Re-exported from dateUtils. */
 export const formatDate = formatDateDisplay;
 

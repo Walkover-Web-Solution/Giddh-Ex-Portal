@@ -9,9 +9,11 @@ import { ArrowLeft } from "lucide-react";
 import { SidebarToggleButton } from "@/components/SidebarToggleButton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/contexts/ToastContext";
+import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { getSessionCookie } from "@/utils/cookies";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { DEFAULT_CONFIG } from "@/config/default";
+import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -65,33 +67,22 @@ export default function PaymentPreviewPage() {
   const hasSession =
     typeof window !== "undefined" && (!!sessionId || !!getSessionCookie(companyName));
 
-  const getCompanyAndAccountNames = () => {
-    let companyUniqueName = companyUniqueNameFromRedux;
-    let accountUniqueName = accountUniqueNameFromRedux;
-
-    if (!companyUniqueName || !accountUniqueName) {
-      if (typeof window !== "undefined") {
-        const userData = localStorage.getItem("userData");
-        if (userData) {
-          try {
-            const parsedData = JSON.parse(userData);
-            companyUniqueName = companyUniqueName || parsedData.companyUniqueName;
-            accountUniqueName = accountUniqueName || parsedData.account?.uniqueName;
-          } catch (e) {
-            console.error("Error parsing userData:", e);
-          }
-        }
-      }
-    }
-
-    if (!companyUniqueName) companyUniqueName = companyUniqueNameFromUrl;
-    if (!accountUniqueName) accountUniqueName = accountUniqueNameFromUrl;
-
-    return { companyUniqueName, accountUniqueName };
+  const resolveCompanyAndAccount = () => {
+    const fromStorage = getCompanyAndAccountNames(
+      companyName,
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
+    return {
+      companyUniqueName:
+        fromStorage.companyUniqueName || companyUniqueNameFromUrl || undefined,
+      accountUniqueName:
+        fromStorage.accountUniqueName || accountUniqueNameFromUrl || undefined,
+    };
   };
 
   useEffect(() => {
-    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
+    const { companyUniqueName, accountUniqueName } = resolveCompanyAndAccount();
     if (!companyUniqueName || !accountUniqueName) {
       setIsLoading(false);
       return;
@@ -117,7 +108,10 @@ export default function PaymentPreviewPage() {
         (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
           referenceId,
           theme: "light",
-          success: () => {},
+          addInfo: {
+            redirect_path: getAuthRedirectPath(country),
+          },
+          success: () => { },
           failure: (err: unknown) => console.error("[PaymentPreview Auth] Login failed:", err),
         });
       };
@@ -174,7 +168,7 @@ export default function PaymentPreviewPage() {
   };
 
   const handleDownload = async () => {
-    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames();
+    const { companyUniqueName, accountUniqueName } = resolveCompanyAndAccount();
     if (!companyUniqueName || !accountUniqueName) return;
 
     try {

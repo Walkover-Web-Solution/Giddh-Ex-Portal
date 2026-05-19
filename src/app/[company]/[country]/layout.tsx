@@ -19,6 +19,7 @@ import { Footer } from "@/components/Footer";
 import SessionGuard from "@/components/SessionGuard";
 import { mergeClassNames } from "@/lib/utils";
 import { getSessionCookie } from "@/utils/cookies";
+import { getUserDataFromStorage } from "@/utils/getUserDataFromStorage";
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
@@ -95,15 +96,10 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
     let accountUniqueName = accountUniqueNameFromRedux;
 
     if (!companyUniqueName) {
-      const userData = localStorage.getItem("userData");
-      if (userData) {
-        try {
-          const parsedData = JSON.parse(userData);
-          companyUniqueName = parsedData.companyUniqueName;
-          accountUniqueName = parsedData.account?.uniqueName ?? accountUniqueName;
-        } catch (e) {
-          console.error("Error parsing userData:", e);
-        }
+      const parsedData = getUserDataFromStorage(companyName);
+      if (parsedData) {
+        companyUniqueName = parsedData.companyUniqueName ?? companyUniqueName;
+        accountUniqueName = parsedData.account?.uniqueName ?? accountUniqueName;
       }
     }
 

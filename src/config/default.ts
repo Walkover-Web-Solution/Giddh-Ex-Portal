@@ -28,6 +28,10 @@ export interface GiddhWhiteLabel {
   brandName?: string;
 }
 
+export interface PortalMessagesConfig {
+  switchAccountAuthError?: string;
+}
+
 export interface WhiteLabelConfig {
   proxyApiUrl?: string;
   proxyApiUrlUk?: string;
@@ -35,12 +39,16 @@ export interface WhiteLabelConfig {
   proxyReferenceIdUk?: string;
   proxyUrl?: string;
   websiteDomain?: string;
+  brandName?: string;
+  logos?: LogoConfig;
   giddhWhiteLabel?: GiddhWhiteLabel;
+  portalMessages?: PortalMessagesConfig;
 }
 
 export interface AppConfig {
   REFERENCE_ID: string;
   GIDDH_API_URL: string;
+  GIDDH_API_URL_UK: string;
   REFERENCE_ID_UK: string;
   API_URL_UK: string;
   PROXY_URL: string;
@@ -49,7 +57,16 @@ export interface AppConfig {
   WEBSITE_DOMAIN: string;
   BRAND_NAME: string;
   LOGOS: LogoConfig;
+  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: string;
 }
+
+/** Default portal copy — add new user-facing strings here. */
+export const PORTAL_MESSAGES = {
+  SWITCH_ACCOUNT_AUTH_ERROR:
+    "Authentication data not found. Please log in again.",
+} as const;
+
+export type PortalMessageKey = keyof typeof PORTAL_MESSAGES;
 
 const PROD_CONFIG: AppConfig = {
   REFERENCE_ID: "117230e170290843965805217bfd25",
@@ -57,16 +74,18 @@ const PROD_CONFIG: AppConfig = {
   REFERENCE_ID_UK: "117230d172709659666f16714325b0",
   API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2",
   GIDDH_API_URL: "https://api.giddh.com",
+  GIDDH_API_URL_UK: "https://gbapi.giddh.com",
   PROXY_URL: "https://routes.msg91.com",
   PAYPAL_URL: "https://www.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://giddh.com",
   BRAND_NAME: "Giddh",
+  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: PORTAL_MESSAGES.SWITCH_ACCOUNT_AUTH_ERROR,
   LOGOS: {
     primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
     dark: "giddh-logo-light.png",
     icon: "giddh-square.logo",
-    favicon: "favicon.ico",
+    favicon: "/icons/giddh_app_icon.svg",
   },
 };
 
@@ -76,16 +95,18 @@ const NON_PROD_CONFIG: AppConfig = {
   REFERENCE_ID_UK: "117230d172709659666f16714325b0",
   API_URL_UK: "https://routes.msg91.com/api/proxy/117230/34ytsup2",
   GIDDH_API_URL: "https://apitest.giddh.com",
+  GIDDH_API_URL_UK: "https://gbapi.giddh.com",
   PROXY_URL: "https://routes.msg91.com",
   PAYPAL_URL: "https://www.sandbox.paypal.com/cgi-bin/webscr",
   WEBSITE_DOMAIN: "https://web.giddh.com",
   BRAND_NAME: "Giddh",
+  SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: PORTAL_MESSAGES.SWITCH_ACCOUNT_AUTH_ERROR,
   LOGOS: {
     primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
     dark: "giddh-logo-light.png",
     icon: "giddh-square.logo",
-    favicon: "favicon.ico",
+    favicon: "/icons/giddh_app_icon.svg",
   },
 };
 
@@ -103,6 +124,8 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
 
   const giddhWhiteLabel = whiteLabel.giddhWhiteLabel;
 
+  const apiSwitchAccountMsg = whiteLabel.portalMessages?.switchAccountAuthError?.trim();
+
   return {
     ...DEFAULT_CONFIG,
     PROXY_URL: whiteLabel.proxyUrl || DEFAULT_CONFIG.PROXY_URL,
@@ -112,8 +135,10 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
     REFERENCE_ID_UK: whiteLabel.proxyReferenceIdUk || DEFAULT_CONFIG.REFERENCE_ID_UK,
     WEBSITE_DOMAIN: whiteLabel.websiteDomain || DEFAULT_CONFIG.WEBSITE_DOMAIN,
     GIDDH_API_URL: giddhWhiteLabel?.apiDomain || DEFAULT_CONFIG.GIDDH_API_URL,
-    BRAND_NAME: giddhWhiteLabel?.brandName || DEFAULT_CONFIG.BRAND_NAME,
-    LOGOS: giddhWhiteLabel?.logos || DEFAULT_CONFIG.LOGOS,
+    BRAND_NAME: whiteLabel.brandName || DEFAULT_CONFIG.BRAND_NAME,
+    LOGOS: whiteLabel.logos || DEFAULT_CONFIG.LOGOS,
+    SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE:
+      apiSwitchAccountMsg || DEFAULT_CONFIG.SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
   };
 }
 

@@ -1,5 +1,12 @@
 import { LedgerView, type LedgerTransactionType } from "@/constants/ledger";
-import { Transaction, Currency, ViewMode, CurrencyInfo, ForwardedBalanceShape } from "./types";
+import {
+  Transaction,
+  Currency,
+  ViewMode,
+  CurrencyInfo,
+  ForwardedBalanceShape,
+  type MagicCurrencyAmountFormat,
+} from "./types";
 import { StatementViewTable, type LedgerTotals } from "./StatementViewTable";
 import { TAccountViewTable } from "./TAccountViewTable";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
@@ -29,6 +36,7 @@ interface LedgerTableProps {
   ledgerTotals?: LedgerTotals;
   pagination?: LedgerTablePaginationProps;
   hideOpeningClosingBalance?: boolean;
+  currencyAmountFormat?: MagicCurrencyAmountFormat;
 }
 
 export function LedgerTable({
@@ -47,6 +55,7 @@ export function LedgerTable({
   ledgerTotals,
   pagination,
   hideOpeningClosingBalance,
+  currencyAmountFormat,
 }: LedgerTableProps) {
   if (viewMode === LedgerView.STATEMENT_VIEW) {
     return (
@@ -61,6 +70,7 @@ export function LedgerTable({
         convertedCurrency={convertedCurrency}
         linkId={linkId}
         hideOpeningClosingBalance={hideOpeningClosingBalance}
+        currencyAmountFormat={currencyAmountFormat}
       />
     );
   }
@@ -79,6 +89,7 @@ export function LedgerTable({
         transactionCurrency={transactionCurrency}
         convertedCurrency={convertedCurrency}
         linkId={linkId}
+        currencyAmountFormat={currencyAmountFormat}
       />
       {pagination && (
         <Pagination

@@ -26,10 +26,10 @@ function getStoredWhiteLabel(): WhiteLabelConfig | null {
 }
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const storedWhiteLabel = getStoredWhiteLabel();
-  const initialConfig = mergeWhiteLabelConfig(storedWhiteLabel);
-
-  const [config, setConfig] = useState<AppConfig>(initialConfig);
+  const [config, setConfig] = useState<AppConfig>(() => {
+    if (typeof window === "undefined") return DEFAULT_CONFIG;
+    return mergeWhiteLabelConfig(getStoredWhiteLabel());
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -40,9 +40,14 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       let whiteLabelData = getStoredWhiteLabel();
 
       const pathname = window.location.pathname;
+      const pathSegments = pathname.split("/").filter(Boolean);
+      const country = pathSegments[1]?.toLowerCase();
+      const apiBaseUrl =
+        country === "uk" ? DEFAULT_CONFIG.GIDDH_API_URL_UK : DEFAULT_CONFIG.GIDDH_API_URL;
+
       if (pathname !== "/magic" && pathname !== "/magic.html") {
         try {
-          const response = await fetch(`${DEFAULT_CONFIG.GIDDH_API_URL}/white-label`);
+          const response = await fetch(`${apiBaseUrl}/white-label`);
           const data = await response.json();
 
           if (data?.body) {

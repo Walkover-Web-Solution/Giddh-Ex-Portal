@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
-import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
+import {
+  selectCompanyUniqueName,
+  selectAccountUniqueName,
+} from "@/store/slices/companySlice";
 import {
   getPaymentMethods,
   getInvoicePayVoucherDetails,
@@ -21,7 +24,10 @@ import { PayNow } from "@/components/PayNow";
 import { Button } from "@/components/ui/button";
 import { ApiResponseStatus } from "@/utils/proxy/types";
 import { useToast } from "@/contexts/ToastContext";
+import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
 import { getSessionCookie } from "@/utils/cookies";
+import { formatCurrencyAmount } from "@/utils/currency";
+import { useAmountFormatOptions } from "@/hooks/useAmountFormatOptions";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -67,6 +73,7 @@ export default function InvoicePayPage() {
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
+  const amountFormat = useAmountFormatOptions(companyName);
 
   useEffect(() => {
     const token = searchParams.get("proxy_auth_token");
@@ -105,8 +112,8 @@ export default function InvoicePayPage() {
   const isRefetchingAfterPaymentRef = useRef(false);
 
   const getNames = useCallback(() => {
-    return getStorageNames(companyUniqueNameFromRedux, accountUniqueNameFromRedux);
-  }, [companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
+    return getStorageNames(companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux);
+  }, [companyName, companyUniqueNameFromRedux, accountUniqueNameFromRedux]);
 
   const accountUniqueName = accountUniqueNameParam || getNames().accountUniqueName;
   const companyUniqueName = searchParams.get("companyUniqueName") || getNames().companyUniqueName;
@@ -132,7 +139,10 @@ export default function InvoicePayPage() {
         (window as unknown as { initVerification?: (opts: unknown) => void }).initVerification?.({
           referenceId,
           theme: "light",
-          success: () => {},
+          addInfo: {
+            redirect_path: getAuthRedirectPath(country),
+          },
+          success: () => { },
           failure: (err: unknown) => console.error("[InvoicePay Auth] Login failed:", err),
         });
       };
@@ -324,8 +334,8 @@ export default function InvoicePayPage() {
           status === 403
             ? "Access denied. Your session may have expired—please sign in again."
             : axiosErr?.response?.data?.message ||
-              axiosErr?.message ||
-              "Failed to fetch voucher details";
+            axiosErr?.message ||
+            "Failed to fetch voucher details";
         console.error("[InvoicePay] Voucher details error:", err);
         showToast(msg);
       }
@@ -391,7 +401,6 @@ export default function InvoicePayPage() {
 
   const vouchers = paymentDetails?.vouchers ?? [];
   const singleVoucher = vouchers.length === 1 ? vouchers[0] : null;
-  const currency = paymentDetails?.currency?.symbol ?? "";
   const totalAmount = paymentDetails?.totalAmount ?? 0;
 
   if (isLoading) {
@@ -456,9 +465,8 @@ export default function InvoicePayPage() {
                     Balance Due
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
-                    {currency}{" "}
-                    {Number(singleVoucher.amount).toLocaleString("en-IN", {
-                      maximumFractionDigits: 0,
+                    {formatCurrencyAmount(singleVoucher.amount, paymentDetails?.currency, {
+                      ...amountFormat,
                     })}
                   </p>
                 </div>
@@ -478,8 +486,9 @@ export default function InvoicePayPage() {
                   <div>
                     <p className="text-xs text-gray-500">Total Amount</p>
                     <p className="mt-1 text-lg font-semibold">
-                      {currency}{" "}
-                      {Number(totalAmount).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                      {formatCurrencyAmount(totalAmount, paymentDetails?.currency, {
+                        ...amountFormat,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -501,8 +510,9 @@ export default function InvoicePayPage() {
                         <span>{v.number}</span>
                         <span>{v.dueDate ?? ""}</span>
                         <span className="text-right">
-                          {currency}
-                          {Number(v.amount).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                          {formatCurrencyAmount(v.amount, paymentDetails?.currency, {
+                            ...amountFormat,
+                          })}
                         </span>
                       </div>
                     ))}

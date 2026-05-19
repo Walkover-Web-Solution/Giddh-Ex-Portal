@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
-import { selectCompanyUniqueName, selectAccountUniqueName } from "@/store/slices/companySlice";
+import {
+  selectCompanyUniqueName,
+  selectAccountUniqueName,
+} from "@/store/slices/companySlice";
 import {
   getVoucherDetails,
   getInvoiceComments,
@@ -22,7 +25,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import { DEFAULT_CONFIG } from "@/config/default";
 import { getSessionCookie } from "@/utils/cookies";
+import { getUserDataFromStorage } from "@/utils/getUserDataFromStorage";
 import { useToast } from "@/contexts/ToastContext";
+import { getAuthRedirectPath } from "@/utils/auth/getAuthRedirectPath";
+import { formatCurrencyAmount } from "@/utils/currency";
+import { useAmountFormatOptions } from "@/hooks/useAmountFormatOptions";
 
 function AuthHeader({ referenceId }: { referenceId: string }) {
   return (
@@ -57,6 +64,7 @@ export default function InvoicePreviewPage() {
 
   const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(companyName));
   const accountUniqueNameFromRedux = useAppSelector(selectAccountUniqueName(companyName));
+  const amountFormat = useAmountFormatOptions(companyName);
 
   const { referenceId: configReferenceId } = useAppConfig();
   const referenceId = configReferenceId?.trim() || DEFAULT_CONFIG.REFERENCE_ID;
@@ -98,6 +106,9 @@ export default function InvoicePreviewPage() {
         (window as any).initVerification?.({
           referenceId,
           theme: "light",
+          addInfo: {
+            redirect_path: getAuthRedirectPath(country),
+          },
           success: () => console.log("[Preview Auth] Login initialized successfully"),
           failure: (err: unknown) => console.error("[Preview Auth] Login failed:", err),
         });
@@ -132,15 +143,10 @@ export default function InvoicePreviewPage() {
     let accountUniqueName = accountUniqueNameFromRedux;
 
     if ((!companyUniqueName || !accountUniqueName) && typeof window !== "undefined") {
-      const stored = localStorage.getItem("userData");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          companyUniqueName ||= parsed.companyUniqueName;
-          accountUniqueName ||= parsed.account?.uniqueName;
-        } catch {
-          // Skip invalid userData; continue with Redux or URL params
-        }
+      const parsed = getUserDataFromStorage(companyName);
+      if (parsed) {
+        companyUniqueName = companyUniqueName ?? parsed.companyUniqueName ?? null;
+        accountUniqueName = accountUniqueName ?? parsed.account?.uniqueName ?? null;
       }
     }
 
@@ -455,9 +461,8 @@ export default function InvoicePreviewPage() {
                     Balance Due
                   </span>
                   <p className="mt-1 text-2xl font-bold text-gray-900">
-                    {paymentDetails?.currency?.symbol}{" "}
-                    {Number(voucher.amount).toLocaleString("en-IN", {
-                      maximumFractionDigits: 0,
+                    {formatCurrencyAmount(voucher.amount, paymentDetails?.currency, {
+                      ...amountFormat,
                     })}
                   </p>
                 </div>

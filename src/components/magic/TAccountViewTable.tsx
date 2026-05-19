@@ -5,7 +5,13 @@ import {
   LEDGER_TYPE_DEBIT,
   type LedgerTransactionType,
 } from "@/constants/ledger";
-import { Transaction, Currency, CurrencyInfo, ForwardedBalanceShape } from "./types";
+import {
+  Transaction,
+  Currency,
+  CurrencyInfo,
+  ForwardedBalanceShape,
+  type MagicCurrencyAmountFormat,
+} from "./types";
 import { formatCurrencyAmount } from "@/utils/currency";
 import { LedgerTransaction } from "@/utils/magic/getMagicLinkLedger";
 import { useMemo, useState } from "react";
@@ -42,6 +48,7 @@ interface Props {
   transactionCurrency?: CurrencyInfo;
   convertedCurrency?: CurrencyInfo;
   linkId: string;
+  currencyAmountFormat?: MagicCurrencyAmountFormat;
 }
 
 export function TAccountViewTable({
@@ -56,6 +63,7 @@ export function TAccountViewTable({
   transactionCurrency,
   convertedCurrency,
   linkId,
+  currencyAmountFormat,
 }: Props) {
   const balanceBfSide = balanceBfType ?? forwardedBalance?.type;
   const { showToast } = useToast();
@@ -151,7 +159,7 @@ export function TAccountViewTable({
 
   const format = (amount: number | null, symbol?: string) => {
     if (amount === null) return "";
-    return formatCurrencyAmount(amount, symbol || "₹", { decimals: 2 });
+    return formatCurrencyAmount(amount, symbol, currencyAmountFormat);
   };
 
   const truncateParticular = (text: string) =>

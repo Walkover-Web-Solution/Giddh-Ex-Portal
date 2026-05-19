@@ -20,6 +20,7 @@ import {
 } from "@/store/slices/companySlice";
 import { TableSkeleton } from "@/components/skeletons/TableSkeleton";
 import { formatCurrencyAmount } from "@/utils/currency";
+import { useAmountFormatOptions } from "@/hooks/useAmountFormatOptions";
 import { downloadBase64AsPDF } from "@/utils/fileUtils";
 import downloadInvoice from "@/utils/downloadInvoice";
 import { getCompanyAndAccountNames } from "@/utils/getUserDataFromStorage";
@@ -65,12 +66,20 @@ export default function InvoicesPage() {
   const error = useAppSelector(selectAllInvoicesError(companyName));
   const totalItems = useAppSelector(selectAllInvoicesTotalItems(companyName));
   const totalPages = useAppSelector(selectAllInvoicesTotalPages(companyName));
+  const amountFormat = useAmountFormatOptions(companyName);
 
   const apiSortBy = sortBy === "Date" ? invoiceSortBy.voucherDate : invoiceSortBy.grandTotal;
   const lastKeyRef = useRef("");
 
   useEffect(() => {
+    if (loading) {
+      setDirectPayInvoiceId(null);
+    }
+  }, [loading]);
+
+  useEffect(() => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -103,6 +112,7 @@ export default function InvoicesPage() {
 
   const handleInvoiceClick = (invoiceUniqueName: string) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -117,6 +127,7 @@ export default function InvoicesPage() {
   const navigateToInvoicePay = useCallback(
     (invoiceUniqueName: string) => {
       const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+        companyName,
         companyUniqueNameFromRedux,
         accountUniqueNameFromRedux
       );
@@ -144,6 +155,7 @@ export default function InvoicesPage() {
     e.stopPropagation();
 
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -207,6 +219,7 @@ export default function InvoicesPage() {
     balanceStatusOverride?: string[]
   ) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -231,6 +244,7 @@ export default function InvoicesPage() {
 
   const refetchInvoicesWithStatus = (newStatusFilter: StatusFilterValue) => {
     const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
       companyUniqueNameFromRedux,
       accountUniqueNameFromRedux
     );
@@ -270,21 +284,11 @@ export default function InvoicesPage() {
     statusFilter !== "All Invoices" || sortBy !== "Date" || sortDirection !== SortOrder.DESC;
 
   const handleDownloadInvoice = async (invoiceUniqueName: string, invoiceNumber: string) => {
-    let companyUniqueName = companyUniqueNameFromRedux;
-    let accountUniqueName = accountUniqueNameFromRedux;
-
-    if (!companyUniqueName && typeof window !== "undefined") {
-      const userData = localStorage.getItem("userData");
-      if (userData) {
-        try {
-          const parsedData = JSON.parse(userData);
-          companyUniqueName = parsedData.companyUniqueName;
-          accountUniqueName = parsedData.account?.uniqueName;
-        } catch (e) {
-          console.error("Error parsing userData:", e);
-        }
-      }
-    }
+    const { companyUniqueName, accountUniqueName } = getCompanyAndAccountNames(
+      companyName,
+      companyUniqueNameFromRedux,
+      accountUniqueNameFromRedux
+    );
 
     if (!companyUniqueName || !accountUniqueName) {
       console.error("Missing company or account unique name");
@@ -337,20 +341,22 @@ export default function InvoicesPage() {
             id: invoice.uniqueName ?? "",
             invoiceNo: invoice.voucherNumber ?? "",
             date: invoice.voucherDate ?? "",
-            total: formatCurrencyAmount(invoice.grandTotal?.amountForAccount, totalCurrency, {
-              decimals: 0,
-            }),
+            total: formatCurrencyAmount(
+              invoice.grandTotal?.amountForAccount,
+              totalCurrency,
+              amountFormat
+            ),
             status: status || InvoiceBalanceStatus.UNKNOWN,
             overdue:
               status === InvoiceBalanceStatus.PAID ||
-              status === InvoiceBalanceStatus.HOLD ||
-              status === InvoiceBalanceStatus.CANCEL
+                status === InvoiceBalanceStatus.HOLD ||
+                status === InvoiceBalanceStatus.CANCEL
                 ? "-"
                 : overdueFormatted,
             showPayNow,
           };
         }),
-    [allInvoices, validBalanceStatuses]
+    [allInvoices, validBalanceStatuses, amountFormat]
   );
 
   const invoicesData = allInvoicesData;
@@ -416,13 +422,12 @@ export default function InvoicesPage() {
       header: "Status",
       accessor: (row: Invoice) => (
         <span
-          className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-            row.status === "PENDING"
-              ? "bg-amber-100 text-amber-800"
-              : row.status === InvoiceBalanceStatus.PAID
-                ? "bg-green-100 text-green-800"
-                : "bg-orange-100 text-orange-800"
-          }`}
+          className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${row.status === "PENDING"
+            ? "bg-amber-100 text-amber-800"
+            : row.status === InvoiceBalanceStatus.PAID
+              ? "bg-green-100 text-green-800"
+              : "bg-orange-100 text-orange-800"
+            }`}
         >
           {row.status}
         </span>

@@ -15,6 +15,8 @@ import { TIMING } from "@/constants/timing";
 import type { Account } from "@/types/auth";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { mergeClassNames } from "@/lib/utils";
+import { getUserDataFromStorage, getUserEmailFromStorage } from "@/utils/getUserDataFromStorage";
+import { useAppConfig } from "@/hooks/useAppConfig";
 
 // Module-level cache: keyed by company slug, persists across page navigations
 const accountsCache: Record<string, Account[]> = {};
@@ -23,6 +25,7 @@ export function SwitchAccountButton() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { switchAccountAuthErrorMessage } = useAppConfig();
   const company = params?.company as string;
   const country = params?.country as string;
   const currentAccountUniqueName = useAppSelector(selectAccountUniqueName(company));
@@ -64,15 +67,15 @@ export function SwitchAccountButton() {
     setError(null);
 
     try {
-      const email = localStorage.getItem("userEmail");
+      const email = getUserEmailFromStorage(company);
       const proxyToken = localStorage.getItem("proxy_auth_token");
 
       if (!email || !proxyToken) {
-        setError("Authentication data not found. Please log in again.");
+        setError(switchAccountAuthErrorMessage);
         setFetchingAccounts(false);
         return;
       }
-      const verifyResponse = await verifyPortalUser(email, company, proxyToken);
+      const verifyResponse = await verifyPortalUser(email, company, proxyToken, country);
 
       if (verifyResponse.status === ApiResponseStatus.SUCCESS && verifyResponse.body?.length > 0) {
         accountsCache[company] = verifyResponse.body;
@@ -117,10 +120,10 @@ export function SwitchAccountButton() {
 
     try {
       const proxyToken = localStorage.getItem("proxy_auth_token");
-      const email = localStorage.getItem("userEmail");
+      const email = getUserEmailFromStorage(company);
 
       if (!proxyToken || !email) {
-        setError("Authentication data not found. Please log in again.");
+        setError(switchAccountAuthErrorMessage);
         setLoading(false);
         isProcessing.current = false;
         return;
@@ -130,7 +133,8 @@ export function SwitchAccountButton() {
         selectedAccount.account,
         selectedAccount.vendorContactUniqueName,
         proxyToken,
-        company
+        company,
+        country
       );
 
       if (sessionResponse.status === "success") {
@@ -205,7 +209,7 @@ export function SwitchAccountButton() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-10 mt-2 w-64 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none">
+        <div className="absolute right-0 z-10 mt-2 w-64 max-w-[min(16rem,calc(100vw-2rem))] origin-top-right overflow-visible rounded-md bg-white shadow-lg ring-1 ring-black/5 transition focus:outline-none">
           <div className="py-1">
             {error && (
               <div className="px-4 py-2">
@@ -220,31 +224,47 @@ export function SwitchAccountButton() {
             ) : accounts.length > 0 ? (
               <div className="space-y-0">
                 {accounts.map((account, index) => {
+                  const isLastAccount = index === accounts.length - 1;
+                  const storedAccount =
+                    typeof window !== "undefined" ? getUserDataFromStorage(company) : null;
                   const isCurrentAccount =
                     account.account.uniqueName === currentAccountUniqueName ||
                     (!currentAccountUniqueName &&
-                      typeof window !== "undefined" &&
-                      account.account.uniqueName ===
-                        JSON.parse(localStorage.getItem("userData") || "{}")?.account?.uniqueName);
+                      account.account.uniqueName === storedAccount?.account?.uniqueName);
                   return (
-                    <button
-                      key={index}
-                      onClick={() => handleAccountSelect(account)}
-                      disabled={loading || isCurrentAccount}
-                      className={mergeClassNames(
-                        "block w-full px-4 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50",
-                        isCurrentAccount
-                          ? "bg-indigo-50 font-medium text-indigo-700"
-                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none"
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>{account.account.name}</span>
-                        {isCurrentAccount && (
-                          <span className="text-xs text-indigo-600">Current</span>
+                    <div key={index} className="group/acct-item relative w-full">
+                      <span
+                        className={mergeClassNames(
+                          "pointer-events-none absolute left-4 z-[100] max-w-[min(14rem,calc(100vw-2rem))] break-words rounded bg-gray-800 px-2 py-1 text-left text-xs font-medium text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover/acct-item:opacity-100",
+                          isLastAccount ? "bottom-full mb-1" : "top-full mt-1"
                         )}
-                      </div>
-                    </button>
+                        role="tooltip"
+                      >
+                        {account.account.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleAccountSelect(account)}
+                        disabled={loading || isCurrentAccount}
+                        className={mergeClassNames(
+                          "block w-full px-4 py-2 text-left text-sm disabled:cursor-not-allowed disabled:opacity-50",
+                          isCurrentAccount
+                            ? "bg-indigo-50 font-medium text-indigo-700"
+                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 focus:outline-none"
+                        )}
+                      >
+                        <div className="flex min-w-0 items-start justify-between gap-2">
+                          <span className="min-w-0 flex-1 break-words text-left line-clamp-2 [overflow-wrap:anywhere]">
+                            {account.account.name}
+                          </span>
+                          {isCurrentAccount && (
+                            <span className="shrink-0 whitespace-nowrap text-xs text-indigo-600">
+                              Current
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
