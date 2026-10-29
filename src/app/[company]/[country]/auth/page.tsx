@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { savePortalSession } from "@/utils/proxy/saveSession";
+import type { VerifyPortalUserProvider } from "@/utils/auth/verifyPortalUserByAccessToken";
 import { useAppDispatch } from "@/store/hooks";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { sessionManager } from "@/utils/sessionManager";
@@ -25,17 +26,19 @@ export default function AuthPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
+  const [tokenType, setTokenType] = useState<"proxy" | "accessToken">("proxy");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isProcessing = useRef(false);
 
   useEffect(() => {
     const pendingAuth = sessionManager.getPendingAuth();
-
+    
     if (pendingAuth) {
       setAccounts(pendingAuth.accounts);
       setToken(pendingAuth.token);
       setEmail(pendingAuth.email);
+      setTokenType(pendingAuth.tokenType);
     } else {
       router.push(`/${company}/${country}/login`);
     }
@@ -50,17 +53,21 @@ export default function AuthPage() {
     setError(null);
 
     try {
-      // Store proxy token for account switching
+      // Store token for account switching (SwitchAccountButton/PayNow rely on this key)
       if (token) {
         localStorage.setItem("proxy_auth_token", token);
       }
 
+      const authProvider = localStorage.getItem("authProvider") as VerifyPortalUserProvider | null;
+
       const sessionResponse = await savePortalSession(
         selectedAccount.account,
         selectedAccount.vendorContactUniqueName,
-        token,
+        tokenType === "proxy" ? token : undefined,
         company,
-        country
+        country,
+        tokenType === "accessToken" ? token : undefined,
+        tokenType === "accessToken" ? (authProvider ?? "google") : undefined
       );
 
       if (sessionResponse.status === "success") {

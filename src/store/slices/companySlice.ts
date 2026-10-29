@@ -11,6 +11,8 @@ import getLastPayment, { PaymentVoucher } from "@/utils/getLastPayment";
 import { CompanyData } from "@/types/company";
 import getCompanyDetails from "@/utils/getCompanyDetails";
 import getInvoiceList, { InvoiceVoucher } from "@/utils/getInvoiceList";
+import getVendorsList from "@/utils/getVendorsList";
+import type { Account as VendorAccount } from "@/types/auth";
 
 interface Currency {
   code: string;
@@ -102,6 +104,13 @@ interface CompanyAddressState {
   error: string | null;
 }
 
+interface VendorsListState {
+  data: VendorAccount[] | null;
+  loading: boolean;
+  error: string | null;
+  lastFetchTimestamp?: number;
+}
+
 interface CompanyInfo {
   companyName: string;
   country: string;
@@ -117,6 +126,7 @@ interface CompanyInfo {
   allInvoices?: AllInvoicesState;
   userDetails?: UserDetailsState;
   companyAddress?: CompanyAddressState;
+  vendorsList?: VendorsListState;
 }
 
 export interface CompanyState {
@@ -242,6 +252,24 @@ export const fetchAccountsList = createAsyncThunk(
     accountUniqueName: string;
   }) => {
     const response = await getAccountsList(companyUniqueName, accountUniqueName);
+    return { companyName, data: response.body };
+  }
+);
+
+export const fetchVendorsList = createAsyncThunk(
+  "companies/fetchVendorsList",
+  async ({
+    companyName,
+    companyUniqueName,
+    emailId,
+    accountUniqueName
+  }: {
+    companyName: string;
+    companyUniqueName: string;
+    emailId:string;
+    accountUniqueName:string;
+  }) => {
+    const response = await getVendorsList(companyUniqueName,emailId,accountUniqueName);
     return { companyName, data: response.body };
   }
 );
@@ -561,6 +589,37 @@ export const companySlice = createSlice({
           };
         }
       })
+      .addCase(fetchVendorsList.pending, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].vendorsList = {
+            data: state[companyName].vendorsList?.data || null,
+            loading: true,
+            error: null,
+          };
+        }
+      })
+      .addCase(fetchVendorsList.fulfilled, (state, action) => {
+        const { companyName, data } = action.payload;
+        if (state[companyName]) {
+          state[companyName].vendorsList = {
+            data,
+            loading: false,
+            error: null,
+            lastFetchTimestamp: Date.now(),
+          };
+        }
+      })
+      .addCase(fetchVendorsList.rejected, (state, action) => {
+        const { companyName } = action.meta.arg;
+        if (state[companyName]) {
+          state[companyName].vendorsList = {
+            data: state[companyName].vendorsList?.data || null,
+            loading: false,
+            error: action.error.message || "Failed to fetch vendors list",
+          };
+        }
+      })
       .addCase(fetchAllPayments.pending, (state, action) => {
         const { companyName } = action.meta.arg;
         if (state[companyName]) {
@@ -794,6 +853,13 @@ export const selectAccountsListLoading = (companyName: string) => (state: RootSt
   state.companies[companyName]?.accountsList?.loading || false;
 export const selectAccountsListError = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.accountsList?.error || null;
+
+export const selectVendorsList = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.vendorsList?.data || null;
+export const selectVendorsListLoading = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.vendorsList?.loading || false;
+export const selectVendorsListError = (companyName: string) => (state: RootState) =>
+  state.companies[companyName]?.vendorsList?.error || null;
 
 export const selectAllPayments = (companyName: string) => (state: RootState) =>
   state.companies[companyName]?.allPayments?.data || null;

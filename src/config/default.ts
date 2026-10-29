@@ -43,6 +43,9 @@ export interface WhiteLabelConfig {
   logos?: LogoConfig;
   giddhWhiteLabel?: GiddhWhiteLabel;
   portalMessages?: PortalMessagesConfig;
+  otpWidgetIdWeb?: string;
+  otpWidgetTokenWeb?: string;
+  googleClientId?:string;
 }
 
 export interface AppConfig {
@@ -58,6 +61,9 @@ export interface AppConfig {
   BRAND_NAME: string;
   LOGOS: LogoConfig;
   SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: string;
+  GOOGLE_CLIENT_ID: string;
+  OTP_WIDGET_ID: string;
+  OTP_WIDGET_TOKEN: string;
 }
 
 /** Default portal copy — add new user-facing strings here. */
@@ -80,6 +86,9 @@ const PROD_CONFIG: AppConfig = {
   WEBSITE_DOMAIN: "https://giddh.com",
   BRAND_NAME: "Giddh",
   SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: PORTAL_MESSAGES.SWITCH_ACCOUNT_AUTH_ERROR,
+  GOOGLE_CLIENT_ID: "641015054140-uj0d996itggsesgn4okg09jtn8mp0omu.apps.googleusercontent.com",
+  OTP_WIDGET_ID: "33686b716134333831313239",
+  OTP_WIDGET_TOKEN: "205968TmXguUAwoD633af103P1",
   LOGOS: {
     primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
@@ -101,6 +110,9 @@ const NON_PROD_CONFIG: AppConfig = {
   WEBSITE_DOMAIN: "https://web.giddh.com",
   BRAND_NAME: "Giddh",
   SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE: PORTAL_MESSAGES.SWITCH_ACCOUNT_AUTH_ERROR,
+  GOOGLE_CLIENT_ID: "641015054140-uj0d996itggsesgn4okg09jtn8mp0omu.apps.googleusercontent.com",
+  OTP_WIDGET_ID: "33686b716134333831313239",
+  OTP_WIDGET_TOKEN: "205968TmXguUAwoD633af103P1",
   LOGOS: {
     primary: "/icons/giddh_text_icon.svg",
     light: "giddh-logo-dark.png",
@@ -129,7 +141,7 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
   return {
     ...DEFAULT_CONFIG,
     PROXY_URL: whiteLabel.proxyUrl || DEFAULT_CONFIG.PROXY_URL,
-    API_URL: whiteLabel.proxyApiUrl || DEFAULT_CONFIG.API_URL,
+    API_URL: whiteLabel?.giddhWhiteLabel?.apiDomain || DEFAULT_CONFIG.API_URL,
     API_URL_UK: whiteLabel.proxyApiUrlUk || DEFAULT_CONFIG.API_URL_UK,
     REFERENCE_ID: whiteLabel.proxyReferenceId || DEFAULT_CONFIG.REFERENCE_ID,
     REFERENCE_ID_UK: whiteLabel.proxyReferenceIdUk || DEFAULT_CONFIG.REFERENCE_ID_UK,
@@ -137,6 +149,9 @@ export function mergeWhiteLabelConfig(whiteLabel: WhiteLabelConfig | null): AppC
     GIDDH_API_URL: giddhWhiteLabel?.apiDomain || DEFAULT_CONFIG.GIDDH_API_URL,
     BRAND_NAME: whiteLabel.brandName || DEFAULT_CONFIG.BRAND_NAME,
     LOGOS: whiteLabel.logos || DEFAULT_CONFIG.LOGOS,
+    OTP_WIDGET_ID: whiteLabel.otpWidgetIdWeb || DEFAULT_CONFIG.OTP_WIDGET_ID,
+    OTP_WIDGET_TOKEN: whiteLabel.otpWidgetTokenWeb || DEFAULT_CONFIG.OTP_WIDGET_TOKEN,
+    GOOGLE_CLIENT_ID: whiteLabel.googleClientId || DEFAULT_CONFIG.GOOGLE_CLIENT_ID,
     SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE:
       apiSwitchAccountMsg || DEFAULT_CONFIG.SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
   };
