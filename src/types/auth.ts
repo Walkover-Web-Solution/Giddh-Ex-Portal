@@ -4,6 +4,11 @@ export interface Account {
     uniqueName: string;
   };
   vendorContactUniqueName: string;
+  email?: string;
+  companyUniqueName?: string;
+  session?: {
+    id: string;
+  };
 }
 
 export interface UserData {
