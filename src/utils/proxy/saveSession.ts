@@ -1,6 +1,7 @@
 import axios from "axios";
 import { PROXY_API_PATHS } from "@/constants/apiPaths";
 import { getConfig } from "@/config";
+import type { VerifyPortalUserProvider } from "@/utils/auth/verifyPortalUserByAccessToken";
 
 interface SaveSessionRequest {
   account: {
@@ -8,7 +9,9 @@ interface SaveSessionRequest {
     uniqueName: string;
   };
   vendorContactUniqueName: string;
-  proxyAuthToken: string;
+  proxyAuthToken?: string;
+  accessToken?: string;
+  otpAccessToken?: string;
   subDomain: string;
 }
 
@@ -27,9 +30,11 @@ interface SaveSessionResponse {
 export const savePortalSession = async (
   account: { name: string; uniqueName: string },
   vendorContactUniqueName: string,
-  proxyAuthToken: string,
+  proxyAuthToken: string | undefined,
   subDomain: string,
-  country?: string
+  country?: string,
+  accessToken?: string,
+  provider?: VerifyPortalUserProvider
 ): Promise<SaveSessionResponse> => {
   const config = getConfig();
   const rawUrl = country === "uk" ? config.API_URL_UK : config.API_URL;
@@ -38,8 +43,9 @@ export const savePortalSession = async (
   const requestBody: SaveSessionRequest = {
     account,
     vendorContactUniqueName,
-    proxyAuthToken,
     subDomain,
+    ...(proxyAuthToken ? { proxyAuthToken } : {}),
+    ...(accessToken && provider !== "otp" ? { accessToken } : {}),
   };
 
   const url = `${baseUrl}/${PROXY_API_PATHS.SAVE_SESSION}`;

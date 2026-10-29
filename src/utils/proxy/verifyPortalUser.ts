@@ -24,7 +24,7 @@ export const verifyPortalUser = async (
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        proxy_auth_token: token,
+        // proxy_auth_token: token,
       },
     }
   );
