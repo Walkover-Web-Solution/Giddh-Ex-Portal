@@ -20,7 +20,6 @@ import { openOtpWidget } from "@/utils/auth/msg91OtpWidget";
 import { ApiResponseStatus } from "@/utils/proxy/types";
 import { Button } from "@/components/ui/button";
 import { ErrorMessage } from "@/components/ErrorMessage";
-import { Logo36Blocks } from "@/components/icon/Logo36Blocks";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { logger } from "@/utils/logger";
 import type { Account } from "@/types/auth";
@@ -251,11 +250,8 @@ export default function LoginPage() {
           </div>
         )}
 
-        
-
         <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] text-gray-400">
-          Powered by
-          <Logo36Blocks />
+
         </p>
       </div>
     </div>
