@@ -20,6 +20,9 @@ export const API_PATHS = {
   /** GET contacts list */
   contacts: (company: string, account: string) => `${portalAccount(company, account)}/contacts`,
 
+  /** GET vendor accounts list for a company */
+  vendorsList: (company: string,account:string) => `${portalAccount(company,account)}/get-vendors-list`,
+
   /** GET payment methods (voucherVersion=2) */
   paymentMethods: (company: string, account: string) =>
     `${portalAccount(company, account)}/payment-methods?voucherVersion=2`,
