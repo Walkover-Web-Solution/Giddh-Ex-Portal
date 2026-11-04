@@ -142,10 +142,8 @@ export default function LoginPage() {
         setError((response as { message?: string }).message ?? "Unable to login with Google.");
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const responseMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const message = responseMessage || (err instanceof Error ? err.message : undefined);
       logger.error("Google login failed", err);
       setError(message || "Unable to login with Google. Please try again.");
     } finally {
@@ -182,10 +180,8 @@ export default function LoginPage() {
         setError((response as { message?: string }).message ?? "Unable to login with OTP.");
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const responseMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const message = responseMessage || (err instanceof Error ? err.message : undefined);
       logger.error("OTP login failed", err);
       setError(message || "Unable to login with OTP. Please try again.");
     } finally {
