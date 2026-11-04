@@ -3,9 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectAccountUniqueName, clearCompanyData } from "@/store/slices/companySlice";
-import { verifyPortalUser } from "@/utils/proxy/verifyPortalUser";
-import { ApiResponseStatus } from "@/utils/proxy/types";
+import {
+  selectAccountUniqueName,
+  clearCompanyData,
+  selectCompanyUniqueName,
+  fetchVendorsList,
+  selectUserDetails,
+} from "@/store/slices/companySlice";
 import { savePortalSession } from "@/utils/proxy/saveSession";
 import { setupUserSession } from "@/utils/auth/setupUserSession";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -37,14 +41,20 @@ export function SwitchAccountButton() {
   const [fetchingAccounts, setFetchingAccounts] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isProcessing = useRef(false);
+  const companyUniqueNameFromRedux = useAppSelector(selectCompanyUniqueName(company));
+  const user:any = useAppSelector(selectUserDetails(company));
 
-  // Fetch once on mount — skipped if already cached for this company
+  // Fetch once on mount — skipped if already cached for this company.
+  // If there's no stored email, wait for userDetails to load (it mounts/dispatches
+  // after this component's own effect, so `user` is still null on the first pass)
   useEffect(() => {
-    if (company && !accountsCache[company]) {
+    if (!company || accountsCache[company]) return;
+
+    if (getUserEmailFromStorage(company) || user) {
       fetchAccounts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [company]);
+  }, [company, user]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -67,19 +77,26 @@ export function SwitchAccountButton() {
     setError(null);
 
     try {
-      const email = getUserEmailFromStorage(company);
-      const proxyToken = localStorage.getItem("proxy_auth_token");
+      const resolvedCompanyUniqueName =
+        companyUniqueNameFromRedux || getUserDataFromStorage(company)?.companyUniqueName;
 
-      if (!email || !proxyToken) {
+      const contactEmail = user?.contacts?.find((c: any) => c.email)?.email;
+      const email = getUserEmailFromStorage(company) || contactEmail;
+      const accountsName = currentAccountUniqueName|| getUserDataFromStorage(company)?.account?.uniqueName;  
+
+      if (!resolvedCompanyUniqueName || !email || !accountsName) {
         setError(switchAccountAuthErrorMessage);
         setFetchingAccounts(false);
         return;
       }
-      const verifyResponse = await verifyPortalUser(email, company, proxyToken, country);
+      
+      const { data } = await dispatch(
+        fetchVendorsList({ companyName: company, companyUniqueName: resolvedCompanyUniqueName, emailId: email,accountUniqueName:accountsName })
+      ).unwrap();
 
-      if (verifyResponse.status === ApiResponseStatus.SUCCESS && verifyResponse.body?.length > 0) {
-        accountsCache[company] = verifyResponse.body;
-        setAccounts(verifyResponse.body);
+      if (data?.length > 0) {
+        accountsCache[company] = data;
+        setAccounts(data);
       } else {
         setError("No accounts found.");
       }
@@ -119,9 +136,9 @@ export function SwitchAccountButton() {
     setError(null);
 
     try {
+      const contactEmail = user?.contacts?.find((c: any) => c.email)?.email;
       const proxyToken = localStorage.getItem("proxy_auth_token");
-      const email = getUserEmailFromStorage(company);
-
+      const email = getUserEmailFromStorage(company)|| contactEmail;;
       if (!proxyToken || !email) {
         setError(switchAccountAuthErrorMessage);
         setLoading(false);

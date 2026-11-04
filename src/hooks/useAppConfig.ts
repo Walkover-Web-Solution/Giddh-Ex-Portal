@@ -15,5 +15,8 @@ export function useAppConfig() {
     referenceIdUk: config.REFERENCE_ID_UK,
     apiUrlUk: config.API_URL_UK,
     switchAccountAuthErrorMessage: config.SWITCH_ACCOUNT_AUTH_ERROR_MESSAGE,
+    googleClientId: config.GOOGLE_CLIENT_ID,
+    otpWidgetId: config.OTP_WIDGET_ID,
+    otpWidgetToken: config.OTP_WIDGET_TOKEN,
   };
 }

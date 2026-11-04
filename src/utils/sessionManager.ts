@@ -5,19 +5,27 @@ const KEYS = {
   PENDING_ACCOUNTS: "pendingAccounts",
   PENDING_TOKEN: "pendingToken",
   PENDING_EMAIL: "pendingEmail",
+  PENDING_TOKEN_TYPE: "pendingTokenType",
   COMPANY_NAME: "companyName",
   COUNTRY: "country",
 } as const;
+
+export type PendingAuthTokenType = "proxy" | "accessToken";
 
 function isSSR(): boolean {
   return typeof window === "undefined";
 }
 
 export const sessionManager = {
-  setPendingAuth(accounts: Account[], token: string, email: string) {
+  setPendingAuth(
+    accounts: Account[],
+    token: string,
+    email: string,
+    tokenType: PendingAuthTokenType = "proxy"
+  ) {
     if (isSSR()) return;
 
-    if (!accounts?.length || !token || !email) {
+    if (!accounts?.length || !token) {
       logger.error("Invalid auth data provided to setPendingAuth");
       return;
     }
@@ -25,26 +33,34 @@ export const sessionManager = {
     try {
       sessionStorage.setItem(KEYS.PENDING_ACCOUNTS, JSON.stringify(accounts));
       sessionStorage.setItem(KEYS.PENDING_TOKEN, token);
-      sessionStorage.setItem(KEYS.PENDING_EMAIL, email);
+      sessionStorage.setItem(KEYS.PENDING_EMAIL, email ?? "");
+      sessionStorage.setItem(KEYS.PENDING_TOKEN_TYPE, tokenType);
     } catch (error) {
       logger.error("Error setting pending auth in sessionStorage", error);
     }
   },
 
-  getPendingAuth(): { accounts: Account[]; token: string; email: string } | null {
+  getPendingAuth(): {
+    accounts: Account[];
+    token: string;
+    email: string;
+    tokenType: PendingAuthTokenType;
+  } | null {
     if (isSSR()) return null;
 
     try {
       const accounts = sessionStorage.getItem(KEYS.PENDING_ACCOUNTS);
       const token = sessionStorage.getItem(KEYS.PENDING_TOKEN);
       const email = sessionStorage.getItem(KEYS.PENDING_EMAIL);
+      const tokenType = (sessionStorage.getItem(KEYS.PENDING_TOKEN_TYPE) as PendingAuthTokenType) || "proxy";
 
-      if (!accounts || !token || !email) return null;
+      if (!accounts || !token) return null;
 
       return {
         accounts: JSON.parse(accounts),
         token,
-        email,
+        email: email ?? "",
+        tokenType,
       };
     } catch (error) {
       logger.error("Error getting pending auth from sessionStorage", error);
@@ -59,6 +75,7 @@ export const sessionManager = {
       sessionStorage.removeItem(KEYS.PENDING_ACCOUNTS);
       sessionStorage.removeItem(KEYS.PENDING_TOKEN);
       sessionStorage.removeItem(KEYS.PENDING_EMAIL);
+      sessionStorage.removeItem(KEYS.PENDING_TOKEN_TYPE);
     } catch (error) {
       logger.error("Error clearing pending auth from sessionStorage", error);
     }
