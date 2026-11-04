@@ -47,7 +47,6 @@ export function SwitchAccountButton() {
   // Fetch once on mount — skipped if already cached for this company.
   // If there's no stored email, wait for userDetails to load (it mounts/dispatches
   // after this component's own effect, so `user` is still null on the first pass)
-  // so the user?.createdBy?.email fallback below has real data instead of stale null.
   useEffect(() => {
     if (!company || accountsCache[company]) return;
 
@@ -81,16 +80,18 @@ export function SwitchAccountButton() {
       const resolvedCompanyUniqueName =
         companyUniqueNameFromRedux || getUserDataFromStorage(company)?.companyUniqueName;
 
-      const email = getUserEmailFromStorage(company) || user?.createdBy?.email;
+      const contactEmail = user?.contacts?.find((c: any) => c.email)?.email;
+      const email = getUserEmailFromStorage(company) || contactEmail;
+      const accountsName = currentAccountUniqueName|| getUserDataFromStorage(company)?.account?.uniqueName;  
 
-      if (!resolvedCompanyUniqueName || !email || !currentAccountUniqueName) {
+      if (!resolvedCompanyUniqueName || !email || !accountsName) {
         setError(switchAccountAuthErrorMessage);
         setFetchingAccounts(false);
         return;
       }
       
       const { data } = await dispatch(
-        fetchVendorsList({ companyName: company, companyUniqueName: resolvedCompanyUniqueName, emailId: email,accountUniqueName:currentAccountUniqueName })
+        fetchVendorsList({ companyName: company, companyUniqueName: resolvedCompanyUniqueName, emailId: email,accountUniqueName:accountsName })
       ).unwrap();
 
       if (data?.length > 0) {
@@ -135,9 +136,9 @@ export function SwitchAccountButton() {
     setError(null);
 
     try {
+      const contactEmail = user?.contacts?.find((c: any) => c.email)?.email;
       const proxyToken = localStorage.getItem("proxy_auth_token");
-      const email = getUserEmailFromStorage(company);
-
+      const email = getUserEmailFromStorage(company)|| contactEmail;;
       if (!proxyToken || !email) {
         setError(switchAccountAuthErrorMessage);
         setLoading(false);
