@@ -6,6 +6,8 @@ Welcome to the Giddh Portal documentation. This directory contains comprehensive
 
 ### 📚 Core Documentation
 
+- **[Product Vision](./VISION.md)** - Strategic direction, ICP, boundaries, and how agents evaluate requests (owner review required)
+- **[Open Questions](./OPEN_QUESTIONS.md)** - Unresolved product decisions for vision maintenance
 - **[Architecture](./ARCHITECTURE.md)** - Project structure, folder organization, and design patterns
 - **[Redux State Management](./REDUX.md)** - Store configuration, slices, selectors, and async thunks
 - **[API Documentation](./API.md)** - API endpoints, utilities, request/response formats
