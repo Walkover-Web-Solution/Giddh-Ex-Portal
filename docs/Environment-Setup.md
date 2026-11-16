@@ -36,9 +36,15 @@ Template file showing available environment variables.
 
 ```env
 NEXT_PUBLIC_APP_ENV=local
+NEXT_PUBLIC_MW_EVENTS_URL=
+NEXT_PUBLIC_MW_KEY=
 ```
 
 **Status:** Committed to git
+
+### Middleware A/B experiments (optional)
+
+`NEXT_PUBLIC_MW_EVENTS_URL` and `NEXT_PUBLIC_MW_KEY` configure client-side experiment exposure and conversion events (see `src/lib/mw-experiments.ts`). When unset, pages behave as the control variant and no events are sent.
 
 ## Configuration Selection Logic
 
