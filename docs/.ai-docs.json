@@ -1,0 +1,11 @@
+{
+  "skill": "ai-docs",
+  "skill_version": "2.0.0",
+  "created": "2026-11-17",
+  "last_run": { "mode": "init", "commit": "88f8405", "branch": "test", "date": "2026-11-17" },
+  "canonical_docs": ["AGENTS.md","docs/VISION.md","docs/ARCHITECTURE.md","docs/FLOWS.md","docs/DESIGN.md","docs/CONTRACTS.md","docs/DEVELOPMENT.md","docs/DECISIONS.md","docs/OPEN_QUESTIONS.md"],
+  "docs": {"AGENTS.md":"AGENTS.md","CLAUDE.md":"(one line: @AGENTS.md)","docs/README.md":"docs-README.md (index)","docs/VISION.md":"VISION.md (existing draft, refreshed)","docs/ARCHITECTURE.md":"ARCHITECTURE.md (rewritten in place)","docs/FLOWS.md":"FLOWS.md + flow.md","docs/DESIGN.md":"DESIGN.md","docs/CONTRACTS.md":"CONTRACTS.md + api.md","docs/DEVELOPMENT.md":"DEVELOPMENT.md","docs/DECISIONS.md":"DECISIONS.md","docs/OPEN_QUESTIONS.md":"OPEN_QUESTIONS.md (existing, extended)"},
+  "skipped_templates": {"docs/00-24 numbered guides":"duplicate the canonical set on a ~15k-line app","docs/modules/, api/, database/, ui/":"one doc per concern stays under 330 lines","docs/plans/, brainstorms/":"written per change, never generated"},
+  "superseded": ["docs/API.md","docs/REDUX.md","docs/ROUTING.md","docs/Environment-Setup.md","docs/WHITELABEL_CONFIG.md","docs/White-Label-Flow.md","docs/DATE_RANGE_CALENDAR.md"],
+  "kept": [".windsurf/rules/giddh-portal.md (team rules; mirrored in AGENTS.md rules 1-4)"]
+}

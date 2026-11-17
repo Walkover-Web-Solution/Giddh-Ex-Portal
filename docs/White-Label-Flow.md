@@ -1,3 +1,5 @@
+> **Superseded (2026-11-17)** by docs/FLOWS.md. Kept for history; parts of it no longer match the code. Do not update it.
+
 # White-Label Configuration Flow
 
 ## Overview
