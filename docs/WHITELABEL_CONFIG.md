@@ -1,3 +1,5 @@
+> **Superseded (2026-11-17)** by docs/DEVELOPMENT.md (config), docs/DESIGN.md (branding) and docs/FLOWS.md (resolution). Kept for history; parts of it no longer match the code. Do not update it.
+
 # White-Label Configuration System
 
 ## Overview

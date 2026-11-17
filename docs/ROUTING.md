@@ -1,3 +1,5 @@
+> **Superseded (2026-11-17)** by docs/ARCHITECTURE.md (route tree) and docs/FLOWS.md (journeys). Kept for history; parts of it no longer match the code. Do not update it.
+
 # Routing Documentation
 
 ## Overview
